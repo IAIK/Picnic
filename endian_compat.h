@@ -25,12 +25,19 @@
 #endif
 
 /* Windows */
-#if defined(_WIN16) || defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
+#if defined(_WIN16) || defined(_WIN32) || defined(_WIN64)
+#if defined(__MINGW32__) || defined(__MINGW64__)
 #include <sys/param.h>
 
 #define _LITTLE_ENDIAN LITTLE_ENDIAN
 #define _BIG_ENDIAN BIG_ENDIAN
 #define _BYTE_ORDER BYTE_ORDER
+#else
+#define _LITTLE_ENDIAN 1234
+#define _BIG_ENDIAN 4321
+/* X-Box 360 is big-endian, but we simply ignore that. */
+#define _BYTE_ORDER _LITTLE_ENDIAN
+#endif
 #endif
 
 /* OS X */
