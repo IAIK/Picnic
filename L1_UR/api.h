@@ -1,4 +1,4 @@
-#define CRYPTO_SECRETKEYBYTES (1 + 2 * 16 + 1 + 16)
+#define CRYPTO_SECRETKEYBYTES (1 + 2 * 16 + 16)
 #define CRYPTO_PUBLICKEYBYTES (1 + 2 * 16)
 #define CRYPTO_BYTES (4 + 53929)
 #define CRYPTO_ALGNAME "picnicl1ur"

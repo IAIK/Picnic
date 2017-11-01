@@ -1,4 +1,4 @@
-#define CRYPTO_SECRETKEYBYTES (1 + 2 * 32 + 1 + 32)
+#define CRYPTO_SECRETKEYBYTES (1 + 2 * 32 + 32)
 #define CRYPTO_PUBLICKEYBYTES (1 + 2 * 32)
 #define CRYPTO_BYTES (4 + 132824)
 #define CRYPTO_ALGNAME "picnicl5fs"
