@@ -14,8 +14,9 @@
  * configurations */
 
 #if !defined(HAVE_ALIGNED_ALLOC) &&                                                                \
-    (defined(_ISOC11_SOURCE) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L &&       \
-                                 !defined(__MINGW32__) && !defined(__MINGW64__)))
+    (defined(_ISOC11_SOURCE) ||                                                                    \
+     (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__MINGW32__) &&         \
+      !defined(__MINGW64__) && !defined(__APPLE__)))
 #define HAVE_ALIGNED_ALLOC
 #endif
 
