@@ -1046,11 +1046,13 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2 && lowmc->n <= 128) {
+    (void) mpc_lowmc_call_128_sse;
     return general_or_10(lowmc, mpc_lowmc_call_128_sse);
   }
 #endif
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2 && lowmc->n >= 129 && lowmc->n <= 256) {
+    (void) mpc_lowmc_call_256_avx;
     return general_or_10(lowmc, mpc_lowmc_call_256_avx);
   }
 #ifdef WITH_CUSTOM_INSTANCES
@@ -1063,6 +1065,7 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #endif
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2 && lowmc->n <= 256) {
+    (void) mpc_lowmc_call_256_sse;
     return general_or_10(lowmc, mpc_lowmc_call_256_sse);
   }
 #ifdef WITH_CUSTOM_INSTANCES
@@ -1075,8 +1078,10 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #endif
 #ifdef WITH_NEON
   if (CPU_SUPPORTS_NEON && lowmc->n == 128) {
+    (void) mpc_lowmc_call_128_neon;
     return general_or_10(lowmc, mpc_lowmc_call_128_neon);
   } else if (CPU_SUPPORTS_NEON && lowmc->n <= 256) {
+    (void) mpc_lowmc_call_256_neon;
     return general_or_10(lowmc, mpc_lowmc_call_256_neon);
   }
 #ifdef WITH_CUSTOM_INSTANCES
@@ -1097,11 +1102,13 @@ lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* low
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2 && lowmc->n <= 128) {
+    (void) mpc_lowmc_call_verify_128_sse;
     return general_or_10(lowmc, mpc_lowmc_call_verify_128_sse);
   }
 #endif
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2 && lowmc->n >= 129 && lowmc->n <= 256) {
+    (void) mpc_lowmc_call_verify_256_avx;
     return general_or_10(lowmc, mpc_lowmc_call_verify_256_avx);
   }
 #ifdef WITH_CUSTOM_INSTANCES
@@ -1114,6 +1121,7 @@ lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* low
 #endif
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2 && lowmc->n <= 256) {
+    (void) mpc_lowmc_call_verify_256_sse;
     return general_or_10(lowmc, mpc_lowmc_call_verify_256_sse);
   }
 #ifdef WITH_CUSTOM_INSTANCES
@@ -1126,8 +1134,10 @@ lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* low
 #endif
 #ifdef WITH_NEON
   if (CPU_SUPPORTS_NEON && lowmc->n == 128) {
+    (void) mpc_lowmc_call_verify_128_neon;
     return general_or_10(lowmc, mpc_lowmc_call_verify_128_neon);
   } else if (CPU_SUPPORTS_NEON && lowmc->n <= 256) {
+    (void) mpc_lowmc_call_verify_256_neon;
     return general_or_10(lowmc, mpc_lowmc_call_verify_256_neon);
   }
 #ifdef WITH_CUSTOM_INSTANCES
