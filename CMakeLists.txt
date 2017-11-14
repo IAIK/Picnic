@@ -32,6 +32,12 @@ include(GenerateExportHeader)
 find_package(OpenSSL)
 find_package(m4ri)
 
+if(APPLE)
+  find_path(SECRUTY_INCLUDE_DIR Security/Security.h)
+  find_library(SECURITY_LIBRARY Security)
+  mark_as_advanced(SECURITY_INCLUDE_DIR SECURITY_LIBRARY)
+endif()
+
 # check headers
 check_include_files(sys/auxv.h HAVE_SYS_AUXV_H)
 check_include_files(asm/hwcap.h HAVE_ASM_HWCAP_H)
@@ -229,6 +235,11 @@ endif()
 if(WIN32)
   target_compile_definitions(picnic PRIVATE "_WIN32_WINNT=0x0601")
   target_link_libraries(picnic bcrypt)
+endif()
+
+if(APPLE)
+  target_include_directories(picnic PRIVATE ${SECURTY_INCLUDE_DIR})
+  target_link_libraries(picnic PRIVATE ${SECURITY_LIBRARY})
 endif()
 
 # genparams executable
