@@ -22,8 +22,7 @@ int rand_bytes(uint8_t* dst, size_t len) {
 }
 #else
 
-#if defined(__linux__)
-#if (defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) || (__GLIBC__ > 2 || __GLIBC_MINOR__ >= 25)
+#if defined(__linux__) && ((defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) || (__GLIBC__ > 2 || __GLIBC_MINOR__ >= 25))
 #include <sys/random.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
@@ -32,7 +31,16 @@ int rand_bytes(uint8_t* dst, size_t len) {
   }
   return 1;
 }
-#else
+#elif defined(__APPLE__) && defined(HAVE_APPLE_FRAMEWORK)
+#include <Security/Security.h>
+
+int rand_bytes(uint8_t* dst, size_t len) {
+  if (SecRandomCopyBytes(kSecRandomDefault, len, dst) == errSecSuccess) {
+    return 1;
+  }
+  return 0;
+}
+#elif defined(__linux__) || defined(__APPLE__)
 #include <stdio.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
@@ -44,7 +52,6 @@ int rand_bytes(uint8_t* dst, size_t len) {
   }
   return ret;
 }
-#endif
 #elif defined(_WIN32)
 #include <windows.h>
 
@@ -53,15 +60,6 @@ int rand_bytes(uint8_t* dst, size_t len) {
     return 0;
   }
   return 1;
-}
-#elif defined(__APPLE__)
-#include <Security/Security.h>
-
-int rand_bytes(uint8_t* dst, size_t len) {
-  if (SecRandomCopyBytes(kSecRandomDefault, len, dst) == errSecSuccess) {
-    return 1;
-  }
-  return 0;
 }
 #else
 #error "Unsupported OS! Please implement rand_bytes."

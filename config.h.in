@@ -12,4 +12,6 @@
 #cmakedefine HAVE_MEMALIGN
 #cmakedefine HAVE_GETRANDOM
 
+#cmakedefine HAVE_SECURITY_FRAMEWORK
+
 #endif

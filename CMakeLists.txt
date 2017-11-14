@@ -36,6 +36,7 @@ if(APPLE)
   find_path(SECRUTY_INCLUDE_DIR Security/Security.h)
   find_library(SECURITY_LIBRARY Security)
   mark_as_advanced(SECURITY_INCLUDE_DIR SECURITY_LIBRARY)
+  set(HAVE_SECURITY_FRAMEWORK)
 endif()
 
 # check headers
