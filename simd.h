@@ -31,7 +31,7 @@
 #define FN_ATTRIBUTES_SSE2_NP __attribute__((__always_inline__, target("sse2")))
 
 #if defined(__x86_64__) || defined(__i386__)
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8))
 #define CPU_SUPPORTS_AVX2 __builtin_cpu_supports("avx2")
 #define CPU_SUPPORTS_SSE4_1 __builtin_cpu_supports("sse4.1")
 #else
@@ -44,7 +44,7 @@
 // X86-64 CPUs always support SSE2
 #define CPU_SUPPORTS_SSE2 1
 #elif defined(__i386__)
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8))
 #define CPU_SUPPORTS_SSE2 __builtin_cpu_supports("sse2")
 #else
 #define CPU_SUPPORTS_SSE2 cpu_supports(CPU_CAP_SSE2)
