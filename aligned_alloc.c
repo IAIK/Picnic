@@ -30,8 +30,8 @@ void* aligned_alloc(size_t alignment, size_t size) {
 
 #if defined(HAVE_POSIX_MEMALIGN)
   /* check alignment (needs to be >= sizeof(void*)) */
-  if (align < sizeof(void*)) {
-    align = sizeof(void*);
+  if (alignment < sizeof(void*)) {
+    alignment = sizeof(void*);
   }
 
   void* ptr     = NULL;
