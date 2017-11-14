@@ -5,6 +5,7 @@
 #include "../bitstream.h"
 
 #include <stdio.h>
+#include <inttypes.h>
 
 static int simple_test(void) {
   int ret = 0;
@@ -18,7 +19,7 @@ static int simple_test(void) {
     bitstream_t bsr = {.buffer = buffer, .position = 0};
     const uint64_t r = bitstream_get_bits(&bsr, i);
     if (r != v) {
-      printf("simple_test: expected %016zx, got %016zx\n", v, r);
+      printf("simple_test: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
       ret = -1;
     }
 
@@ -52,7 +53,7 @@ static int test_30(void) {
   bitstream_t bsr = {.buffer = buffer, .position = 0};
   const uint64_t r = bitstream_get_bits(&bsr, 30);
   if (r != v) {
-    printf("test_30: expected %016zx, got %016zx\n", v, r);
+    printf("test_30: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
     ret = -1;
   }
 
@@ -61,20 +62,20 @@ static int test_30(void) {
     const uint64_t r = bitstream_get_bits(&bsr2, 1);
     const uint64_t e = (v >> (30 - i - 1)) & 0x1;
     if (e != r) {
-      printf("test_30: expected2 %016zx, got %016zx\n", e, r);
+      printf("test_30: expected2 %016" PRIx64 ", got %016" PRIx64 "\n", e, r);
       ret = -1;
     }
   }
 
   if (buffer[0] != 0b11011000 || buffer[1] != 0b01101100 || buffer[2] != 0b10100101 ||
       buffer[3] != 0b00101000) {
-    printf("test_30: expected buffer %016zx, got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
+    printf("test_30: expected buffer %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
            buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
     ret = -1;
   }
   if (buffer2[0] != 0b11011000 || buffer2[1] != 0b01101100 || buffer2[2] != 0b10100101 ||
       buffer2[3] != 0b00101000) {
-    printf("test_30: expected buffer2 %016zx, got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
+    printf("test_30: expected buffer2 %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
            buffer2[0], buffer2[1], buffer2[2], buffer2[3], buffer2[4], buffer2[5], buffer2[6],
            buffer2[7]);
     ret = -1;
@@ -96,18 +97,18 @@ static int test_multiple_30(void) {
   bitstream_t bsr = {.buffer = buffer, .position = 0};
   uint64_t r = bitstream_get_bits(&bsr, 30);
   if (r != v) {
-    printf("test_multiple_30: expected %016zx, got %016zx\n", v, r);
+    printf("test_multiple_30: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
     ret = -1;
   }
   r = bitstream_get_bits(&bsr, 30);
   if (r != v2) {
-    printf("test_multiple_30: expected %016zx, got %016zx\n", v2, r);
+    printf("test_multiple_30: expected %016" PRIx64 ", got %016" PRIx64 "\n", v2, r);
     ret = -1;
   }
 
   if (buffer[0] != 0b11011000 || buffer[1] != 0b01101100 || buffer[2] != 0b10100101 ||
       buffer[3] != 0b00101000) {
-    printf("test_30: expected buffer %016zx, got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
+    printf("test_30: expected buffer %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
            buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
     ret = -1;
   }
