@@ -35,11 +35,13 @@ find_package(m4ri)
 # check headers
 check_include_files(sys/auxv.h HAVE_SYS_AUXV_H)
 check_include_files(asm/hwcap.h HAVE_ASM_HWCAP_H)
+check_include_files(linux/random.h HAVE_LINUX_RANDOM_H)
 
 # check availability of some functions
 check_symbol_exists(aligned_alloc stdlib.h HAVE_ALIGNED_ALLOC)
 check_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
 check_symbol_exists(memalign malloc.h HAVE_MEMALIGN)
+check_symbol_exists(getrandom linux/random.h HAVE_GETRANDOM)
 
 # check supported compiler flags
 check_c_compiler_flag(-march=native CC_SUPPORTS_MARCH_NATIVE)

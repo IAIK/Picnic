@@ -21,14 +21,21 @@ int rand_bytes(uint8_t* dst, size_t len) {
   return 1;
 }
 #else
-#include <stdio.h>
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+#if defined(__linux__)
+#if defined(HAVE_LINUX_RANDOM_H) && defined(HAVE_GETRANDOM)
+#include <linux/random.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
-#if defined(__linux__)
+  if (getrandom(dst, len, GRND_NONBLOCK) != len) {
+    return 0;
+  }
+  return 1;
+}
+#else
+#include <stdio.h>
+
+int rand_bytes(uint8_t* dst, size_t len) {
   FILE* urandom = fopen("/dev/urandom", "r");
   int ret       = 1;
   if (urandom) {
@@ -36,13 +43,18 @@ int rand_bytes(uint8_t* dst, size_t len) {
     fclose(urandom);
   }
   return ret;
+}
+#endif
 #elif defined(_WIN32)
+#include <windows.h>
+
+int rand_bytes(uint8_t* dst, size_t len) {
   if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, dst, len, BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
     return 0;
   }
   return 1;
+}
 #else
 #error "Unsupported OS! Please implement rand_bytes."
 #endif
-}
 #endif
