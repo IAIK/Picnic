@@ -5,7 +5,7 @@
 
 #cmakedefine HAVE_SYS_AUXV_H
 #cmakedefine HAVE_ASM_HWCAP_H
-#cmakedefine HAVE_LINUX_RANDOM_H
+#cmakedefine HAVE_SYS_RANDOM_H
 
 #cmakedefine HAVE_ALIGNED_ALLOC
 #cmakedefine HAVE_POSIX_MEMALIGN

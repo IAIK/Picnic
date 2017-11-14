@@ -23,8 +23,8 @@ int rand_bytes(uint8_t* dst, size_t len) {
 #else
 
 #if defined(__linux__)
-#if defined(HAVE_LINUX_RANDOM_H) && defined(HAVE_GETRANDOM)
-#include <linux/random.h>
+#if (defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) || (__GLIBC__ > 2 || __GLIBC_MINOR__ >= 25)
+#include <sys/random.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
   if (getrandom(dst, len, GRND_NONBLOCK) != len) {
