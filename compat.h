@@ -10,9 +10,11 @@
 #ifndef PICNIC_COMPAT_H
 #define PICNIC_COMPAT_H
 
+#if defined(HAVE_CONFIG_H)
+#include <config.h>
+#else
 /* in case cmake checks failed or were not run, define HAVE_* for known good
  * configurations */
-
 #if !defined(HAVE_ALIGNED_ALLOC) &&                                                                \
     (defined(_ISOC11_SOURCE) ||                                                                    \
      (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__MINGW32__) &&         \
@@ -26,6 +28,7 @@
 
 #if !defined(HAVE_MEMALIGN) && defined(__linux__)
 #define HAVE_MEMALIGN
+#endif
 #endif
 
 #if defined(HAVE_ALIGNED_ALLOC)
