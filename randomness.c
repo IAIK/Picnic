@@ -54,6 +54,15 @@ int rand_bytes(uint8_t* dst, size_t len) {
   }
   return 1;
 }
+#elif defined(__APPLE__)
+#include <Security/Security.h>
+
+int rand_bytes(uint8_t* dst, size_t len) {
+  if (SecRandomCopyBytes(kSecRandomDefault, len, dst) == errSecSuccess) {
+    return 1;
+  }
+  return 0;
+}
 #else
 #error "Unsupported OS! Please implement rand_bytes."
 #endif
