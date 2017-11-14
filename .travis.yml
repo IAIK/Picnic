@@ -1,0 +1,69 @@
+language: c
+
+matrix:
+  include:
+    - compiler: clang
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ppsspp/cmake'
+            - sourceline: 'ppa:s-ramacher/iaik'
+          packages:
+            - cmake
+            - libssl-dev
+    - compiler: gcc
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ppsspp/cmake'
+            - sourceline: 'ppa:s-ramacher/iaik'
+          packages:
+            - gcc-7
+            - cmake
+            - libssl-dev
+      env:
+        - COMPILER=gcc-7
+    - compiler: gcc
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ppsspp/cmake'
+            - sourceline: 'ppa:s-ramacher/iaik'
+          packages:
+            - gcc-6
+            - cmake
+            - libssl-dev
+      env:
+        - COMPILER=gcc-6
+    - compiler: gcc
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ppsspp/cmake'
+            - sourceline: 'ppa:s-ramacher/iaik'
+          packages:
+            - gcc-5
+            - cmake
+            - libssl-dev
+      env:
+        - COMPILER=gcc-5
+    - compiler: clang
+      os: osx
+    - compiler: gcc
+      os: osx
+
+install:
+  - if [[ -n "$COMPILER" ]]; then export CC=$COMPILER; fi
+
+script:
+  - mkdir build
+  - cd build
+  - cmake .. && make && make test
