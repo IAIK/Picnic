@@ -37,7 +37,7 @@ int rand_bytes(uint8_t* dst, size_t len) {
 
 int rand_bytes(uint8_t* dst, size_t len) {
   FILE* urandom = fopen("/dev/urandom", "r");
-  int ret       = 1;
+  int ret       = 0;
   if (urandom) {
     ret = fread(dst, 1, len, urandom) == len ? 1 : 0;
     fclose(urandom);
