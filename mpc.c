@@ -105,6 +105,7 @@ __attribute__((target("sse2"))) void mpc_and_256_sse(__m128i res[SC_PROOF][2],
   mpc_and_def_multiple(__m128i, mm256_and_sse, mm256_xor_sse, mm256_shift_right_sse, 2);
 }
 
+#ifdef WITH_CUSTOM_INSTANCES
 __attribute__((target("sse2"))) void mpc_and_384_sse(__m128i res[SC_PROOF][3],
                                                      __m128i const first[SC_PROOF][3],
                                                      __m128i const second[SC_PROOF][3],
@@ -120,6 +121,7 @@ __attribute__((target("sse2"))) void mpc_and_512_sse(__m128i res[SC_PROOF][4],
                                                      unsigned viewshift) {
   mpc_and_def_multiple(__m128i, mm512_and_sse, mm512_xor_sse, mm512_shift_right_sse, 4);
 }
+#endif
 
 #endif
 
@@ -130,6 +132,7 @@ __attribute__((target("avx2"))) void mpc_and_avx(__m256i* res, __m256i const* fi
   mpc_and_def(__m256i, _mm256_and_si256, _mm256_xor_si256, mm256_shift_right);
 }
 
+#ifdef WITH_CUSTOM_INSTANCES
 __attribute__((target("avx2"))) void mpc_and_512_avx(__m256i res[SC_VERIFY][2],
                                                      __m256i const first[SC_VERIFY][2],
                                                      __m256i const second[SC_VERIFY][2],
@@ -137,6 +140,7 @@ __attribute__((target("avx2"))) void mpc_and_512_avx(__m256i res[SC_VERIFY][2],
                                                      unsigned viewshift) {
   mpc_and_def_multiple(__m256i, mm512_and_avx, mm512_xor_avx, mm512_shift_right_avx, 2);
 }
+#endif
 
 #endif
 #ifdef WITH_NEON
@@ -151,6 +155,7 @@ void mpc_and_256_neon(uint32x4_t res[SC_PROOF][2], uint32x4_t const first[SC_PRO
   mpc_and_def_multiple(uint32x4_t, mm256_and, mm256_xor, mm256_shift_right, 2);
 }
 
+#ifdef WITH_CUSTOM_INSTANCES
 void mpc_and_384_neon(uint32x4_t res[SC_PROOF][3], uint32x4_t const first[SC_PROOF][3],
                       uint32x4_t const second[SC_PROOF][3], uint32x4_t const r[SC_PROOF][3],
                       view_t* view, unsigned viewshift) {
@@ -162,6 +167,7 @@ void mpc_and_512_neon(uint32x4_t res[SC_PROOF][4], uint32x4_t const first[SC_PRO
                       view_t* view, unsigned viewshift) {
   mpc_and_def_multiple(uint32x4_t, mm512_and, mm512_xor, mm512_shift_right, 4);
 }
+#endif
 #endif
 #endif
 
@@ -254,6 +260,7 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
   (and)(res[SC_VERIFY - 1], rsc, mask);
 
 #ifdef WITH_SSE2
+#ifdef WITH_CUSTOM_INSTANCES
 __attribute__((target("sse2"))) void mpc_and_verify_sse(__m128i* res, __m128i const* first,
                                                         __m128i const* second, __m128i const* r,
                                                         view_t* view, __m128i const mask,
@@ -284,9 +291,11 @@ mpc_and_verify_512_sse(__m128i res[SC_VERIFY][4], __m128i const first[SC_VERIFY]
   mpc_and_verify_def_multiple(__m128i, mm512_and_sse, mm512_xor_sse, mm512_shift_right_sse,
                               mm512_shift_left_sse, 4);
 }
+#endif
 
 #endif
 #ifdef WITH_AVX2
+#ifdef WITH_CUSTOM_INSTANCES
 __attribute__((target("avx2"))) void mpc_and_verify_avx(__m256i* res, __m256i const* first,
                                                         __m256i const* second, __m256i const* r,
                                                         view_t* view, __m256i const mask,
@@ -303,7 +312,9 @@ mpc_and_verify_512_avx(__m256i res[SC_VERIFY][2], __m256i const first[SC_VERIFY]
                               mm512_shift_left_avx, 2);
 }
 #endif
+#endif
 #ifdef WITH_NEON
+#ifdef WITH_CUSTOM_INSTANCES
 void mpc_and_verify_neon(uint32x4_t* res, uint32x4_t const* first, uint32x4_t const* second,
                          uint32x4_t const* r, view_t* view, uint32x4_t const mask,
                          unsigned viewshift) {
@@ -333,6 +344,7 @@ void mpc_and_verify_512_neon(uint32x4_t res[SC_VERIFY][4], uint32x4_t const firs
   mpc_and_verify_def_multiple(uint32x4_t, mm512_and, mm512_xor, mm512_shift_right, mm512_shift_left,
                               4);
 }
+#endif
 #endif
 #endif
 
