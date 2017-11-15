@@ -89,10 +89,11 @@
     }                                                                                              \
   }
 
-#define apply_array(name, type, xor, count, attributes)                                                  \
-  static inline void attributes name(type dst[count], type const lhs[count], type const rhs[count]                 ) {                                         \
-    for (unsigned int i = 0; i < count; ++i) {                                           \
-      dst[i] = (xor)(lhs[i], rhs[i]);                                                                    \
+#define apply_array(name, type, xor, count, attributes)                                            \
+  static inline void attributes name(type dst[count], type const lhs[count],                       \
+                                     type const rhs[count]) {                                      \
+    for (unsigned int i = 0; i < count; ++i) {                                                     \
+      dst[i] = (xor)(lhs[i], rhs[i]);                                                              \
     }                                                                                              \
   }
 
