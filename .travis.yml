@@ -9,7 +9,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:ppsspp/cmake'
-            - sourceline: 'ppa:s-ramacher/iaik'
           packages:
             - cmake
             - libssl-dev
@@ -20,7 +19,16 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:ppsspp/cmake'
-            - sourceline: 'ppa:s-ramacher/iaik'
+          packages:
+            - cmake
+            - libssl-dev
+    - compiler: gcc
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-7
             - cmake
@@ -34,7 +42,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:ppsspp/cmake'
-            - sourceline: 'ppa:s-ramacher/iaik'
           packages:
             - gcc-6
             - cmake
@@ -48,7 +55,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:ppsspp/cmake'
-            - sourceline: 'ppa:s-ramacher/iaik'
           packages:
             - gcc-5
             - cmake
