@@ -70,6 +70,5 @@ install:
   - if [[ -n "$COMPILER" ]]; then export CC=$COMPILER; fi
 
 script:
-  - mkdir build
-  - cd build
-  - cmake .. && make && make test
+  - bash .travis-build.sh
+  - bash .travis-script.sh -DWITH_SIMD_OPT=OFF -DWITH_REDUCED_LINEAR_LAYER=OFF -DWITH_MUL_M4RI=OFF
