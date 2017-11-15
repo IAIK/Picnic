@@ -89,6 +89,13 @@
     }                                                                                              \
   }
 
+#define apply_array(name, type, xor, count, attributes)                                                  \
+  static inline void attributes name(type dst[count], type const lhs[count], type const rhs[count]                 ) {                                         \
+    for (unsigned int i = 0; i < count; ++i) {                                           \
+      dst[i] = (xor)(lhs[i], rhs[i]);                                                                    \
+    }                                                                                              \
+  }
+
 #ifdef WITH_AVX2
 /**
  * \brief Perform a left shift on a 256 bit value.
@@ -120,6 +127,7 @@ static inline __m256i FN_ATTRIBUTES_AVX2 mm256_shift_right(__m256i data, unsigne
   return _mm256_or_si256(data, carry);
 }
 
+#ifdef WITH_CUSTOM_INSTANCES
 static inline void FN_ATTRIBUTES_AVX2_NP mm512_shift_left_avx(__m256i res[2], __m256i const data[2],
                                                               unsigned int count) {
   if (!count) {
@@ -153,23 +161,15 @@ static inline void FN_ATTRIBUTES_AVX2_NP mm512_shift_right_avx(__m256i res[2],
   res[1]              = mm256_shift_right(data[1], count);
   res[0]              = _mm256_or_si256(res[0], total_carry);
 }
+#endif
 
 apply_region(mm256_xor_region, __m256i, _mm256_xor_si256, FN_ATTRIBUTES_AVX2_NP);
 apply_mask_region(mm256_xor_mask_region, __m256i, _mm256_xor_si256, _mm256_and_si256,
                   FN_ATTRIBUTES_AVX2_NP);
-
-static inline void FN_ATTRIBUTES_AVX2_NP mm512_xor_avx(__m256i res[2], __m256i const first[2],
-                                                       __m256i const second[2]) {
-  res[0] = _mm256_xor_si256(first[0], second[0]);
-  res[1] = _mm256_xor_si256(first[1], second[1]);
-}
-
-static inline void FN_ATTRIBUTES_AVX2_NP mm512_and_avx(__m256i res[2], __m256i const first[2],
-                                                       __m256i const second[2]) {
-  res[0] = _mm256_and_si256(first[0], second[0]);
-  res[1] = _mm256_and_si256(first[1], second[1]);
-}
-
+#ifdef WITH_CUSTOM_INSTANCES
+apply_array(mm512_xor_avx, __m256i, _mm256_xor_si256, 2, FN_ATTRIBUTES_AVX2_NP);
+apply_array(mm512_and_avx, __m256i, _mm256_and_si256, 2, FN_ATTRIBUTES_AVX2_NP);
+#endif
 #endif
 
 #ifdef WITH_SSE2
@@ -323,54 +323,17 @@ static inline void FN_ATTRIBUTES_SSE2_NP mm512_shift_left_sse(__m128i res[4], __
 apply_region(mm128_xor_region, __m128i, _mm_xor_si128, FN_ATTRIBUTES_SSE2_NP);
 apply_mask_region(mm128_xor_mask_region, __m128i, _mm_xor_si128, _mm_and_si128,
                   FN_ATTRIBUTES_SSE2_NP);
-
-static inline void FN_ATTRIBUTES_SSE2_NP mm256_xor_sse(__m128i res[2], __m128i const first[2],
-                                                       __m128i const second[2]) {
-  res[0] = _mm_xor_si128(first[0], second[0]);
-  res[1] = _mm_xor_si128(first[1], second[1]);
-}
-
-static inline void FN_ATTRIBUTES_SSE2_NP mm256_and_sse(__m128i res[2], __m128i const first[2],
-                                                       __m128i const second[2]) {
-  res[0] = _mm_and_si128(first[0], second[0]);
-  res[1] = _mm_and_si128(first[1], second[1]);
-}
-
-static inline void FN_ATTRIBUTES_SSE2_NP mm384_xor_sse(__m128i res[3], __m128i const first[3],
-                                                       __m128i const second[3]) {
-  res[0] = _mm_xor_si128(first[0], second[0]);
-  res[1] = _mm_xor_si128(first[1], second[1]);
-  res[2] = _mm_xor_si128(first[2], second[2]);
-}
-
-static inline void FN_ATTRIBUTES_SSE2_NP mm384_and_sse(__m128i res[3], __m128i const first[3],
-                                                       __m128i const second[3]) {
-  res[0] = _mm_and_si128(first[0], second[0]);
-  res[1] = _mm_and_si128(first[1], second[1]);
-  res[2] = _mm_and_si128(first[2], second[2]);
-}
-
-static inline void FN_ATTRIBUTES_SSE2_NP mm512_xor_sse(__m128i res[4], __m128i const first[4],
-                                                       __m128i const second[4]) {
-  res[0] = _mm_xor_si128(first[0], second[0]);
-  res[1] = _mm_xor_si128(first[1], second[1]);
-  res[2] = _mm_xor_si128(first[2], second[2]);
-  res[3] = _mm_xor_si128(first[3], second[3]);
-}
-
-static inline void FN_ATTRIBUTES_SSE2_NP mm512_and_sse(__m128i res[4], __m128i const first[4],
-                                                       __m128i const second[4]) {
-  res[0] = _mm_and_si128(first[0], second[0]);
-  res[1] = _mm_and_si128(first[1], second[1]);
-  res[2] = _mm_and_si128(first[2], second[2]);
-  res[3] = _mm_and_si128(first[3], second[3]);
-}
+apply_array(mm256_xor_sse, __m128i, _mm_xor_si128, 2, FN_ATTRIBUTES_SSE2_NP);
+apply_array(mm256_and_sse, __m128i, _mm_and_si128, 2, FN_ATTRIBUTES_SSE2_NP);
+#ifdef WITH_CUSTOM_INSTANCES
+apply_array(mm384_xor_sse, __m128i, _mm_xor_si128, 3, FN_ATTRIBUTES_SSE2_NP);
+apply_array(mm384_and_sse, __m128i, _mm_and_si128, 3, FN_ATTRIBUTES_SSE2_NP);
+apply_array(mm512_xor_sse, __m128i, _mm_xor_si128, 4, FN_ATTRIBUTES_SSE2_NP);
+apply_array(mm512_and_sse, __m128i, _mm_and_si128, 4, FN_ATTRIBUTES_SSE2_NP);
+#endif
 #endif
 
 #ifdef WITH_NEON
-apply_region(mm128_xor_region, uint32x4_t, veorq_u32, );
-apply_mask_region(mm128_xor_mask_region, uint32x4_t, veorq_u32, vandq_u32, );
-
 /**
  * \brief Perform a right shift on a 128 bit value.
  */
@@ -446,6 +409,7 @@ static inline void mm256_shift_left(uint32x4_t res[2], uint32x4_t const data[2],
   res[1] = vorrq_u32(res[1], total_carry);
 }
 
+#ifdef WITH_CUSTOM_INSTANCES
 static inline void mm384_shift_left(uint32x4_t res[3], uint32x4_t const data[3],
                                     unsigned int count) {
   if (!count) {
@@ -520,51 +484,22 @@ static inline void mm512_shift_right(uint32x4_t res[4], uint32x4_t const data[4]
 
   res[1] = vorrq_u32(res[1], total_carry);
 }
+#endif
 
-static inline void mm256_xor(uint32x4_t res[2], uint32x4_t const first[2],
-                             uint32x4_t const second[2]) {
-  res[0] = veorq_u32(first[0], second[0]);
-  res[1] = veorq_u32(first[1], second[1]);
-}
-
-static inline void mm256_and(uint32x4_t res[2], uint32x4_t const first[2],
-                             uint32x4_t const second[2]) {
-  res[0] = vandq_u32(first[0], second[0]);
-  res[1] = vandq_u32(first[1], second[1]);
-}
-
-static inline void mm384_xor(uint32x4_t res[3], uint32x4_t const first[3],
-                             uint32x4_t const second[3]) {
-  res[0] = veorq_u32(first[0], second[0]);
-  res[1] = veorq_u32(first[1], second[1]);
-  res[2] = veorq_u32(first[2], second[2]);
-}
-
-static inline void mm384_and(uint32x4_t res[3], uint32x4_t const first[3],
-                             uint32x4_t const second[3]) {
-  res[0] = vandq_u32(first[0], second[0]);
-  res[1] = vandq_u32(first[1], second[1]);
-  res[2] = vandq_u32(first[2], second[2]);
-}
-
-static inline void mm512_xor(uint32x4_t res[4], uint32x4_t const first[4],
-                             uint32x4_t const second[4]) {
-  res[0] = veorq_u32(first[0], second[0]);
-  res[1] = veorq_u32(first[1], second[1]);
-  res[2] = veorq_u32(first[2], second[2]);
-  res[3] = veorq_u32(first[3], second[3]);
-}
-
-static inline void mm512_and(uint32x4_t res[4], uint32x4_t const first[4],
-                             uint32x4_t const second[4]) {
-  res[0] = vandq_u32(first[0], second[0]);
-  res[1] = vandq_u32(first[1], second[1]);
-  res[2] = vandq_u32(first[2], second[2]);
-  res[3] = vandq_u32(first[3], second[3]);
-}
+apply_region(mm128_xor_region, uint32x4_t, veorq_u32, );
+apply_mask_region(mm128_xor_mask_region, uint32x4_t, veorq_u32, vandq_u32, );
+apply_array(mm256_xor, uint32x4_t, veorq_u32, 2, );
+apply_array(mm256_and, uint32x4_t, vandq_u32, 2, );
+#ifdef WITH_CUSTOM_INSTANCES
+apply_array(mm384_xor, uint32x4_t, veorq_u32, 3, );
+apply_array(mm384_and, uint32x4_t, vandq_u32, 3, );
+apply_array(mm512_xor, uint32x4_t, veorq_u32, 4, );
+apply_array(mm512_and, uint32x4_t, vandq_u32, 4, );
+#endif
 #endif
 
 #undef apply_region
 #undef apply_mask_region
+#undef apply_array
 
 #endif
