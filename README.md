@@ -14,7 +14,7 @@ Melissa Chase and David Derler and Steven Goldfeder and Claudio Orlandi and
 Sebastian Ramacher and Christian Rechberger and Daniel Slamanig and Greg
 Zaverucha.
 *In Proceedings of ACM CCS 2017*.
-*[Cryptology ePrint Archive: Report 2017/279](<http://eprint.iacr.org/2017/279)*
+*[Cryptology ePrint Archive: Report 2017/279](http://eprint.iacr.org/2017/279)*
 
 Building
 --------
