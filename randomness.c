@@ -26,7 +26,8 @@ int rand_bytes(uint8_t* dst, size_t len) {
 #include <sys/random.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
-  if (getrandom(dst, len, GRND_NONBLOCK) != len) {
+  const ssize_t ret = getrandom(dst, len, GRND_NONBLOCK);
+  if (ret < 0 || (size_t)ret != len) {
     return 0;
   }
   return 1;
