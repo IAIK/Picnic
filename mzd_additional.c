@@ -264,7 +264,7 @@ mzd_local_t* mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t con
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-__attribute__((target("sse2"))) inline mzd_local_t*
+__attribute__((target("sse2"))) mzd_local_t*
 mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
@@ -285,7 +285,7 @@ mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* secon
 #endif
 
 #ifdef WITH_AVX2
-__attribute__((target("avx2"))) inline mzd_local_t*
+__attribute__((target("avx2"))) mzd_local_t*
 mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
@@ -385,13 +385,13 @@ mzd_local_t* mzd_mul_v_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
 
-__attribute__((target("sse2"))) inline mzd_local_t*
+__attribute__((target("sse2"))) mzd_local_t*
 mzd_mul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_v_sse(c, v, A);
 }
 
-__attribute__((target("sse2"))) inline mzd_local_t*
+__attribute__((target("sse2"))) mzd_local_t*
 mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr                    = FIRST_ROW(c);
   word const* vptr              = CONST_FIRST_ROW(v);
@@ -418,13 +418,13 @@ mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
 #endif
 
 #ifdef WITH_AVX2
-__attribute__((target("avx2"))) inline mzd_local_t*
+__attribute__((target("avx2"))) mzd_local_t*
 mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_v_avx(c, v, A);
 }
 
-__attribute__((target("avx2"))) inline mzd_local_t*
+__attribute__((target("avx2"))) mzd_local_t*
 mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr                    = FIRST_ROW(c);
   word const* vptr              = CONST_FIRST_ROW(v);
@@ -599,7 +599,7 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-__attribute__((target("sse2"))) inline mzd_local_t*
+__attribute__((target("sse2"))) mzd_local_t*
 mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = __builtin_assume_aligned(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
@@ -621,13 +621,13 @@ mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   return c;
 }
 
-__attribute__((target("sse2"))) inline mzd_local_t*
+__attribute__((target("sse2"))) mzd_local_t*
 mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_vl_sse(c, v, A);
 }
 
-__attribute__((target("sse2"))) inline mzd_local_t*
+__attribute__((target("sse2"))) mzd_local_t*
 mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = __builtin_assume_aligned(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
@@ -649,7 +649,7 @@ mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
   return c;
 }
 
-__attribute__((target("sse2"))) inline mzd_local_t*
+__attribute__((target("sse2"))) mzd_local_t*
 mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = __builtin_assume_aligned(CONST_FIRST_ROW(v), 16);
   const unsigned int width      = v->width;
@@ -674,7 +674,7 @@ mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
 #endif
 
 #ifdef WITH_AVX2
-__attribute__((target("avx2"))) inline mzd_local_t*
+__attribute__((target("avx2"))) mzd_local_t*
 mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = __builtin_assume_aligned(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
@@ -696,7 +696,7 @@ mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   return c;
 }
 
-__attribute__((target("avx2"))) inline mzd_local_t*
+__attribute__((target("avx2"))) mzd_local_t*
 mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = __builtin_assume_aligned(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
@@ -718,13 +718,13 @@ mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
   return c;
 }
 
-__attribute__((target("avx2"))) inline mzd_local_t*
+__attribute__((target("avx2"))) mzd_local_t*
 mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_vl_avx(c, v, A);
 }
 
-__attribute__((target("avx2"))) inline mzd_local_t*
+__attribute__((target("avx2"))) mzd_local_t*
 mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = __builtin_assume_aligned(CONST_FIRST_ROW(v), 16);
   const unsigned int width      = v->width;
