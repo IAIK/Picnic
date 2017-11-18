@@ -61,6 +61,19 @@ matrix:
             - libssl-dev
       env:
         - COMPILER=gcc-5
+    - compiler: gcc
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ppsspp/cmake'
+          packages:
+            - gcc-4.9
+            - cmake
+            - libssl-dev
+      env:
+        - COMPILER=gcc-4.9
     - compiler: clang
       os: osx
     - compiler: gcc
