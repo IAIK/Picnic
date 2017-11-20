@@ -18,6 +18,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if !defined(static_assert)
+#define static_assert _Static_assert
+#endif
+
 static const size_t mzd_local_t_size = (sizeof(mzd_local_t) + 0x1f) & ~0x1f;
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
