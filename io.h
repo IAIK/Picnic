@@ -14,7 +14,11 @@
 #include <stdio.h>
 
 #include "mzd_additional.h"
+#if !defined(NO_EXPORT)
 #include "picnic_export.h"
+#else
+#define PICNIC_EXPORT
+#endif
 
 void mzd_to_char_array(uint8_t* dst, const mzd_local_t* data, unsigned numbytes);
 void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, unsigned len);

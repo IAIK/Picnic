@@ -10,7 +10,11 @@
 #ifndef PICNIC_H
 #define PICNIC_H
 
+#if !defined(NO_EXPORT)
 #include "picnic_export.h"
+#else
+#define PICNIC_EXPORT
+#endif
 
 #include <stddef.h>
 #include <stdint.h>
