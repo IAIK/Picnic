@@ -1148,6 +1148,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
     known_instance    = false;
     pq_security_level = n / 2;
     num_rounds        = ceil(n / 0.5849625007211562);
+    break;
 #endif
 
   default:
