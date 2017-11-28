@@ -254,9 +254,9 @@ if(M4RI_FOUND AND OPENSSL_FOUND)
 endif()
 
 # create_test_vectors executable
-add_executable(create_test_vectors tools/create_test_vectors.c)
-target_link_libraries(create_test_vectors picnic)
-target_compile_definitions(create_test_vectors PRIVATE HAVE_CONFIG_H)
+add_executable(visualize_signature tools/visualize_signature.c)
+target_link_libraries(visualize_signature picnic)
+target_compile_definitions(visualize_signature PRIVATE HAVE_CONFIG_H)
 
 # bench executable
 add_executable(bench tools/bench.c)
