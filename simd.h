@@ -22,6 +22,10 @@
 #include <arm_neon.h>
 #endif
 
+#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8)) && !defined(__MINGW32__) && !defined(__MINGW64__)
+#define BUILTIN_CPU_SUPPORTED
+#endif
+
 #ifdef WITH_SSE2
 /* backwards compatibility macros for GCC 4.8 and 4.9
  *
@@ -43,7 +47,7 @@
 #define FN_ATTRIBUTES_SSE2_NP __attribute__((__always_inline__, target("sse2")))
 
 #if defined(__x86_64__) || defined(__i386__)
-#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8))
+#if defined(BUILTIN_CPU_SUPPORTED)
 #define CPU_SUPPORTS_AVX2 __builtin_cpu_supports("avx2")
 #define CPU_SUPPORTS_SSE4_1 __builtin_cpu_supports("sse4.1")
 #else
@@ -56,7 +60,7 @@
 // X86-64 CPUs always support SSE2
 #define CPU_SUPPORTS_SSE2 1
 #elif defined(__i386__)
-#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8))
+#if defined(BUILTIN_CPU_SUPPORTED)
 #define CPU_SUPPORTS_SSE2 __builtin_cpu_supports("sse2")
 #else
 #define CPU_SUPPORTS_SSE2 cpu_supports(CPU_CAP_SSE2)
@@ -502,5 +506,6 @@ apply_array(mm512_and, uint32x4_t, vandq_u32, 4, );
 #undef apply_region
 #undef apply_mask_region
 #undef apply_array
+#undef BUILTIN_CPU_SUPPORTED
 
 #endif
