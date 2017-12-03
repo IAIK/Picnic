@@ -60,6 +60,6 @@ size_t picnic_get_public_key_size(picnic_params_t param);
 int picnic_sk_to_pk(const picnic_privatekey_t* sk, picnic_publickey_t* pk) PICNIC_EXPORT;
 void picnic_visualize(FILE* out, const uint8_t* public_key, size_t public_key_size,
                       const uint8_t* msg, size_t msglen, const uint8_t* sig,
-                      size_t siglen) PICNIC_EXPORT;
+                      size_t siglen);
 
 #endif
