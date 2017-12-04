@@ -164,23 +164,23 @@ configure_file(config.h.in config.h)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} sha3 "sha3/${SHA3_IMPL}")
 
-set(SHA3_SOURCES
+list(APPEND SHA3_SOURCES
     sha3/KeccakHash.c
     sha3/KeccakSponge.c)
 
 if(${SHA3_IMPL} STREQUAL "avx2")
   # the AVX2 version is currently slower
-  set(SHA3_SOURCES ${SHA3_SOURCES} sha3/avx2/KeccakP-1600-AVX2.cpp)
+  list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.cpp)
 elseif(${SHA3_IMPL} STREQUAL "opt64")
-  set(SHA3_SOURCES ${SHA3_SOURCES} sha3/opt64/KeccakP-1600-opt64.c)
+  list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
 elseif(${SHA3_IMPL} STREQUAL "armv8a-neon")
-  set(SHA3_SOURCES ${SHA3_SOURCES} sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s)
+  list(APPEND SHA3_SOURCES sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s)
   set_property(SOURCE sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s PROPERTY LANGUAGE C)
 else()
   message(FATAL_ERROR "Unknown SHA3 implementation")
 endif()
 
-set(PICNIC_SOURCES
+list(APPEND PICNIC_SOURCES
     aligned_alloc.c
     bitstream.c
     cpu.c
@@ -200,7 +200,7 @@ set(PICNIC_SOURCES
     timing.c)
 
 if(WITH_CUSTOM_INSTANCES)
-  set(PICNIC_SOURCES ${PICNIC_SOURCES} lowmc_512_512_38.c)
+  list(APPEND PICNIC_SOURCES lowmc_512_512_38.c)
 endif()
 
 # shared library
