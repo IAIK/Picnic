@@ -53,7 +53,7 @@ int rand_bytes(uint8_t* dst, size_t len) {
   }
   return ret;
 }
-#elif defined(_WIN32)
+#elif defined(_WIN16) || defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
