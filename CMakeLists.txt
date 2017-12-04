@@ -203,17 +203,15 @@ if(WITH_CUSTOM_INSTANCES)
   set(PICNIC_SOURCES ${PICNIC_SOURCES} lowmc_512_512_38.c)
 endif()
 
-add_library(picnic_objects OBJECT ${PICNIC_SOURCES} ${SHA3_SOURCES})
-set_target_properties(picnic_objects PROPERTIES POSITION_INDEPENDENT_CODE 1)
-
-# static library
-add_library(picnic_static STATIC $<TARGET_OBJECTS:picnic_objects>)
-set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic)
-
 # shared library
-add_library(picnic SHARED $<TARGET_OBJECTS:picnic_objects>)
+add_library(picnic SHARED ${PICNIC_SOURCES} ${SHA3_SOURCES})
 generate_export_header(picnic)
 set_target_properties(picnic PROPERTIES VERSION ${PICNIC_VERSION} SOVERSION ${PICNIC_MAJOR_VERSION})
+
+# static library
+add_library(picnic_static STATIC ${PICNIC_SOURCES} ${SHA3_SOURCES})
+set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic)
+target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC_DEFINE)
 
 function(apply_picnic_options lib)
   set_target_properties(${lib} PROPERTIES C_VISIBILITY_PRESET hidden)
@@ -261,7 +259,6 @@ function(apply_picnic_options lib)
   endif()
 endfunction(apply_picnic_options)
 
-apply_picnic_options(picnic_objects)
 apply_picnic_options(picnic)
 apply_picnic_options(picnic_static)
 
