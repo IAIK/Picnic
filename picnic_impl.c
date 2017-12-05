@@ -1143,7 +1143,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
     num_rounds        = 438;
     break;
 
-#if WITH_CUSTOM_INSTANCES
+#if defined(WITH_CUSTOM_INSTANCES)
   case PARAMETER_SET_INVALID:
     known_instance    = false;
     pq_security_level = n / 2;

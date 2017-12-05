@@ -10,6 +10,8 @@
 #ifndef PICNIC_COMPAT_ENDIAN_H
 #define PICNIC_COMPAT_ENDIAN_H
 
+#include <stdint.h>
+
 /* Linux / GLIBC */
 #if defined(__linux__) || defined(__GLIBC__)
 #include <byteswap.h>
@@ -59,7 +61,7 @@
 #if defined(__GNUC__)
 #define bswap16(x) __builtin_bswap16(x)
 #else
-static inline bswap16(uint16_t x) {
+static inline uint16_t bswap16(uint16_t x) {
   return ((x & 0xff00) >> 8) | ((x & 0x00ff) << 8);
 }
 #endif
@@ -69,7 +71,7 @@ static inline bswap16(uint16_t x) {
 #if defined(__GNUC__)
 #define bswap32(x) __builtin_bswap32(x)
 #else
-static inline bswap32(uint32_t x) {
+static inline uint32_t bswap32(uint32_t x) {
   return ((x & 0xff000000) >> 24) | ((x & 0x00ff0000) >> 8) | ((x & 0x0000ff00) << 8) |
          ((x & 0x000000ff) << 24);
 }
@@ -80,7 +82,7 @@ static inline bswap32(uint32_t x) {
 #if defined(__GNUC__)
 #define bswap64(x) __builtin_bswap64(x)
 #else
-static inline bswap64(uint64_t x) {
+static inline uint64_t bswap64(uint64_t x) {
   return ((x & UINT64_C(0xff00000000000000)) >> 56) | ((x & UINT64_C(0x00ff000000000000)) >> 40) |
          ((x & UINT64_C(0x0000ff0000000000)) >> 24) | ((x & UINT64_C(0x000000ff00000000)) >> 8) |
          ((x & UINT64_C(0x00000000ff000000)) << 8) | ((x & UINT64_C(0x0000000000ff0000)) << 24) |
@@ -92,7 +94,7 @@ static inline bswap64(uint64_t x) {
 #endif
 
 #if !defined(HAVE_HOSTSWAP)
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if _BYTE_ORDER == _LITTLE_ENDIAN
 #define htobe16(x) bswap16((x))
 #define htole16(x) ((uint16_t)(x))
 #define be16toh(x) bswap16((x))
@@ -107,7 +109,7 @@ static inline bswap64(uint64_t x) {
 #define htole64(x) ((uint64_t)(x))
 #define be64toh(x) bswap64((x))
 #define le64toh(x) ((uint64_t)(x))
-#elif __BYTE_ORDER == __BIG_ENDIAN
+#elif _BYTE_ORDER == _BIG_ENDIAN
 #define htobe16(x) ((uint16_t)(x))
 #define htole16(x) bswap16((x))
 #define be16toh(x) ((uint16_t)(x))

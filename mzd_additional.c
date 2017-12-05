@@ -14,11 +14,14 @@
 #include "compat.h"
 #include "mzd_additional.h"
 
+#if !defined(_MSC_VER)
+#include <stdalign.h>
+#endif
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(static_assert)
+#if !defined(_MSC_VER) && !defined(static_assert)
 #define static_assert _Static_assert
 #endif
 

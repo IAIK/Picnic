@@ -22,7 +22,7 @@
 #define PICNIC_CALLING_CONVENTION
 #endif
 
-#define PICNIC_API PICNIC_CALLING_CONVENTION PICNIC_EXPORT
+#define PICNIC_API PICNIC_EXPORT
 
 #include <stddef.h>
 #include <stdint.h>
@@ -83,7 +83,7 @@ typedef struct { uint8_t data[1 + 3 * MAX_LOWMC_BLOCK_SIZE]; } picnic_privatekey
  *
  * @return A null-terminated string describing the parameter set.
  */
-PICNIC_API const char* picnic_get_param_name(picnic_params_t parameters);
+PICNIC_API const char* PICNIC_CALLING_CONVENTION picnic_get_param_name(picnic_params_t parameters);
 
 /* Signature API */
 
@@ -99,7 +99,7 @@ PICNIC_API const char* picnic_get_param_name(picnic_params_t parameters);
  *
  * @see picnic_verify(), picnic_sign()
  */
-PICNIC_API int picnic_keygen(picnic_params_t parameters, picnic_publickey_t* pk,
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_keygen(picnic_params_t parameters, picnic_publickey_t* pk,
                              picnic_privatekey_t* sk);
 
 /**
@@ -122,7 +122,7 @@ PICNIC_API int picnic_keygen(picnic_params_t parameters, picnic_publickey_t* pk,
  *
  * @see picnic_verify(), picnic_keygen(), picnic_signature_size()
  */
-PICNIC_API int picnic_sign(const picnic_privatekey_t* sk, const uint8_t* message,
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const uint8_t* message,
                            size_t message_len, uint8_t* signature, size_t* signature_len);
 
 /**
@@ -140,7 +140,7 @@ PICNIC_API int picnic_sign(const picnic_privatekey_t* sk, const uint8_t* message
  *
  * @see picnic_sign()
  */
-PICNIC_API size_t picnic_signature_size(picnic_params_t parameters);
+PICNIC_API size_t PICNIC_CALLING_CONVENTION picnic_signature_size(picnic_params_t parameters);
 
 /**
  * Verification function.
@@ -157,7 +157,7 @@ PICNIC_API size_t picnic_signature_size(picnic_params_t parameters);
  *
  * @see picnic_sign(), picnic_keygen()
  */
-PICNIC_API int picnic_verify(const picnic_publickey_t* pk, const uint8_t* message,
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const uint8_t* message,
                              size_t message_len, const uint8_t* signature, size_t signature_len);
 
 /**
@@ -170,7 +170,7 @@ PICNIC_API int picnic_verify(const picnic_publickey_t* pk, const uint8_t* messag
  *
  * @return Returns the number of bytes written.
  */
-PICNIC_API int picnic_write_public_key(const picnic_publickey_t* key, uint8_t* buf, size_t buflen);
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_write_public_key(const picnic_publickey_t* key, uint8_t* buf, size_t buflen);
 
 /**
  * De-serialize a public key.
@@ -182,7 +182,7 @@ PICNIC_API int picnic_write_public_key(const picnic_publickey_t* key, uint8_t* b
  *
  * @return Returns 0 on success, or a nonzero value indicating an error.
  */
-PICNIC_API int picnic_read_public_key(picnic_publickey_t* key, const uint8_t* buf, size_t buflen);
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_read_public_key(picnic_publickey_t* key, const uint8_t* buf, size_t buflen);
 
 /**
  * Serialize a private key.
@@ -194,7 +194,7 @@ PICNIC_API int picnic_read_public_key(picnic_publickey_t* key, const uint8_t* bu
  *
  * @return Returns the number of bytes written.
  */
-PICNIC_API int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf,
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf,
                                         size_t buflen);
 
 /**
@@ -207,7 +207,7 @@ PICNIC_API int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t*
  *
  * @return Returns 0 on success, or a nonzero value indicating an error.
  */
-PICNIC_API int picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* buf, size_t buflen);
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* buf, size_t buflen);
 
 /**
  * Check that a key pair is valid.
@@ -217,7 +217,7 @@ PICNIC_API int picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* 
  *
  * @return Returns 0 if the key pair is valid, or a nonzero value indicating an error
  */
-PICNIC_API int picnic_validate_keypair(const picnic_privatekey_t* privatekey,
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_validate_keypair(const picnic_privatekey_t* privatekey,
                                        const picnic_publickey_t* publickey);
 
 #ifdef __cplusplus

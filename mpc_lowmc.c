@@ -16,7 +16,9 @@
 #include "mpc_lowmc.h"
 #include "mzd_additional.h"
 
+#if !defined(_MSC_VER)
 #include <stdalign.h>
+#endif
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>

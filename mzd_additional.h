@@ -12,7 +12,6 @@
 
 #include "macros.h"
 
-#include <stdalign.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -158,9 +157,9 @@ void mzd_addmul_vlm(mzd_local_t** c, mzd_local_t const* const* v, mzd_local_t co
  */
 mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) ATTR_NONNULL;
 
-#define ROW(v, r) ((word*)(((void*)(v)) + 32 + (v)->rowstride * (r) * sizeof(word)))
+#define ROW(v, r) ((word*)(((uint8_t*)(v)) + 32 + (v)->rowstride * (r) * sizeof(word)))
 #define CONST_ROW(v, r)                                                                            \
-  ((word const*)(((void const*)(v)) + 32 + (v)->rowstride * (r) * sizeof(word)))
+  ((word const*)(((uint8_t const*)(v)) + 32 + (v)->rowstride * (r) * sizeof(word)))
 
 #define FIRST_ROW(v) ROW(v, 0)
 #define CONST_FIRST_ROW(v) CONST_ROW(v, 0)

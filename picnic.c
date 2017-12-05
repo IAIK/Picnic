@@ -25,7 +25,7 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
   return get_instance(param);
 }
 
-size_t picnic_signature_size(picnic_params_t param) {
+size_t PICNIC_CALLING_CONVENTION picnic_signature_size(picnic_params_t param) {
   const picnic_instance_t* instance = picnic_instance_get(param);
   if (!instance) {
     return 0;
@@ -34,7 +34,7 @@ size_t picnic_signature_size(picnic_params_t param) {
   return instance->max_signature_size;
 }
 
-size_t picnic_get_private_key_size(picnic_params_t param) {
+size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picnic_params_t param) {
   const picnic_instance_t* instance = picnic_instance_get(param);
   if (!instance) {
     return 0;
@@ -43,7 +43,7 @@ size_t picnic_get_private_key_size(picnic_params_t param) {
   return 1 + instance->input_size + instance->output_size;
 }
 
-size_t picnic_get_public_key_size(picnic_params_t param) {
+size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic_params_t param) {
   const picnic_instance_t* instance = picnic_instance_get(param);
   if (!instance) {
     return 0;
@@ -52,7 +52,7 @@ size_t picnic_get_public_key_size(picnic_params_t param) {
   return 1 + (instance->output_size << 1);
 }
 
-int picnic_keygen(picnic_params_t param, picnic_publickey_t* pk, picnic_privatekey_t* sk) {
+int PICNIC_CALLING_CONVENTION picnic_keygen(picnic_params_t param, picnic_publickey_t* pk, picnic_privatekey_t* sk) {
 
   if (!pk || !sk) {
     return -1;
@@ -89,7 +89,7 @@ int picnic_keygen(picnic_params_t param, picnic_publickey_t* pk, picnic_privatek
   return 0;
 }
 
-int picnic_sk_to_pk(const picnic_privatekey_t* sk, picnic_publickey_t* pk) {
+int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk, picnic_publickey_t* pk) {
   if (!sk || !pk) {
     return -1;
   }
@@ -128,7 +128,7 @@ int picnic_sk_to_pk(const picnic_privatekey_t* sk, picnic_publickey_t* pk) {
   return 0;
 }
 
-int picnic_validate_keypair(const picnic_privatekey_t* sk, const picnic_publickey_t* pk) {
+int PICNIC_CALLING_CONVENTION picnic_validate_keypair(const picnic_privatekey_t* sk, const picnic_publickey_t* pk) {
   if (!sk || !pk) {
     return -1;
   }
@@ -172,7 +172,7 @@ int picnic_validate_keypair(const picnic_privatekey_t* sk, const picnic_publicke
   return memcmp(buffer, pk_c, output_size);
 }
 
-int picnic_sign(const picnic_privatekey_t* sk, const uint8_t* message, size_t message_len,
+int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const uint8_t* message, size_t message_len,
                 uint8_t* signature, size_t* signature_len) {
   if (!sk || !signature || !signature_len) {
     return -1;
@@ -196,7 +196,7 @@ int picnic_sign(const picnic_privatekey_t* sk, const uint8_t* message, size_t me
              : -1;
 }
 
-int picnic_verify(const picnic_publickey_t* pk, const uint8_t* message, size_t message_len,
+int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const uint8_t* message, size_t message_len,
                   const uint8_t* signature, size_t signature_len) {
   if (!pk || !signature || !signature_len) {
     return -1;
@@ -231,7 +231,7 @@ void picnic_visualize(FILE* out, const uint8_t* public_key, size_t public_key_si
   visualize_signature(out, instance, msg, msglen, sig, siglen);
 }
 
-const char* picnic_get_param_name(picnic_params_t parameters) {
+const char* PICNIC_CALLING_CONVENTION picnic_get_param_name(picnic_params_t parameters) {
   switch (parameters) {
   case Picnic_L1_FS:
     return "Picnic_L1_FS";
@@ -250,7 +250,7 @@ const char* picnic_get_param_name(picnic_params_t parameters) {
   }
 }
 
-int picnic_write_public_key(const picnic_publickey_t* key, uint8_t* buf, size_t buflen) {
+int PICNIC_CALLING_CONVENTION picnic_write_public_key(const picnic_publickey_t* key, uint8_t* buf, size_t buflen) {
   if (!key || !buf) {
     return -1;
   }
@@ -271,7 +271,7 @@ int picnic_write_public_key(const picnic_publickey_t* key, uint8_t* buf, size_t 
   return (int)bytes_required;
 }
 
-int picnic_read_public_key(picnic_publickey_t* key, const uint8_t* buf, size_t buflen) {
+int PICNIC_CALLING_CONVENTION picnic_read_public_key(picnic_publickey_t* key, const uint8_t* buf, size_t buflen) {
   if (!key || !buf || buflen < 1) {
     return -1;
   }
@@ -292,7 +292,7 @@ int picnic_read_public_key(picnic_publickey_t* key, const uint8_t* buf, size_t b
   return 0;
 }
 
-int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf, size_t buflen) {
+int PICNIC_CALLING_CONVENTION picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf, size_t buflen) {
   if (!key || !buf) {
     return -1;
   }
@@ -314,7 +314,7 @@ int picnic_write_private_key(const picnic_privatekey_t* key, uint8_t* buf, size_
   return (int)bytes_required;
 }
 
-int picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* buf, size_t buflen) {
+int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_privatekey_t* key, const uint8_t* buf, size_t buflen) {
   if (!key || !buf || buflen < 1) {
     return -1;
   }

@@ -55,9 +55,9 @@ bool fis_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uin
 void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* msg, size_t msglen,
                          const uint8_t* sig, size_t siglen);
 
-size_t picnic_get_private_key_size(picnic_params_t param);
-size_t picnic_get_public_key_size(picnic_params_t param);
-int picnic_sk_to_pk(const picnic_privatekey_t* sk, picnic_publickey_t* pk) PICNIC_EXPORT;
+PICNIC_API size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picnic_params_t param);
+PICNIC_API size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic_params_t param);
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk, picnic_publickey_t* pk);
 void picnic_visualize(FILE* out, const uint8_t* public_key, size_t public_key_size,
                       const uint8_t* msg, size_t msglen, const uint8_t* sig,
                       size_t siglen);

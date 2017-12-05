@@ -71,11 +71,11 @@ void mpc_and_verify(mzd_local_t* const* res, mzd_local_t* const* first, mzd_loca
                     unsigned viewshift, mzd_local_t* const* buffer) ATTR_NONNULL;
 
 void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second, uint64_t const* r,
-                    view_t* view, unsigned viewshift) __attribute__((nonnull));
+                    view_t* view, unsigned viewshift) ATTR_NONNULL;
 
 void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
                            uint64_t const* r, view_t* view, uint64_t const mask, unsigned viewshift)
-    __attribute__((nonnull));
+    ATTR_NONNULL;
 
 #ifdef WITH_OPT
 #include "simd.h"
