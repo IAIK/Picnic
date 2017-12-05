@@ -22,7 +22,8 @@ int rand_bytes(uint8_t* dst, size_t len) {
 }
 #else
 
-#if defined(__linux__) && ((defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) || (__GLIBC__ > 2 || __GLIBC_MINOR__ >= 25))
+#if defined(__linux__) && ((defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) ||              \
+                           (__GLIBC__ > 2 || __GLIBC_MINOR__ >= 25))
 #include <sys/random.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {

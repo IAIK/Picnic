@@ -175,8 +175,9 @@ void mzd_shift_left(mzd_local_t* res, mzd_local_t const* val, unsigned count) {
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-ATTRIBUTE_TARGET("sse2") static inline mzd_local_t*
-mzd_and_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+ATTRIBUTE_TARGET("sse2")
+static inline mzd_local_t* mzd_and_sse(mzd_local_t* res, mzd_local_t const* first,
+                                       mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -196,8 +197,9 @@ mzd_and_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* secon
 #endif
 
 #ifdef WITH_AVX2
-ATTRIBUTE_TARGET("avx2") static inline mzd_local_t*
-mzd_and_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+ATTRIBUTE_TARGET("avx2")
+static inline mzd_local_t* mzd_and_avx(mzd_local_t* res, mzd_local_t const* first,
+                                       mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -271,8 +273,8 @@ mzd_local_t* mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t con
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-ATTRIBUTE_TARGET("sse2") mzd_local_t*
-mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+ATTRIBUTE_TARGET("sse2")
+mzd_local_t* mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -292,8 +294,8 @@ mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* secon
 #endif
 
 #ifdef WITH_AVX2
-ATTRIBUTE_TARGET("avx2") mzd_local_t*
-mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+ATTRIBUTE_TARGET("avx2")
+mzd_local_t* mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -392,14 +394,14 @@ mzd_local_t* mzd_mul_v_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
 
-ATTRIBUTE_TARGET("sse2") mzd_local_t*
-mzd_mul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("sse2")
+mzd_local_t* mzd_mul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_v_sse(c, v, A);
 }
 
-ATTRIBUTE_TARGET("sse2") mzd_local_t*
-mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("sse2")
+mzd_local_t* mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr                    = FIRST_ROW(c);
   word const* vptr              = CONST_FIRST_ROW(v);
   const unsigned int width      = v->width;
@@ -425,14 +427,14 @@ mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
 #endif
 
 #ifdef WITH_AVX2
-ATTRIBUTE_TARGET("avx2") mzd_local_t*
-mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("avx2")
+mzd_local_t* mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_v_avx(c, v, A);
 }
 
-ATTRIBUTE_TARGET("avx") mzd_local_t*
-mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("avx")
+mzd_local_t* mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr                    = FIRST_ROW(c);
   word const* vptr              = CONST_FIRST_ROW(v);
   const unsigned int width      = v->width;
@@ -606,8 +608,8 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-ATTRIBUTE_TARGET("sse2") mzd_local_t*
-mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("sse2")
+mzd_local_t* mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
   static const unsigned int moff2 = 256;
@@ -628,21 +630,21 @@ mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   return c;
 }
 
-ATTRIBUTE_TARGET("sse2") mzd_local_t*
-mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("sse2")
+mzd_local_t* mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_vl_sse(c, v, A);
 }
 
-ATTRIBUTE_TARGET("sse2") mzd_local_t*
-mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("sse2")
+mzd_local_t* mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
   static const unsigned int moff2 = 256;
 
-  __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  __m128i* mcptr       = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i mc           = *mcptr;
-  __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+  __m128i const* mAptr = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
   for (unsigned int w = width; w; --w, ++vptr) {
     word idx = *vptr;
@@ -656,8 +658,8 @@ mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
   return c;
 }
 
-ATTRIBUTE_TARGET("sse2") mzd_local_t*
-mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("sse2")
+mzd_local_t* mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width      = v->width;
   const unsigned int rowstride  = A->rowstride;
@@ -681,8 +683,8 @@ mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
 #endif
 
 #ifdef WITH_AVX2
-ATTRIBUTE_TARGET("avx2") mzd_local_t*
-mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("avx2")
+mzd_local_t* mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
   static const unsigned int moff2 = 256;
@@ -703,8 +705,8 @@ mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   return c;
 }
 
-ATTRIBUTE_TARGET("avx2") mzd_local_t*
-mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("avx2")
+mzd_local_t* mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
   static const unsigned int moff2 = 256;
@@ -725,14 +727,14 @@ mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
   return c;
 }
 
-ATTRIBUTE_TARGET("avx2") mzd_local_t*
-mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("avx2")
+mzd_local_t* mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_vl_avx(c, v, A);
 }
 
-ATTRIBUTE_TARGET("avx2") mzd_local_t*
-mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+ATTRIBUTE_TARGET("avx2")
+mzd_local_t* mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width      = v->width;
   const unsigned int rowstride  = A->rowstride;

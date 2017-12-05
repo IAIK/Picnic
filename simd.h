@@ -24,7 +24,8 @@
 #include <arm_neon.h>
 #endif
 
-#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8)) && !defined(__MINGW32__) && !defined(__MINGW64__)
+#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8)) &&                        \
+    !defined(__MINGW32__) && !defined(__MINGW64__)
 #define BUILTIN_CPU_SUPPORTED
 #endif
 
@@ -33,9 +34,8 @@
  *
  * bs{l,r}i was introduced in GCC 5 and in clang as macros sometime in 2015.
  * */
-#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 5) ||                                 \
-    (defined(__clang__) && !defined(_mm_bslli_si128)) || \
-	defined(_MSC_VER)
+#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 5) ||                                  \
+    (defined(__clang__) && !defined(_mm_bslli_si128)) || defined(_MSC_VER)
 #define _mm_bslli_si128(a, imm) _mm_slli_si128((a), (imm))
 #define _mm_bsrli_si128(a, imm) _mm_srli_si128((a), (imm))
 #endif
@@ -79,7 +79,7 @@
 #endif
 
 #define apply_region(name, type, xor, attributes)                                                  \
-  static inline void attributes name (type * restrict dst, type const* restrict src,                 \
+  static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      unsigned int count) {                                         \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
       *dst = (xor)(*dst, *src);                                                                    \
@@ -87,7 +87,7 @@
   }
 
 #define apply_mask_region(name, type, xor, and, attributes)                                        \
-  static inline void attributes name (type * restrict dst, type const* restrict src,                 \
+  static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      type const mask, unsigned int count) {                        \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
       *dst = (xor)(*dst, (and)(mask, *src));                                                       \
@@ -95,7 +95,7 @@
   }
 
 #define apply_array(name, type, xor, count, attributes)                                            \
-  static inline void attributes name (type dst[count], type const lhs[count],                       \
+  static inline void attributes name(type dst[count], type const lhs[count],                       \
                                      type const rhs[count]) {                                      \
     for (unsigned int i = 0; i < count; ++i) {                                                     \
       dst[i] = (xor)(lhs[i], rhs[i]);                                                              \

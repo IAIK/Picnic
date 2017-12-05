@@ -57,9 +57,9 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 
 PICNIC_API size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picnic_params_t param);
 PICNIC_API size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic_params_t param);
-PICNIC_API int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk, picnic_publickey_t* pk);
+PICNIC_API int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
+                                                         picnic_publickey_t* pk);
 void picnic_visualize(FILE* out, const uint8_t* public_key, size_t public_key_size,
-                      const uint8_t* msg, size_t msglen, const uint8_t* sig,
-                      size_t siglen);
+                      const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen);
 
 #endif

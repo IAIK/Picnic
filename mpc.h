@@ -74,8 +74,8 @@ void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second
                     view_t* view, unsigned viewshift) ATTR_NONNULL;
 
 void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
-                           uint64_t const* r, view_t* view, uint64_t const mask, unsigned viewshift)
-    ATTR_NONNULL;
+                           uint64_t const* r, view_t* view, uint64_t const mask,
+                           unsigned viewshift) ATTR_NONNULL;
 
 #ifdef WITH_OPT
 #include "simd.h"
