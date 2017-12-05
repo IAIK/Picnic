@@ -66,7 +66,7 @@ void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second
 #define mpc_and_def(type, and, xor, shift_right)                                                   \
   for (unsigned m = 0; m < SC_PROOF; ++m) {                                                        \
     const unsigned j = (m + 1) % SC_PROOF;                                                         \
-    type* sm         = __builtin_assume_aligned(FIRST_ROW(view->s[m]), alignof(type));             \
+    type* sm         = ASSUME_ALIGNED(FIRST_ROW(view->s[m]), alignof(type));             \
     type tmp1        = (xor)(second[m], second[j]);                                                \
     type tmp2        = (and)(first[j], second[m]);                                                 \
     tmp1             = (and)(tmp1, first[m]);                                                      \
@@ -80,7 +80,7 @@ void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second
 #define mpc_and_def_multiple(type, and, xor, shift_right, size)                                    \
   for (unsigned m = 0; m < SC_PROOF; ++m) {                                                        \
     const unsigned j = (m + 1) % SC_PROOF;                                                         \
-    type* sm         = __builtin_assume_aligned(FIRST_ROW(view->s[m]), alignof(type));             \
+    type* sm         = ASSUME_ALIGNED(FIRST_ROW(view->s[m]), alignof(type));             \
     type tmp1[size], tmp2[size];                                                                   \
     (xor)(tmp1, second[m], second[j]);                                                             \
     (and)(tmp2, first[j], second[m]);                                                              \
@@ -224,7 +224,7 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
 #define mpc_and_verify_def(type, and, xor, shift_right, shift_left)                                \
   for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {                                                 \
     const unsigned j = (m + 1);                                                                    \
-    type* sm         = __builtin_assume_aligned(FIRST_ROW(view->s[m]), alignof(type));             \
+    type* sm         = ASSUME_ALIGNED(FIRST_ROW(view->s[m]), alignof(type));             \
     type tmp1        = (xor)(second[m], second[j]);                                                \
     type tmp2        = (and)(first[j], second[m]);                                                 \
     tmp1             = (and)(tmp1, first[m]);                                                      \
@@ -235,14 +235,14 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
     *sm           = (xor)(tmp1, *sm);                                                              \
   }                                                                                                \
   type const* s1 =                                                                                 \
-      __builtin_assume_aligned(CONST_FIRST_ROW(view->s[SC_VERIFY - 1]), alignof(type));            \
+      ASSUME_ALIGNED(CONST_FIRST_ROW(view->s[SC_VERIFY - 1]), alignof(type));            \
   type rsc           = (shift_left)(*s1, viewshift);                                               \
   res[SC_VERIFY - 1] = (and)(rsc, mask);
 
 #define mpc_and_verify_def_multiple(type, and, xor, shift_right, shift_left, size)                 \
   for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {                                                 \
     const unsigned j = (m + 1);                                                                    \
-    type* sm         = __builtin_assume_aligned(FIRST_ROW(view->s[m]), alignof(type));             \
+    type* sm         = ASSUME_ALIGNED(FIRST_ROW(view->s[m]), alignof(type));             \
     type tmp1[size], tmp2[size];                                                                   \
     (xor)(tmp1, second[m], second[j]);                                                             \
     (and)(tmp2, first[j], second[m]);                                                              \
@@ -257,7 +257,7 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
     *tmp ^= ((uint64_t*)&tmp1)[sizeof(type) / sizeof(uint64_t) - 1];                               \
   }                                                                                                \
   type const* s1 =                                                                                 \
-      __builtin_assume_aligned(CONST_FIRST_ROW(view->s[SC_VERIFY - 1]), alignof(type));            \
+      ASSUME_ALIGNED(CONST_FIRST_ROW(view->s[SC_VERIFY - 1]), alignof(type));            \
   type rsc[size];                                                                                  \
   (shift_left)(rsc, s1, viewshift);                                                                \
   (and)(res[SC_VERIFY - 1], rsc, mask);

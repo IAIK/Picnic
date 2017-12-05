@@ -90,12 +90,12 @@ static void sbox_layer_bitsliced(mzd_local_t* out, mzd_local_t const* in, mask_t
 #ifdef WITH_SSE2
 __attribute__((target("sse2"))) static void sbox_layer_sse(mzd_local_t* out, mzd_local_t const* in,
                                                            mask_t const* mask) {
-  __m128i const* ip = __builtin_assume_aligned(CONST_FIRST_ROW(in), alignof(__m128i));
+  __m128i const* ip = ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m128i));
   __m128i const min = *ip;
 
-  __m128i const* x0p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x0), alignof(__m128i));
-  __m128i const* x1p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x1), alignof(__m128i));
-  __m128i const* x2p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x2), alignof(__m128i));
+  __m128i const* x0p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(__m128i));
+  __m128i const* x1p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(__m128i));
+  __m128i const* x2p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(__m128i));
 
   __m128i x0m = _mm_and_si128(min, *x0p);
   __m128i x1m = _mm_and_si128(min, *x1p);
@@ -119,8 +119,8 @@ __attribute__((target("sse2"))) static void sbox_layer_sse(mzd_local_t* out, mzd
   t0 = mm128_shift_right(t0, 2);
   t1 = mm128_shift_right(t1, 1);
 
-  __m128i const* xmp = __builtin_assume_aligned(CONST_FIRST_ROW(mask->mask), alignof(__m128i));
-  __m128i* op        = __builtin_assume_aligned(FIRST_ROW(out), alignof(__m128i));
+  __m128i const* xmp = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(__m128i));
+  __m128i* op        = ASSUME_ALIGNED(FIRST_ROW(out), alignof(__m128i));
 
   __m128i mout = _mm_and_si128(min, *xmp);
 
@@ -137,12 +137,12 @@ __attribute__((target("sse2"))) static void sbox_layer_sse(mzd_local_t* out, mzd
  */
 __attribute__((target("avx2"))) static void sbox_layer_avx(mzd_local_t* out, mzd_local_t const* in,
                                                            mask_t const* mask) {
-  __m256i const* ip = __builtin_assume_aligned(CONST_FIRST_ROW(in), alignof(__m256i));
+  __m256i const* ip = ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m256i));
   __m256i const min = *ip;
 
-  __m256i const* x0p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x0), alignof(__m256i));
-  __m256i const* x1p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x1), alignof(__m256i));
-  __m256i const* x2p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x2), alignof(__m256i));
+  __m256i const* x0p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(__m256i));
+  __m256i const* x1p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(__m256i));
+  __m256i const* x2p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(__m256i));
 
   __m256i x0m = _mm256_and_si256(min, *x0p);
   __m256i x1m = _mm256_and_si256(min, *x1p);
@@ -166,8 +166,8 @@ __attribute__((target("avx2"))) static void sbox_layer_avx(mzd_local_t* out, mzd
   t0 = mm256_shift_right(t0, 2);
   t1 = mm256_shift_right(t1, 1);
 
-  __m256i const* xmp = __builtin_assume_aligned(CONST_FIRST_ROW(mask->mask), alignof(__m256i));
-  __m256i* op        = __builtin_assume_aligned(FIRST_ROW(out), alignof(__m256i));
+  __m256i const* xmp = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(__m256i));
+  __m256i* op        = ASSUME_ALIGNED(FIRST_ROW(out), alignof(__m256i));
 
   __m256i mout = _mm256_and_si256(min, *xmp);
 
@@ -179,12 +179,12 @@ __attribute__((target("avx2"))) static void sbox_layer_avx(mzd_local_t* out, mzd
 
 #ifdef WITH_NEON
 static void sbox_layer_neon(mzd_local_t* out, mzd_local_t const* in, mask_t const* mask) {
-  uint32x4_t const* ip = __builtin_assume_aligned(CONST_FIRST_ROW(in), alignof(uint32x4_t));
+  uint32x4_t const* ip = ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(uint32x4_t));
   uint32x4_t const min = *ip;
 
-  uint32x4_t const* x0p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x0), alignof(uint32x4_t));
-  uint32x4_t const* x1p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x1), alignof(uint32x4_t));
-  uint32x4_t const* x2p = __builtin_assume_aligned(CONST_FIRST_ROW(mask->x2), alignof(uint32x4_t));
+  uint32x4_t const* x0p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(uint32x4_t));
+  uint32x4_t const* x1p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(uint32x4_t));
+  uint32x4_t const* x2p = ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(uint32x4_t));
 
   uint32x4_t x0m = vandq_u32(min, *x0p);
   uint32x4_t x1m = vandq_u32(min, *x1p);
@@ -209,8 +209,8 @@ static void sbox_layer_neon(mzd_local_t* out, mzd_local_t const* in, mask_t cons
   t1 = mm128_shift_right(t1, 1);
 
   uint32x4_t const* xmp =
-      __builtin_assume_aligned(CONST_FIRST_ROW(mask->mask), alignof(uint32x4_t));
-  uint32x4_t* op = __builtin_assume_aligned(FIRST_ROW(out), alignof(uint32x4_t));
+      ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(uint32x4_t));
+  uint32x4_t* op = ASSUME_ALIGNED(FIRST_ROW(out), alignof(uint32x4_t));
 
   uint32x4_t mout = vandq_u32(min, *xmp);
 
