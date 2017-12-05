@@ -128,8 +128,8 @@ void mpc_and_verify_512_avx(__m256i res[SC_VERIFY][2], __m256i const first[SC_VE
                             __m256i const second[SC_VERIFY][2], __m256i const r[SC_VERIFY][2],
                             view_t* view, __m256i const* mask, unsigned viewshift) ATTR_NONNULL;
 #endif
-#ifdef WITH_NEON
 
+#ifdef WITH_NEON
 void mpc_and_neon(uint32x4_t* res, uint32x4_t const* first, uint32x4_t const* second,
                   uint32x4_t const* r, view_t* view, unsigned viewshift);
 
