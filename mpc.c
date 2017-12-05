@@ -13,6 +13,9 @@
 
 #include "mpc.h"
 
+#if !defined(_MSC_VER)
+#include <stdalign.h>
+#endif
 #ifdef WITH_OPT
 #include "simd.h"
 #endif
