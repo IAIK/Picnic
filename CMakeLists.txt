@@ -210,7 +210,9 @@ set_target_properties(picnic PROPERTIES VERSION ${PICNIC_VERSION} SOVERSION ${PI
 
 # static library
 add_library(picnic_static STATIC ${PICNIC_SOURCES} ${SHA3_SOURCES})
-set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic)
+if(NOT WIN32 AND NOT MSVC)
+	set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic)
+endif()
 target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC_DEFINE)
 
 function(apply_picnic_options lib)
