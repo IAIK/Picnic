@@ -231,7 +231,7 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
       const type inm ATTR_ALIGNED(alignof(type)) =                                                 \
           *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                   \
-      type* outm = ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));                         \
+      type* outm = (type*)ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));                  \
                                                                                                    \
       type tmp1 = (xor)(r2m[m], x0s[m]);                                                           \
       type tmp2 = (xor)(x0s[m], x1s[m]);                                                           \
@@ -303,7 +303,7 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
       const type* inm ATTR_ALIGNED(alignof(type)) =                                                \
           ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                    \
-      type* outm = ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));                         \
+      type* outm = (type*)ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));                  \
                                                                                                    \
       type tmp1[size], tmp2[size], tmp3[size];                                                     \
       (xor)(tmp1, r2m[m], x0s[m]);                                                                 \
