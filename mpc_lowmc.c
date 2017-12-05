@@ -186,27 +186,27 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
 
 #ifdef WITH_OPT
 #define bitsliced_mm_step_1(sc, type, and, shift_left)                                             \
-  type r0m[sc] ATTR_ALIGNED(alignof(type));                                            \
-  type r0s[sc] ATTR_ALIGNED(alignof(type));                                            \
-  type r1m[sc] ATTR_ALIGNED(alignof(type));                                            \
-  type r1s[sc] ATTR_ALIGNED(alignof(type));                                            \
-  type r2m[sc] ATTR_ALIGNED(alignof(type));                                            \
-  type x0s[sc] ATTR_ALIGNED(alignof(type));                                            \
-  type x1s[sc] ATTR_ALIGNED(alignof(type));                                            \
-  type x2m[sc] ATTR_ALIGNED(alignof(type));                                            \
-  const type mx2 ATTR_ALIGNED(alignof(type)) =                                         \
-      *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(type)));          \
+  type r0m[sc] ATTR_ALIGNED(alignof(type));                                                        \
+  type r0s[sc] ATTR_ALIGNED(alignof(type));                                                        \
+  type r1m[sc] ATTR_ALIGNED(alignof(type));                                                        \
+  type r1s[sc] ATTR_ALIGNED(alignof(type));                                                        \
+  type r2m[sc] ATTR_ALIGNED(alignof(type));                                                        \
+  type x0s[sc] ATTR_ALIGNED(alignof(type));                                                        \
+  type x1s[sc] ATTR_ALIGNED(alignof(type));                                                        \
+  type x2m[sc] ATTR_ALIGNED(alignof(type));                                                        \
+  const type mx2 ATTR_ALIGNED(alignof(type)) =                                                     \
+      *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(type)));                    \
   do {                                                                                             \
-    const type mx0 ATTR_ALIGNED(alignof(type)) =                                       \
-        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(type)));        \
-    const type mx1 ATTR_ALIGNED(alignof(type)) =                                       \
-        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(type)));        \
+    const type mx0 ATTR_ALIGNED(alignof(type)) =                                                   \
+        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(type)));                  \
+    const type mx1 ATTR_ALIGNED(alignof(type)) =                                                   \
+        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(type)));                  \
                                                                                                    \
     for (unsigned int m = 0; m < (sc); ++m) {                                                      \
-      const type inm ATTR_ALIGNED(alignof(type)) =                                     \
-          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));         \
-      const type rvecm ATTR_ALIGNED(alignof(type)) =                                   \
-          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(rvec[m]), alignof(type)));       \
+      const type inm ATTR_ALIGNED(alignof(type)) =                                                 \
+          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                   \
+      const type rvecm ATTR_ALIGNED(alignof(type)) =                                               \
+          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(rvec[m]), alignof(type)));                 \
                                                                                                    \
       type tmp1 = (and)(inm, mx0);                                                                 \
       type tmp2 = (and)(inm, mx1);                                                                 \
@@ -226,12 +226,12 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
 
 #define bitsliced_mm_step_2(sc, type, and, xor, shift_right)                                       \
   do {                                                                                             \
-    const type maskm ATTR_ALIGNED(alignof(type)) =                                     \
-        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(type)));      \
+    const type maskm ATTR_ALIGNED(alignof(type)) =                                                 \
+        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(type)));                \
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
-      const type inm ATTR_ALIGNED(alignof(type)) =                                     \
-          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));         \
-      type* outm = ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));               \
+      const type inm ATTR_ALIGNED(alignof(type)) =                                                 \
+          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                   \
+      type* outm = ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));                         \
                                                                                                    \
       type tmp1 = (xor)(r2m[m], x0s[m]);                                                           \
       type tmp2 = (xor)(x0s[m], x1s[m]);                                                           \
@@ -252,30 +252,30 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
   } while (0)
 
 #define bitsliced_mm_step_1_multiple_of_128(sc, type, and, shift_left, size)                       \
-  type r0m[sc][size] ATTR_ALIGNED(alignof(type));                                      \
-  type r0s[sc][size] ATTR_ALIGNED(alignof(type));                                      \
-  type r1m[sc][size] ATTR_ALIGNED(alignof(type));                                      \
-  type r1s[sc][size] ATTR_ALIGNED(alignof(type));                                      \
-  type r2m[sc][size] ATTR_ALIGNED(alignof(type));                                      \
-  type x0s[sc][size] ATTR_ALIGNED(alignof(type));                                      \
-  type x1s[sc][size] ATTR_ALIGNED(alignof(type));                                      \
-  type x2m[sc][size] ATTR_ALIGNED(alignof(type));                                      \
-  const type* mx2 ATTR_ALIGNED(alignof(type)) =                                        \
-      ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(type)));           \
+  type r0m[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
+  type r0s[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
+  type r1m[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
+  type r1s[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
+  type r2m[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
+  type x0s[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
+  type x1s[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
+  type x2m[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
+  const type* mx2 ATTR_ALIGNED(alignof(type)) =                                                    \
+      ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(type)));                     \
   do {                                                                                             \
-    const type* mx0 ATTR_ALIGNED(alignof(type)) =                                      \
-        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(type)));         \
-    const type* mx1 ATTR_ALIGNED(alignof(type)) =                                      \
-        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(type)));         \
+    const type* mx0 ATTR_ALIGNED(alignof(type)) =                                                  \
+        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(type)));                   \
+    const type* mx1 ATTR_ALIGNED(alignof(type)) =                                                  \
+        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(type)));                   \
                                                                                                    \
     for (unsigned int m = 0; m < (sc); ++m) {                                                      \
-      const type* inm ATTR_ALIGNED(alignof(type)) =                                    \
-          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));          \
-      const type* rvecm ATTR_ALIGNED(alignof(type)) =                                  \
-          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(rvec[m]), alignof(type)));        \
+      const type* inm ATTR_ALIGNED(alignof(type)) =                                                \
+          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                    \
+      const type* rvecm ATTR_ALIGNED(alignof(type)) =                                              \
+          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(rvec[m]), alignof(type)));                  \
                                                                                                    \
-      type tmp1[size] ATTR_ALIGNED(alignof(type));                                     \
-      type tmp2[size] ATTR_ALIGNED(alignof(type));                                     \
+      type tmp1[size] ATTR_ALIGNED(alignof(type));                                                 \
+      type tmp2[size] ATTR_ALIGNED(alignof(type));                                                 \
       (and)(tmp1, inm, mx0);                                                                       \
       (and)(tmp2, inm, mx1);                                                                       \
       (and)(x2m[m], inm, mx2);                                                                     \
@@ -298,12 +298,12 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
 
 #define bitsliced_mm_step_2_multiple_of_128(sc, type, and, xor, shift_right, size)                 \
   do {                                                                                             \
-    const type* maskm ATTR_ALIGNED(alignof(type)) =                                    \
-        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(type)));       \
+    const type* maskm ATTR_ALIGNED(alignof(type)) =                                                \
+        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(type)));                 \
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
-      const type* inm ATTR_ALIGNED(alignof(type)) =                                    \
-          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));          \
-      type* outm = ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));               \
+      const type* inm ATTR_ALIGNED(alignof(type)) =                                                \
+          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                    \
+      type* outm = ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));                         \
                                                                                                    \
       type tmp1[size], tmp2[size], tmp3[size];                                                     \
       (xor)(tmp1, r2m[m], x0s[m]);                                                                 \
