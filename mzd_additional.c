@@ -313,6 +313,7 @@ mzd_local_t* mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t
   return res;
 }
 #endif
+
 #ifdef WITH_NEON
 inline mzd_local_t* mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first,
                                  mzd_local_t const* second) {
@@ -393,7 +394,6 @@ mzd_local_t* mzd_mul_v_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-
 ATTRIBUTE_TARGET("sse2")
 mzd_local_t* mzd_mul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
@@ -457,8 +457,8 @@ mzd_local_t* mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
 
   return c;
 }
-
 #endif
+
 #ifdef WITH_NEON
 mzd_local_t* mzd_mul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
@@ -489,7 +489,6 @@ inline mzd_local_t* mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_
   return c;
 }
 #endif
-
 #endif
 
 mzd_local_t* mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -756,9 +755,9 @@ mzd_local_t* mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   return c;
 }
 #endif
+
 #ifdef WITH_NEON
-inline mzd_local_t* mzd_mul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v,
-                                        mzd_local_t const* A) {
+mzd_local_t* mzd_mul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
 
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
@@ -780,8 +779,8 @@ inline mzd_local_t* mzd_mul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v,
   *mcptr            = mc;
   return c;
 }
-inline mzd_local_t* mzd_addmul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v,
-                                           mzd_local_t const* A) {
+
+mzd_local_t* mzd_addmul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -805,13 +804,13 @@ inline mzd_local_t* mzd_addmul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v,
   return c;
 }
 
-inline mzd_local_t* mzd_mul_vl_neon_multiple_of_128(mzd_local_t* c, mzd_local_t const* v,
-                                                    mzd_local_t const* A) {
+mzd_local_t* mzd_mul_vl_neon_multiple_of_128(mzd_local_t* c, mzd_local_t const* v,
+                                             mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_vl_neon(c, v, A);
 }
 
-inline mzd_local_t* mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+mzd_local_t* mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), alignof(uint32x4_t));
   const unsigned int width      = v->width;
   const unsigned int rowstride  = A->rowstride;
@@ -833,9 +832,7 @@ inline mzd_local_t* mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd
 
   return c;
 }
-
 #endif
-
 #endif
 
 mzd_local_t* mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
