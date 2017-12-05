@@ -6,7 +6,9 @@
 #include "timing.h"
 
 #include <errno.h>
+#if !defined(_MSC_VER)
 #include <getopt.h>
+#endif
 #include <inttypes.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -15,9 +17,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
 #if defined(__linux__)
+#include <unistd.h>
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
 
@@ -62,8 +64,7 @@ static uint64_t timing_read(timing_context_t* ctx) {
   return tmp_time;
 }
 #else
-typedef struct {
-} timing_context_t;
+typedef void* timing_context_t;
 
 static bool timing_init(timing_context_t* ctx) {
   (void)ctx;
@@ -162,7 +163,11 @@ typedef struct {
 } bench_options_t;
 
 static void print_usage(const char* arg0) {
+#if defined(_MSC_VER)
+  printf("usage: %s iterations instance\n", arg0);
+#else
   printf("usage: %s [-i iterations] instance\n", arg0);
+#endif
 }
 
 static bool parse_args(bench_options_t* options, int argc, char** argv) {
@@ -174,6 +179,7 @@ static bool parse_args(bench_options_t* options, int argc, char** argv) {
   options->params = PARAMETER_SET_INVALID;
   options->iter   = 10;
 
+#if !defined(_MSC_VER)
   static const struct option long_options[] = {{"iter", required_argument, 0, 'i'}, {0, 0, 0, 0}};
 
   int c            = -1;
@@ -211,6 +217,24 @@ static bool parse_args(bench_options_t* options, int argc, char** argv) {
     print_usage(argv[0]);
     return false;
   }
+#else
+  if (argc != 3) {
+	print_usage(argv[0]);
+	return false;
+  }
+
+  uint32_t p = -1;
+  if (!parse_uint32_t(&options->iter, argv[1]) || !parse_uint32_t(&p, argv[2])) { 
+	printf("Failed to parse argument as positive base-10 number!\n");
+	return false;
+  }
+
+  if (p <= PARAMETER_SET_INVALID || p >= PARAMETER_SET_MAX_INDEX) {
+	printf("Invalid parameter set selected!\n");
+	return false;
+  }
+  options->params = p;
+#endif
 
   return true;
 }
