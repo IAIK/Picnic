@@ -186,26 +186,26 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
 
 #ifdef WITH_OPT
 #define bitsliced_mm_step_1(sc, type, and, shift_left)                                             \
-  type r0m[sc] __attribute__((aligned(alignof(type))));                                            \
-  type r0s[sc] __attribute__((aligned(alignof(type))));                                            \
-  type r1m[sc] __attribute__((aligned(alignof(type))));                                            \
-  type r1s[sc] __attribute__((aligned(alignof(type))));                                            \
-  type r2m[sc] __attribute__((aligned(alignof(type))));                                            \
-  type x0s[sc] __attribute__((aligned(alignof(type))));                                            \
-  type x1s[sc] __attribute__((aligned(alignof(type))));                                            \
-  type x2m[sc] __attribute__((aligned(alignof(type))));                                            \
-  const type mx2 __attribute__((aligned(alignof(type)))) =                                         \
+  type r0m[sc] ATTR_ALIGNED(alignof(type));                                            \
+  type r0s[sc] ATTR_ALIGNED(alignof(type));                                            \
+  type r1m[sc] ATTR_ALIGNED(alignof(type));                                            \
+  type r1s[sc] ATTR_ALIGNED(alignof(type));                                            \
+  type r2m[sc] ATTR_ALIGNED(alignof(type));                                            \
+  type x0s[sc] ATTR_ALIGNED(alignof(type));                                            \
+  type x1s[sc] ATTR_ALIGNED(alignof(type));                                            \
+  type x2m[sc] ATTR_ALIGNED(alignof(type));                                            \
+  const type mx2 ATTR_ALIGNED(alignof(type)) =                                         \
       *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(type)));          \
   do {                                                                                             \
-    const type mx0 __attribute__((aligned(alignof(type)))) =                                       \
+    const type mx0 ATTR_ALIGNED(alignof(type)) =                                       \
         *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(type)));        \
-    const type mx1 __attribute__((aligned(alignof(type)))) =                                       \
+    const type mx1 ATTR_ALIGNED(alignof(type)) =                                       \
         *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(type)));        \
                                                                                                    \
     for (unsigned int m = 0; m < (sc); ++m) {                                                      \
-      const type inm __attribute__((aligned(alignof(type)))) =                                     \
+      const type inm ATTR_ALIGNED(alignof(type)) =                                     \
           *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));         \
-      const type rvecm __attribute__((aligned(alignof(type)))) =                                   \
+      const type rvecm ATTR_ALIGNED(alignof(type)) =                                   \
           *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(rvec[m]), alignof(type)));       \
                                                                                                    \
       type tmp1 = (and)(inm, mx0);                                                                 \
@@ -226,10 +226,10 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
 
 #define bitsliced_mm_step_2(sc, type, and, xor, shift_right)                                       \
   do {                                                                                             \
-    const type maskm __attribute__((aligned(alignof(type)))) =                                     \
+    const type maskm ATTR_ALIGNED(alignof(type)) =                                     \
         *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(type)));      \
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
-      const type inm __attribute__((aligned(alignof(type)))) =                                     \
+      const type inm ATTR_ALIGNED(alignof(type)) =                                     \
           *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));         \
       type* outm = ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));               \
                                                                                                    \
@@ -252,30 +252,30 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
   } while (0)
 
 #define bitsliced_mm_step_1_multiple_of_128(sc, type, and, shift_left, size)                       \
-  type r0m[sc][size] __attribute__((aligned(alignof(type))));                                      \
-  type r0s[sc][size] __attribute__((aligned(alignof(type))));                                      \
-  type r1m[sc][size] __attribute__((aligned(alignof(type))));                                      \
-  type r1s[sc][size] __attribute__((aligned(alignof(type))));                                      \
-  type r2m[sc][size] __attribute__((aligned(alignof(type))));                                      \
-  type x0s[sc][size] __attribute__((aligned(alignof(type))));                                      \
-  type x1s[sc][size] __attribute__((aligned(alignof(type))));                                      \
-  type x2m[sc][size] __attribute__((aligned(alignof(type))));                                      \
-  const type* mx2 __attribute__((aligned(alignof(type)))) =                                        \
+  type r0m[sc][size] ATTR_ALIGNED(alignof(type));                                      \
+  type r0s[sc][size] ATTR_ALIGNED(alignof(type));                                      \
+  type r1m[sc][size] ATTR_ALIGNED(alignof(type));                                      \
+  type r1s[sc][size] ATTR_ALIGNED(alignof(type));                                      \
+  type r2m[sc][size] ATTR_ALIGNED(alignof(type));                                      \
+  type x0s[sc][size] ATTR_ALIGNED(alignof(type));                                      \
+  type x1s[sc][size] ATTR_ALIGNED(alignof(type));                                      \
+  type x2m[sc][size] ATTR_ALIGNED(alignof(type));                                      \
+  const type* mx2 ATTR_ALIGNED(alignof(type)) =                                        \
       ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(type)));           \
   do {                                                                                             \
-    const type* mx0 __attribute__((aligned(alignof(type)))) =                                      \
+    const type* mx0 ATTR_ALIGNED(alignof(type)) =                                      \
         ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(type)));         \
-    const type* mx1 __attribute__((aligned(alignof(type)))) =                                      \
+    const type* mx1 ATTR_ALIGNED(alignof(type)) =                                      \
         ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(type)));         \
                                                                                                    \
     for (unsigned int m = 0; m < (sc); ++m) {                                                      \
-      const type* inm __attribute__((aligned(alignof(type)))) =                                    \
+      const type* inm ATTR_ALIGNED(alignof(type)) =                                    \
           ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));          \
-      const type* rvecm __attribute__((aligned(alignof(type)))) =                                  \
+      const type* rvecm ATTR_ALIGNED(alignof(type)) =                                  \
           ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(rvec[m]), alignof(type)));        \
                                                                                                    \
-      type tmp1[size] __attribute__((aligned(alignof(type))));                                     \
-      type tmp2[size] __attribute__((aligned(alignof(type))));                                     \
+      type tmp1[size] ATTR_ALIGNED(alignof(type));                                     \
+      type tmp2[size] ATTR_ALIGNED(alignof(type));                                     \
       (and)(tmp1, inm, mx0);                                                                       \
       (and)(tmp2, inm, mx1);                                                                       \
       (and)(x2m[m], inm, mx2);                                                                     \
@@ -298,10 +298,10 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
 
 #define bitsliced_mm_step_2_multiple_of_128(sc, type, and, xor, shift_right, size)                 \
   do {                                                                                             \
-    const type* maskm __attribute__((aligned(alignof(type)))) =                                    \
+    const type* maskm ATTR_ALIGNED(alignof(type)) =                                    \
         ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(type)));       \
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
-      const type* inm __attribute__((aligned(alignof(type)))) =                                    \
+      const type* inm ATTR_ALIGNED(alignof(type)) =                                    \
           ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));          \
       type* outm = ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));               \
                                                                                                    \
@@ -326,7 +326,7 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
   } while (0)
 
 #ifdef WITH_SSE2
-__attribute__((target("sse2"))) static void
+ATTRIBUTE_TARGET("sse2") static void
 _mpc_sbox_layer_bitsliced_128_sse(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                   mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1(SC_PROOF, __m128i, _mm_and_si128, mm128_shift_left);
@@ -339,7 +339,7 @@ _mpc_sbox_layer_bitsliced_128_sse(mzd_local_t** out, mzd_local_t* const* in, vie
   bitsliced_mm_step_2(SC_PROOF, __m128i, _mm_and_si128, _mm_xor_si128, mm128_shift_right);
 }
 
-__attribute__((target("sse2"))) static void
+ATTRIBUTE_TARGET("sse2") static void
 _mpc_sbox_layer_bitsliced_verify_128_sse(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                          mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1(SC_VERIFY, __m128i, _mm_and_si128, mm128_shift_left);
@@ -352,7 +352,7 @@ _mpc_sbox_layer_bitsliced_verify_128_sse(mzd_local_t** out, mzd_local_t* const* 
   bitsliced_mm_step_2(SC_VERIFY, __m128i, _mm_and_si128, _mm_xor_si128, mm128_shift_right);
 }
 //----------------------------------------------------------------------------------------------------------------------
-__attribute__((target("sse2"))) static void
+ATTRIBUTE_TARGET("sse2") static void
 _mpc_sbox_layer_bitsliced_256_sse(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                   mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1_multiple_of_128(SC_PROOF, __m128i, mm256_and_sse, mm256_shift_left_sse, 2);
@@ -366,7 +366,7 @@ _mpc_sbox_layer_bitsliced_256_sse(mzd_local_t** out, mzd_local_t* const* in, vie
                                       mm256_shift_right_sse, 2);
 }
 
-__attribute__((target("sse2"))) static void
+ATTRIBUTE_TARGET("sse2") static void
 _mpc_sbox_layer_bitsliced_verify_256_sse(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                          mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, __m128i, mm256_and_sse, mm256_shift_left_sse, 2);
@@ -381,7 +381,7 @@ _mpc_sbox_layer_bitsliced_verify_256_sse(mzd_local_t** out, mzd_local_t* const* 
 }
 //----------------------------------------------------------------------------------------------------------------------
 #ifdef WITH_CUSTOM_INSTANCES
-__attribute__((target("sse2"))) static void
+ATTRIBUTE_TARGET("sse2") static void
 _mpc_sbox_layer_bitsliced_384_sse(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                   mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1_multiple_of_128(SC_PROOF, __m128i, mm384_and_sse, mm384_shift_left_sse, 3);
@@ -395,7 +395,7 @@ _mpc_sbox_layer_bitsliced_384_sse(mzd_local_t** out, mzd_local_t* const* in, vie
                                       mm384_shift_right_sse, 3);
 }
 
-__attribute__((target("sse2"))) static void
+ATTRIBUTE_TARGET("sse2") static void
 _mpc_sbox_layer_bitsliced_verify_384_sse(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                          mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, __m128i, mm384_and_sse, mm384_shift_left_sse, 3);
@@ -409,7 +409,7 @@ _mpc_sbox_layer_bitsliced_verify_384_sse(mzd_local_t** out, mzd_local_t* const* 
                                       mm384_shift_right_sse, 3);
 }
 //----------------------------------------------------------------------------------------------------------------------
-__attribute__((target("sse2"))) static void
+ATTRIBUTE_TARGET("sse2") static void
 _mpc_sbox_layer_bitsliced_512_sse(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                   mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1_multiple_of_128(SC_PROOF, __m128i, mm512_and_sse, mm512_shift_left_sse, 4);
@@ -423,7 +423,7 @@ _mpc_sbox_layer_bitsliced_512_sse(mzd_local_t** out, mzd_local_t* const* in, vie
                                       mm512_shift_right_sse, 4);
 }
 
-__attribute__((target("sse2"))) static void
+ATTRIBUTE_TARGET("sse2") static void
 _mpc_sbox_layer_bitsliced_verify_512_sse(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                          mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, __m128i, mm512_and_sse, mm512_shift_left_sse, 4);
@@ -440,7 +440,7 @@ _mpc_sbox_layer_bitsliced_verify_512_sse(mzd_local_t** out, mzd_local_t* const* 
 #endif
 //----------------------------------------------------------------------------------------------------------------------
 #ifdef WITH_AVX2
-__attribute__((target("avx2"))) static void
+ATTRIBUTE_TARGET("avx2") static void
 _mpc_sbox_layer_bitsliced_256_avx(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                   mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1(SC_PROOF, __m256i, _mm256_and_si256, mm256_shift_left);
@@ -453,7 +453,7 @@ _mpc_sbox_layer_bitsliced_256_avx(mzd_local_t** out, mzd_local_t* const* in, vie
   bitsliced_mm_step_2(SC_PROOF, __m256i, _mm256_and_si256, _mm256_xor_si256, mm256_shift_right);
 }
 
-__attribute__((target("avx2"))) static void
+ATTRIBUTE_TARGET("avx2") static void
 _mpc_sbox_layer_bitsliced_verify_256_avx(mzd_local_t** out, mzd_local_t** in, view_t* view,
                                          mzd_local_t* const* rvec, mask_t const* mask) {
   bitsliced_mm_step_1(SC_VERIFY, __m256i, _mm256_and_si256, mm256_shift_left);
@@ -467,7 +467,7 @@ _mpc_sbox_layer_bitsliced_verify_256_avx(mzd_local_t** out, mzd_local_t** in, vi
 }
 //----------------------------------------------------------------------------------------------------------------------
 #ifdef WITH_CUSTOM_INSTANCES
-__attribute__((target("avx2"))) static void
+ATTRIBUTE_TARGET("avx2") static void
 _mpc_sbox_layer_bitsliced_512_avx(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                   mzd_local_t** rvec, mask_t const* mask) {
   bitsliced_mm_step_1_multiple_of_128(SC_PROOF, __m256i, mm512_and_avx, mm512_shift_left_avx, 2);
@@ -481,7 +481,7 @@ _mpc_sbox_layer_bitsliced_512_avx(mzd_local_t** out, mzd_local_t* const* in, vie
                                       mm512_shift_right_avx, 2);
 }
 
-__attribute__((target("avx2"))) static void
+ATTRIBUTE_TARGET("avx2") static void
 _mpc_sbox_layer_bitsliced_verify_512_avx(mzd_local_t** out, mzd_local_t** in, view_t* view,
                                          mzd_local_t* const* rvec, mask_t const* mask) {
   bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, __m256i, mm512_and_avx, mm512_shift_left_avx, 2);

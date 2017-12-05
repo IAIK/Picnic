@@ -17,7 +17,7 @@
 #include "macros.h"
 
 #if defined(_MSC_VER)
-#include <intrin.h>
+#include <immintrin.h>
 #elif defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
 #include <x86intrin.h>
 #elif defined(__GNUC__) && defined(__ARM_NEON)
@@ -33,8 +33,9 @@
  *
  * bs{l,r}i was introduced in GCC 5 and in clang as macros sometime in 2015.
  * */
-#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 5) ||                                  \
-    (defined(__clang__) && !defined(_mm_bslli_si128))
+#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 5) ||                                 \
+    (defined(__clang__) && !defined(_mm_bslli_si128)) || \
+	defined(_MSC_VER)
 #define _mm_bslli_si128(a, imm) _mm_slli_si128((a), (imm))
 #define _mm_bsrli_si128(a, imm) _mm_srli_si128((a), (imm))
 #endif
@@ -42,7 +43,7 @@
 
 #include "cpu.h"
 
-#if defined(__x86_64__) || defined(__i386__)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #if defined(BUILTIN_CPU_SUPPORTED)
 #define CPU_SUPPORTS_AVX2 __builtin_cpu_supports("avx2")
 #define CPU_SUPPORTS_SSE4_1 __builtin_cpu_supports("sse4.1")
@@ -52,10 +53,10 @@
 #endif
 #endif
 
-#if defined(__x86_64__)
+#if defined(__x86_64__) || defined(_M_X64)
 // X86-64 CPUs always support SSE2
 #define CPU_SUPPORTS_SSE2 1
-#elif defined(__i386__)
+#elif defined(__i386__) || defined(_M_IX86)
 #if defined(BUILTIN_CPU_SUPPORTED)
 #define CPU_SUPPORTS_SSE2 __builtin_cpu_supports("sse2")
 #else
@@ -73,8 +74,12 @@
 #define CPU_SUPPORTS_NEON 0
 #endif
 
+#if defined(_MSC_VER)
+#define restrict __restrict
+#endif
+
 #define apply_region(name, type, xor, attributes)                                                  \
-  static inline void attributes name(type* restrict dst, type const* restrict src,                 \
+  static inline void attributes name (type * restrict dst, type const* restrict src,                 \
                                      unsigned int count) {                                         \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
       *dst = (xor)(*dst, *src);                                                                    \
@@ -82,7 +87,7 @@
   }
 
 #define apply_mask_region(name, type, xor, and, attributes)                                        \
-  static inline void attributes name(type* restrict dst, type const* restrict src,                 \
+  static inline void attributes name (type * restrict dst, type const* restrict src,                 \
                                      type const mask, unsigned int count) {                        \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
       *dst = (xor)(*dst, (and)(mask, *src));                                                       \
@@ -90,7 +95,7 @@
   }
 
 #define apply_array(name, type, xor, count, attributes)                                            \
-  static inline void attributes name(type dst[count], type const lhs[count],                       \
+  static inline void attributes name (type dst[count], type const lhs[count],                       \
                                      type const rhs[count]) {                                      \
     for (unsigned int i = 0; i < count; ++i) {                                                     \
       dst[i] = (xor)(lhs[i], rhs[i]);                                                              \
@@ -497,6 +502,10 @@ apply_array(mm384_and, uint32x4_t, vandq_u32, 3, );
 apply_array(mm512_xor, uint32x4_t, veorq_u32, 4, );
 apply_array(mm512_and, uint32x4_t, vandq_u32, 4, );
 #endif
+#endif
+
+#if defined(_MSC_VER)
+#undef restrict
 #endif
 
 #undef apply_region
