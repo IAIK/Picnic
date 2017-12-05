@@ -433,7 +433,7 @@ mzd_local_t* mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   return mzd_addmul_v_avx(c, v, A);
 }
 
-ATTRIBUTE_TARGET("avx")
+ATTRIBUTE_TARGET("avx2")
 mzd_local_t* mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr                    = FIRST_ROW(c);
   word const* vptr              = CONST_FIRST_ROW(v);
