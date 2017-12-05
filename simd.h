@@ -14,6 +14,8 @@
 #include <config.h>
 #endif
 
+#include "macros.h"
+
 #if defined(_MSC_VER)
 #include <intrin.h>
 #elif defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
@@ -39,12 +41,6 @@
 #endif
 
 #include "cpu.h"
-
-#define FN_ATTRIBUTES_AVX2 __attribute__((__always_inline__, target("avx2"), pure))
-#define FN_ATTRIBUTES_SSE2 __attribute__((__always_inline__, target("sse2"), pure))
-
-#define FN_ATTRIBUTES_AVX2_NP __attribute__((__always_inline__, target("avx2")))
-#define FN_ATTRIBUTES_SSE2_NP __attribute__((__always_inline__, target("sse2")))
 
 #if defined(__x86_64__) || defined(__i386__)
 #if defined(BUILTIN_CPU_SUPPORTED)
