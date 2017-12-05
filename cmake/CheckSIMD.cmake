@@ -23,7 +23,7 @@ macro(CHECK_SIMD INS VARIABLE)
     if(CMAKE_C_COMPILER_LOADED)
       set(_cfe_source ${DIR_OF_THIS}/check-simd.c)
     else()
-      message(FATAL_ERROR "CHECK_INS_EXISTS needs C language enabled")
+      message(FATAL_ERROR "CHECK_SIMD needs C language enabled")
     endif()
 
     try_compile(${VARIABLE}
