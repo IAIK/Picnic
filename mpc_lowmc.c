@@ -923,11 +923,11 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
                                        MUL_MC, ADDMUL);                                            \
   }
 
-#define mpc_lowmc_call_def_10(N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, MUL_L, XOR, XOR_L,  \
-                                MUL_MC, MUL_MC_L, ADDMUL,                                          \
-                                ADDMUL_L) static inline void N_SIGN##_10(                          \
-      lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key, mzd_local_t const* p, view_t* views,       \
-      in_out_shares_t* in_out_shares, rvec_t* rvec) {                                              \
+#define mpc_lowmc_call_def_10(N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, MUL_L, XOR, XOR_L,    \
+                              MUL_MC, MUL_MC_L, ADDMUL, ADDMUL_L)                                  \
+  static inline void N_SIGN##_10(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key,                 \
+                                 mzd_local_t const* p, view_t* views,                              \
+                                 in_out_shares_t* in_out_shares, rvec_t* rvec) {                   \
     _mpc_lowmc_call_bitsliced(0, 5, , uint64, matrix, scr, _optimize, MUL, XOR, MUL_MC, ADDMUL);   \
   }                                                                                                \
   static inline void N_VERIFY##_10(lowmc_t const* lowmc, mzd_local_t const* p, view_t* views,      \
