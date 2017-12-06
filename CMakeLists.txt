@@ -62,7 +62,6 @@ check_c_compiler_flag(-mtune=native CC_SUPPORTS_MTUNE_NATIVE)
 check_c_compiler_flag(-O3 CC_SUPPORTS_03)
 check_c_compiler_flag(-Wall CC_SUPPORTS_WALL)
 check_c_compiler_flag(-Wextra CC_SUPPORTS_WEXTRA)
-check_c_compiler_flag(-Wno-unknown-pragmas CC_SUPPORTS_NO_UNKNOWN_PRAGMAS)
 check_c_compiler_flag(-fomit-frame-pointer CC_SUPPORTS_FOMIT_FRAME_POINTER)
 
 #check SIMD instructions set
