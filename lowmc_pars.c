@@ -158,6 +158,7 @@ precomp:
   return true;
 }
 
+#ifdef WITH_CUSTOM_INSTANCES
 bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r,
                      unsigned int k) {
   if (!lowmc) {
@@ -216,6 +217,7 @@ static mzd_local_t* readMZD_TStructFromFile(FILE* file) {
 
   return A;
 }
+#endif
 
 void lowmc_clear(lowmc_t* lowmc) {
   for (unsigned int i = 0; i < lowmc->r; ++i) {
