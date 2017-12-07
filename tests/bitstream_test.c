@@ -42,22 +42,30 @@ static int test_30(void) {
   uint8_t buffer[sizeof(uint64_t)]  = {0};
   uint8_t buffer2[sizeof(uint64_t)] = {0};
 
-  bitstream_t bsw = {.buffer = buffer, .position = 0};
+  bitstream_t bsw;
+  bsw.buffer = buffer;
+  bsw.position = 0;
   bitstream_put_bits(&bsw, v, 30);
 
-  bitstream_t bsw2 = {.buffer = buffer2, .position = 0};
+  bitstream_t bsw2;
+  bsw2.buffer = buffer2;
+  bsw2.position = 0;
   for (unsigned int i = 0; i < 30; ++i) {
     bitstream_put_bits(&bsw2, v >> (30 - i - 1), 1);
   }
 
-  bitstream_t bsr = {.buffer = buffer, .position = 0};
+  bitstream_t bsr;
+  bsr.buffer = buffer;
+  bsr.position = 0;
   uint64_t r = bitstream_get_bits(&bsr, 30);
   if (r != v) {
     printf("test_30: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
     ret = -1;
   }
 
-  bitstream_t bsr2 = {.buffer = buffer2, .position = 0};
+  bitstream_t bsr2;
+  bsr2.buffer = buffer2;
+  bsr2.position = 0;
   for (unsigned int i = 0; i < 30; ++i) {
     uint64_t r = bitstream_get_bits(&bsr2, 1);
     const uint64_t e = (v >> (30 - i - 1)) & 0x1;
@@ -90,11 +98,15 @@ static int test_multiple_30(void) {
 
   const uint64_t v2 = (~v) & ((1 << 30) - 1);
 
-  bitstream_t bsw = {.buffer = buffer, .position = 0};
+  bitstream_t bsw;
+  bsw.buffer = buffer;
+  bsw.position = 0;
   bitstream_put_bits(&bsw, v, 30);
   bitstream_put_bits(&bsw, v2, 30);
 
-  bitstream_t bsr = {.buffer = buffer, .position = 0};
+  bitstream_t bsr;
+  bsr.buffer = buffer;
+  bsr.position = 0;
   uint64_t r = bitstream_get_bits(&bsr, 30);
   if (r != v) {
     printf("test_multiple_30: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);

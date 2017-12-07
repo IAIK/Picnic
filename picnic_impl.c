@@ -280,7 +280,9 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
   const size_t view_round_size = pp->view_round_size;
   const size_t num_views       = pp->lowmc.r;
 
-  bitstream_t bs = {.buffer = dst, .position = 0};
+  bitstream_t bs;
+  bs.buffer = dst;
+  bs.position = 0;
 
   const view_t* v = &views[0];
   if (pp->lowmc.m == 10) {
@@ -299,7 +301,9 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
   const size_t view_round_size = pp->view_round_size;
   const size_t num_views       = pp->lowmc.r;
 
-  bitstream_t bs = {.buffer = (uint8_t*)src, .position = 0};
+  bitstream_t bs;
+  bs.buffer = (uint8_t*)src;
+  bs.position = 0;
 
   view_t* v = &views[0];
   if (pp->lowmc.m == 10) {
@@ -332,7 +336,9 @@ static void decompress_random_tape_new(rvec_t* rvec, const picnic_instance_t* pp
   const size_t view_round_size = pp->view_round_size;
   const size_t num_views       = pp->lowmc.r;
 
-  bitstream_t bs = {.buffer = (uint8_t*)src, .position = 0};
+  bitstream_t bs;
+  bs.buffer = (uint8_t*)src;
+  bs.position = 0;
 
   rvec_t* rv = &rvec[0];
   if (pp->lowmc.m == 10) {
@@ -1240,7 +1246,9 @@ ATTR_DTOR static void clear_instances(void) {
 static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
                                const uint8_t* challenge) {
   // memset(collapsed, 0, pp->collapsed_challenge_size);
-  bitstream_t bs = {.buffer = collapsed, .position = 0};
+  bitstream_t bs;
+  bs.buffer = collapsed;
+  bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
     bitstream_put_bits(&bs, challenge[i] & 1, 1);
@@ -1250,7 +1258,10 @@ static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
 
 static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
                              const uint8_t* collapsed) {
-  bitstream_t bs = {.buffer = (uint8_t*)collapsed, .position = 0};
+  bitstream_t bs;
+  bs.buffer = (uint8_t*)collapsed;
+  bs.position = 0;
+
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
     challenge[i] = bitstream_get_bits(&bs, 1) | (bitstream_get_bits(&bs, 1) << 1);
     if (challenge[i] == 3) {
