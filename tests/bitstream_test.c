@@ -51,7 +51,7 @@ static int test_30(void) {
   }
 
   bitstream_t bsr = {.buffer = buffer, .position = 0};
-  const uint64_t r = bitstream_get_bits(&bsr, 30);
+  uint64_t r = bitstream_get_bits(&bsr, 30);
   if (r != v) {
     printf("test_30: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
     ret = -1;
@@ -59,7 +59,7 @@ static int test_30(void) {
 
   bitstream_t bsr2 = {.buffer = buffer2, .position = 0};
   for (unsigned int i = 0; i < 30; ++i) {
-    const uint64_t r = bitstream_get_bits(&bsr2, 1);
+    uint64_t r = bitstream_get_bits(&bsr2, 1);
     const uint64_t e = (v >> (30 - i - 1)) & 0x1;
     if (e != r) {
       printf("test_30: expected2 %016" PRIx64 ", got %016" PRIx64 "\n", e, r);
@@ -116,5 +116,25 @@ static int test_multiple_30(void) {
 }
 
 int main() {
-  return simple_test() | test_30() | test_multiple_30();
+  int ret = 0;
+  
+  int tmp = simple_test();
+  if (tmp) {
+    printf("simple_test: failed!\n");
+    ret = tmp;
+  }
+  
+  tmp = test_30();
+  if (tmp) {
+    printf("test_30: failed!\n");
+    ret = tmp;
+  }
+  
+  tmp = test_multiple_30();
+  if (tmp) {
+    printf("test_multiple_30: failed!\n");
+    ret = tmp;
+  }
+
+  return tmp;
 }
