@@ -1251,7 +1251,6 @@ ATTR_DTOR static void clear_instances(void) {
 
 static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
                                const uint8_t* challenge) {
-  // memset(collapsed, 0, pp->collapsed_challenge_size);
   bitstream_t bs;
   bs.buffer = collapsed;
   bs.position = 0;
@@ -1269,10 +1268,12 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
-    challenge[i] = bitstream_get_bits(&bs, 1) | (bitstream_get_bits(&bs, 1) << 1);
-    if (challenge[i] == 3) {
+    uint8_t ch = bitstream_get_bits(&bs, 1);
+    ch |= bitstream_get_bits(&bs, 1) << 1;
+    if (ch == 3) {
       return false;
     }
+    challenge[i] = ch;
   }
 
   size_t remaining_bits = (pp->collapsed_challenge_size << 3) - bs.position;
