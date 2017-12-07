@@ -37,8 +37,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static mzd_local_t* readMZD_TStructFromFile(FILE* file);
-
 static mask_t* prepare_masks(mask_t* mask, unsigned int n, unsigned int m) {
   mask->x0   = mzd_local_init(1, n);
   mask->x1   = mzd_local_init_ex(1, n, false);
@@ -159,6 +157,21 @@ precomp:
 }
 
 #ifdef WITH_CUSTOM_INSTANCES
+static mzd_local_t* readMZD_TStructFromFile(FILE* file) {
+  int ret   = 0;
+  int nrows = 0;
+  int ncols = 0;
+  ret += fread(&(nrows), sizeof(uint32_t), 1, file);
+  ret += fread(&(ncols), sizeof(uint32_t), 1, file);
+
+  mzd_local_t* A = mzd_local_init_ex(nrows, ncols, false);
+  for (unsigned int i = 0; i < A->nrows; i++) {
+    ret += fread(ROW(A, i), A->rowstride * sizeof(word), 1, file);
+  }
+
+  return A;
+}
+
 bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r,
                      unsigned int k) {
   if (!lowmc) {
@@ -201,21 +214,6 @@ bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned in
   }
 
   return true;
-}
-
-static mzd_local_t* readMZD_TStructFromFile(FILE* file) {
-  int ret   = 0;
-  int nrows = 0;
-  int ncols = 0;
-  ret += fread(&(nrows), sizeof(uint32_t), 1, file);
-  ret += fread(&(ncols), sizeof(uint32_t), 1, file);
-
-  mzd_local_t* A = mzd_local_init_ex(nrows, ncols, false);
-  for (unsigned int i = 0; i < A->nrows; i++) {
-    ret += fread(ROW(A, i), A->rowstride * sizeof(word), 1, file);
-  }
-
-  return A;
 }
 #endif
 

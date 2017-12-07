@@ -58,9 +58,9 @@ static int test_vector(const picnic_params_t param) {
     if (picnic_verify(&pk, msg, sizeof(msg), sig, siglen)) {
       ret = -1;
       printf("verify:  failed\n");
-    } else { 
-	  printf("verify:  success\n");
-	}
+    } else {
+      printf("verify:  success\n");
+    }
   } else {
     ret = -1;
   }
