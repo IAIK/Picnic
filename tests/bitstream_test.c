@@ -117,24 +117,24 @@ static int test_multiple_30(void) {
 
 int main() {
   int ret = 0;
-  
+
   int tmp = simple_test();
   if (tmp) {
     printf("simple_test: failed!\n");
     ret = tmp;
   }
-  
+
   tmp = test_30();
   if (tmp) {
     printf("test_30: failed!\n");
     ret = tmp;
   }
-  
+
   tmp = test_multiple_30();
   if (tmp) {
     printf("test_multiple_30: failed!\n");
     ret = tmp;
   }
 
-  return tmp;
+  return ret;
 }

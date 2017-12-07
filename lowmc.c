@@ -19,6 +19,9 @@
 #include "simd.h"
 #endif
 
+#if !defined(_MSC_VER)
+#include <stdalign.h>
+#endif
 #include <string.h>
 
 static uint64_t sbox_layer_bitsliced_uint64(uint64_t in, mask_t const* mask) {
