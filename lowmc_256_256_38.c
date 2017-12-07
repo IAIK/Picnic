@@ -20877,11 +20877,11 @@ const mzd_local_t* lowmc_256_256_38_get_round_const(uint32_t r) {
   }
 }
 #if defined(REDUCED_LINEAR_LAYER)
-const mzd_local_t* lowmc_256_256_38_get_precomputed_round_key_matrix_non_linear_part() {
+const mzd_local_t* lowmc_256_256_38_get_precomputed_round_key_matrix_non_linear_part(void) {
   return &precomputed_round_key_matrix_non_linear_part_256_256_38;
 }
 
-const mzd_local_t* lowmc_256_256_38_get_precomputed_round_key_matrix_linear_part() {
+const mzd_local_t* lowmc_256_256_38_get_precomputed_round_key_matrix_linear_part(void) {
   return &precomputed_round_key_matrix_linear_part_256_256_38;
 }
 #endif
