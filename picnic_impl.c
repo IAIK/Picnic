@@ -23,9 +23,9 @@
 #include "randomness.h"
 #include "timing.h"
 
+#include <limits.h>
 #include <math.h>
 #include <stdlib.h>
-#include <limits.h>
 
 typedef struct {
   uint8_t* seeds[SC_PROOF];
@@ -284,7 +284,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
   const size_t num_views       = pp->lowmc.r;
 
   bitstream_t bs;
-  bs.buffer = dst;
+  bs.buffer   = dst;
   bs.position = 0;
 
   const view_t* v = &views[0];
@@ -305,7 +305,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
   const size_t num_views       = pp->lowmc.r;
 
   bitstream_t bs;
-  bs.buffer = (uint8_t*)src;
+  bs.buffer   = (uint8_t*)src;
   bs.position = 0;
 
   view_t* v = &views[0];
@@ -340,7 +340,7 @@ static void decompress_random_tape_new(rvec_t* rvec, const picnic_instance_t* pp
   const size_t num_views       = pp->lowmc.r;
 
   bitstream_t bs;
-  bs.buffer = (uint8_t*)src;
+  bs.buffer   = (uint8_t*)src;
   bs.position = 0;
 
   rvec_t* rv = &rvec[0];
@@ -1231,7 +1231,8 @@ picnic_instance_t* get_instance(picnic_params_t param) {
   }
 
   if (!instance_initialized[param]) {
-    if (!create_instance(&instances[param], param, LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG)) {
+    if (!create_instance(&instances[param], param, LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG,
+                         LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG)) {
       return NULL;
     }
     instance_initialized[param] = true;
@@ -1252,7 +1253,7 @@ ATTR_DTOR static void clear_instances(void) {
 static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
                                const uint8_t* challenge) {
   bitstream_t bs;
-  bs.buffer = collapsed;
+  bs.buffer   = collapsed;
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
@@ -1264,7 +1265,7 @@ static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
 static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
                              const uint8_t* collapsed) {
   bitstream_t bs;
-  bs.buffer = (uint8_t*)collapsed;
+  bs.buffer   = (uint8_t*)collapsed;
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {

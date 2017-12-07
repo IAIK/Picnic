@@ -683,11 +683,18 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
 #define R_mzd_3 mzd_local_t** r = rvec[i].s
 
 #ifdef _MSC_VER
-#define R_uint64_2 uint64_t r[SC_VERIFY]; r[0] = rvec[i].t[0]; r[1] = rvec[i].t[1]
-#define R_uint64_3 uint64_t r[SC_PROOF]; r[0] = rvec[i].t[0]; r[1] = rvec[i].t[1]; r[2] = rvec[i].t[2]
+#define R_uint64_2                                                                                 \
+  uint64_t r[SC_VERIFY];                                                                           \
+  r[0] = rvec[i].t[0];                                                                             \
+  r[1] = rvec[i].t[1]
+#define R_uint64_3                                                                                 \
+  uint64_t r[SC_PROOF];                                                                            \
+  r[0] = rvec[i].t[0];                                                                             \
+  r[1] = rvec[i].t[1];                                                                             \
+  r[2] = rvec[i].t[2]
 #else
-#define R_uint64_2 uint64_t r[SC_VERIFY] = { rvec[i].t[0], rvec[i].t[1] }
-#define R_uint64_3 uint64_t r[SC_PROOF] = { rvec[i].t[0], rvec[i].t[1], rvec[i].t[2] }
+#define R_uint64_2 uint64_t r[SC_VERIFY] = {rvec[i].t[0], rvec[i].t[1]}
+#define R_uint64_3 uint64_t r[SC_PROOF]  = {rvec[i].t[0], rvec[i].t[1], rvec[i].t[2]}
 #endif
 
 #define loop_optimize(sbox_args, sbox, sbox_selector, no_scr, no_scr_active, const_mat_mul_func,   \
