@@ -25,6 +25,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <limits.h>
 
 typedef struct {
   uint8_t* seeds[SC_PROOF];
@@ -46,6 +47,8 @@ static const uint8_t HASH_PREFIX_1 = 1;
 static const uint8_t HASH_PREFIX_2 = 2;
 static const uint8_t HASH_PREFIX_4 = 4;
 static const uint8_t HASH_PREFIX_5 = 5;
+
+#define LOWMC_UNSPECFIED_ARG UINT32_MAX
 
 static bool sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
                                     uint8_t* sig, size_t* siglen);
@@ -580,7 +583,10 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
     lowmc_verify_impl(lowmc, p, views, in_out_shares, rvec, a_i);
     compress_view(round->communicated_bits[0], pp, views, 0);
 
-    mzd_local_t* ys[3] = {in_out_shares[1].s[0], in_out_shares[1].s[1], (mzd_local_t*)c};
+    mzd_local_t* ys[3];
+    ys[0] = in_out_shares[1].s[0];
+    ys[1] = in_out_shares[1].s[1];
+    ys[2] = (mzd_local_t*)c;
     mzd_unshare(in_out_shares[1].s[2], ys);
 
     for (unsigned int j = 0; j < SC_VERIFY; ++j) {
@@ -1225,7 +1231,7 @@ picnic_instance_t* get_instance(picnic_params_t param) {
   }
 
   if (!instance_initialized[param]) {
-    if (!create_instance(&instances[param], param, -1, -1, -1, -1)) {
+    if (!create_instance(&instances[param], param, LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG)) {
       return NULL;
     }
     instance_initialized[param] = true;

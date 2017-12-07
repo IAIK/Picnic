@@ -678,10 +678,17 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   }
 
 #define R(selector, shares) R_##selector##_##shares
-#define R_mzd_2 mzd_local_t** r                = rvec[i].s;
-#define R_mzd_3 mzd_local_t** r                = rvec[i].s;
-#define R_uint64_2 uint64_t const r[SC_VERIFY] = {rvec[i].t[0], rvec[i].t[1]};
-#define R_uint64_3 uint64_t const r[SC_PROOF]  = {rvec[i].t[0], rvec[i].t[1], rvec[i].t[2]};
+
+#define R_mzd_2 mzd_local_t** r = rvec[i].s
+#define R_mzd_3 mzd_local_t** r = rvec[i].s
+
+#ifdef _MSC_VER
+#define R_uint64_2 uint64_t r[SC_VERIFY]; r[0] = rvec[i].t[0]; r[1] = rvec[i].t[1]
+#define R_uint64_3 uint64_t r[SC_PROOF]; r[0] = rvec[i].t[0]; r[1] = rvec[i].t[1]; r[2] = rvec[i].t[2]
+#else
+#define R_uint64_2 uint64_t r[SC_VERIFY] = { rvec[i].t[0], rvec[i].t[1] }
+#define R_uint64_3 uint64_t r[SC_PROOF] = { rvec[i].t[0], rvec[i].t[1], rvec[i].t[2] }
+#endif
 
 #define loop_optimize(sbox_args, sbox, sbox_selector, no_scr, no_scr_active, const_mat_mul_func,   \
                       add_func, mul_more_cols, const_addmat_mul_func, ch, shares)                  \
@@ -691,7 +698,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
            shares);                                                                                \
   word mask = 0x00000000FFFFFFFF;                                                                  \
   for (unsigned i = 0; i < lowmc->r; ++i, ++views, ++round) {                                      \
-    R(sbox_selector, shares)                                                                       \
+    R(sbox_selector, shares);                                                                      \
     SBOX(sbox_args, sbox, sbox_selector, y, x, views, r, &lowmc->mask, &vars, lowmc->n, shares);   \
     const unsigned int shift = ((mask & 0xFFFFFFFF) ? 34 : 2);                                     \
     for (unsigned int k = 0; k < shares; k++) {                                                    \
@@ -706,7 +713,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
 #define loop(sbox_args, sbox, sbox_selector, no_scr, no_scr_active, const_mat_mul_func, add_func,  \
              mul_more_cols, const_addmat_mul_func, ch, shares)                                     \
   for (unsigned i = 0; i < lowmc->r; ++i, ++views, ++round) {                                      \
-    R(sbox_selector, shares)                                                                       \
+    R(sbox_selector, shares);                                                                      \
     SBOX(sbox_args, sbox, sbox_selector, y, x, views, r, &lowmc->mask, &vars, lowmc->n, shares);   \
     mpc_clear(x, shares);                                                                          \
     MPC_LOOP(const_mat_mul_func, x, y, round->l_##no_scr, shares);                                 \

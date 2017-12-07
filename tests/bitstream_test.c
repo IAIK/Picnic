@@ -13,10 +13,14 @@ static int simple_test(void) {
     uint8_t buffer[sizeof(uint64_t)] = {0};
     const uint64_t v                 = UINT64_C(1) << (i - 1);
 
-    bitstream_t bsw = {.buffer = buffer, .position = 0};
+    bitstream_t bsw;
+    bsw.buffer = buffer;
+    bsw.position = 0;
     bitstream_put_bits(&bsw, v, i);
 
-    bitstream_t bsr = {.buffer = buffer, .position = 0};
+    bitstream_t bsr;
+    bsr.buffer = buffer;
+    bsr.position = 0;
     const uint64_t r = bitstream_get_bits(&bsr, i);
     if (r != v) {
       printf("simple_test: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
@@ -67,7 +71,7 @@ static int test_30(void) {
   bsr2.buffer = buffer2;
   bsr2.position = 0;
   for (unsigned int i = 0; i < 30; ++i) {
-    uint64_t r = bitstream_get_bits(&bsr2, 1);
+    r = bitstream_get_bits(&bsr2, 1);
     const uint64_t e = (v >> (30 - i - 1)) & 0x1;
     if (e != r) {
       printf("test_30: expected2 %016" PRIx64 ", got %016" PRIx64 "\n", e, r);

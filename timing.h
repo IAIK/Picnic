@@ -42,11 +42,11 @@ typedef union {
 #ifdef WITH_OPENMP
 #include <omp.h>
 
-static inline uint64_t gettime_clock() {
+static inline uint64_t gettime_clock(void) {
   return omp_get_wtime() * 1000 * 1000;
 }
 #else
-static inline uint64_t gettime_clock() {
+static inline uint64_t gettime_clock(void) {
   return clock() * TIMING_SCALE;
 }
 #endif
