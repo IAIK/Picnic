@@ -35,10 +35,15 @@
 #define _BIG_ENDIAN BIG_ENDIAN
 #define _BYTE_ORDER BYTE_ORDER
 #else
+#include <stdlib.h>
 #define _LITTLE_ENDIAN 1234
 #define _BIG_ENDIAN 4321
 /* X-Box 360 is big-endian, but we simply ignore that. */
 #define _BYTE_ORDER _LITTLE_ENDIAN
+#define HAVE_BSWAP
+#define bswap16(x) _byteswap_ushort(x)
+#define bswap32(x) _byteswap_ulong(x)
+#define bswap64(x) _byteswap_uint64(x)
 #endif
 #endif
 
