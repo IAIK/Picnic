@@ -1125,7 +1125,10 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
                             uint32_t r, uint32_t k) {
   TIME_FUNCTION;
 
+#if defined(WITH_CUSTOM_INSTANCES)
   bool known_instance = true;
+#endif
+
   uint32_t pq_security_level, num_rounds, digest_size, seed_size;
   switch (param) {
   case Picnic_L1_FS:
@@ -1172,9 +1175,11 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
 
   START_TIMING;
   bool have_instance = false;
+#if defined(WITH_CUSTOM_INSTANCES)
   if (!known_instance) {
     have_instance = lowmc_read_file(&pp->lowmc, m, n, r, k);
   }
+#endif
   if (!have_instance) {
     have_instance = lowmc_init(&pp->lowmc, m, n, r, k);
   }
