@@ -1271,8 +1271,7 @@ static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
-    bitstream_put_bits(&bs, challenge[i] & 1, 1);
-    bitstream_put_bits(&bs, (challenge[i] >> 1) & 1, 1);
+    bitstream_put_bits(&bs, (challenge[i] >> 1) | ((challenge[i] & 1) << 1), 2);
   }
 }
 
@@ -1283,12 +1282,11 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
-    uint8_t ch = bitstream_get_bits(&bs, 1);
-    ch |= bitstream_get_bits(&bs, 1) << 1;
+    uint8_t ch = bitstream_get_bits(&bs, 2);
     if (ch == 3) {
       return false;
     }
-    challenge[i] = ch;
+    challenge[i] = (ch & 1) << 1 | (ch >> 1);
   }
 
   size_t remaining_bits = (pp->collapsed_challenge_size << 3) - bs.position;
