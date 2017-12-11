@@ -32,7 +32,6 @@ include(CheckFunctionExists)
 include(CheckCCompilerFlag)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
-include(GenerateExportHeader)
 
 # required libraries
 find_package(OpenSSL)
@@ -63,6 +62,7 @@ check_c_compiler_flag(-O3 CC_SUPPORTS_03)
 check_c_compiler_flag(-Wall CC_SUPPORTS_WALL)
 check_c_compiler_flag(-Wextra CC_SUPPORTS_WEXTRA)
 check_c_compiler_flag(-fomit-frame-pointer CC_SUPPORTS_FOMIT_FRAME_POINTER)
+check_c_compiler_flag(-fvisibility=hidden CC_SUPPORTS_FVISIBILITY)
 
 #check SIMD instructions set
 check_simd(SSE2 CC_SUPPORTS_SSE2)
@@ -192,13 +192,12 @@ endif()
 
 # shared library
 add_library(picnic SHARED ${PICNIC_SOURCES} ${SHA3_SOURCES})
-generate_export_header(picnic)
 set_target_properties(picnic PROPERTIES VERSION ${PICNIC_VERSION} SOVERSION ${PICNIC_MAJOR_VERSION})
 
 # static library
 add_library(picnic_static STATIC ${PICNIC_SOURCES} ${SHA3_SOURCES})
 if(NOT WIN32 AND NOT MSVC)
-	set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic)
+  set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic)
 endif()
 target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC_DEFINE)
 
@@ -251,6 +250,16 @@ endfunction(apply_picnic_options)
 apply_picnic_options(picnic)
 apply_picnic_options(picnic_static)
 
+if (WIN32)
+  target_compile_definitions(picnic PRIVATE "PICNIC_EXPORT=__declspec(dllexport)")
+else()
+  target_compile_definitions(picnic PRIVATE "PICNIC_EXPORT=__attribute__((visibility(\"default\")))")
+  if (CC_SUPPORTS_FVISIBILITY)
+    target_compile_options(picnic PRIVATE -fvisibility=hidden)
+  endif()
+endif()
+target_compile_definitions(picnic_static PRIVATE PICNIC_EXPORT=)
+
 # genparams executable
 if(M4RI_FOUND AND OPENSSL_FOUND)
   add_executable(genparams tools/genparams.c)
@@ -264,7 +273,7 @@ endif()
 # create_test_vectors executable
 add_executable(visualize_signature tools/visualize_signature.c)
 target_link_libraries(visualize_signature picnic_static)
-target_compile_definitions(visualize_signature PRIVATE HAVE_CONFIG_H)
+target_compile_definitions(visualize_signature PRIVATE HAVE_CONFIG_H PICNIC_STATIC)
 
 # bench executable
 add_executable(bench tools/bench.c)

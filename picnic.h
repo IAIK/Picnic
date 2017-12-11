@@ -10,10 +10,12 @@
 #ifndef PICNIC_H
 #define PICNIC_H
 
-#if !defined(NO_EXPORT)
-#include "picnic_export.h"
+#if !defined(PICNIC_EXPORT)
+#if !defined(PICNIC_STATIC) && (defined(_WIN16) || defined(_WIN32) || defined(_WIN64))
+#define PICNIC_EXPORT __declspec(dllimport)
 #else
 #define PICNIC_EXPORT
+#endif
 #endif
 
 #if defined(_WIN16) || defined(_WIN32) || defined(_WIN64)
