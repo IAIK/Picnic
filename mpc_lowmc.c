@@ -329,7 +329,7 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t cons
 
 #ifdef WITH_SSE2
 #ifdef WITH_CUSTOM_INSTANCES
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_128_sse(mzd_local_t** out, mzd_local_t* const* in,
                                               view_t* view, mzd_local_t** rvec,
                                               mask_t const* mask) {
@@ -343,7 +343,7 @@ static void _mpc_sbox_layer_bitsliced_128_sse(mzd_local_t** out, mzd_local_t* co
   bitsliced_mm_step_2(SC_PROOF, __m128i, _mm_and_si128, _mm_xor_si128, mm128_shift_right);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_verify_128_sse(mzd_local_t** out, mzd_local_t* const* in,
                                                      view_t* view, mzd_local_t** rvec,
                                                      mask_t const* mask) {
@@ -357,7 +357,7 @@ static void _mpc_sbox_layer_bitsliced_verify_128_sse(mzd_local_t** out, mzd_loca
   bitsliced_mm_step_2(SC_VERIFY, __m128i, _mm_and_si128, _mm_xor_si128, mm128_shift_right);
 }
 //----------------------------------------------------------------------------------------------------------------------
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_256_sse(mzd_local_t** out, mzd_local_t* const* in,
                                               view_t* view, mzd_local_t** rvec,
                                               mask_t const* mask) {
@@ -372,7 +372,7 @@ static void _mpc_sbox_layer_bitsliced_256_sse(mzd_local_t** out, mzd_local_t* co
                                       mm256_shift_right_sse, 2);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_verify_256_sse(mzd_local_t** out, mzd_local_t* const* in,
                                                      view_t* view, mzd_local_t** rvec,
                                                      mask_t const* mask) {
@@ -387,7 +387,7 @@ static void _mpc_sbox_layer_bitsliced_verify_256_sse(mzd_local_t** out, mzd_loca
                                       mm256_shift_right_sse, 2);
 }
 //----------------------------------------------------------------------------------------------------------------------
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_384_sse(mzd_local_t** out, mzd_local_t* const* in,
                                               view_t* view, mzd_local_t** rvec,
                                               mask_t const* mask) {
@@ -402,7 +402,7 @@ static void _mpc_sbox_layer_bitsliced_384_sse(mzd_local_t** out, mzd_local_t* co
                                       mm384_shift_right_sse, 3);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_verify_384_sse(mzd_local_t** out, mzd_local_t* const* in,
                                                      view_t* view, mzd_local_t** rvec,
                                                      mask_t const* mask) {
@@ -417,7 +417,7 @@ static void _mpc_sbox_layer_bitsliced_verify_384_sse(mzd_local_t** out, mzd_loca
                                       mm384_shift_right_sse, 3);
 }
 //----------------------------------------------------------------------------------------------------------------------
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_512_sse(mzd_local_t** out, mzd_local_t* const* in,
                                               view_t* view, mzd_local_t** rvec,
                                               mask_t const* mask) {
@@ -432,7 +432,7 @@ static void _mpc_sbox_layer_bitsliced_512_sse(mzd_local_t** out, mzd_local_t* co
                                       mm512_shift_right_sse, 4);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_verify_512_sse(mzd_local_t** out, mzd_local_t* const* in,
                                                      view_t* view, mzd_local_t** rvec,
                                                      mask_t const* mask) {
@@ -451,7 +451,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_sse(mzd_local_t** out, mzd_loca
 //----------------------------------------------------------------------------------------------------------------------
 #ifdef WITH_AVX2
 #ifdef WITH_CUSTOM_INSTANCES
-ATTRIBUTE_TARGET("avx2")
+ATTR_TARGET("avx2")
 static void _mpc_sbox_layer_bitsliced_256_avx(mzd_local_t** out, mzd_local_t* const* in,
                                               view_t* view, mzd_local_t** rvec,
                                               mask_t const* mask) {
@@ -465,7 +465,7 @@ static void _mpc_sbox_layer_bitsliced_256_avx(mzd_local_t** out, mzd_local_t* co
   bitsliced_mm_step_2(SC_PROOF, __m256i, _mm256_and_si256, _mm256_xor_si256, mm256_shift_right);
 }
 
-ATTRIBUTE_TARGET("avx2")
+ATTR_TARGET("avx2")
 static void _mpc_sbox_layer_bitsliced_verify_256_avx(mzd_local_t** out, mzd_local_t** in,
                                                      view_t* view, mzd_local_t* const* rvec,
                                                      mask_t const* mask) {
@@ -479,7 +479,7 @@ static void _mpc_sbox_layer_bitsliced_verify_256_avx(mzd_local_t** out, mzd_loca
   bitsliced_mm_step_2(SC_VERIFY, __m256i, _mm256_and_si256, _mm256_xor_si256, mm256_shift_right);
 }
 //----------------------------------------------------------------------------------------------------------------------
-ATTRIBUTE_TARGET("avx2")
+ATTR_TARGET("avx2")
 static void _mpc_sbox_layer_bitsliced_512_avx(mzd_local_t** out, mzd_local_t* const* in,
                                               view_t* view, mzd_local_t** rvec,
                                               mask_t const* mask) {
@@ -494,7 +494,7 @@ static void _mpc_sbox_layer_bitsliced_512_avx(mzd_local_t** out, mzd_local_t* co
                                       mm512_shift_right_avx, 2);
 }
 
-ATTRIBUTE_TARGET("avx2")
+ATTR_TARGET("avx2")
 static void _mpc_sbox_layer_bitsliced_verify_512_avx(mzd_local_t** out, mzd_local_t** in,
                                                      view_t* view, mzd_local_t* const* rvec,
                                                      mask_t const* mask) {

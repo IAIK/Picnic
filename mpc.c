@@ -95,27 +95,27 @@ void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second
 
 #ifdef WITH_SSE2
 #ifdef WITH_CUSTOM_INSTANCES
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 void mpc_and_sse(__m128i* res, __m128i const* first, __m128i const* second, __m128i const* r,
                  view_t* view, unsigned viewshift) {
   mpc_and_def(__m128i, _mm_and_si128, _mm_xor_si128, mm128_shift_right);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 void mpc_and_256_sse(__m128i res[SC_PROOF][2], __m128i const first[SC_PROOF][2],
                      __m128i const second[SC_PROOF][2], __m128i const r[SC_PROOF][2], view_t* view,
                      unsigned viewshift) {
   mpc_and_def_multiple(__m128i, mm256_and_sse, mm256_xor_sse, mm256_shift_right_sse, 2);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 void mpc_and_384_sse(__m128i res[SC_PROOF][3], __m128i const first[SC_PROOF][3],
                      __m128i const second[SC_PROOF][3], __m128i const r[SC_PROOF][3], view_t* view,
                      unsigned viewshift) {
   mpc_and_def_multiple(__m128i, mm384_and_sse, mm384_xor_sse, mm384_shift_right_sse, 3);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 void mpc_and_512_sse(__m128i res[SC_PROOF][4], __m128i const first[SC_PROOF][4],
                      __m128i const second[SC_PROOF][4], __m128i const r[SC_PROOF][4], view_t* view,
                      unsigned viewshift) {
@@ -126,13 +126,13 @@ void mpc_and_512_sse(__m128i res[SC_PROOF][4], __m128i const first[SC_PROOF][4],
 
 #ifdef WITH_AVX2
 #ifdef WITH_CUSTOM_INSTANCES
-ATTRIBUTE_TARGET("avx2")
+ATTR_TARGET("avx2")
 void mpc_and_avx(__m256i* res, __m256i const* first, __m256i const* second, __m256i const* r,
                  view_t* view, unsigned viewshift) {
   mpc_and_def(__m256i, _mm256_and_si256, _mm256_xor_si256, mm256_shift_right);
 }
 
-ATTRIBUTE_TARGET("avx2")
+ATTR_TARGET("avx2")
 void mpc_and_512_avx(__m256i res[SC_VERIFY][2], __m256i const first[SC_VERIFY][2],
                      __m256i const second[SC_VERIFY][2], __m256i const r[SC_VERIFY][2],
                      view_t* view, unsigned viewshift) {
@@ -259,13 +259,13 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
 
 #ifdef WITH_SSE2
 #ifdef WITH_CUSTOM_INSTANCES
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 void mpc_and_verify_sse(__m128i* res, __m128i const* first, __m128i const* second, __m128i const* r,
                         view_t* view, __m128i const mask, unsigned viewshift) {
   mpc_and_verify_def(__m128i, _mm_and_si128, _mm_xor_si128, mm128_shift_right, mm128_shift_left);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 void mpc_and_verify_256_sse(__m128i res[SC_VERIFY][2], __m128i const first[SC_VERIFY][2],
                             __m128i const second[SC_VERIFY][2], __m128i const r[SC_VERIFY][2],
                             view_t* view, __m128i const* mask, unsigned viewshift) {
@@ -273,7 +273,7 @@ void mpc_and_verify_256_sse(__m128i res[SC_VERIFY][2], __m128i const first[SC_VE
                               mm256_shift_left_sse, 2);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 void mpc_and_verify_384_sse(__m128i res[SC_VERIFY][3], __m128i const first[SC_VERIFY][3],
                             __m128i const second[SC_VERIFY][3], __m128i const r[SC_VERIFY][3],
                             view_t* view, __m128i const* mask, unsigned viewshift) {
@@ -281,7 +281,7 @@ void mpc_and_verify_384_sse(__m128i res[SC_VERIFY][3], __m128i const first[SC_VE
                               mm384_shift_left_sse, 3);
 }
 
-ATTRIBUTE_TARGET("sse2")
+ATTR_TARGET("sse2")
 void mpc_and_verify_512_sse(__m128i res[SC_VERIFY][4], __m128i const first[SC_VERIFY][4],
                             __m128i const second[SC_VERIFY][4], __m128i const r[SC_VERIFY][4],
                             view_t* view, __m128i const* mask, unsigned viewshift) {
@@ -293,14 +293,14 @@ void mpc_and_verify_512_sse(__m128i res[SC_VERIFY][4], __m128i const first[SC_VE
 
 #ifdef WITH_AVX2
 #ifdef WITH_CUSTOM_INSTANCES
-ATTRIBUTE_TARGET("avx2")
+ATTR_TARGET("avx2")
 void mpc_and_verify_avx(__m256i* res, __m256i const* first, __m256i const* second, __m256i const* r,
                         view_t* view, __m256i const mask, unsigned viewshift) {
   mpc_and_verify_def(__m256i, _mm256_and_si256, _mm256_xor_si256, mm256_shift_right,
                      mm256_shift_left);
 }
 
-ATTRIBUTE_TARGET("avx2")
+ATTR_TARGET("avx2")
 void mpc_and_verify_512_avx(__m256i res[SC_VERIFY][2], __m256i const first[SC_VERIFY][2],
                             __m256i const second[SC_VERIFY][2], __m256i const r[SC_VERIFY][2],
                             view_t* view, __m256i const* mask, unsigned viewshift) {

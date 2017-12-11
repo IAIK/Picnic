@@ -67,29 +67,29 @@
 #endif
 
 #if GNUC_CHECK(4, 0) || __has_attribute(always_inline)
-#define ATTRIBUTE_ALWAYS_INLINE __attribute__((always_inline))
+#define ATTR_ALWAYS_INLINE __attribute__((always_inline))
 #elif defined(_MSC_VER)
-#define ATTRIBUTE_ALWAYS_INLINE __forceinline
+#define ATTR_ALWAYS_INLINE __forceinline
 #else
-#define ATTRIBUTE_ALWAYS_INLINE
+#define ATTR_ALWAYS_INLINE
 #endif
 
 #if defined(__GNUC__) || __has_attribute(pure)
-#define ATTRIBUTE_PURE __attribute__((pure))
+#define ATTR_PURE __attribute__((pure))
 #else
-#define ATTRIBUTE_PURE
+#define ATTR_PURE
 #endif
 
 #if defined(__GNUC__) || __has_attribute(target)
-#define ATTRIBUTE_TARGET(x) __attribute__((target((x))))
+#define ATTR_TARGET(x) __attribute__((target((x))))
 #else
-#define ATTRIBUTE_TARGET(x)
+#define ATTR_TARGET(x)
 #endif
 
-#define FN_ATTRIBUTES_AVX2_NP ATTRIBUTE_ALWAYS_INLINE ATTRIBUTE_TARGET("avx2")
-#define FN_ATTRIBUTES_SSE2_NP ATTRIBUTE_ALWAYS_INLINE ATTRIBUTE_TARGET("sse2")
+#define FN_ATTRIBUTES_AVX2_NP ATTR_ALWAYS_INLINE ATTR_TARGET("avx2")
+#define FN_ATTRIBUTES_SSE2_NP ATTR_ALWAYS_INLINE ATTR_TARGET("sse2")
 
-#define FN_ATTRIBUTES_AVX2 FN_ATTRIBUTES_AVX2_NP ATTRIBUTE_PURE
-#define FN_ATTRIBUTES_SSE2 FN_ATTRIBUTES_SSE2_NP ATTRIBUTE_PURE
+#define FN_ATTRIBUTES_AVX2 FN_ATTRIBUTES_AVX2_NP ATTR_PURE
+#define FN_ATTRIBUTES_SSE2 FN_ATTRIBUTES_SSE2_NP ATTR_PURE
 
 #endif
