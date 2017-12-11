@@ -199,9 +199,6 @@ endif()
 
 # static library
 add_library(picnic_static STATIC ${PICNIC_SOURCES} ${SHA3_SOURCES})
-if(NOT WIN32 AND NOT MSVC)
-  set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic)
-endif()
 if(MSVC)
   set_target_properties(picnic_static PROPERTIES OUTPUT_NAME libpicnic_static)
 endif()
