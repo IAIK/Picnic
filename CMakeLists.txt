@@ -273,7 +273,7 @@ if(M4RI_FOUND AND OPENSSL_FOUND)
   endif()
 endif()
 
-# create_test_vectors executable
+# visualize_signature executable
 add_executable(visualize_signature tools/visualize_signature.c)
 target_link_libraries(visualize_signature picnic_static)
 target_compile_definitions(visualize_signature PRIVATE HAVE_CONFIG_H PICNIC_STATIC)
