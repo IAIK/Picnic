@@ -253,6 +253,7 @@ static void mzd_to_bitstream(bitstream_t* bs, const mzd_local_t* v, const size_t
   }
 }
 
+#if defined(WITH_CUSTOM_INSTANCES)
 static void mzd_from_bitstream(bitstream_t* bs, mzd_local_t* v, const size_t size) {
   uint64_t* d = &FIRST_ROW(v)[v->width - 1];
   uint64_t* f = FIRST_ROW(v);
@@ -269,6 +270,7 @@ static void mzd_from_bitstream(bitstream_t* bs, mzd_local_t* v, const size_t siz
     *d = 0;
   }
 }
+#endif
 
 static void uint64_to_bitstream(bitstream_t* bs, const uint64_t v) {
   bitstream_put_bits(bs, v >> (64 - 30), 30);
@@ -301,57 +303,49 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
 
 static void decompress_view(view_t* views, const picnic_instance_t* pp, const uint8_t* src,
                             unsigned int idx) {
-  const size_t view_round_size = pp->view_round_size;
-  const size_t num_views       = pp->lowmc.r;
+  const size_t num_views = pp->lowmc.r;
 
   bitstream_t bs;
   bs.buffer   = (uint8_t*)src;
   bs.position = 0;
 
   view_t* v = &views[0];
-  if (pp->lowmc.m == 10) {
-    for (size_t i = 0; i < num_views; ++i, ++v) {
-      v->t[idx] = uint64_from_bitstream(&bs);
-    }
-  } else {
+#if defined(WITH_CUSTOM_INSTANCES)
+  if (pp->lowmc.m != 10) {
+    const size_t view_round_size = pp->view_round_size;
     for (size_t i = 0; i < num_views; ++i, ++v) {
       mzd_from_bitstream(&bs, v->s[idx], view_round_size);
     }
+    return;
   }
-}
-
-#if 0
-static void decompress_random_tape(mzd_local_t** rvec, const picnic_instance_t* pp,
-                                   const uint8_t* src) {
-  const size_t view_round_size = pp->view_round_size;
-  const size_t num_views       = pp->lowmc.r;
-
-  bitstream_t bs = {.buffer = (uint8_t*)src, .position = 0};
-
-  for (size_t i = 0; i < num_views; ++i) {
-    mzd_from_bitstream(&bs, rvec[i], view_round_size);
-  }
-}
 #endif
 
-static void decompress_random_tape_new(rvec_t* rvec, const picnic_instance_t* pp,
-                                       const uint8_t* src, unsigned int idx) {
-  const size_t view_round_size = pp->view_round_size;
-  const size_t num_views       = pp->lowmc.r;
+  for (size_t i = 0; i < num_views; ++i, ++v) {
+    v->t[idx] = uint64_from_bitstream(&bs);
+  }
+}
+
+static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, const uint8_t* src,
+                                   unsigned int idx) {
+  const size_t num_views = pp->lowmc.r;
 
   bitstream_t bs;
   bs.buffer   = (uint8_t*)src;
   bs.position = 0;
 
   rvec_t* rv = &rvec[0];
-  if (pp->lowmc.m == 10) {
-    for (size_t i = 0; i < num_views; ++i, ++rv) {
-      rv->t[idx] = uint64_from_bitstream(&bs);
-    }
-  } else if (pp->lowmc.m != 10) {
+#if defined(WITH_CUSTOM_INSTANCES)
+  if (pp->lowmc.m != 10) {
+    const size_t view_round_size = pp->view_round_size;
     for (size_t i = 0; i < num_views; ++i, ++rv) {
       mzd_from_bitstream(&bs, rv->s[idx], view_round_size);
     }
+    return;
+  }
+#endif
+
+  for (size_t i = 0; i < num_views; ++i, ++rv) {
+    rv->t[idx] = uint64_from_bitstream(&bs);
   }
 }
 
@@ -386,11 +380,13 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
   sig_proof_t* prf = proof_new(pp);
   view_t* views    = calloc(sizeof(view_t), view_count);
+#if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
     for (size_t i = 0; i < view_count; ++i) {
       mzd_local_init_multiple_ex(views[i].s, SC_PROOF, 1, lowmc_n, false);
     }
   }
+#endif
 
   in_out_shares_t in_out_shares[2];
   mzd_local_init_multiple_ex(in_out_shares[0].s, SC_PROOF, 1, lowmc_k, false);
@@ -424,11 +420,13 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   // START_TIMING; TODO: I guess this shouldn't be here
 
   rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for and-gates
+#if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
     for (unsigned int i = 0; i < lowmc_r; ++i) {
       mzd_local_init_multiple_ex(rvec[i].s, SC_PROOF, 1, lowmc_n, false);
     }
   }
+#endif
 
   uint8_t* tape_bytes = malloc(view_size);
   START_TIMING;
@@ -452,7 +450,7 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     // compute random tapes
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
       kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
-      decompress_random_tape_new(rvec, pp, tape_bytes, j);
+      decompress_random_tape(rvec, pp, tape_bytes, j);
     }
 
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -485,6 +483,7 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
   // clean up
   free(tape_bytes);
+#if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
     for (unsigned n = 0; n < view_count; ++n) {
       mzd_local_free_multiple(rvec[n].s);
@@ -493,11 +492,12 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       mzd_local_free_multiple(views[n].s);
     }
   }
-  free(views);
+#endif
   free(rvec);
+  free(views);
   mzd_local_free_multiple(shared_key);
-  mzd_local_free_multiple(in_out_shares[0].s);
   mzd_local_free_multiple(in_out_shares[1].s);
+  mzd_local_free_multiple(in_out_shares[0].s);
   proof_free(prf);
 
   END_TIMING(timing_and_size->sign.challenge);
@@ -531,20 +531,24 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
   mzd_local_init_multiple_ex(in_out_shares[0].s, SC_VERIFY, 1, lowmc_k, false);
   mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
   view_t* views = calloc(sizeof(view_t), view_count);
+#if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
     for (size_t i = 0; i < view_count; ++i) {
       mzd_local_init_multiple_ex(views[i].s, SC_VERIFY, 1, lowmc_n, false);
     }
   }
+#endif
 
   START_TIMING;
 
   rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for and-gates
+#if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
     for (unsigned int i = 0; i < lowmc_r; ++i) {
       mzd_local_init_multiple_ex(rvec[i].s, SC_VERIFY, 1, lowmc_n, false);
     }
   }
+#endif
   uint8_t* tape_bytes = malloc(view_size);
 
   proof_round_t* round = prf->round;
@@ -572,7 +576,7 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
     // compute random tapes
     for (unsigned int j = 0; j < SC_VERIFY; ++j) {
       kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
-      decompress_random_tape_new(rvec, pp, tape_bytes, j);
+      decompress_random_tape(rvec, pp, tape_bytes, j);
     }
 
     for (unsigned int j = 0; j < SC_VERIFY; ++j) {
@@ -609,6 +613,7 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
 
   // clean up
   free(tape_bytes);
+#if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
     for (unsigned n = 0; n < view_count; ++n) {
       mzd_local_free_multiple(rvec[n].s);
@@ -617,10 +622,11 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
       mzd_local_free_multiple(views[n].s);
     }
   }
-  free(views);
+#endif
   free(rvec);
-  mzd_local_free_multiple(in_out_shares[0].s);
+  free(views);
   mzd_local_free_multiple(in_out_shares[1].s);
+  mzd_local_free_multiple(in_out_shares[0].s);
 
   proof_free(prf);
 
