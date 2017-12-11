@@ -36,6 +36,19 @@ The cmake based build system supports the following flags:
  * ``WITH_MUL_M4RI``: Use methods of four russians for matrix multiplication.
  * ``WITH_REDUCED_LINEAR_LAYER``: Enable partial pre-computation of round key.
 
+On Windows the code can be built using Visual Studio and cmake's Visual Sutdio
+solution generator as follows: Open the "Developer Command Prompt for VS 2017"
+and from the source folder, run:
+```sh
+mkdir build; cd build
+cmake -G "Visual Studio 15 2017 Win64" ..
+msbuild  /t:Rebuild /p:Configuration=Release picnic.sln
+```
+
+After running `cmake`, one can also open and build the solution directly with
+the Visual Studio IDE. The code was tested using `cmake' for Windows version
+3.10 and Visual Studio 15 2017.
+
 License
 -------
 
