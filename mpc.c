@@ -169,6 +169,7 @@ void mpc_and_512_neon(uint32x4_t res[SC_PROOF][4], uint32x4_t const first[SC_PRO
 #endif
 #endif
 
+#if defined(WITH_CUSTOM_INSTANCES)
 void mpc_and(mzd_local_t* const* res, mzd_local_t* const* first, mzd_local_t* const* second,
              mzd_local_t* const* r, view_t* view, unsigned viewshift, mzd_local_t* const* buffer) {
   mzd_local_t* b = buffer[0];
@@ -195,6 +196,7 @@ void mpc_and(mzd_local_t* const* res, mzd_local_t* const* first, mzd_local_t* co
   mpc_shift_right(buffer, res, viewshift, SC_PROOF);
   mpc_xor(view->s, view->s, buffer, SC_PROOF);
 }
+#endif
 
 void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
                            uint64_t const* r, view_t* view, uint64_t const mask,
@@ -345,6 +347,7 @@ void mpc_and_verify_512_neon(uint32x4_t res[SC_VERIFY][4], uint32x4_t const firs
 #endif
 #endif
 
+#if defined(WITH_CUSTOM_INSTANCES)
 void mpc_and_verify(mzd_local_t* const* res, mzd_local_t* const* first, mzd_local_t* const* second,
                     mzd_local_t* const* r, view_t* view, mzd_local_t const* mask,
                     unsigned viewshift, mzd_local_t* const* buffer) {
@@ -373,6 +376,7 @@ void mpc_and_verify(mzd_local_t* const* res, mzd_local_t* const* first, mzd_loca
   mzd_shift_left(res[SC_VERIFY - 1], view->s[SC_VERIFY - 1], viewshift);
   mzd_and(res[SC_VERIFY - 1], res[SC_VERIFY - 1], mask);
 }
+#endif
 
 void mpc_copy(mzd_local_t** out, mzd_local_t* const* in, unsigned sc) {
   for (unsigned i = 0; i < sc; ++i) {

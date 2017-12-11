@@ -19,7 +19,9 @@
 #define SC_VERIFY 2
 
 typedef union {
+#if defined(WITH_CUSTOM_INSTANCES)
   mzd_local_t* s[SC_PROOF];
+#endif
   uint64_t t[SC_PROOF];
 } view_t;
 

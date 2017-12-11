@@ -242,6 +242,7 @@ static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const picn
   kdf_shake_finalize_key(kdf);
 }
 
+#if defined(WITH_CUSTOM_INSTANCES)
 static void mzd_to_bitstream(bitstream_t* bs, const mzd_local_t* v, const size_t size) {
   const uint64_t* d = &CONST_FIRST_ROW(v)[v->width - 1];
   size_t bits       = size;
@@ -253,7 +254,6 @@ static void mzd_to_bitstream(bitstream_t* bs, const mzd_local_t* v, const size_t
   }
 }
 
-#if defined(WITH_CUSTOM_INSTANCES)
 static void mzd_from_bitstream(bitstream_t* bs, mzd_local_t* v, const size_t size) {
   uint64_t* d = &FIRST_ROW(v)[v->width - 1];
   uint64_t* f = FIRST_ROW(v);
@@ -282,7 +282,6 @@ static uint64_t uint64_from_bitstream(bitstream_t* bs) {
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
                           unsigned int idx) {
-  const size_t view_round_size = pp->view_round_size;
   const size_t num_views       = pp->lowmc.r;
 
   bitstream_t bs;
@@ -290,14 +289,18 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
   bs.position = 0;
 
   const view_t* v = &views[0];
-  if (pp->lowmc.m == 10) {
-    for (size_t i = 0; i < num_views; ++i, ++v) {
-      uint64_to_bitstream(&bs, v->t[idx]);
-    }
-  } else {
+#if defined(WITH_CUSTOM_INSTANCES)
+  if (pp->lowmc.m != 10) {
+    const size_t view_round_size = pp->view_round_size;
     for (size_t i = 0; i < num_views; ++i, ++v) {
       mzd_to_bitstream(&bs, v->s[idx], view_round_size);
     }
+    return;
+  }
+#endif
+
+  for (size_t i = 0; i < num_views; ++i, ++v) {
+    uint64_to_bitstream(&bs, v->t[idx]);
   }
 }
 
