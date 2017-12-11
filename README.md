@@ -19,7 +19,7 @@ Zaverucha.
 Building
 --------
 
-First configure the build cmake and then run make:
+First configure the build with `cmake` and then run `make`:
 ```sh
 mkdir build; cd build
 cmake ..
