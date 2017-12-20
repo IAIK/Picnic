@@ -15,6 +15,8 @@ http://creativecommons.org/publicdomain/zero/1.0/
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
 #include "brg_endian.h"
 #include "KeccakP-1600-opt64-config.h"
 
@@ -27,15 +29,13 @@ typedef unsigned long long int UINT64;
 
 #if defined(_MSC_VER)
 #define ROL64(a, offset) _rotl64(a, offset)
-#elif defined(KeccakP1600_useSHLD)
-    #define ROL64(x,N) ({ \
-    register UINT64 __out; \
-    register UINT64 __in = x; \
-    __asm__ ("shld %2,%0,%0" : "=r"(__out) : "0"(__in), "i"(N)); \
-    __out; \
-    })
 #else
-#define ROL64(a, offset) ((((UINT64)a) << offset) ^ (((UINT64)a) >> (64-offset)))
+static uint64_t ROL64(uint64_t x, unsigned int N) {
+  static const unsigned int mask = (CHAR_BIT*sizeof(x) - 1);
+  // assert ( (c<=mask) &&"rotate by type width or more");
+  N &= mask;
+  return (x << N) | (x >> ((-N) & mask));
+}
 #endif
 
 #include "KeccakP-1600-64.macros"
