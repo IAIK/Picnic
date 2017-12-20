@@ -260,7 +260,7 @@ void KeccakP1600_ExtractBytesInLane(const void *state, unsigned int lanePosition
 /* ---------------------------------------------------------------- */
 
 #if (PLATFORM_BYTE_ORDER != IS_LITTLE_ENDIAN)
-void fromWordToBytes(UINT8 *bytes, const UINT64 word)
+static void fromWordToBytes(UINT8 *bytes, const UINT64 word)
 {
     unsigned int i;
 
