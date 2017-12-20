@@ -156,7 +156,6 @@ list(APPEND SHA3_SOURCES
     sha3/KeccakSponge.c)
 
 if(${SHA3_IMPL} STREQUAL "avx2")
-  # the AVX2 version is currently slower
   list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.cpp)
 elseif(${SHA3_IMPL} STREQUAL "opt64")
   list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
