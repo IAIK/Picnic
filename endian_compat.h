@@ -43,7 +43,10 @@ static inline uint64_t bswap64(uint64_t x) {
 /* Linux / GLIBC */
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>
+/* endian.h only provides conversion functions if built with one these defines */
+#if defined(_DEFAULT_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #define HAVE_HOSTSWAP
+#endif
 #endif
 
 /* Windows */
