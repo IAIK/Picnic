@@ -44,39 +44,82 @@ static inline uint64_t bswap64(uint64_t x) {
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>
 #define HAVE_HOSTSWAP
-#define _BYTE_ORDER __BYTE_ORDER
-#define _LITTLE_ENDIAN __LITTLE_ENDIAN
-#define _BIG_ENDIAN __BIG_ENDIAN
 #endif
 
-/* Windows */
-#if defined(_WIN16) || defined(_WIN32) || defined(_WIN64)
 #if defined(__MINGW32__) || defined(__MINGW64__)
 #include <sys/param.h>
-
-#define _LITTLE_ENDIAN LITTLE_ENDIAN
-#define _BIG_ENDIAN BIG_ENDIAN
-#define _BYTE_ORDER BYTE_ORDER
-#else
-
-#define _LITTLE_ENDIAN 1234
-#define _BIG_ENDIAN 4321
-/* X-Box 360 is big-endian, but we simply ignore that. */
-#define _BYTE_ORDER _LITTLE_ENDIAN
-#endif
 #endif
 
-/* OS X */
-#if defined(__APPLE__)
+/* OS X / OpenBSD */
+#if defined(__APPLE__) || defined(__OpenBSD__)
 #include <machine/endian.h>
+#endif
 
-#define _BYTE_ORDER BYTE_ORDER
-#define _LITTLE_ENDIAN LITTLE_ENDIAN
-#define _BIG_ENDIAN BIG_ENDIAN
+/* other BSDs */
+#if defined(__FreeBSD__) || defined(__NETBSD__) || defined(__NetBSD__)
+#include <sys/endian.h>
+#endif
+
+#if defined(BIG_ENDIAN) && defined(LITTLE_ENDIAN)
+#if defined(BYTE_ORDER) && BYTE_ORDER == BIG_ENDIAN
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
+#elif defined(BIG_ENDIAN)
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(LITTLE_ENDIAN)
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
+
+#if !defined(PICNIC_IS_LITTLE_ENDIAN) && !defined(PICNIC_IS_BIG_ENDIAN)
+#if defined(_BIG_ENDIAN) && defined(_LITTLE_ENDIAN)
+#if defined(_BYTE_ORDER) && _BYTE_ORDER == _BIG_ENDIAN
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(_BYTE_ORDER) && _BYTE_ORDER == _LITTLE_ENDIAN
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
+#elif defined(_BIG_ENDIAN)
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(_LITTLE_ENDIAN)
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
+#endif
+
+#if !defined(PICNIC_IS_LITTLE_ENDIAN) && !defined(PICNIC_IS_BIG_ENDIAN)
+#if defined(__BIG_ENDIAN) && defined(__LITTLE_ENDIAN)
+#if defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
+#elif defined(__BIG_ENDIAN)
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(__LITTLE_ENDIAN)
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
+#endif
+
+#if !defined(PICNIC_IS_LITTLE_ENDIAN) && !defined(PICNIC_IS_BIG_ENDIAN)
+#if defined(__BIG_ENDIAN__) && defined(__LITTLE_ENDIAN__)
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __BIG_ENDIAN__
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __LITTLE_ENDIAN__
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
+#elif defined(__BIG_ENDIAN__)
+#define PICNIC_IS_BIG_ENDIAN
+#elif defined(__LITTLE_ENDIAN__)
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
+#endif
+
+#if !defined(PICNIC_IS_LITTLE_ENDIAN) && !defined(PICNIC_IS_BIG_ENDIAN)
+#error "Unknown platform!"
 #endif
 
 #if !defined(HAVE_HOSTSWAP)
-#if _BYTE_ORDER == _LITTLE_ENDIAN
+#if defined(PICNIC_IS_LITTLE_ENDIAN)
 #define htobe16(x) bswap16((x))
 #define htole16(x) ((uint16_t)(x))
 #define be16toh(x) bswap16((x))
@@ -91,7 +134,7 @@ static inline uint64_t bswap64(uint64_t x) {
 #define htole64(x) ((uint64_t)(x))
 #define be64toh(x) bswap64((x))
 #define le64toh(x) ((uint64_t)(x))
-#elif _BYTE_ORDER == _BIG_ENDIAN
+#elif defined(PICNIC_IS_BIG_ENDIAN)
 #define htobe16(x) ((uint16_t)(x))
 #define htole16(x) bswap16((x))
 #define be16toh(x) ((uint16_t)(x))
