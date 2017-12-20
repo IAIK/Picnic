@@ -65,6 +65,7 @@ static inline uint64_t bswap64(uint64_t x) {
 #include <sys/endian.h>
 #endif
 
+#if !defined(PICNIC_IS_LITTLE_ENDIAN) && !defined(PICNIC_IS_BIG_ENDIAN)
 #if defined(BIG_ENDIAN) && defined(LITTLE_ENDIAN)
 #if defined(BYTE_ORDER) && BYTE_ORDER == BIG_ENDIAN
 #define PICNIC_IS_BIG_ENDIAN
@@ -75,6 +76,7 @@ static inline uint64_t bswap64(uint64_t x) {
 #define PICNIC_IS_BIG_ENDIAN
 #elif defined(LITTLE_ENDIAN)
 #define PICNIC_IS_LITTLE_ENDIAN
+#endif
 #endif
 
 #if !defined(PICNIC_IS_LITTLE_ENDIAN) && !defined(PICNIC_IS_BIG_ENDIAN)
