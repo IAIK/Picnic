@@ -46,8 +46,13 @@ static inline uint64_t bswap64(uint64_t x) {
 #define HAVE_HOSTSWAP
 #endif
 
+/* Windows */
+#if defined(_WIN16) || defined(_WIN32) || defined(_WIN64)
 #if defined(__MINGW32__) || defined(__MINGW64__)
 #include <sys/param.h>
+#else
+#define PICNIC_IS_LITTLE_ENDIAN
+#endif
 #endif
 
 /* OS X / OpenBSD */
