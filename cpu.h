@@ -13,7 +13,6 @@
 #include <stdbool.h>
 
 #define CPU_CAP_SSE2 0x00000001
-#define CPU_CAP_SSE4_1 0x00000002
 #define CPU_CAP_AVX2 0x00000004
 #define CPU_CAP_NEON 0x00000008
 

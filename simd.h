@@ -46,10 +46,8 @@
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #if defined(BUILTIN_CPU_SUPPORTED)
 #define CPU_SUPPORTS_AVX2 __builtin_cpu_supports("avx2")
-#define CPU_SUPPORTS_SSE4_1 __builtin_cpu_supports("sse4.1")
 #else
 #define CPU_SUPPORTS_AVX2 cpu_supports(CPU_CAP_AVX2)
-#define CPU_SUPPORTS_SSE4_1 cpu_supports(CPU_CAP_SSE4_1)
 #endif
 #endif
 
