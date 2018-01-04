@@ -71,12 +71,19 @@ check_simd(AVX2 CC_SUPPORTS_AVX2)
 check_simd(NEON CC_SUPPORTS_NEON)
 
 # user-settable options
+if(APPLE AND ${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+# workaround for broken -march=native support on some versions of GCC on OS X.
+set(DEFAULT_WITH_MARCH_NATIVE OFF)
+else()
+set(DEFAULT_WITH_MARCH_NATIVE ON)
+endif()
+
 set(WITH_SIMD_OPT ON CACHE BOOL "Enable optimizations via SIMD.")
 set(WITH_AVX2 ON CACHE BOOL "Use AVX2 if available.")
 set(WITH_SSE2 ON CACHE BOOL "Use SSE2 if available.")
 set(WITH_SSE4_1 ON CACHE BOOL "Use SSE4.1 if available.")
 set(WITH_NEON ON CACHE BOOL "Use NEON if available.")
-set(WITH_MARCH_NATIVE ON CACHE BOOL "Build with -march=native -mtune=native (if supported).")
+set(WITH_MARCH_NATIVE ${DEFAULT_WITH_MARCH_NATIVE} CACHE BOOL "Build with -march=native -mtune=native (if supported).")
 set(WITH_LTO ON CACHE BOOL "Enable link-time optimization (if supported).")
 set(WITH_MUL_M4RI ON CACHE BOOL "Use methods of four russians for matrix multiplication.")
 set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
