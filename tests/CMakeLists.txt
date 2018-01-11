@@ -11,7 +11,7 @@ if(M4RI_FOUND AND OPENSSL_FOUND)
   endforeach(target)
 endif()
 
-foreach(target IN ITEMS bitstream kdf_shake256 picnic extended_picnic lowmc)
+foreach(target IN ITEMS bitstream kdf_shake256 picnic extended_picnic lowmc kats)
   add_executable("${target}_test" "${target}_test.c")
   target_link_libraries("${target}_test" picnic_static)
   target_compile_definitions("${target}_test" PRIVATE HAVE_CONFIG_H PICNIC_STATIC)
