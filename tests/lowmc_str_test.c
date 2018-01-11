@@ -10,7 +10,6 @@
 
 #include "utils.c.i"
 
-
 static int lowmc_enc_str(const picnic_params_t param, const char* key, const char* plaintext,
                          const char* expected) {
   picnic_instance_t* pp = get_instance(param);
@@ -66,13 +65,6 @@ static const char plaintext_L1_2[] = "000000000000000000000000000000000000000000
 static const char expected_L1_2[] = "10110010110111000100101000011101111111111100001010100110111000"
                                     "11011011010110001001100001111010111000010011000110001110101000"
                                     "1001";
-
-static const uint8_t key_L1_3[] = {0x08, 0x4c, 0x2a, 0x6e, 0x19, 0x5d, 0x3b, 0x7f,
-                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static const uint8_t plaintext_L1_3[] = {0xf7, 0xb3, 0xd5, 0x91, 0xe6, 0xa2, 0xc4, 0x80,
-                                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static const uint8_t expected_L1_3[] = {0x91, 0x5c, 0x63, 0x21, 0xd7, 0x86, 0x46, 0xb6,
-                                        0xc7, 0x65, 0x43, 0xff, 0xb8, 0x52, 0x3b, 0x4d};
 
 static const char key_256_256_10_38[] =
     "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
