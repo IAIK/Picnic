@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # project info
-project(picnic C CXX)
+project(picnic C)
 
 set(PICNIC_MAJOR_VERSION 1)
 set(PICNIC_MINOR_VERSION 0)
@@ -23,8 +23,6 @@ endif()
 # set required C standard version
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # required fuctions
 include(CheckSIMD)
@@ -95,8 +93,6 @@ string(REGEX REPLACE "-rdynamic" "" CMAKE_EXE_LINKER_FLAGS
   "${CMAKE_EXE_LINKER_FLAGS}")
 string(REGEX REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_C_FLAGS
   "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}")
-string(REGEX REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS
-  "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS}")
 
 # build with -Wall and -Wextra if supported
 if(CC_SUPPORTS_WALL)
@@ -123,8 +119,6 @@ if(WITH_LTO)
       set(CMAKE_AR "gcc-ar")
       set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
       set(CMAKE_C_ARCHIVE_FINISH true)
-      set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
-      set(CMAKE_CXX_ARCHIVE_FINISH true)
     endif()
 
     check_c_compiler_flag(-flto CC_SUPPORTS_FLTO)
@@ -161,7 +155,7 @@ list(APPEND SHA3_SOURCES
     sha3/KeccakSponge.c)
 
 if(${SHA3_IMPL} STREQUAL "avx2")
-  list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.cpp)
+  list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.c)
 elseif(${SHA3_IMPL} STREQUAL "opt64")
   list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
 elseif(${SHA3_IMPL} STREQUAL "armv8a-neon")
