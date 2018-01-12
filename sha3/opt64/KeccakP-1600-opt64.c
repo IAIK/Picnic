@@ -154,7 +154,7 @@ void KeccakP1600_AddLanes(void *state, const unsigned char *data, unsigned int l
     }
 #else
     unsigned int i;
-    UINT8 *curData = data;
+    UINT8 const *curData = data;
     for(i=0; i<laneCount; i++, curData+=8) {
         UINT64 lane = (UINT64)curData[0]
             | ((UINT64)curData[1] << 8)
