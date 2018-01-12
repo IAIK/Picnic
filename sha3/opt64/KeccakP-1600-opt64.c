@@ -32,7 +32,6 @@ typedef unsigned long long int UINT64;
 #else
 static uint64_t ROL64(uint64_t x, unsigned int N) {
   static const unsigned int mask = (CHAR_BIT*sizeof(x) - 1);
-  // assert ( (c<=mask) &&"rotate by type width or more");
   N &= mask;
   return (x << N) | (x >> ((-N) & mask));
 }
