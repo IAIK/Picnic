@@ -6,4 +6,4 @@ environment:
   - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
 
 build_script:
-  - bash .ci-build.sh
+  - bash .ci-build.sh -DWITH_LTO=OFF
