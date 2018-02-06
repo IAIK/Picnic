@@ -22,11 +22,13 @@ foreach(target IN ITEMS bitstream kdf_shake256 picnic extended_picnic lowmc kats
   add_test(NAME ${target} COMMAND "${target}_test")
 endforeach(target)
 
-foreach(target IN ITEMS L1_FS L1_UR L3_FS L3_UR L5_FS L5_UR)
-  add_executable("api_${target}_test" "api_test.c")
-  target_link_libraries("api_${target}_test" "picnic_${target}")
-  target_include_directories("api_${target}_test" PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../${target}")
+if(NOT MSVC)
+  foreach(target IN ITEMS L1_FS L1_UR L3_FS L3_UR L5_FS L5_UR)
+    add_executable("api_${target}_test" "api_test.c")
+    target_link_libraries("api_${target}_test" "picnic_${target}")
+    target_include_directories("api_${target}_test" PRIVATE
+      "${CMAKE_CURRENT_SOURCE_DIR}/../${target}")
 
-  add_test(NAME "api_${target}" COMMAND "api_${target}_test")
-endforeach(target)
+    add_test(NAME "api_${target}" COMMAND "api_${target}_test")
+  endforeach(target)
+endif()
