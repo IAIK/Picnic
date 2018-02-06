@@ -25,4 +25,11 @@ fi
 cd ..
 
 cmake --build "$directory"
-cmake --build "$directory" --target test
+case "$CMAKE_GENERATOR" in
+  Visual*)
+    cmake --build "$directory" --target RUN_TESTS
+    ;;
+  *)
+    cmake --build "$directory" --target test
+    ;;
+esac
