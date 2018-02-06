@@ -12,5 +12,7 @@ then
 else
   cmake .. "$@"
 fi
-make
-make test
+cd ..
+
+cmake --build "$directory"
+cmake --build "$directory" --target test
