@@ -9,4 +9,4 @@ powerset() {
   done
 }
 
-powerset "$@" | xargs -L 1 -d '\n' bash .travis-build.sh
+powerset "$@" | xargs -L 1 -d '\n' bash .ci-build.sh
