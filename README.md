@@ -104,8 +104,9 @@ lib /def:"libpicnic.def" /out:"libpicnic.lib" /machine:x64
 to produce the `lib` file required by Visual Studio for linking.
 
 The instructions were tested for a 64 bit build of Picnic on a recent Debian and
-Ubuntu installation with `mingw-w64` installed. For a 32 the paths need to be
-changed in the toolchain file and `lib` needs to be called with `/machine:x86`.
+Ubuntu installation with `mingw-w64` installed. For a 32 bits the paths need to
+be changed in the toolchain file and `lib` needs to be called with
+`/machine:x86`.
 
 License
 -------
