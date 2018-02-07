@@ -108,6 +108,11 @@ Ubuntu installation with `mingw-w64` installed. For a 32 bits the paths need to
 be changed in the toolchain file and `lib` needs to be called with
 `/machine:x86`.
 
+CI status
+---------
+[![Travis CI build status](https://travis-ci.org/IAIK/Picnic.svg?branch=master)](https://travis-ci.org/IAIK/Picnic)
+[![AppVeyor CI build status](https://ci.appveyor.com/api/projects/status/github/IAIK/Picnic?branch=master&svg=true)](https://ci.appveyor.com/project/sebastinas/picnic)
+
 License
 -------
 
