@@ -294,7 +294,7 @@ target_link_libraries(visualize_signature picnic_static)
 target_compile_definitions(visualize_signature PRIVATE HAVE_CONFIG_H PICNIC_STATIC)
 if(MSVC)
   if(USE_STATIC_RUNTIME)
-	target_compile_options(visualize_signature PRIVATE "/MT$<$<CONFIG:Debug>:d>")
+    target_compile_options(visualize_signature PRIVATE "/MT$<$<CONFIG:Debug>:d>")
   endif()
 endif()
 
