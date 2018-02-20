@@ -97,6 +97,9 @@ set(ENABLE_VERBOSE_OUTPUT OFF CACHE BOOL "Enable verbose output.")
 set(ENABLE_DETAILED_TIMINGS OFF CACHE BOOL "Enable detail timings.")
 set(WITH_REDUCED_LINEAR_LAYER ON CACHE BOOL "Enable precomputation of round key.")
 set(WITH_CUSTOM_INSTANCES OFF CACHE BOOL "Enable large and custom LowMC instances.")
+if(MSVC)
+  set(USE_STATIC_RUNTIME OFF CACHE BOOL "Use MSVC's static runtime for the static library.")
+endif()
 
 # do not build with -rdynamic
 string(REGEX REPLACE "-rdynamic" "" CMAKE_EXE_LINKER_FLAGS
@@ -269,6 +272,11 @@ else()
   endif()
 endif()
 target_compile_definitions(picnic_static PRIVATE PICNIC_EXPORT=)
+if(MSVC)
+  if(USE_STATIC_RUNTIME)
+	target_compile_options(picnic_static PRIVATE "/MT$<$<CONFIG:Debug>:d>")
+  endif()
+endif()
 
 # genparams executable
 if(M4RI_FOUND AND OPENSSL_FOUND)
@@ -284,6 +292,11 @@ endif()
 add_executable(visualize_signature tools/visualize_signature.c)
 target_link_libraries(visualize_signature picnic_static)
 target_compile_definitions(visualize_signature PRIVATE HAVE_CONFIG_H PICNIC_STATIC)
+if(MSVC)
+  if(USE_STATIC_RUNTIME)
+	target_compile_options(visualize_signature PRIVATE "/MT$<$<CONFIG:Debug>:d>")
+  endif()
+endif()
 
 # bench executable
 add_executable(bench tools/bench.c)
