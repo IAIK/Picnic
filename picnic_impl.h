@@ -45,12 +45,12 @@ typedef struct {
 picnic_instance_t* get_instance(picnic_params_t param);
 const picnic_instance_t* picnic_instance_get(picnic_params_t param);
 
-bool fis_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
-              const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
-              size_t* siglen);
+bool impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
+               const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
+               size_t* siglen);
 
-bool fis_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
-                const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen);
+bool impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
+                 const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen);
 
 void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* msg, size_t msglen,
                          const uint8_t* sig, size_t siglen);

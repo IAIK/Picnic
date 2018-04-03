@@ -195,7 +195,7 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
   const uint8_t* sk_c  = &sk->data[1 + input_size + output_size];
   const uint8_t* sk_pt = &sk->data[1 + input_size];
 
-  return fis_sign(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len)
+  return impl_sign(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len)
              ? 0
              : -1;
 }
@@ -218,7 +218,8 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
   const uint8_t* pk_c  = &pk->data[1 + output_size];
   const uint8_t* pk_pt = &pk->data[1];
 
-  return fis_verify(instance, pk_pt, pk_c, message, message_len, signature, signature_len) ? 0 : -1;
+  return impl_verify(instance, pk_pt, pk_c, message, message_len, signature, signature_len) ? 0
+                                                                                            : -1;
 }
 
 void picnic_visualize(FILE* out, const uint8_t* public_key, size_t public_key_size,

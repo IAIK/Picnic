@@ -282,7 +282,7 @@ static uint64_t uint64_from_bitstream(bitstream_t* bs) {
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
                           unsigned int idx) {
-  const size_t num_views       = pp->lowmc.r;
+  const size_t num_views = pp->lowmc.r;
 
   bitstream_t bs;
   bs.buffer   = dst;
@@ -786,9 +786,9 @@ err:
   return NULL;
 }
 
-bool fis_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
-              const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
-              size_t* siglen) {
+bool impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
+               const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
+               size_t* siglen) {
   mzd_local_t* m_plaintext  = mzd_local_init_ex(1, pp->lowmc.n, false);
   mzd_local_t* m_privatekey = mzd_local_init_ex(1, pp->lowmc.k, false);
 
@@ -804,8 +804,8 @@ bool fis_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8
   return result;
 }
 
-bool fis_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
-                const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
+bool impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
+                 const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, pp->lowmc.n, false);
   mzd_local_t* m_publickey = mzd_local_init_ex(1, pp->lowmc.n, false);
 
@@ -950,8 +950,9 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
   }
 }
 
-void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
-                  const uint8_t* circuit_input, const uint8_t* m, size_t m_len, uint8_t* ch) {
+static void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
+                         const uint8_t* circuit_output, const uint8_t* circuit_input,
+                         const uint8_t* m, size_t m_len, uint8_t* ch) {
   const size_t digest_size = pp->digest_size;
   const size_t num_rounds  = pp->num_rounds;
   const size_t output_size = pp->output_size;
@@ -1052,8 +1053,8 @@ void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* 
   H3_compute(pp, hash, ch);
 }
 
-void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
-           const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
+static void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
+                  const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
   const size_t num_rounds = pp->num_rounds;
 
   hash_context ctx;
@@ -1082,8 +1083,8 @@ void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit
   H3_compute(pp, hash, prf->challenge);
 }
 
-void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx,
-             bool include_is) {
+static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx,
+                    bool include_is) {
   hash_context ctx;
 
   const size_t outputlen =
