@@ -7,7 +7,7 @@
 #include "../mpc.h"
 #include "../mzd_additional.h"
 
-#include "utils.c.i"
+#include "utils.h"
 
 static mzd_local_t** mpc_init_empty_share_vector(uint32_t n, unsigned sc) {
   mzd_local_t** s = malloc(sc * sizeof(mzd_local_t*));

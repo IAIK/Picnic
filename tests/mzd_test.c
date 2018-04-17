@@ -1,7 +1,7 @@
 #include "../mzd_additional.h"
 #include <m4ri/m4ri.h>
 
-#include "utils.c.i"
+#include "utils.h"
 
 static void test_mzd_local_equal(void) {
   for (unsigned int i = 0; i < 10; ++i) {
