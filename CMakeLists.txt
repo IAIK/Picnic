@@ -186,7 +186,6 @@ list(APPEND PICNIC_SOURCES
     bitstream.c
     cpu.c
     io.c
-    kdf_shake.c
     lowmc.c
     lowmc_pars.c
     lowmc_128_128_20.c

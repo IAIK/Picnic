@@ -25,7 +25,7 @@
 #define KeccakP800_excluded
 #endif
 
-#ifndef SUPERCOP
+#if !defined(SUPERCOP)
 #include "sha3/KeccakHash.h"
 #else
 #include <libkeccak.a.headers/KeccakHash.h>
@@ -35,7 +35,13 @@
 
 typedef Keccak_HashInstance hash_context;
 
-void hash_init(hash_context* ctx, const picnic_instance_t* pp);
+static inline void hash_init(hash_context* ctx, const picnic_instance_t* pp) {
+  if (pp->security_level == 64) {
+    Keccak_HashInitialize_SHAKE128(ctx);
+  } else {
+    Keccak_HashInitialize_SHAKE256(ctx);
+  }
+}
 
 #define hash_update(ctx, data, size) Keccak_HashUpdate((ctx), (data), (size) << 3)
 #define hash_final(ctx) Keccak_HashFinal((ctx), NULL)
