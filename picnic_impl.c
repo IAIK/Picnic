@@ -76,15 +76,49 @@ static void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
 static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx,
                     bool include_is);
 
-static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
-                               const uint8_t* challenge);
-static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
-                             const uint8_t* collapsed);
-
 static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32_t m, uint32_t n,
                             uint32_t r, uint32_t k);
 
 static void destroy_instance(picnic_instance_t* pp);
+
+/**
+ * Collapse challenge from one char per challenge to bit array.
+ */
+static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
+                               const uint8_t* challenge) {
+  bitstream_t bs;
+  bs.buffer   = collapsed;
+  bs.position = 0;
+
+  for (unsigned int i = 0; i < pp->num_rounds; ++i) {
+    bitstream_put_bits(&bs, (challenge[i] >> 1) | ((challenge[i] & 1) << 1), 2);
+  }
+}
+
+/**
+ * Expand challenge from bit array to one char per challenge.
+ */
+static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
+                             const uint8_t* collapsed) {
+  bitstream_t bs;
+  bs.cbuffer  = collapsed;
+  bs.position = 0;
+
+  for (unsigned int i = 0; i < pp->num_rounds; ++i) {
+    uint8_t ch = bitstream_get_bits(&bs, 2);
+    if (ch == 3) {
+      return false;
+    }
+    challenge[i] = (ch & 1) << 1 | (ch >> 1);
+  }
+
+  size_t remaining_bits = (pp->collapsed_challenge_size << 3) - bs.position;
+  if (remaining_bits && bitstream_get_bits(&bs, remaining_bits)) {
+    return false;
+  }
+
+  return true;
+}
 
 static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   const size_t digest_size                    = pp->digest_size;
@@ -1268,37 +1302,4 @@ ATTR_DTOR static void clear_instances(void) {
       instance_initialized[p] = false;
     }
   }
-}
-
-static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
-                               const uint8_t* challenge) {
-  bitstream_t bs;
-  bs.buffer   = collapsed;
-  bs.position = 0;
-
-  for (unsigned int i = 0; i < pp->num_rounds; ++i) {
-    bitstream_put_bits(&bs, (challenge[i] >> 1) | ((challenge[i] & 1) << 1), 2);
-  }
-}
-
-static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
-                             const uint8_t* collapsed) {
-  bitstream_t bs;
-  bs.buffer   = (uint8_t*)collapsed;
-  bs.position = 0;
-
-  for (unsigned int i = 0; i < pp->num_rounds; ++i) {
-    uint8_t ch = bitstream_get_bits(&bs, 2);
-    if (ch == 3) {
-      return false;
-    }
-    challenge[i] = (ch & 1) << 1 | (ch >> 1);
-  }
-
-  size_t remaining_bits = (pp->collapsed_challenge_size << 3) - bs.position;
-  if (remaining_bits && bitstream_get_bits(&bs, remaining_bits)) {
-    return false;
-  }
-
-  return true;
 }
