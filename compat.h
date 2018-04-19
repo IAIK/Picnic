@@ -38,10 +38,14 @@
 #else
 #include <stddef.h>
 
-/* compat implementation of aligned_alloc from ISO C 2011 */
+/**
+ * Compatibility implementation of aligned_alloc from ISO C 2011.
+ */
 void* aligned_alloc(size_t alignment, size_t size);
-/* some aligned alloc implementations require custom free functions, so we
- * provide one too */
+/**
+ * Some aligned_alloc compatbility implementations require custom free
+ * functions, so we provide one too.
+ */
 void aligned_free(void* ptr);
 #endif
 

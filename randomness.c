@@ -14,6 +14,7 @@
 #include "randomness.h"
 
 #if defined(HAVE_RANDOMBYTES) || defined(SUPERCOP)
+// randombytes from the NIST framework / SUPERCOP
 extern void randombytes(unsigned char* x, unsigned long long xlen);
 
 int rand_bytes(uint8_t* dst, size_t len) {
