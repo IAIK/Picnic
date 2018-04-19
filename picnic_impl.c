@@ -442,9 +442,9 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     const uint16_t size_le = htole16(lowmc_n);
     kdf_shake_update_key(&ctx, (const uint8_t*)&size_le, sizeof(size_le));
 #if defined(WITH_EXTRA_RANDOMNESS)
-    unsigned char buffer[MAX_DIGEST_SIZE];
-    rand_bytes(buffer, seed_size);
-    kdf_shake_update_key(&ctx, buffer, seed_size);
+    unsigned char buffer[2 * MAX_DIGEST_SIZE];
+    rand_bytes(buffer, 2 * seed_size);
+    kdf_shake_update_key(&ctx, buffer, 2 * seed_size);
 #endif
     kdf_shake_finalize_key(&ctx);
 
