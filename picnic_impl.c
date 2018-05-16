@@ -946,7 +946,7 @@ void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsi
   hash_update(&ctx, &HASH_PREFIX_4, sizeof(HASH_PREFIX_4));
   hash_update(&ctx, prf_round->seeds[vidx], pp->seed_size);
   hash_final(&ctx);
-  hash_squeeze(tmp, hashlen, &ctx);
+  hash_squeeze(&ctx, tmp, hashlen);
 
   // compute H_0(H_4(seed), view)
   hash_init(&ctx, pp);
@@ -959,7 +959,7 @@ void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsi
   // hash output share
   hash_update(&ctx, prf_round->output_shares[vidx], pp->output_size);
   hash_final(&ctx);
-  hash_squeeze(prf_round->commitments[vidx], hashlen, &ctx);
+  hash_squeeze(&ctx, prf_round->commitments[vidx], hashlen);
 }
 
 // challenge - outputs {1,2 or 3}^t
@@ -977,7 +977,7 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
       hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
       hash_update(&ctx, hash, digest_size);
       hash_final(&ctx);
-      hash_squeeze(hash, digest_size, &ctx);
+      hash_squeeze(&ctx, hash, digest_size);
       bit_idx = 0;
     }
 
@@ -1088,7 +1088,7 @@ static void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
   hash_final(&ctx);
 
   uint8_t hash[MAX_DIGEST_SIZE];
-  hash_squeeze(hash, digest_size, &ctx);
+  hash_squeeze(&ctx, hash, digest_size);
   H3_compute(pp, hash, ch);
 }
 
@@ -1118,7 +1118,7 @@ static void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* 
   hash_final(&ctx);
 
   uint8_t hash[MAX_DIGEST_SIZE];
-  hash_squeeze(hash, pp->digest_size, &ctx);
+  hash_squeeze(&ctx, hash, pp->digest_size);
   H3_compute(pp, hash, prf->challenge);
 }
 
@@ -1139,7 +1139,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   hash_final(&ctx);
 
   uint8_t tmp[MAX_DIGEST_SIZE];
-  hash_squeeze(tmp, digest_size, &ctx);
+  hash_squeeze(&ctx, tmp, digest_size);
 
   /* Hash H_5(seed), the view, and the length */
   hash_init(&ctx, pp);
@@ -1150,7 +1150,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   hash_update(&ctx, prf_round->communicated_bits[vidx], pp->view_size);
   hash_update(&ctx, (const uint8_t*)&size_le, sizeof(uint16_t));
   hash_final(&ctx);
-  hash_squeeze(prf_round->gs[vidx], outputlen, &ctx);
+  hash_squeeze(&ctx, prf_round->gs[vidx], outputlen);
 }
 
 // instance handling

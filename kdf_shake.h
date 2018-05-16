@@ -43,16 +43,24 @@ static inline void hash_init(hash_context* ctx, const picnic_instance_t* pp) {
   }
 }
 
-#define hash_update(ctx, data, size) Keccak_HashUpdate((ctx), (data), (size) << 3)
-#define hash_final(ctx) Keccak_HashFinal((ctx), NULL)
-#define hash_squeeze(buffer, buflen, ctx) Keccak_HashSqueeze((ctx), (buffer), (buflen) << 3)
+static inline void hash_update(hash_context* ctx, const uint8_t* data, size_t size) {
+  Keccak_HashUpdate(ctx, data, size << 3);
+}
+
+static inline void hash_final(hash_context* ctx) {
+  Keccak_HashFinal(ctx, NULL);
+}
+
+static inline void hash_squeeze(hash_context* ctx, uint8_t* buffer, size_t buflen) {
+  Keccak_HashSqueeze(ctx, buffer, buflen << 3);
+}
 
 typedef Keccak_HashInstance kdf_shake_t;
 
 #define kdf_shake_init(ctx, pp) hash_init((ctx), (pp))
 #define kdf_shake_update_key(ctx, key, keylen) hash_update((ctx), (key), (keylen))
 #define kdf_shake_finalize_key(ctx) hash_final((ctx))
-#define kdf_shake_get_randomness(ctx, dst, count) hash_squeeze((dst), (count), (ctx))
+#define kdf_shake_get_randomness(ctx, dst, count) hash_squeeze((ctx), (dst), (count))
 #define kdf_shake_clear(ctx)
 
 #endif
