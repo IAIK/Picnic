@@ -27,6 +27,7 @@
 #include "simd.h"
 #endif
 
+#if defined(WITH_CUSTOM_INSTANCES)
 typedef struct {
   mzd_local_t* x0m[SC_PROOF]; // a
   mzd_local_t* x1m[SC_PROOF]; // b
@@ -45,6 +46,7 @@ typedef struct {
 
 static sbox_vars_t* sbox_vars_init(sbox_vars_t* vars, uint32_t n, unsigned sc);
 static void sbox_vars_clear(sbox_vars_t* vars);
+#endif
 
 #define bitsliced_step_1(sc)                                                                       \
   mpc_and_const(out, in, mask->mask, sc);                                                          \
@@ -787,7 +789,7 @@ static void mpc_lowmc_call(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key, mzd
   } else
 #endif
   {
-    _mpc_lowmc_call_bitsliced(0, 6, , uint64, lookup, noscr, _optimize, mzd_mul_vl_general,
+    _mpc_lowmc_call_bitsliced(0, 5, , uint64, lookup, noscr, _optimize, mzd_mul_vl_general,
                               mzd_xor_general, mzd_mul_vl_general, mzd_addmul_vl_general);
   }
 #else
@@ -799,7 +801,7 @@ static void mpc_lowmc_call(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key, mzd
   } else
 #endif
   {
-    _mpc_lowmc_call_bitsliced(0, 6, , uint64, matrix, scr, _optimize, mzd_mul_v_general,
+    _mpc_lowmc_call_bitsliced(0, 5, , uint64, matrix, scr, _optimize, mzd_mul_v_general,
                               mzd_xor_general, mzd_mul_v_general, mzd_addmul_v_general);
   }
 #endif
@@ -812,7 +814,7 @@ static void mpc_lowmc_call(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key, mzd
   } else
 #endif
   {
-    _mpc_lowmc_call_bitsliced(0, 6, , uint64, lookup, noscr, , mzd_mul_vl_general, mzd_xor_general,
+    _mpc_lowmc_call_bitsliced(0, 5, , uint64, lookup, noscr, , mzd_mul_vl_general, mzd_xor_general,
                               , mzd_addmul_vl_general);
   }
 #else
@@ -823,7 +825,7 @@ static void mpc_lowmc_call(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key, mzd
   } else
 #endif
   {
-    _mpc_lowmc_call_bitsliced(0, 6, , uint64, matrix, scr, , mzd_mul_v_general, mzd_xor_general, ,
+    _mpc_lowmc_call_bitsliced(0, 5, , uint64, matrix, scr, , mzd_mul_v_general, mzd_xor_general, ,
                               mzd_addmul_v_general);
   }
 #endif
@@ -842,7 +844,7 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
   } else
 #endif
   {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 6, , uint64, lookup, noscr, _optimize,
+    _mpc_lowmc_call_bitsliced_verify_m(ch, 5, , uint64, lookup, noscr, _optimize,
                                        mzd_mul_vl_general, mzd_xor_general, mzd_mul_vl_general,
                                        mzd_addmul_vl_general);
   }
@@ -855,7 +857,7 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
   } else
 #endif
   {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 6, , uint64, matrix, scr, _optimize, mzd_mul_v_general,
+    _mpc_lowmc_call_bitsliced_verify_m(ch, 5, , uint64, matrix, scr, _optimize, mzd_mul_v_general,
                                        mzd_xor_general, mzd_mul_v_general, mzd_addmul_v_general);
   }
 #endif
@@ -869,7 +871,7 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
   } else
 #endif
   {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 6, , uint64, lookup, noscr, , mzd_mul_vl_general,
+    _mpc_lowmc_call_bitsliced_verify_m(ch, 5, , uint64, lookup, noscr, , mzd_mul_vl_general,
                                        mzd_xor_general, , mzd_addmul_vl_general);
   }
 #else
@@ -880,7 +882,7 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
   } else
 #endif
   {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 6, , uint64, matrix, scr, , mzd_mul_v_general,
+    _mpc_lowmc_call_bitsliced_verify_m(ch, 5, , uint64, matrix, scr, , mzd_mul_v_general,
                                        mzd_xor_general, , mzd_addmul_v_general);
   }
 #endif
@@ -1079,6 +1081,7 @@ mpc_lowmc_call_def(mpc_lowmc_call_512_neon, mpc_lowmc_call_verify_512_neon,
 #endif
 #endif
 
+#if defined(WITH_CUSTOM_INSTANCES)
 static void sbox_vars_clear(sbox_vars_t* vars) {
   if (vars->storage) {
     mzd_local_free_multiple(vars->storage);
@@ -1107,6 +1110,7 @@ static sbox_vars_t* sbox_vars_init(sbox_vars_t* vars, uint32_t n, unsigned sc) {
 
   return vars;
 }
+#endif
 
 #ifdef WITH_CUSTOM_INSTANCES
 #define general_or_10(l, f) (l)->m == 10 ? f##_10 : (f)
