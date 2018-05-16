@@ -50,37 +50,6 @@ static const uint8_t HASH_PREFIX_5 = 5;
 
 #define LOWMC_UNSPECFIED_ARG UINT32_MAX
 
-static bool sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
-                                    uint8_t* sig, size_t* siglen);
-static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const uint8_t* data,
-                                              size_t len);
-
-/**
- * Computes commitments to the view of an execution.
- */
-static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx);
-
-/**
- * Computes the challenge for FS (when signing).
- */
-static void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
-                  const uint8_t* circuit_input, const uint8_t* m, size_t m_len);
-
-/**
- * Computes the challenge for FS (when verifying).
- */
-static void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
-                         const uint8_t* circuit_output, const uint8_t* circuit_input,
-                         const uint8_t* m, size_t m_len, uint8_t* ch);
-
-static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx,
-                    bool include_is);
-
-static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32_t m, uint32_t n,
-                            uint32_t r, uint32_t k);
-
-static void destroy_instance(picnic_instance_t* pp);
-
 /**
  * Collapse challenge from one char per challenge to bit array.
  */
@@ -396,6 +365,378 @@ static void mzd_unshare(mzd_local_t* dst, mzd_local_t* shared_value[SC_PROOF]) {
   mzd_xor(dst, dst, shared_value[2]);
 }
 
+// commitment
+void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx) {
+  const size_t hashlen = pp->digest_size;
+
+  uint8_t tmp[MAX_DIGEST_SIZE];
+
+  hash_context ctx;
+
+  // hash the seed
+  hash_init(&ctx, pp);
+  hash_update(&ctx, &HASH_PREFIX_4, sizeof(HASH_PREFIX_4));
+  hash_update(&ctx, prf_round->seeds[vidx], pp->seed_size);
+  hash_final(&ctx);
+  hash_squeeze(&ctx, tmp, hashlen);
+
+  // compute H_0(H_4(seed), view)
+  hash_init(&ctx, pp);
+  hash_update(&ctx, &HASH_PREFIX_0, sizeof(HASH_PREFIX_0));
+  hash_update(&ctx, tmp, hashlen);
+  // hash input share
+  hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
+  // hash communicated bits
+  hash_update(&ctx, prf_round->communicated_bits[vidx], pp->view_size);
+  // hash output share
+  hash_update(&ctx, prf_round->output_shares[vidx], pp->output_size);
+  hash_final(&ctx);
+  hash_squeeze(&ctx, prf_round->commitments[vidx], hashlen);
+}
+
+// challenge - outputs {1,2 or 3}^t
+static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) {
+  const size_t digest_size      = pp->digest_size;
+  const size_t digest_size_bits = digest_size << 3;
+
+  // Pick bits from hash
+  uint8_t* eof   = ch + pp->num_rounds;
+  size_t bit_idx = 0;
+  while (ch < eof) {
+    if (bit_idx >= digest_size_bits) {
+      hash_context ctx;
+      hash_init(&ctx, pp);
+      hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
+      hash_update(&ctx, hash, digest_size);
+      hash_final(&ctx);
+      hash_squeeze(&ctx, hash, digest_size);
+      bit_idx = 0;
+    }
+
+    uint8_t twobits = (hash[bit_idx >> 3] >> ((6 - (bit_idx & 0x7)))) & 0x3;
+    if (twobits != 0x3) {
+      *ch++ = twobits;
+    }
+    bit_idx += 2;
+  }
+}
+
+static void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
+                         const uint8_t* circuit_output, const uint8_t* circuit_input,
+                         const uint8_t* m, size_t m_len, uint8_t* ch) {
+  const size_t digest_size = pp->digest_size;
+  const size_t num_rounds  = pp->num_rounds;
+  const size_t output_size = pp->output_size;
+
+  hash_context ctx;
+  hash_init(&ctx, pp);
+  hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
+
+  // hash output shares
+  proof_round_t* round = prf->round;
+  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
+    switch (prf->challenge[i]) {
+    case 0: {
+      hash_update(&ctx, round->output_shares[0], output_size);
+      hash_update(&ctx, round->output_shares[1], output_size);
+      hash_update(&ctx, round->output_shares[2], output_size);
+      break;
+    }
+    case 1: {
+      hash_update(&ctx, round->output_shares[2], output_size);
+      hash_update(&ctx, round->output_shares[0], output_size);
+      hash_update(&ctx, round->output_shares[1], output_size);
+      break;
+    }
+    default: {
+      hash_update(&ctx, round->output_shares[1], output_size);
+      hash_update(&ctx, round->output_shares[2], output_size);
+      hash_update(&ctx, round->output_shares[0], output_size);
+      break;
+    }
+    }
+  }
+
+  // hash commitments
+  round = prf->round;
+  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
+    switch (prf->challenge[i]) {
+    case 0: {
+      hash_update(&ctx, round->commitments[0], digest_size);
+      hash_update(&ctx, round->commitments[1], digest_size);
+      hash_update(&ctx, round->commitments[2], digest_size);
+      break;
+    }
+    case 1: {
+      hash_update(&ctx, round->commitments[2], digest_size);
+      hash_update(&ctx, round->commitments[0], digest_size);
+      hash_update(&ctx, round->commitments[1], digest_size);
+      break;
+    }
+    default: {
+      hash_update(&ctx, round->commitments[1], digest_size);
+      hash_update(&ctx, round->commitments[2], digest_size);
+      hash_update(&ctx, round->commitments[0], digest_size);
+      break;
+    }
+    }
+  }
+
+  if (pp->transform == TRANSFORM_UR) {
+    const uint32_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
+    const uint32_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
+
+    // hash commitments
+    round = prf->round;
+    for (unsigned i = 0; i < num_rounds; ++i, ++round) {
+      switch (prf->challenge[i]) {
+      case 0: {
+        hash_update(&ctx, round->gs[0], without_input_bytes_size);
+        hash_update(&ctx, round->gs[1], without_input_bytes_size);
+        hash_update(&ctx, round->gs[2], with_input_bytes_size);
+        break;
+      }
+      case 1: {
+        hash_update(&ctx, round->gs[2], without_input_bytes_size);
+        hash_update(&ctx, round->gs[0], without_input_bytes_size);
+        hash_update(&ctx, round->gs[1], with_input_bytes_size);
+        break;
+      }
+      default: {
+        hash_update(&ctx, round->gs[1], without_input_bytes_size);
+        hash_update(&ctx, round->gs[2], without_input_bytes_size);
+        hash_update(&ctx, round->gs[0], with_input_bytes_size);
+        break;
+      }
+      }
+    }
+  }
+
+  // hash circuit out and input
+  hash_update(&ctx, circuit_output, pp->output_size);
+  hash_update(&ctx, circuit_input, pp->input_size);
+  // hash message
+  hash_update(&ctx, m, m_len);
+  hash_final(&ctx);
+
+  uint8_t hash[MAX_DIGEST_SIZE];
+  hash_squeeze(&ctx, hash, digest_size);
+  H3_compute(pp, hash, ch);
+}
+
+static void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
+                  const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
+  const size_t num_rounds = pp->num_rounds;
+
+  hash_context ctx;
+  hash_init(&ctx, pp);
+  hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
+
+  // hash output shares
+  hash_update(&ctx, prf->round[0].output_shares[0], pp->output_size * num_rounds * SC_PROOF);
+  // hash all commitments C
+  hash_update(&ctx, prf->round[0].commitments[0], pp->digest_size * num_rounds * SC_PROOF);
+  if (pp->transform == TRANSFORM_UR) {
+    // hash all commitments G
+    hash_update(&ctx, prf->round[0].gs[0],
+                num_rounds * ((SC_PROOF - 1) * pp->unruh_without_input_bytes_size +
+                              pp->unruh_with_input_bytes_size));
+  }
+  // hash circuit output and input
+  hash_update(&ctx, circuit_output, pp->output_size);
+  hash_update(&ctx, circuit_input, pp->input_size);
+  // hash message
+  hash_update(&ctx, m, m_len);
+  hash_final(&ctx);
+
+  uint8_t hash[MAX_DIGEST_SIZE];
+  hash_squeeze(&ctx, hash, pp->digest_size);
+  H3_compute(pp, hash, prf->challenge);
+}
+
+static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx,
+                    bool include_is) {
+  hash_context ctx;
+
+  const size_t outputlen =
+      include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
+  const uint16_t size_le   = htole16(outputlen);
+  const size_t digest_size = pp->digest_size;
+  const size_t seedlen     = pp->seed_size;
+
+  /* Hash the seed with H_5, store digest in output */
+  hash_init(&ctx, pp);
+  hash_update(&ctx, &HASH_PREFIX_5, sizeof(HASH_PREFIX_5));
+  hash_update(&ctx, prf_round->seeds[vidx], seedlen);
+  hash_final(&ctx);
+
+  uint8_t tmp[MAX_DIGEST_SIZE];
+  hash_squeeze(&ctx, tmp, digest_size);
+
+  /* Hash H_5(seed), the view, and the length */
+  hash_init(&ctx, pp);
+  hash_update(&ctx, tmp, digest_size);
+  if (include_is) {
+    hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
+  }
+  hash_update(&ctx, prf_round->communicated_bits[vidx], pp->view_size);
+  hash_update(&ctx, (const uint8_t*)&size_le, sizeof(uint16_t));
+  hash_final(&ctx);
+  hash_squeeze(&ctx, prf_round->gs[vidx], outputlen);
+}
+
+// serilization helper functions
+static bool sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
+                                    uint8_t* result, size_t* siglen) {
+  const uint32_t num_rounds                   = pp->num_rounds;
+  const uint32_t seed_size                    = pp->seed_size;
+  const uint32_t challenge_size               = pp->collapsed_challenge_size;
+  const uint32_t digest_size                  = pp->digest_size;
+  const transform_t transform                 = pp->transform;
+  const size_t view_size                      = pp->view_size;
+  const size_t input_size                     = pp->input_size;
+  const size_t unruh_with_input_bytes_size    = pp->unruh_with_input_bytes_size;
+  const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
+
+  uint8_t* tmp = result;
+
+  // write challenge
+  collapse_challenge(tmp, pp, prf->challenge);
+  tmp += challenge_size;
+
+  const proof_round_t* round = prf->round;
+  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
+    const unsigned int a = prf->challenge[i];
+    const unsigned int b = (a + 1) % 3;
+    const unsigned int c = (a + 2) % 3;
+
+    // write commitment
+    memcpy(tmp, round->commitments[c], digest_size);
+    tmp += digest_size;
+
+    // write unruh G
+    if (transform == TRANSFORM_UR) {
+      const uint32_t unruh_g_size =
+          a ? unruh_without_input_bytes_size : unruh_with_input_bytes_size;
+      memcpy(tmp, round->gs[c], unruh_g_size);
+      tmp += unruh_g_size;
+    }
+
+    // write views
+    memcpy(tmp, round->communicated_bits[b], view_size);
+    tmp += view_size;
+
+    // write seeds
+    memcpy(tmp, round->seeds[a], seed_size);
+    tmp += seed_size;
+    memcpy(tmp, round->seeds[b], seed_size);
+    tmp += seed_size;
+
+    if (a) {
+      // write input share
+      memcpy(tmp, round->input_shares[SC_PROOF - 1], input_size);
+      tmp += input_size;
+    }
+  }
+
+  *siglen = tmp - result;
+  return true;
+}
+
+static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const uint8_t* data,
+                                              size_t len) {
+  const size_t digest_size              = pp->digest_size;
+  const size_t seed_size                = pp->seed_size;
+  const size_t num_rounds               = pp->num_rounds;
+  const size_t challenge_size           = pp->collapsed_challenge_size;
+  const transform_t transform           = pp->transform;
+  const size_t input_size               = pp->input_size;
+  const size_t view_size                = pp->view_size;
+  const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
+  const size_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
+
+  uint8_t* slab      = NULL;
+  sig_proof_t* proof = proof_new_verify(pp, &slab);
+  if (!proof) {
+    return NULL;
+  }
+
+  size_t remaining_len = len;
+  const uint8_t* tmp   = data;
+
+  // read and process challenge
+  if (remaining_len < challenge_size) {
+    goto err;
+  }
+  if (!expand_challenge(proof->challenge, pp, tmp)) {
+    goto err;
+  }
+  tmp += challenge_size;
+  remaining_len -= challenge_size;
+
+  proof_round_t* round = proof->round;
+  for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
+    const unsigned char ch   = proof->challenge[i];
+    const size_t unruh_g_len = ch ? without_input_bytes_size : with_input_bytes_size;
+
+    const size_t requested_size =
+        digest_size + unruh_g_len + view_size + 2 * seed_size + (ch ? input_size : 0);
+    if (remaining_len < requested_size) {
+      goto err;
+    }
+    remaining_len -= requested_size;
+
+    // read commitments
+    round->commitments[2] = (uint8_t*)tmp;
+    tmp += digest_size;
+
+    // read unruh G
+    if (transform == TRANSFORM_UR) {
+      round->gs[2] = (uint8_t*)tmp;
+      tmp += unruh_g_len;
+    }
+
+    // read view
+    round->communicated_bits[1] = (uint8_t*)tmp;
+    tmp += view_size;
+
+    // read seeds
+    round->seeds[0] = (uint8_t*)tmp;
+    tmp += seed_size;
+    round->seeds[1] = (uint8_t*)tmp;
+    tmp += seed_size;
+
+    // read input shares
+    if (ch == 0) {
+      round->input_shares[0] = slab;
+      slab += input_size;
+      round->input_shares[1] = slab;
+      slab += input_size;
+    } else if (ch == 1) {
+      round->input_shares[0] = slab;
+      slab += input_size;
+      round->input_shares[1] = (uint8_t*)tmp;
+      tmp += input_size;
+    } else {
+      round->input_shares[0] = (uint8_t*)tmp;
+      tmp += input_size;
+      round->input_shares[1] = slab;
+      slab += input_size;
+    }
+  }
+
+  if (remaining_len) {
+    goto err;
+  }
+
+  return proof;
+
+err:
+  proof_free(proof);
+  return NULL;
+}
+
+
 static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
                       const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
                       const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
@@ -673,156 +1014,6 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
   return success_status == 0;
 }
 
-static bool sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
-                                    uint8_t* result, size_t* siglen) {
-  const uint32_t num_rounds                   = pp->num_rounds;
-  const uint32_t seed_size                    = pp->seed_size;
-  const uint32_t challenge_size               = pp->collapsed_challenge_size;
-  const uint32_t digest_size                  = pp->digest_size;
-  const transform_t transform                 = pp->transform;
-  const size_t view_size                      = pp->view_size;
-  const size_t input_size                     = pp->input_size;
-  const size_t unruh_with_input_bytes_size    = pp->unruh_with_input_bytes_size;
-  const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
-
-  uint8_t* tmp = result;
-
-  // write challenge
-  collapse_challenge(tmp, pp, prf->challenge);
-  tmp += challenge_size;
-
-  const proof_round_t* round = prf->round;
-  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
-    const unsigned int a = prf->challenge[i];
-    const unsigned int b = (a + 1) % 3;
-    const unsigned int c = (a + 2) % 3;
-
-    // write commitment
-    memcpy(tmp, round->commitments[c], digest_size);
-    tmp += digest_size;
-
-    // write unruh G
-    if (transform == TRANSFORM_UR) {
-      const uint32_t unruh_g_size =
-          a ? unruh_without_input_bytes_size : unruh_with_input_bytes_size;
-      memcpy(tmp, round->gs[c], unruh_g_size);
-      tmp += unruh_g_size;
-    }
-
-    // write views
-    memcpy(tmp, round->communicated_bits[b], view_size);
-    tmp += view_size;
-
-    // write seeds
-    memcpy(tmp, round->seeds[a], seed_size);
-    tmp += seed_size;
-    memcpy(tmp, round->seeds[b], seed_size);
-    tmp += seed_size;
-
-    if (a) {
-      // write input share
-      memcpy(tmp, round->input_shares[SC_PROOF - 1], input_size);
-      tmp += input_size;
-    }
-  }
-
-  *siglen = tmp - result;
-  return true;
-}
-
-static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const uint8_t* data,
-                                              size_t len) {
-  const size_t digest_size              = pp->digest_size;
-  const size_t seed_size                = pp->seed_size;
-  const size_t num_rounds               = pp->num_rounds;
-  const size_t challenge_size           = pp->collapsed_challenge_size;
-  const transform_t transform           = pp->transform;
-  const size_t input_size               = pp->input_size;
-  const size_t view_size                = pp->view_size;
-  const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
-  const size_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
-
-  uint8_t* slab      = NULL;
-  sig_proof_t* proof = proof_new_verify(pp, &slab);
-  if (!proof) {
-    return NULL;
-  }
-
-  size_t remaining_len = len;
-  const uint8_t* tmp   = data;
-
-  // read and process challenge
-  if (remaining_len < challenge_size) {
-    goto err;
-  }
-  if (!expand_challenge(proof->challenge, pp, tmp)) {
-    goto err;
-  }
-  tmp += challenge_size;
-  remaining_len -= challenge_size;
-
-  proof_round_t* round = proof->round;
-  for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
-    const unsigned char ch   = proof->challenge[i];
-    const size_t unruh_g_len = ch ? without_input_bytes_size : with_input_bytes_size;
-
-    const size_t requested_size =
-        digest_size + unruh_g_len + view_size + 2 * seed_size + (ch ? input_size : 0);
-    if (remaining_len < requested_size) {
-      goto err;
-    }
-    remaining_len -= requested_size;
-
-    // read commitments
-    round->commitments[2] = (uint8_t*)tmp;
-    tmp += digest_size;
-
-    // read unruh G
-    if (transform == TRANSFORM_UR) {
-      round->gs[2] = (uint8_t*)tmp;
-      tmp += unruh_g_len;
-    }
-
-    // read view
-    round->communicated_bits[1] = (uint8_t*)tmp;
-    tmp += view_size;
-
-    // read seeds
-    round->seeds[0] = (uint8_t*)tmp;
-    tmp += seed_size;
-    round->seeds[1] = (uint8_t*)tmp;
-    tmp += seed_size;
-
-    // read input shares
-    if (ch == 0) {
-      round->input_shares[0] = slab;
-      slab += input_size;
-      round->input_shares[1] = slab;
-      slab += input_size;
-    } else if (ch == 1) {
-      round->input_shares[0] = slab;
-      slab += input_size;
-      round->input_shares[1] = (uint8_t*)tmp;
-      tmp += input_size;
-    } else {
-      round->input_shares[0] = (uint8_t*)tmp;
-      tmp += input_size;
-      round->input_shares[1] = slab;
-      slab += input_size;
-    }
-  }
-
-  if (remaining_len) {
-    goto err;
-  }
-
-  return proof;
-
-err:
-  proof_free(proof);
-  return NULL;
-}
-
 bool impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
                const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
                size_t* siglen) {
@@ -929,226 +1120,6 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
   }
 
   proof_free(proof);
-}
-
-// commitment
-void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx) {
-  const size_t hashlen = pp->digest_size;
-
-  uint8_t tmp[MAX_DIGEST_SIZE];
-
-  hash_context ctx;
-
-  // hash the seed
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_4, sizeof(HASH_PREFIX_4));
-  hash_update(&ctx, prf_round->seeds[vidx], pp->seed_size);
-  hash_final(&ctx);
-  hash_squeeze(&ctx, tmp, hashlen);
-
-  // compute H_0(H_4(seed), view)
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_0, sizeof(HASH_PREFIX_0));
-  hash_update(&ctx, tmp, hashlen);
-  // hash input share
-  hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
-  // hash communicated bits
-  hash_update(&ctx, prf_round->communicated_bits[vidx], pp->view_size);
-  // hash output share
-  hash_update(&ctx, prf_round->output_shares[vidx], pp->output_size);
-  hash_final(&ctx);
-  hash_squeeze(&ctx, prf_round->commitments[vidx], hashlen);
-}
-
-// challenge - outputs {1,2 or 3}^t
-static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) {
-  const size_t digest_size      = pp->digest_size;
-  const size_t digest_size_bits = digest_size << 3;
-
-  // Pick bits from hash
-  uint8_t* eof   = ch + pp->num_rounds;
-  size_t bit_idx = 0;
-  while (ch < eof) {
-    if (bit_idx >= digest_size_bits) {
-      hash_context ctx;
-      hash_init(&ctx, pp);
-      hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
-      hash_update(&ctx, hash, digest_size);
-      hash_final(&ctx);
-      hash_squeeze(&ctx, hash, digest_size);
-      bit_idx = 0;
-    }
-
-    uint8_t twobits = (hash[bit_idx >> 3] >> ((6 - (bit_idx & 0x7)))) & 0x3;
-    if (twobits != 0x3) {
-      *ch++ = twobits;
-    }
-    bit_idx += 2;
-  }
-}
-
-static void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
-                         const uint8_t* circuit_output, const uint8_t* circuit_input,
-                         const uint8_t* m, size_t m_len, uint8_t* ch) {
-  const size_t digest_size = pp->digest_size;
-  const size_t num_rounds  = pp->num_rounds;
-  const size_t output_size = pp->output_size;
-
-  hash_context ctx;
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
-
-  // hash output shares
-  proof_round_t* round = prf->round;
-  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
-    switch (prf->challenge[i]) {
-    case 0: {
-      hash_update(&ctx, round->output_shares[0], output_size);
-      hash_update(&ctx, round->output_shares[1], output_size);
-      hash_update(&ctx, round->output_shares[2], output_size);
-      break;
-    }
-    case 1: {
-      hash_update(&ctx, round->output_shares[2], output_size);
-      hash_update(&ctx, round->output_shares[0], output_size);
-      hash_update(&ctx, round->output_shares[1], output_size);
-      break;
-    }
-    default: {
-      hash_update(&ctx, round->output_shares[1], output_size);
-      hash_update(&ctx, round->output_shares[2], output_size);
-      hash_update(&ctx, round->output_shares[0], output_size);
-      break;
-    }
-    }
-  }
-
-  // hash commitments
-  round = prf->round;
-  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
-    switch (prf->challenge[i]) {
-    case 0: {
-      hash_update(&ctx, round->commitments[0], digest_size);
-      hash_update(&ctx, round->commitments[1], digest_size);
-      hash_update(&ctx, round->commitments[2], digest_size);
-      break;
-    }
-    case 1: {
-      hash_update(&ctx, round->commitments[2], digest_size);
-      hash_update(&ctx, round->commitments[0], digest_size);
-      hash_update(&ctx, round->commitments[1], digest_size);
-      break;
-    }
-    default: {
-      hash_update(&ctx, round->commitments[1], digest_size);
-      hash_update(&ctx, round->commitments[2], digest_size);
-      hash_update(&ctx, round->commitments[0], digest_size);
-      break;
-    }
-    }
-  }
-
-  if (pp->transform == TRANSFORM_UR) {
-    const uint32_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
-    const uint32_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
-
-    // hash commitments
-    round = prf->round;
-    for (unsigned i = 0; i < num_rounds; ++i, ++round) {
-      switch (prf->challenge[i]) {
-      case 0: {
-        hash_update(&ctx, round->gs[0], without_input_bytes_size);
-        hash_update(&ctx, round->gs[1], without_input_bytes_size);
-        hash_update(&ctx, round->gs[2], with_input_bytes_size);
-        break;
-      }
-      case 1: {
-        hash_update(&ctx, round->gs[2], without_input_bytes_size);
-        hash_update(&ctx, round->gs[0], without_input_bytes_size);
-        hash_update(&ctx, round->gs[1], with_input_bytes_size);
-        break;
-      }
-      default: {
-        hash_update(&ctx, round->gs[1], without_input_bytes_size);
-        hash_update(&ctx, round->gs[2], without_input_bytes_size);
-        hash_update(&ctx, round->gs[0], with_input_bytes_size);
-        break;
-      }
-      }
-    }
-  }
-
-  // hash circuit out and input
-  hash_update(&ctx, circuit_output, pp->output_size);
-  hash_update(&ctx, circuit_input, pp->input_size);
-  // hash message
-  hash_update(&ctx, m, m_len);
-  hash_final(&ctx);
-
-  uint8_t hash[MAX_DIGEST_SIZE];
-  hash_squeeze(&ctx, hash, digest_size);
-  H3_compute(pp, hash, ch);
-}
-
-static void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
-                  const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
-  const size_t num_rounds = pp->num_rounds;
-
-  hash_context ctx;
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
-
-  // hash output shares
-  hash_update(&ctx, prf->round[0].output_shares[0], pp->output_size * num_rounds * SC_PROOF);
-  // hash all commitments C
-  hash_update(&ctx, prf->round[0].commitments[0], pp->digest_size * num_rounds * SC_PROOF);
-  if (pp->transform == TRANSFORM_UR) {
-    // hash all commitments G
-    hash_update(&ctx, prf->round[0].gs[0],
-                num_rounds * ((SC_PROOF - 1) * pp->unruh_without_input_bytes_size +
-                              pp->unruh_with_input_bytes_size));
-  }
-  // hash circuit output and input
-  hash_update(&ctx, circuit_output, pp->output_size);
-  hash_update(&ctx, circuit_input, pp->input_size);
-  // hash message
-  hash_update(&ctx, m, m_len);
-  hash_final(&ctx);
-
-  uint8_t hash[MAX_DIGEST_SIZE];
-  hash_squeeze(&ctx, hash, pp->digest_size);
-  H3_compute(pp, hash, prf->challenge);
-}
-
-static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx,
-                    bool include_is) {
-  hash_context ctx;
-
-  const size_t outputlen =
-      include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
-  const uint16_t size_le   = htole16(outputlen);
-  const size_t digest_size = pp->digest_size;
-  const size_t seedlen     = pp->seed_size;
-
-  /* Hash the seed with H_5, store digest in output */
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_5, sizeof(HASH_PREFIX_5));
-  hash_update(&ctx, prf_round->seeds[vidx], seedlen);
-  hash_final(&ctx);
-
-  uint8_t tmp[MAX_DIGEST_SIZE];
-  hash_squeeze(&ctx, tmp, digest_size);
-
-  /* Hash H_5(seed), the view, and the length */
-  hash_init(&ctx, pp);
-  hash_update(&ctx, tmp, digest_size);
-  if (include_is) {
-    hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
-  }
-  hash_update(&ctx, prf_round->communicated_bits[vidx], pp->view_size);
-  hash_update(&ctx, (const uint8_t*)&size_le, sizeof(uint16_t));
-  hash_final(&ctx);
-  hash_squeeze(&ctx, prf_round->gs[vidx], outputlen);
 }
 
 // instance handling
