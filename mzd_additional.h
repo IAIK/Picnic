@@ -165,7 +165,7 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) ATTR_NONNULL;
 #define CONST_FIRST_ROW(v) CONST_ROW(v, 0)
 
 #define WRITE_BIT(w, spot, value)                                                                  \
-  ((w) = (((w) & ~(UINT64_C(1) << (spot))) | (-(word)(value) & (UINT64_C(1) << (spot)))))
+  ((w) = (((w) & ~(WORD_C(1) << (spot))) | (-(word)(value) & (WORD_C(1) << (spot)))))
 
 #define mzd_local_write_bit(v, r, c, b)                                                            \
   WRITE_BIT(ROW(v, r)[c / (sizeof(word) * 8)], c % (sizeof(word) * 8), b)
