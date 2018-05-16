@@ -123,22 +123,18 @@ static void _mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* con
   uint64_t x0s[sc];                                                                                \
   uint64_t x1s[sc];                                                                                \
   uint64_t x2m[sc];                                                                                \
-  const uint64_t mx2 = mask->x2i;                                                                  \
   do {                                                                                             \
-    const uint64_t mx0 = mask->x0i;                                                                \
-    const uint64_t mx1 = mask->x1i;                                                                \
-                                                                                                   \
     for (unsigned int m = 0; m < (sc); ++m) {                                                      \
       const uint64_t inm   = in[m];                                                                \
       const uint64_t rvecm = rvec[m];                                                              \
                                                                                                    \
-      x0s[m] = (inm & mx0) << 2;                                                                   \
-      x1s[m] = (inm & mx1) << 1;                                                                   \
-      x2m[m] = inm & mx2;                                                                          \
+      x0s[m] = (inm & MASK_X0I) << 2;                                                              \
+      x1s[m] = (inm & MASK_X1I) << 1;                                                              \
+      x2m[m] = inm & MASK_X2I;                                                                     \
                                                                                                    \
-      r0m[m] = rvecm & mx0;                                                                        \
-      r1m[m] = rvecm & mx1;                                                                        \
-      r2m[m] = rvecm & mx2;                                                                        \
+      r0m[m] = rvecm & MASK_X0I;                                                                   \
+      r1m[m] = rvecm & MASK_X1I;                                                                   \
+      r2m[m] = rvecm & MASK_X2I;                                                                   \
                                                                                                    \
       r0s[m] = r0m[m] << 2;                                                                        \
       r1s[m] = r1m[m] << 1;                                                                        \
@@ -147,7 +143,6 @@ static void _mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* con
 
 #define bitsliced_step_2_uint64(sc)                                                                \
   do {                                                                                             \
-    const uint64_t maskm = mask->maski;                                                            \
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
       const uint64_t inm = in[m];                                                                  \
       uint64_t* outm     = &out[m];                                                                \
@@ -157,13 +152,13 @@ static void _mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* con
       const uint64_t tmp3 = tmp2 ^ r1m[m];                                                         \
       const uint64_t tmp4 = tmp2 ^ r0m[m] ^ x2m[m];                                                \
                                                                                                    \
-      const uint64_t mout = maskm & inm;                                                           \
+      const uint64_t mout = inm & MASK_MASK;                                                       \
       *outm               = mout ^ (tmp4) ^ (tmp1 >> 2) ^ (tmp3 >> 1);                             \
     }                                                                                              \
   } while (0)
 
 static void _mpc_sbox_layer_bitsliced_uint64(uint64_t* out, uint64_t const* in, view_t* view,
-                                             uint64_t const* rvec, mask_t const* mask) {
+                                             uint64_t const* rvec) {
   bitsliced_step_1_uint64(SC_PROOF);
 
   memset(view->t, 0, sizeof(uint64_t) * SC_PROOF);
@@ -175,13 +170,13 @@ static void _mpc_sbox_layer_bitsliced_uint64(uint64_t* out, uint64_t const* in, 
 }
 
 static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t const* in, view_t* view,
-                                                    uint64_t const* rvec, mask_t const* mask) {
+                                                    uint64_t const* rvec) {
   bitsliced_step_1_uint64(SC_VERIFY);
 
   view->t[0] = 0;
-  mpc_and_verify_uint64(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_uint64(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_uint64(r1m, x0s, x2m, r0s, view, mx2, 2);
+  mpc_and_verify_uint64(r0m, x0s, x1s, r2m, view, MASK_X2I, 0);
+  mpc_and_verify_uint64(r2m, x1s, x2m, r1s, view, MASK_X2I, 1);
+  mpc_and_verify_uint64(r1m, x0s, x2m, r0s, view, MASK_X2I, 2);
 
   bitsliced_step_2_uint64(SC_VERIFY);
 }
@@ -658,7 +653,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
     in[count]  = CONST_FIRST_ROW(x[count])[n / 64 - 1];                                            \
     out[count] = CONST_FIRST_ROW(y1[count])[n / 64 - 1];                                           \
   }                                                                                                \
-  _mpc_sbox_layer_bitsliced_uint64(out, in, views, r, lowmcmask);                                  \
+  _mpc_sbox_layer_bitsliced_uint64(out, in, views, r);                                             \
   for (int count = 0; count < SC_PROOF; count++) {                                                 \
     memcpy(FIRST_ROW(y1[count]), CONST_FIRST_ROW(x[count]), (n / 64 - 1) * sizeof(word));          \
     FIRST_ROW(y1[count])[n / 64 - 1] = out[count];                                                 \
@@ -671,7 +666,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
     in[count]  = CONST_FIRST_ROW(x[count])[n / 64 - 1];                                            \
     out[count] = CONST_FIRST_ROW(y1[count])[n / 64 - 1];                                           \
   }                                                                                                \
-  _mpc_sbox_layer_bitsliced_verify_uint64(out, in, views, r, lowmcmask);                           \
+  _mpc_sbox_layer_bitsliced_verify_uint64(out, in, views, r);                                      \
   for (int count = 0; count < SC_VERIFY; count++) {                                                \
     memcpy(FIRST_ROW(y1[count]), CONST_FIRST_ROW(x[count]), (n / 64 - 1) * sizeof(word));          \
     FIRST_ROW(y1[count])[n / 64 - 1] = out[count];                                                 \
@@ -694,7 +689,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   r[2] = rvec[i].t[2]
 #else
 #define R_uint64_2 uint64_t r[SC_VERIFY] = {rvec[i].t[0], rvec[i].t[1]}
-#define R_uint64_3 uint64_t r[SC_PROOF]  = {rvec[i].t[0], rvec[i].t[1], rvec[i].t[2]}
+#define R_uint64_3 uint64_t r[SC_PROOF] = {rvec[i].t[0], rvec[i].t[1], rvec[i].t[2]}
 #endif
 
 #define loop_optimize(sbox_args, sbox, sbox_selector, no_scr, no_scr_active, const_mat_mul_func,   \

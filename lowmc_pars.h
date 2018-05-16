@@ -21,11 +21,15 @@ typedef struct {
   mzd_local_t* x1;
   mzd_local_t* x2;
   mzd_local_t* mask;
-  uint64_t x0i;
-  uint64_t x1i;
-  uint64_t x2i;
-  uint64_t maski;
 } mask_t;
+
+/**
+ * Masks for 10 S-boxes.
+ */
+#define MASK_X0I  UINT64_C(0x2492492400000000)
+#define MASK_X1I  UINT64_C(0x4924924800000000)
+#define MASK_X2I  UINT64_C(0x9249249000000000)
+#define MASK_MASK UINT64_C(0x00000003ffffffff)
 
 typedef struct {
 #if !defined(REDUCED_LINEAR_LAYER)
@@ -50,7 +54,9 @@ typedef struct {
   unsigned int r;
   unsigned int k;
 
+#if defined(WITH_CUSTOM_INSTANCES)
   mask_t mask;
+#endif
 
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
   mzd_local_t* k0_lookup;

@@ -24,11 +24,11 @@
 #endif
 #include <string.h>
 
-static uint64_t sbox_layer_bitsliced_uint64(uint64_t in, mask_t const* mask) {
+static uint64_t sbox_layer_bitsliced_uint64(uint64_t in) {
   // a, b, c
-  const uint64_t x0m = (in & mask->x0i) << 2;
-  const uint64_t x1m = (in & mask->x1i) << 1;
-  const uint64_t x2m = in & mask->x2i;
+  const uint64_t x0m = (in & MASK_X0I) << 2;
+  const uint64_t x1m = (in & MASK_X1I) << 1;
+  const uint64_t x2m = in & MASK_X2I;
 
   // (b & c) ^ a
   const uint64_t t0 = (x1m & x2m) ^ x0m;
@@ -37,11 +37,15 @@ static uint64_t sbox_layer_bitsliced_uint64(uint64_t in, mask_t const* mask) {
   // (a & b) ^ a ^ b ^c
   const uint64_t t2 = (x0m & x1m) ^ x0m ^ x1m ^ x2m;
 
-  return (in & mask->maski) ^ (t0 >> 2) ^ (t1 >> 1) ^ t2;
+  return (in & MASK_MASK) ^ (t0 >> 2) ^ (t1 >> 1) ^ t2;
 }
 
+/**
+ * S-box for m = 10
+ */
 static void sbox_layer_uint64(mzd_local_t* y, mzd_local_t const* x, mask_t const* mask) {
-  FIRST_ROW(y)[y->width - 1] = sbox_layer_bitsliced_uint64(CONST_FIRST_ROW(x)[x->width - 1], mask);
+  (void)mask;
+  FIRST_ROW(y)[y->width - 1] = sbox_layer_bitsliced_uint64(CONST_FIRST_ROW(x)[x->width - 1]);
 }
 
 #ifdef WITH_CUSTOM_INSTANCES
@@ -234,7 +238,7 @@ static void sbox_layer_neon(mzd_local_t* out, mzd_local_t const* in, mask_t cons
 typedef void (*sbox_layer_impl)(mzd_local_t*, mzd_local_t const*, mask_t const*);
 
 static sbox_layer_impl get_sbox_layer(const lowmc_t* lowmc) {
-  if (lowmc->m <= 20) {
+  if (lowmc->m == 10) {
     return sbox_layer_uint64;
   }
 #ifdef WITH_CUSTOM_INSTANCES
@@ -263,7 +267,7 @@ static sbox_layer_impl get_sbox_layer(const lowmc_t* lowmc) {
 
 #if defined(REDUCED_LINEAR_LAYER)
 static mzd_local_t* lowmc_reduced_linear_layer(lowmc_t const* lowmc, lowmc_key_t const* lowmc_key,
-                                               mzd_local_t const* p, sbox_layer_impl sbox_layer) {
+                                               mzd_local_t const* p) {
   mzd_local_t* x       = mzd_local_init_ex(1, lowmc->n, false);
   mzd_local_t* y       = mzd_local_init_ex(1, lowmc->n, false);
   mzd_local_t* nl_part = mzd_local_init_ex(1, lowmc->r * 32, false);
@@ -280,7 +284,7 @@ static mzd_local_t* lowmc_reduced_linear_layer(lowmc_t const* lowmc, lowmc_key_t
   word mask                  = WORD_C(0xFFFFFFFF);
   lowmc_round_t const* round = lowmc->rounds;
   for (unsigned i = 0; i < lowmc->r; ++i, ++round) {
-    sbox_layer(x, x, &lowmc->mask);
+    sbox_layer_uint64(x, x, NULL);
 
     const unsigned int shift = ((mask & WORD_C(0xFFFFFFFF)) ? 34 : 2);
     FIRST_ROW(x)[x->width - 1] ^= (CONST_FIRST_ROW(nl_part)[i >> 1] & mask) << shift;
@@ -301,6 +305,8 @@ static mzd_local_t* lowmc_reduced_linear_layer(lowmc_t const* lowmc, lowmc_key_t
 #else
 static mzd_local_t* lowmc_plain(lowmc_t const* lowmc, lowmc_key_t const* lowmc_key,
                                 mzd_local_t const* p, sbox_layer_impl sbox_layer) {
+  (void)sbox_layer;
+
   mzd_local_t* x = mzd_local_init_ex(1, lowmc->n, false);
   mzd_local_t* y = mzd_local_init_ex(1, lowmc->n, false);
 
@@ -312,8 +318,12 @@ static mzd_local_t* lowmc_plain(lowmc_t const* lowmc, lowmc_key_t const* lowmc_k
 #endif
 
   lowmc_round_t const* round = lowmc->rounds;
-  for (unsigned i = 0; i < lowmc->r; ++i, ++round) {
+  for (unsigned int i = lowmc->r; i; --i, ++round) {
+#if defined(WITH_CUSTOM_INSTANCE)
     sbox_layer(x, x, &lowmc->mask);
+#else
+    sbox_layer_uint64(x, x, NULL);
+#endif
 
 #if defined(MUL_M4RI)
     mzd_mul_vl(y, x, round->l_lookup);
@@ -341,7 +351,7 @@ mzd_local_t* lowmc_call(lowmc_t const* lowmc, lowmc_key_t const* lowmc_key, mzd_
 
 #if defined(REDUCED_LINEAR_LAYER)
   if (lowmc->m == 10) {
-    return lowmc_reduced_linear_layer(lowmc, lowmc_key, p, sbox_layer);
+    return lowmc_reduced_linear_layer(lowmc, lowmc_key, p);
   }
   return NULL;
 #else

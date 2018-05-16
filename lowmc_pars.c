@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(WITH_CUSTOM_INSTANCES)
 static mask_t* prepare_masks(mask_t* mask, unsigned int n, unsigned int m) {
   mask->x0   = mzd_local_init(1, n);
   mask->x1   = mzd_local_init_ex(1, n, false);
@@ -44,22 +45,22 @@ static mask_t* prepare_masks(mask_t* mask, unsigned int n, unsigned int m) {
   mask->mask = mzd_local_init(1, n);
 
   const unsigned int bound = n - 3 * m;
+  // 1s for linear part
   for (unsigned int i = 0; i < bound; ++i) {
     mzd_local_write_bit(mask->mask, 0, i, 1);
   }
+  // 1s for a
   for (unsigned int i = bound; i < n; i += 3) {
     mzd_local_write_bit(mask->x0, 0, i, 1);
   }
+  // 1s for b
   mzd_shift_left(mask->x1, mask->x0, 1);
+  // 1s for c
   mzd_shift_left(mask->x2, mask->x0, 2);
-
-  mask->x0i   = FIRST_ROW(mask->x0)[n / 64 - 1];
-  mask->x1i   = FIRST_ROW(mask->x1)[n / 64 - 1];
-  mask->x2i   = FIRST_ROW(mask->x2)[n / 64 - 1];
-  mask->maski = FIRST_ROW(mask->mask)[n / 64 - 1];
 
   return mask;
 }
+#endif
 
 bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, unsigned int k) {
   if (!lowmc) {
@@ -148,10 +149,12 @@ precomp:
   }
 #endif
 
+#if defined(WITH_CUSTOM_INSTANCES)
   if (!prepare_masks(&lowmc->mask, n, m)) {
     lowmc_clear(lowmc);
     return false;
   }
+#endif
 
   return true;
 }
@@ -249,8 +252,10 @@ void lowmc_clear(lowmc_t* lowmc) {
   }
   free(lowmc->rounds);
 
+#if defined(WITH_CUSTOM_INSTANCES)
   mzd_local_free(lowmc->mask.x0);
   mzd_local_free(lowmc->mask.x1);
   mzd_local_free(lowmc->mask.x2);
   mzd_local_free(lowmc->mask.mask);
+#endif
 }
