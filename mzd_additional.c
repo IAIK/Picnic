@@ -382,7 +382,6 @@ mzd_local_t* mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
 }
 
 mzd_local_t* mzd_mul_v_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-
   if (At->nrows != v->ncols) {
     // number of columns does not match
     return NULL;
@@ -521,7 +520,6 @@ mzd_local_t* mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
 }
 
 mzd_local_t* mzd_addmul_v_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-
   const unsigned int len       = A->width;
   const unsigned int rowstride = A->rowstride;
   word* cptr                   = FIRST_ROW(c);

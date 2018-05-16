@@ -7,6 +7,8 @@
  *  SPDX-License-Identifier: MIT
  */
 
+/* Inspired by m4ri's mzd implementation, but completely re-written for our use-case. */
+
 #ifndef MZD_ADDITIONAL_H
 #define MZD_ADDITIONAL_H
 
@@ -18,8 +20,6 @@
 
 typedef uint64_t word;
 #define WORD_C(v) UINT64_C(v)
-
-/* Inspired by m4ri's mzd, but completely re-written for our use-case. */
 
 typedef struct {
   uint32_t nrows, ncols, width, rowstride;
@@ -153,7 +153,6 @@ void mzd_addmul_vlm(mzd_local_t** c, mzd_local_t const* const* v, mzd_local_t co
 
 /**
  * Pre-compute matrices for faster mzd_addmul_v computions.
- *
  */
 mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) ATTR_NONNULL;
 

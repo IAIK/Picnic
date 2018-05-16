@@ -459,9 +459,7 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   mzd_local_init_multiple(shared_key, SC_PROOF, 1, lowmc_k);
   END_TIMING(timing_and_size->sign.secret_sharing);
 
-  // START_TIMING; TODO: I guess this shouldn't be here
-
-  rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for and-gates
+  rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for AND-gates
 #if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
     for (unsigned int i = 0; i < lowmc_r; ++i) {
@@ -1238,13 +1236,12 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
 
   pp->lowmc_impl        = get_lowmc_implementation(&pp->lowmc);
   pp->lowmc_verify_impl = get_lowmc_verify_implementation(&pp->lowmc);
-
-  pp->params         = param;
-  pp->transform      = param_to_transform(param);
-  pp->security_level = pq_security_level;
-  pp->digest_size    = digest_size;
-  pp->seed_size      = seed_size;
-  pp->num_rounds     = num_rounds;
+  pp->params            = param;
+  pp->transform         = param_to_transform(param);
+  pp->security_level    = pq_security_level;
+  pp->digest_size       = digest_size;
+  pp->seed_size         = seed_size;
+  pp->num_rounds        = num_rounds;
 
   // bytes required to store one input share
   pp->input_size = (pp->lowmc.k + 7) >> 3;

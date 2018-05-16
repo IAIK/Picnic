@@ -10,7 +10,7 @@
 #ifndef PICNIC_MACROS_H
 #define PICNIC_MACROS_H
 
-/* compatibility with clang and other compilers*/
+/* compatibility with clang and other compilers */
 #ifndef __has_attribute
 #define __has_attribute(a) 0
 #endif
