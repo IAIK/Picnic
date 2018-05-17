@@ -1151,27 +1151,27 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
   switch (param) {
   case Picnic_L1_FS:
   case Picnic_L1_UR:
-    n = k             = 128;
-    m                 = 10;
-    r                 = 20;
+    n = k             = LOWMC_L1_N;
+    m                 = LOWMC_L1_M;
+    r                 = LOWMC_L1_R;
     pq_security_level = 64;
     num_rounds        = 219;
     break;
 
   case Picnic_L3_FS:
   case Picnic_L3_UR:
-    n = k             = 192;
-    m                 = 10;
-    r                 = 30;
+    n = k             = LOWMC_L3_N;
+    m                 = LOWMC_L3_M;
+    r                 = LOWMC_L3_R;
     pq_security_level = 96;
     num_rounds        = 329;
     break;
 
   case Picnic_L5_FS:
   case Picnic_L5_UR:
-    n = k             = 256;
-    m                 = 10;
-    r                 = 38;
+    n = k             = LOWMC_L5_N;
+    m                 = LOWMC_L5_M;
+    r                 = LOWMC_L5_R;
     pq_security_level = 128;
     num_rounds        = 438;
     break;

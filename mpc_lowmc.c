@@ -1027,15 +1027,15 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-mpc_lowmc_call_def(128, 20, mpc_lowmc_call_128_sse, mpc_lowmc_call_verify_128_sse,
+mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_sse, mpc_lowmc_call_verify_128_sse,
                    _mpc_sbox_layer_bitsliced_128_sse, _mpc_sbox_layer_bitsliced_verify_128_sse,
                    mzd_mul_v_sse, mzd_mul_vl_sse_128, mzd_xor_sse, mzd_mul_v_sse, mzd_mul_vl_sse,
                    mzd_addmul_v_sse, mzd_addmul_vl_sse_128);
-mpc_lowmc_call_def(192, 30, mpc_lowmc_call_192_sse, mpc_lowmc_call_verify_192_sse,
+mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_sse, mpc_lowmc_call_verify_192_sse,
                    _mpc_sbox_layer_bitsliced_256_sse, _mpc_sbox_layer_bitsliced_verify_256_sse,
                    mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse, mzd_mul_v_sse, mzd_mul_vl_sse,
                    mzd_addmul_v_sse, mzd_addmul_vl_sse);
-mpc_lowmc_call_def(256, 38, mpc_lowmc_call_256_sse, mpc_lowmc_call_verify_256_sse,
+mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_sse, mpc_lowmc_call_verify_256_sse,
                    _mpc_sbox_layer_bitsliced_256_sse, _mpc_sbox_layer_bitsliced_verify_256_sse,
                    mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse, mzd_mul_v_sse, mzd_mul_vl_sse,
                    mzd_addmul_v_sse, mzd_addmul_vl_sse);
@@ -1051,11 +1051,11 @@ mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_512_sse, mpc_lowmc_call_ve
 #endif
 #endif
 #ifdef WITH_AVX2
-mpc_lowmc_call_def(192, 30, mpc_lowmc_call_192_avx, mpc_lowmc_call_verify_192_avx,
+mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_avx, mpc_lowmc_call_verify_192_avx,
                    _mpc_sbox_layer_bitsliced_256_avx, _mpc_sbox_layer_bitsliced_verify_256_avx,
                    mzd_mul_v_avx, mzd_mul_vl_avx_256, mzd_xor_avx, mzd_mul_v_avx, mzd_mul_vl_avx,
                    mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256);
-mpc_lowmc_call_def(256, 38, mpc_lowmc_call_256_avx, mpc_lowmc_call_verify_256_avx,
+mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_avx, mpc_lowmc_call_verify_256_avx,
                    _mpc_sbox_layer_bitsliced_256_avx, _mpc_sbox_layer_bitsliced_verify_256_avx,
                    mzd_mul_v_avx_256, mzd_mul_vl_avx_256, mzd_xor_avx_256, mzd_mul_v_avx,
                    mzd_mul_vl_avx, mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256);
@@ -1071,7 +1071,7 @@ mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_512_avx, mpc_lowmc_call_ve
 #endif
 #endif
 #ifdef WITH_NEON
-mpc_lowmc_call_def(128, 20, mpc_lowmc_call_128_neon, mpc_lowmc_call_verify_128_neon,
+mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_neon, mpc_lowmc_call_verify_128_neon,
                    _mpc_sbox_layer_bitsliced_128_neon, _mpc_sbox_layer_bitsliced_verify_128_neon,
                    mzd_mul_v_neon, mzd_mul_vl_neon_128, mzd_xor_neon, mzd_mul_v_neon,
                    mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon, mzd_addmul_vl_neon_128);

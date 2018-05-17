@@ -31,6 +31,24 @@ typedef struct {
 #define MASK_X2I  UINT64_C(0x9249249000000000)
 #define MASK_MASK UINT64_C(0x00000003ffffffff)
 
+/**
+ * LowMC instances
+ */
+#define LOWMC_L1_N 128
+#define LOWMC_L1_M 10
+#define LOWMC_L1_K LOWMC_L1_N
+#define LOWMC_L1_R 20
+
+#define LOWMC_L3_N 192
+#define LOWMC_L3_M 10
+#define LOWMC_L3_K LOWMC_L3_N
+#define LOWMC_L3_R 30
+
+#define LOWMC_L5_N 256
+#define LOWMC_L5_M 10
+#define LOWMC_L5_K LOWMC_L5_N
+#define LOWMC_L5_R 38
+
 typedef struct {
 #if !defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* k_matrix;
