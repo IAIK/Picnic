@@ -63,8 +63,7 @@ typedef struct {
 } lowmc_round_t;
 
 /**
- * Represents the LowMC parameters as in https://bitbucket.org/malb/lowmc-helib/src,
- * with the difference that key in a separate struct
+ * LowMC definition
  */
 typedef struct {
   unsigned int m;
@@ -87,14 +86,14 @@ typedef struct {
 } lowmc_t;
 
 /**
- * Generates a new LowMC instance (also including a key)
+ * Generates a new LowMC instance
  *
  * \param m the number of sboxes
  * \param n the blocksize
  * \param r the number of rounds
  * \param k the keysize
  *
- * \return parameters defining a LowMC instance (including a key)
+ * \return parameters defining a LowMC instance
  */
 bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, unsigned int k);
 
