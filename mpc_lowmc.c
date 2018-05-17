@@ -723,7 +723,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
 #define VARS_5(shares)
 #define VARS_6(shares)                                                                             \
   sbox_vars_t vars;                                                                                \
-  sbox_vars_init(&vars, lowmc->n, shares)
+  sbox_vars_init(&vars, lowmc_n, shares)
 
 #define VARS_FREE_5
 #define VARS_FREE_6 sbox_vars_clear(&vars)
@@ -736,7 +736,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   VARS_##sbox_args(SC_PROOF);                                                                      \
   mzd_local_t** x = in_out_shares->s;                                                              \
   mzd_local_t* y[SC_PROOF];                                                                        \
-  mzd_local_init_multiple_ex(y, SC_PROOF, 1, lowmc->n, false);                                     \
+  mzd_local_init_multiple_ex(y, SC_PROOF, 1, lowmc_n, false);                                      \
                                                                                                    \
   MPC_LOOP(const_mat_mul_func, x, lowmc_key, lowmc->k0_##no_scr, SC_PROOF);                        \
   MPC_IF_ELSE(add_func, x, x, p, SC_PROOF, ch);                                                    \
@@ -759,7 +759,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   VARS_##sbox_args(SC_VERIFY);                                                                     \
   mzd_local_t* x[2 * SC_VERIFY];                                                                   \
   mzd_local_t** y = &x[SC_VERIFY];                                                                 \
-  mzd_local_init_multiple_ex(x, 2 * SC_VERIFY, 1, lowmc->n, false);                                \
+  mzd_local_init_multiple_ex(x, 2 * SC_VERIFY, 1, lowmc_n, false);                                 \
                                                                                                    \
   MPC_LOOP(const_mat_mul_func, x, lowmc_key, lowmc->k0_##no_scr, SC_VERIFY);                       \
   MPC_IF_ELSE(add_func, x, x, p, SC_VERIFY, ch);                                                   \
@@ -928,7 +928,7 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
                             mzd_local_t const* p, view_t* views, in_out_shares_t* in_out_shares,   \
                             rvec_t* rvec) {                                                        \
     _mpc_lowmc_call_bitsliced(0, 5, SBOX_SIGN, mzd, matrix, scr, _optimize, MUL, XOR, MUL_MC,      \
-                              ADDMUL, lowmc->n, lowmc->r);                                         \
+                              ADDMUL, N, R);                                                       \
   }                                                                                                \
   static inline void N_VERIFY(lowmc_t const* lowmc, mzd_local_t const* p, view_t* views,           \
                               in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {     \
