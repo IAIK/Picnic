@@ -1041,10 +1041,14 @@ mpc_lowmc_call_def(mpc_lowmc_call_512_sse, mpc_lowmc_call_verify_512_sse,
 #endif
 #endif
 #ifdef WITH_AVX2
-mpc_lowmc_call_def(mpc_lowmc_call_256_avx, mpc_lowmc_call_verify_256_avx,
+mpc_lowmc_call_def(mpc_lowmc_call_192_avx, mpc_lowmc_call_verify_192_avx,
                    _mpc_sbox_layer_bitsliced_256_avx, _mpc_sbox_layer_bitsliced_verify_256_avx,
                    mzd_mul_v_avx, mzd_mul_vl_avx_256, mzd_xor_avx, mzd_xor_avx, mzd_mul_v_avx,
-                   mzd_mul_vl_avx, mzd_addmul_v_avx, mzd_addmul_vl_avx_256);
+                   mzd_mul_vl_avx, mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256);
+mpc_lowmc_call_def(mpc_lowmc_call_256_avx, mpc_lowmc_call_verify_256_avx,
+                   _mpc_sbox_layer_bitsliced_256_avx, _mpc_sbox_layer_bitsliced_verify_256_avx,
+                   mzd_mul_v_avx_256, mzd_mul_vl_avx_256, mzd_xor_avx, mzd_xor_avx, mzd_mul_v_avx,
+                   mzd_mul_vl_avx, mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256);
 #ifdef WITH_CUSTOM_INSTANCES
 mpc_lowmc_call_def(mpc_lowmc_call_384_avx, mpc_lowmc_call_verify_384_avx,
                    _mpc_sbox_layer_bitsliced_512_avx, _mpc_sbox_layer_bitsliced_verify_512_avx,
@@ -1126,7 +1130,9 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
   }
 #endif
 #ifdef WITH_AVX2
-  if (CPU_SUPPORTS_AVX2 && lowmc->n >= 129 && lowmc->n <= 256) {
+  if (CPU_SUPPORTS_AVX2 && lowmc->n == 192) {
+    return general_or_10(lowmc, mpc_lowmc_call_192_avx);
+  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 256) {
     return general_or_10(lowmc, mpc_lowmc_call_256_avx);
   }
 #ifdef WITH_CUSTOM_INSTANCES
@@ -1183,7 +1189,9 @@ lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* low
   }
 #endif
 #ifdef WITH_AVX2
-  if (CPU_SUPPORTS_AVX2 && lowmc->n >= 129 && lowmc->n <= 256) {
+  if (CPU_SUPPORTS_AVX2 && lowmc->n == 192) {
+    return general_or_10(lowmc, mpc_lowmc_call_verify_192_avx);
+  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 256) {
     return general_or_10(lowmc, mpc_lowmc_call_verify_256_avx);
   }
 #ifdef WITH_CUSTOM_INSTANCES
