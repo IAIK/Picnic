@@ -12413,213 +12413,114 @@ static const mzd_local_t precomputed_round_key_matrix_non_linear_part_192_192_30
   UINT64_C(0x315550e809b25cc2), UINT64_C(0x2043e5cc382d8aa4), UINT64_C(0x3f338fb11c7d8988), UINT64_C(0x304a0e8618597f35), UINT64_C(0x01cc0d8707def4b0), UINT64_C(0x34db515d3c39da58), UINT64_C(0x126942761d0faf0d), UINT64_C(0x1a9b889c2779a2bf), UINT64_C(0x06334b4e21a0ed72), UINT64_C(0x02cd2fb2078df3d8), UINT64_C(0x13eea45c368f670e), UINT64_C(0x103c2f381578fbb9), UINT64_C(0x3b29d44f388649a9), UINT64_C(0x0254867613bd91d3), UINT64_C(0x3b8f2fa900bcbd62), UINT64_C(0x0000000000000000),
   UINT64_C(0x1919aa261b5a95cd), UINT64_C(0x389c24292b9b6ef1), UINT64_C(0x3642420b1eab1c58), UINT64_C(0x3c83827f11b6b5b7), UINT64_C(0x24d3c0b207ad36c4), UINT64_C(0x19b4abb93ffe977a), UINT64_C(0x04fa843639d9e43f), UINT64_C(0x1c8a7fe108fe2511), UINT64_C(0x0c6ba5ea3ae3f24d), UINT64_C(0x06f3970303037968), UINT64_C(0x332f4a821dbf4421), UINT64_C(0x1530b50f114bdb60), UINT64_C(0x2c457106283a6b74), UINT64_C(0x00fd13bc1c589972), UINT64_C(0x341b6c60144168be), UINT64_C(0x0000000000000000),
 }};
-
 #endif
-const mzd_local_t* lowmc_192_192_30_get_linear_layer(uint32_t r) {
-  switch(r) {
-    default:
-      return NULL;
-    case 0:
-      return &L_192_192_30_0;
-    case 1:
-      return &L_192_192_30_1;
-    case 2:
-      return &L_192_192_30_2;
-    case 3:
-      return &L_192_192_30_3;
-    case 4:
-      return &L_192_192_30_4;
-    case 5:
-      return &L_192_192_30_5;
-    case 6:
-      return &L_192_192_30_6;
-    case 7:
-      return &L_192_192_30_7;
-    case 8:
-      return &L_192_192_30_8;
-    case 9:
-      return &L_192_192_30_9;
-    case 10:
-      return &L_192_192_30_10;
-    case 11:
-      return &L_192_192_30_11;
-    case 12:
-      return &L_192_192_30_12;
-    case 13:
-      return &L_192_192_30_13;
-    case 14:
-      return &L_192_192_30_14;
-    case 15:
-      return &L_192_192_30_15;
-    case 16:
-      return &L_192_192_30_16;
-    case 17:
-      return &L_192_192_30_17;
-    case 18:
-      return &L_192_192_30_18;
-    case 19:
-      return &L_192_192_30_19;
-    case 20:
-      return &L_192_192_30_20;
-    case 21:
-      return &L_192_192_30_21;
-    case 22:
-      return &L_192_192_30_22;
-    case 23:
-      return &L_192_192_30_23;
-    case 24:
-      return &L_192_192_30_24;
-    case 25:
-      return &L_192_192_30_25;
-    case 26:
-      return &L_192_192_30_26;
-    case 27:
-      return &L_192_192_30_27;
-    case 28:
-      return &L_192_192_30_28;
-    case 29:
-      return &L_192_192_30_29;
-  }
-}
 
+static const mzd_local_t* lowmc_linear_layer[] = {
+  &L_192_192_30_0,
+  &L_192_192_30_1,
+  &L_192_192_30_2,
+  &L_192_192_30_3,
+  &L_192_192_30_4,
+  &L_192_192_30_5,
+  &L_192_192_30_6,
+  &L_192_192_30_7,
+  &L_192_192_30_8,
+  &L_192_192_30_9,
+  &L_192_192_30_10,
+  &L_192_192_30_11,
+  &L_192_192_30_12,
+  &L_192_192_30_13,
+  &L_192_192_30_14,
+  &L_192_192_30_15,
+  &L_192_192_30_16,
+  &L_192_192_30_17,
+  &L_192_192_30_18,
+  &L_192_192_30_19,
+  &L_192_192_30_20,
+  &L_192_192_30_21,
+  &L_192_192_30_22,
+  &L_192_192_30_23,
+  &L_192_192_30_24,
+  &L_192_192_30_25,
+  &L_192_192_30_26,
+  &L_192_192_30_27,
+  &L_192_192_30_28,
+  &L_192_192_30_29,
+};
 #if !defined(REDUCED_LINEAR_LAYER)
-const mzd_local_t* lowmc_192_192_30_get_round_key(uint32_t r) {
-  switch(r) {
-    default:
-      return NULL;
-    case 0:
-      return &K_192_192_30_0;
-    case 1:
-      return &K_192_192_30_1;
-    case 2:
-      return &K_192_192_30_2;
-    case 3:
-      return &K_192_192_30_3;
-    case 4:
-      return &K_192_192_30_4;
-    case 5:
-      return &K_192_192_30_5;
-    case 6:
-      return &K_192_192_30_6;
-    case 7:
-      return &K_192_192_30_7;
-    case 8:
-      return &K_192_192_30_8;
-    case 9:
-      return &K_192_192_30_9;
-    case 10:
-      return &K_192_192_30_10;
-    case 11:
-      return &K_192_192_30_11;
-    case 12:
-      return &K_192_192_30_12;
-    case 13:
-      return &K_192_192_30_13;
-    case 14:
-      return &K_192_192_30_14;
-    case 15:
-      return &K_192_192_30_15;
-    case 16:
-      return &K_192_192_30_16;
-    case 17:
-      return &K_192_192_30_17;
-    case 18:
-      return &K_192_192_30_18;
-    case 19:
-      return &K_192_192_30_19;
-    case 20:
-      return &K_192_192_30_20;
-    case 21:
-      return &K_192_192_30_21;
-    case 22:
-      return &K_192_192_30_22;
-    case 23:
-      return &K_192_192_30_23;
-    case 24:
-      return &K_192_192_30_24;
-    case 25:
-      return &K_192_192_30_25;
-    case 26:
-      return &K_192_192_30_26;
-    case 27:
-      return &K_192_192_30_27;
-    case 28:
-      return &K_192_192_30_28;
-    case 29:
-      return &K_192_192_30_29;
-    case 30:
-      return &K_192_192_30_30;
-  }
-}
+static const mzd_local_t* lowmc_round_key[] = {
+  &K_192_192_30_0,
+  &K_192_192_30_1,
+  &K_192_192_30_2,
+  &K_192_192_30_3,
+  &K_192_192_30_4,
+  &K_192_192_30_5,
+  &K_192_192_30_6,
+  &K_192_192_30_7,
+  &K_192_192_30_8,
+  &K_192_192_30_9,
+  &K_192_192_30_10,
+  &K_192_192_30_11,
+  &K_192_192_30_12,
+  &K_192_192_30_13,
+  &K_192_192_30_14,
+  &K_192_192_30_15,
+  &K_192_192_30_16,
+  &K_192_192_30_17,
+  &K_192_192_30_18,
+  &K_192_192_30_19,
+  &K_192_192_30_20,
+  &K_192_192_30_21,
+  &K_192_192_30_22,
+  &K_192_192_30_23,
+  &K_192_192_30_24,
+  &K_192_192_30_25,
+  &K_192_192_30_26,
+  &K_192_192_30_27,
+  &K_192_192_30_28,
+  &K_192_192_30_29,
+};
 #endif
-
+static const mzd_local_t* lowmc_round_const[] = {
+  &C_192_192_30_0,
+  &C_192_192_30_1,
+  &C_192_192_30_2,
+  &C_192_192_30_3,
+  &C_192_192_30_4,
+  &C_192_192_30_5,
+  &C_192_192_30_6,
+  &C_192_192_30_7,
+  &C_192_192_30_8,
+  &C_192_192_30_9,
+  &C_192_192_30_10,
+  &C_192_192_30_11,
+  &C_192_192_30_12,
+  &C_192_192_30_13,
+  &C_192_192_30_14,
+  &C_192_192_30_15,
+  &C_192_192_30_16,
+  &C_192_192_30_17,
+  &C_192_192_30_18,
+  &C_192_192_30_19,
+  &C_192_192_30_20,
+  &C_192_192_30_21,
+  &C_192_192_30_22,
+  &C_192_192_30_23,
+  &C_192_192_30_24,
+  &C_192_192_30_25,
+  &C_192_192_30_26,
+  &C_192_192_30_27,
+  &C_192_192_30_28,
+  &C_192_192_30_29,
+};
+const mzd_local_t* lowmc_192_192_30_get_linear_layer(uint32_t r) {
+  return lowmc_linear_layer[r];
+}
 
 const mzd_local_t* lowmc_192_192_30_get_round_const(uint32_t r) {
-  switch(r) {
-    default:
-      return NULL;
-    case 0:
-      return &C_192_192_30_0;
-    case 1:
-      return &C_192_192_30_1;
-    case 2:
-      return &C_192_192_30_2;
-    case 3:
-      return &C_192_192_30_3;
-    case 4:
-      return &C_192_192_30_4;
-    case 5:
-      return &C_192_192_30_5;
-    case 6:
-      return &C_192_192_30_6;
-    case 7:
-      return &C_192_192_30_7;
-    case 8:
-      return &C_192_192_30_8;
-    case 9:
-      return &C_192_192_30_9;
-    case 10:
-      return &C_192_192_30_10;
-    case 11:
-      return &C_192_192_30_11;
-    case 12:
-      return &C_192_192_30_12;
-    case 13:
-      return &C_192_192_30_13;
-    case 14:
-      return &C_192_192_30_14;
-    case 15:
-      return &C_192_192_30_15;
-    case 16:
-      return &C_192_192_30_16;
-    case 17:
-      return &C_192_192_30_17;
-    case 18:
-      return &C_192_192_30_18;
-    case 19:
-      return &C_192_192_30_19;
-    case 20:
-      return &C_192_192_30_20;
-    case 21:
-      return &C_192_192_30_21;
-    case 22:
-      return &C_192_192_30_22;
-    case 23:
-      return &C_192_192_30_23;
-    case 24:
-      return &C_192_192_30_24;
-    case 25:
-      return &C_192_192_30_25;
-    case 26:
-      return &C_192_192_30_26;
-    case 27:
-      return &C_192_192_30_27;
-    case 28:
-      return &C_192_192_30_28;
-    case 29:
-      return &C_192_192_30_29;
-  }
+  return lowmc_round_const[r];
 }
+
 #if defined(REDUCED_LINEAR_LAYER)
 const mzd_local_t* lowmc_192_192_30_get_precomputed_round_key_matrix_non_linear_part(void) {
   return &precomputed_round_key_matrix_non_linear_part_192_192_30;
@@ -12627,5 +12528,9 @@ const mzd_local_t* lowmc_192_192_30_get_precomputed_round_key_matrix_non_linear_
 
 const mzd_local_t* lowmc_192_192_30_get_precomputed_round_key_matrix_linear_part(void) {
   return &precomputed_round_key_matrix_linear_part_192_192_30;
+}
+#else
+const mzd_local_t* lowmc_192_192_30_get_round_key(uint32_t r) {
+    return lowmc_round_key[r];
 }
 #endif

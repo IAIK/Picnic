@@ -20621,261 +20621,138 @@ static const mzd_local_t precomputed_round_key_matrix_non_linear_part_256_256_38
   UINT64_C(0x0f80c4e33c0a8e3e), UINT64_C(0x2bf93c20226a6c49), UINT64_C(0x13b692fa3b6500e2), UINT64_C(0x2e31bb101276cad3), UINT64_C(0x0eb5dccc2eff533c), UINT64_C(0x108a49d732bd95d8), UINT64_C(0x08d655281e9eeb8f), UINT64_C(0x15d7415d28e28ec3), UINT64_C(0x187b96260c6eac88), UINT64_C(0x20c69add2f54c7b4), UINT64_C(0x186e77992adfe5dc), UINT64_C(0x0e6fe10009b6f2df), UINT64_C(0x02167bfe35727339), UINT64_C(0x37362ca315bb28d3), UINT64_C(0x3e95df41356df458), UINT64_C(0x3c399586207da6c2), UINT64_C(0x3919044b148da246), UINT64_C(0x3d749a680b7d1473), UINT64_C(0x205ac930019a5909), UINT64_C(0x0000000000000000),
   UINT64_C(0x38e4fd7f03904f7a), UINT64_C(0x14e672272a4744b7), UINT64_C(0x1e8325e2047bcf12), UINT64_C(0x1a7c44c1288dbb0e), UINT64_C(0x31b4dbdd1c4235e8), UINT64_C(0x0e39387d37c48df9), UINT64_C(0x19b3a97f1101af1a), UINT64_C(0x3a49969629026eba), UINT64_C(0x0dfdc21e2e2791c9), UINT64_C(0x2c0d590521f5e88c), UINT64_C(0x321b1ea432cf8439), UINT64_C(0x3192e8a9069a08e9), UINT64_C(0x22cbe3c13d6bd3e8), UINT64_C(0x0341fff01b1c3685), UINT64_C(0x1707d4462a363742), UINT64_C(0x150753d223c7c5be), UINT64_C(0x065ddca4185682ce), UINT64_C(0x1138d06300f5dc6a), UINT64_C(0x28d9c5470034262c), UINT64_C(0x0000000000000000),
 }};
-
 #endif
-const mzd_local_t* lowmc_256_256_38_get_linear_layer(uint32_t r) {
-  switch(r) {
-    default:
-      return NULL;
-    case 0:
-      return &L_256_256_38_0;
-    case 1:
-      return &L_256_256_38_1;
-    case 2:
-      return &L_256_256_38_2;
-    case 3:
-      return &L_256_256_38_3;
-    case 4:
-      return &L_256_256_38_4;
-    case 5:
-      return &L_256_256_38_5;
-    case 6:
-      return &L_256_256_38_6;
-    case 7:
-      return &L_256_256_38_7;
-    case 8:
-      return &L_256_256_38_8;
-    case 9:
-      return &L_256_256_38_9;
-    case 10:
-      return &L_256_256_38_10;
-    case 11:
-      return &L_256_256_38_11;
-    case 12:
-      return &L_256_256_38_12;
-    case 13:
-      return &L_256_256_38_13;
-    case 14:
-      return &L_256_256_38_14;
-    case 15:
-      return &L_256_256_38_15;
-    case 16:
-      return &L_256_256_38_16;
-    case 17:
-      return &L_256_256_38_17;
-    case 18:
-      return &L_256_256_38_18;
-    case 19:
-      return &L_256_256_38_19;
-    case 20:
-      return &L_256_256_38_20;
-    case 21:
-      return &L_256_256_38_21;
-    case 22:
-      return &L_256_256_38_22;
-    case 23:
-      return &L_256_256_38_23;
-    case 24:
-      return &L_256_256_38_24;
-    case 25:
-      return &L_256_256_38_25;
-    case 26:
-      return &L_256_256_38_26;
-    case 27:
-      return &L_256_256_38_27;
-    case 28:
-      return &L_256_256_38_28;
-    case 29:
-      return &L_256_256_38_29;
-    case 30:
-      return &L_256_256_38_30;
-    case 31:
-      return &L_256_256_38_31;
-    case 32:
-      return &L_256_256_38_32;
-    case 33:
-      return &L_256_256_38_33;
-    case 34:
-      return &L_256_256_38_34;
-    case 35:
-      return &L_256_256_38_35;
-    case 36:
-      return &L_256_256_38_36;
-    case 37:
-      return &L_256_256_38_37;
-  }
-}
 
+static const mzd_local_t* lowmc_linear_layer[] = {
+  &L_256_256_38_0,
+  &L_256_256_38_1,
+  &L_256_256_38_2,
+  &L_256_256_38_3,
+  &L_256_256_38_4,
+  &L_256_256_38_5,
+  &L_256_256_38_6,
+  &L_256_256_38_7,
+  &L_256_256_38_8,
+  &L_256_256_38_9,
+  &L_256_256_38_10,
+  &L_256_256_38_11,
+  &L_256_256_38_12,
+  &L_256_256_38_13,
+  &L_256_256_38_14,
+  &L_256_256_38_15,
+  &L_256_256_38_16,
+  &L_256_256_38_17,
+  &L_256_256_38_18,
+  &L_256_256_38_19,
+  &L_256_256_38_20,
+  &L_256_256_38_21,
+  &L_256_256_38_22,
+  &L_256_256_38_23,
+  &L_256_256_38_24,
+  &L_256_256_38_25,
+  &L_256_256_38_26,
+  &L_256_256_38_27,
+  &L_256_256_38_28,
+  &L_256_256_38_29,
+  &L_256_256_38_30,
+  &L_256_256_38_31,
+  &L_256_256_38_32,
+  &L_256_256_38_33,
+  &L_256_256_38_34,
+  &L_256_256_38_35,
+  &L_256_256_38_36,
+  &L_256_256_38_37,
+};
 #if !defined(REDUCED_LINEAR_LAYER)
-const mzd_local_t* lowmc_256_256_38_get_round_key(uint32_t r) {
-  switch(r) {
-    default:
-      return NULL;
-    case 0:
-      return &K_256_256_38_0;
-    case 1:
-      return &K_256_256_38_1;
-    case 2:
-      return &K_256_256_38_2;
-    case 3:
-      return &K_256_256_38_3;
-    case 4:
-      return &K_256_256_38_4;
-    case 5:
-      return &K_256_256_38_5;
-    case 6:
-      return &K_256_256_38_6;
-    case 7:
-      return &K_256_256_38_7;
-    case 8:
-      return &K_256_256_38_8;
-    case 9:
-      return &K_256_256_38_9;
-    case 10:
-      return &K_256_256_38_10;
-    case 11:
-      return &K_256_256_38_11;
-    case 12:
-      return &K_256_256_38_12;
-    case 13:
-      return &K_256_256_38_13;
-    case 14:
-      return &K_256_256_38_14;
-    case 15:
-      return &K_256_256_38_15;
-    case 16:
-      return &K_256_256_38_16;
-    case 17:
-      return &K_256_256_38_17;
-    case 18:
-      return &K_256_256_38_18;
-    case 19:
-      return &K_256_256_38_19;
-    case 20:
-      return &K_256_256_38_20;
-    case 21:
-      return &K_256_256_38_21;
-    case 22:
-      return &K_256_256_38_22;
-    case 23:
-      return &K_256_256_38_23;
-    case 24:
-      return &K_256_256_38_24;
-    case 25:
-      return &K_256_256_38_25;
-    case 26:
-      return &K_256_256_38_26;
-    case 27:
-      return &K_256_256_38_27;
-    case 28:
-      return &K_256_256_38_28;
-    case 29:
-      return &K_256_256_38_29;
-    case 30:
-      return &K_256_256_38_30;
-    case 31:
-      return &K_256_256_38_31;
-    case 32:
-      return &K_256_256_38_32;
-    case 33:
-      return &K_256_256_38_33;
-    case 34:
-      return &K_256_256_38_34;
-    case 35:
-      return &K_256_256_38_35;
-    case 36:
-      return &K_256_256_38_36;
-    case 37:
-      return &K_256_256_38_37;
-    case 38:
-      return &K_256_256_38_38;
-  }
-}
+static const mzd_local_t* lowmc_round_key[] = {
+  &K_256_256_38_0,
+  &K_256_256_38_1,
+  &K_256_256_38_2,
+  &K_256_256_38_3,
+  &K_256_256_38_4,
+  &K_256_256_38_5,
+  &K_256_256_38_6,
+  &K_256_256_38_7,
+  &K_256_256_38_8,
+  &K_256_256_38_9,
+  &K_256_256_38_10,
+  &K_256_256_38_11,
+  &K_256_256_38_12,
+  &K_256_256_38_13,
+  &K_256_256_38_14,
+  &K_256_256_38_15,
+  &K_256_256_38_16,
+  &K_256_256_38_17,
+  &K_256_256_38_18,
+  &K_256_256_38_19,
+  &K_256_256_38_20,
+  &K_256_256_38_21,
+  &K_256_256_38_22,
+  &K_256_256_38_23,
+  &K_256_256_38_24,
+  &K_256_256_38_25,
+  &K_256_256_38_26,
+  &K_256_256_38_27,
+  &K_256_256_38_28,
+  &K_256_256_38_29,
+  &K_256_256_38_30,
+  &K_256_256_38_31,
+  &K_256_256_38_32,
+  &K_256_256_38_33,
+  &K_256_256_38_34,
+  &K_256_256_38_35,
+  &K_256_256_38_36,
+  &K_256_256_38_37,
+};
 #endif
-
+static const mzd_local_t* lowmc_round_const[] = {
+  &C_256_256_38_0,
+  &C_256_256_38_1,
+  &C_256_256_38_2,
+  &C_256_256_38_3,
+  &C_256_256_38_4,
+  &C_256_256_38_5,
+  &C_256_256_38_6,
+  &C_256_256_38_7,
+  &C_256_256_38_8,
+  &C_256_256_38_9,
+  &C_256_256_38_10,
+  &C_256_256_38_11,
+  &C_256_256_38_12,
+  &C_256_256_38_13,
+  &C_256_256_38_14,
+  &C_256_256_38_15,
+  &C_256_256_38_16,
+  &C_256_256_38_17,
+  &C_256_256_38_18,
+  &C_256_256_38_19,
+  &C_256_256_38_20,
+  &C_256_256_38_21,
+  &C_256_256_38_22,
+  &C_256_256_38_23,
+  &C_256_256_38_24,
+  &C_256_256_38_25,
+  &C_256_256_38_26,
+  &C_256_256_38_27,
+  &C_256_256_38_28,
+  &C_256_256_38_29,
+  &C_256_256_38_30,
+  &C_256_256_38_31,
+  &C_256_256_38_32,
+  &C_256_256_38_33,
+  &C_256_256_38_34,
+  &C_256_256_38_35,
+  &C_256_256_38_36,
+  &C_256_256_38_37,
+};
+const mzd_local_t* lowmc_256_256_38_get_linear_layer(uint32_t r) {
+  return lowmc_linear_layer[r];
+}
 
 const mzd_local_t* lowmc_256_256_38_get_round_const(uint32_t r) {
-  switch(r) {
-    default:
-      return NULL;
-    case 0:
-      return &C_256_256_38_0;
-    case 1:
-      return &C_256_256_38_1;
-    case 2:
-      return &C_256_256_38_2;
-    case 3:
-      return &C_256_256_38_3;
-    case 4:
-      return &C_256_256_38_4;
-    case 5:
-      return &C_256_256_38_5;
-    case 6:
-      return &C_256_256_38_6;
-    case 7:
-      return &C_256_256_38_7;
-    case 8:
-      return &C_256_256_38_8;
-    case 9:
-      return &C_256_256_38_9;
-    case 10:
-      return &C_256_256_38_10;
-    case 11:
-      return &C_256_256_38_11;
-    case 12:
-      return &C_256_256_38_12;
-    case 13:
-      return &C_256_256_38_13;
-    case 14:
-      return &C_256_256_38_14;
-    case 15:
-      return &C_256_256_38_15;
-    case 16:
-      return &C_256_256_38_16;
-    case 17:
-      return &C_256_256_38_17;
-    case 18:
-      return &C_256_256_38_18;
-    case 19:
-      return &C_256_256_38_19;
-    case 20:
-      return &C_256_256_38_20;
-    case 21:
-      return &C_256_256_38_21;
-    case 22:
-      return &C_256_256_38_22;
-    case 23:
-      return &C_256_256_38_23;
-    case 24:
-      return &C_256_256_38_24;
-    case 25:
-      return &C_256_256_38_25;
-    case 26:
-      return &C_256_256_38_26;
-    case 27:
-      return &C_256_256_38_27;
-    case 28:
-      return &C_256_256_38_28;
-    case 29:
-      return &C_256_256_38_29;
-    case 30:
-      return &C_256_256_38_30;
-    case 31:
-      return &C_256_256_38_31;
-    case 32:
-      return &C_256_256_38_32;
-    case 33:
-      return &C_256_256_38_33;
-    case 34:
-      return &C_256_256_38_34;
-    case 35:
-      return &C_256_256_38_35;
-    case 36:
-      return &C_256_256_38_36;
-    case 37:
-      return &C_256_256_38_37;
-  }
+  return lowmc_round_const[r];
 }
+
 #if defined(REDUCED_LINEAR_LAYER)
 const mzd_local_t* lowmc_256_256_38_get_precomputed_round_key_matrix_non_linear_part(void) {
   return &precomputed_round_key_matrix_non_linear_part_256_256_38;
@@ -20883,5 +20760,9 @@ const mzd_local_t* lowmc_256_256_38_get_precomputed_round_key_matrix_non_linear_
 
 const mzd_local_t* lowmc_256_256_38_get_precomputed_round_key_matrix_linear_part(void) {
   return &precomputed_round_key_matrix_linear_part_256_256_38;
+}
+#else
+const mzd_local_t* lowmc_256_256_38_get_round_key(uint32_t r) {
+    return lowmc_round_key[r];
 }
 #endif
