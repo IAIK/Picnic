@@ -1031,7 +1031,11 @@ mpc_lowmc_call_def(128, 20, mpc_lowmc_call_128_sse, mpc_lowmc_call_verify_128_ss
                    _mpc_sbox_layer_bitsliced_128_sse, _mpc_sbox_layer_bitsliced_verify_128_sse,
                    mzd_mul_v_sse, mzd_mul_vl_sse_128, mzd_xor_sse, mzd_mul_v_sse, mzd_mul_vl_sse,
                    mzd_addmul_v_sse, mzd_addmul_vl_sse_128);
-mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_256_sse, mpc_lowmc_call_verify_256_sse,
+mpc_lowmc_call_def(192, 30, mpc_lowmc_call_192_sse, mpc_lowmc_call_verify_192_sse,
+                   _mpc_sbox_layer_bitsliced_256_sse, _mpc_sbox_layer_bitsliced_verify_256_sse,
+                   mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse, mzd_mul_v_sse, mzd_mul_vl_sse,
+                   mzd_addmul_v_sse, mzd_addmul_vl_sse);
+mpc_lowmc_call_def(256, 38, mpc_lowmc_call_256_sse, mpc_lowmc_call_verify_256_sse,
                    _mpc_sbox_layer_bitsliced_256_sse, _mpc_sbox_layer_bitsliced_verify_256_sse,
                    mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse, mzd_mul_v_sse, mzd_mul_vl_sse,
                    mzd_addmul_v_sse, mzd_addmul_vl_sse);
@@ -1147,7 +1151,9 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #endif
 #endif
 #ifdef WITH_SSE2
-  if (CPU_SUPPORTS_SSE2 && (lowmc->n == 192 || lowmc->n == 256)) {
+  if (CPU_SUPPORTS_SSE2 && lowmc->n == 192) {
+    return general_or_10(lowmc, mpc_lowmc_call_192_sse);
+  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 256) {
     return general_or_10(lowmc, mpc_lowmc_call_256_sse);
   }
 #ifdef WITH_CUSTOM_INSTANCES
@@ -1206,7 +1212,9 @@ lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* low
 #endif
 #endif
 #ifdef WITH_SSE2
-  if (CPU_SUPPORTS_SSE2 && (lowmc->n == 192 || lowmc->n == 256)) {
+  if (CPU_SUPPORTS_SSE2 && lowmc->n == 192) {
+    return general_or_10(lowmc, mpc_lowmc_call_verify_192_sse);
+  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 256) {
     return general_or_10(lowmc, mpc_lowmc_call_verify_256_sse);
   }
 #ifdef WITH_CUSTOM_INSTANCES
