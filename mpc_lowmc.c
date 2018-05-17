@@ -700,7 +700,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   mzd_local_init_multiple_ex(nl_part, shares, 1, lowmc->r * 32, false);                            \
   MPC_LOOP(mul_more_cols, nl_part, lowmc_key, lowmc->precomputed_non_linear_part_##no_scr,         \
            shares);                                                                                \
-  word mask = 0x00000000FFFFFFFF;                                                                  \
+  word mask = WORD_C(0x00000000FFFFFFFF);                                                          \
   for (unsigned i = 0; i < lowmc->r; ++i, ++views, ++round) {                                      \
     R(sbox_selector, shares);                                                                      \
     SBOX(sbox_args, sbox, sbox_selector, y, x, views, r, &lowmc->mask, &vars, lowmc->n, shares);   \
