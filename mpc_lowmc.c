@@ -694,16 +694,16 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   mzd_local_init_multiple_ex(nl_part, shares, 1, (lowmc_r)*32, false);                             \
   MPC_LOOP(mul_more_cols, nl_part, lowmc_key, lowmc->precomputed_non_linear_part_##no_scr,         \
            shares);                                                                                \
-  word mask = WORD_C(0x00000000FFFFFFFF);                                                          \
   for (unsigned i = 0; i < (lowmc_r); ++i, ++views, ++round) {                                     \
     R(sbox_selector, shares);                                                                      \
     SBOX(sbox_args, sbox, sbox_selector, y, x, views, r, &lowmc->mask, &vars, lowmc_n, shares);    \
-    const unsigned int shift = ((mask & 0xFFFFFFFF) ? 34 : 2);                                     \
-    for (unsigned int k = 0; k < shares; k++) {                                                    \
+    const word mask          = (i & 1) ? WORD_C(0xFFFFFFFF00000000) : WORD_C(0x00000000FFFFFFFF);  \
+    const unsigned int shift = (i & 1) ? 2 : 34;                                                   \
+    for (unsigned int k = 0; k < shares; ++k) {                                                    \
       FIRST_ROW(y[k])                                                                              \
-      [lowmc_n / (sizeof(word) * 8) - 1] ^= (CONST_FIRST_ROW(nl_part[k])[i >> 1] & mask) << shift; \
+      [(lowmc_n) / (sizeof(word) * 8) - 1] ^=                                                      \
+          (CONST_FIRST_ROW(nl_part[k])[i >> 1] & mask) << shift;                                   \
     }                                                                                              \
-    mask = ~mask;                                                                                  \
     MPC_LOOP(const_mat_mul_func, x, y, round->l_##no_scr, shares);                                 \
     MPC_IF_ELSE(add_func, x, x, round->constant, shares, ch);                                      \
   }                                                                                                \
