@@ -146,21 +146,16 @@ static void _mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* con
 #define bitsliced_step_2_uint64(sc)                                                                \
   do {                                                                                             \
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
-      const uint64_t inm = in[m];                                                                  \
-      uint64_t* outm     = &out[m];                                                                \
-                                                                                                   \
       const uint64_t tmp1 = r2m[m] ^ x0s[m];                                                       \
       const uint64_t tmp2 = x0s[m] ^ x1s[m];                                                       \
       const uint64_t tmp3 = tmp2 ^ r1m[m];                                                         \
       const uint64_t tmp4 = tmp2 ^ r0m[m] ^ x2m[m];                                                \
                                                                                                    \
-      const uint64_t mout = inm & MASK_MASK;                                                       \
-      *outm               = mout ^ (tmp4) ^ (tmp1 >> 2) ^ (tmp3 >> 1);                             \
+      in[m] = (in[m] & MASK_MASK) ^ (tmp4) ^ (tmp1 >> 2) ^ (tmp3 >> 1);                            \
     }                                                                                              \
   } while (0)
 
-static void _mpc_sbox_layer_bitsliced_uint64(uint64_t* out, uint64_t const* in, view_t* view,
-                                             uint64_t const* rvec) {
+static void _mpc_sbox_layer_bitsliced_uint64(uint64_t* in, view_t* view, uint64_t const* rvec) {
   bitsliced_step_1_uint64(SC_PROOF);
 
   memset(view->t, 0, sizeof(uint64_t) * SC_PROOF);
@@ -171,7 +166,7 @@ static void _mpc_sbox_layer_bitsliced_uint64(uint64_t* out, uint64_t const* in, 
   bitsliced_step_2_uint64(SC_PROOF);
 }
 
-static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* out, uint64_t const* in, view_t* view,
+static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* in, view_t* view,
                                                     uint64_t const* rvec) {
   bitsliced_step_1_uint64(SC_VERIFY);
 
@@ -650,28 +645,26 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
 
 #define SBOX_uint64_3(sbox, y1, x, views, r, lowmcmask, vars, n)                                   \
   uint64_t in[SC_PROOF];                                                                           \
-  uint64_t out[SC_PROOF];                                                                          \
-  for (int count = 0; count < SC_PROOF; count++) {                                                 \
-    in[count]  = CONST_FIRST_ROW(x[count])[n / 64 - 1];                                            \
-    out[count] = CONST_FIRST_ROW(y1[count])[n / 64 - 1];                                           \
+  for (unsigned int count = 0; count < SC_PROOF; ++count) {                                        \
+    in[count] = CONST_FIRST_ROW(x[count])[n / (sizeof(word) * 8) - 1];                             \
   }                                                                                                \
-  _mpc_sbox_layer_bitsliced_uint64(out, in, views, r);                                             \
-  for (int count = 0; count < SC_PROOF; count++) {                                                 \
-    memcpy(FIRST_ROW(y1[count]), CONST_FIRST_ROW(x[count]), (n / 64 - 1) * sizeof(word));          \
-    FIRST_ROW(y1[count])[n / 64 - 1] = out[count];                                                 \
+  _mpc_sbox_layer_bitsliced_uint64(in, views, r);                                                  \
+  for (unsigned int count = 0; count < SC_PROOF; ++count) {                                        \
+    memcpy(FIRST_ROW(y1[count]), CONST_FIRST_ROW(x[count]),                                        \
+           (n / (sizeof(word) * 8) - 1) * sizeof(word));                                           \
+    FIRST_ROW(y1[count])[n / (sizeof(word) * 8) - 1] = in[count];                                  \
   }
 
 #define SBOX_uint64_2(sbox, y1, x, views, r, lowmcmask, vars, n)                                   \
   uint64_t in[SC_VERIFY];                                                                          \
-  uint64_t out[SC_VERIFY];                                                                         \
-  for (int count = 0; count < SC_VERIFY; count++) {                                                \
-    in[count]  = CONST_FIRST_ROW(x[count])[n / 64 - 1];                                            \
-    out[count] = CONST_FIRST_ROW(y1[count])[n / 64 - 1];                                           \
+  for (unsigned int count = 0; count < SC_VERIFY; ++count) {                                       \
+    in[count] = CONST_FIRST_ROW(x[count])[n / (sizeof(word) * 8) - 1];                             \
   }                                                                                                \
-  _mpc_sbox_layer_bitsliced_verify_uint64(out, in, views, r);                                      \
-  for (int count = 0; count < SC_VERIFY; count++) {                                                \
-    memcpy(FIRST_ROW(y1[count]), CONST_FIRST_ROW(x[count]), (n / 64 - 1) * sizeof(word));          \
-    FIRST_ROW(y1[count])[n / 64 - 1] = out[count];                                                 \
+  _mpc_sbox_layer_bitsliced_verify_uint64(in, views, r);                                           \
+  for (unsigned int count = 0; count < SC_VERIFY; ++count) {                                       \
+    memcpy(FIRST_ROW(y1[count]), CONST_FIRST_ROW(x[count]),                                        \
+           (n / (sizeof(word) * 8) - 1) * sizeof(word));                                           \
+    FIRST_ROW(y1[count])[n / (sizeof(word) * 8) - 1] = in[count];                                  \
   }
 
 #define R(selector, shares) R_##selector##_##shares
