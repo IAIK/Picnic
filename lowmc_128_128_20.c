@@ -5767,6 +5767,7 @@ static const mzd_local_t* lowmc_round_key[] = {
   &K_128_128_20_17,
   &K_128_128_20_18,
   &K_128_128_20_19,
+  &K_128_128_20_20,
 };
 #endif
 static const mzd_local_t* lowmc_round_const[] = {
