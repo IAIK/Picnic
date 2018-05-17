@@ -456,6 +456,33 @@ mzd_local_t* mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
 
   return c;
 }
+
+ATTR_TARGET("avx2")
+mzd_local_t* mzd_addmul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word* cptr       = FIRST_ROW(c);
+  word const* vptr = CONST_FIRST_ROW(v);
+  word const* Aptr = CONST_FIRST_ROW(A);
+
+  __m256i* mcptr       = (__m256i*)ASSUME_ALIGNED(cptr, alignof(__m256i));
+  __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(Aptr, alignof(__m256i));
+
+  for (unsigned int w = 0; w < 4; ++w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, ++mAptr) {
+      const __m256i mask = _mm256_set1_epi64x(-(idx & 1));
+      mm256_xor_mask_region(mcptr, mAptr, mask, 1);
+    }
+  }
+
+  return c;
+}
+
+ATTR_TARGET("avx2")
+mzd_local_t* mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  mzd_local_clear(c);
+  return mzd_addmul_v_avx_256(c, v, A);
+}
+
 #endif
 
 #ifdef WITH_NEON
@@ -582,7 +609,6 @@ static void xor_comb(const unsigned int len, word* Brow, mzd_local_t const* A,
 
 /**
  * Pre-compute matrices for faster mzd_addmul_v computions.
- *
  */
 mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
   mzd_local_t* B = mzd_local_init_ex(32 * A->nrows, A->ncols, true);
