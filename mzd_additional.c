@@ -415,7 +415,7 @@ mzd_local_t* mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
     word const* Aptr     = CONST_ROW(A, w * sizeof(word) * 8);
     __m128i const* mAptr = (__m128i const*)ASSUME_ALIGNED(Aptr, alignof(__m128i));
 
-    for (unsigned int i = 0; i < sizeof(word) * 8; ++i, idx >>= 1, mAptr += mrowstride) {
+    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, mAptr += mrowstride) {
       const __m128i mask = _mm_set1_epi64x(-(idx & 1));
       mm128_xor_mask_region(mcptr, mAptr, mask, len);
     }
@@ -448,7 +448,7 @@ mzd_local_t* mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
     word const* Aptr     = CONST_ROW(A, w * sizeof(word) * 8);
     __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(Aptr, alignof(__m256i));
 
-    for (unsigned int i = 0; i < sizeof(word) * 8; ++i, idx >>= 1, mAptr += mrowstride) {
+    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, mAptr += mrowstride) {
       const __m256i mask = _mm256_set1_epi64x(-(idx & 1));
       mm256_xor_mask_region(mcptr, mAptr, mask, len);
     }
@@ -474,12 +474,11 @@ inline mzd_local_t* mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_
   uint32x4_t* mcptr             = ASSUME_ALIGNED(cptr, alignof(uint32x4_t));
 
   for (unsigned int w = 0; w < width; ++w, ++vptr) {
-    word idx         = *vptr;
-    word const* Aptr = CONST_ROW(A, w * sizeof(word) * 8);
-
+    word idx                = *vptr;
+    word const* Aptr        = CONST_ROW(A, w * sizeof(word) * 8);
     uint32x4_t const* mAptr = ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
 
-    for (unsigned int i = 0; i < sizeof(word) * 8; ++i, idx >>= 1, mAptr += mrowstride) {
+    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, mAptr += mrowstride) {
       const uint32x4_t mask = vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1)));
       mm128_xor_mask_region(mcptr, mAptr, mask, len);
     }
