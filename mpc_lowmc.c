@@ -677,7 +677,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
 #define R(selector, shares) R_##selector##_##shares
 
 #define R_mzd_2 mzd_local_t** r = rvec[i].s
-#define R_mzd_3 mzd_local_t** r = rvec[i].s
+#define R_mzd_3 R_mzd_2
 
 #ifdef _MSC_VER
 #define R_uint64_2                                                                                 \
