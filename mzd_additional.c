@@ -312,6 +312,23 @@ mzd_local_t* mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t
 
   return res;
 }
+
+ATTR_TARGET("avx2")
+mzd_local_t* mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
+                             mzd_local_t const* second) {
+  word* resptr          = FIRST_ROW(res);
+  word const* firstptr  = CONST_FIRST_ROW(first);
+  word const* secondptr = CONST_FIRST_ROW(second);
+
+  __m256i* mresptr          = (__m256i*)ASSUME_ALIGNED(resptr, alignof(__m256i));
+  __m256i const* mfirstptr  = (__m256i const*)ASSUME_ALIGNED(firstptr, alignof(__m256i));
+  __m256i const* msecondptr = (__m256i const*)ASSUME_ALIGNED(secondptr, alignof(__m256i));
+
+  *mresptr = _mm256_xor_si256(*mfirstptr, *msecondptr);
+
+  return res;
+}
+
 #endif
 
 #ifdef WITH_NEON

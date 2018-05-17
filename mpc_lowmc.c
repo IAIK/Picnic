@@ -1053,7 +1053,7 @@ mpc_lowmc_call_def(192, 30, mpc_lowmc_call_192_avx, mpc_lowmc_call_verify_192_av
                    mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256);
 mpc_lowmc_call_def(256, 38, mpc_lowmc_call_256_avx, mpc_lowmc_call_verify_256_avx,
                    _mpc_sbox_layer_bitsliced_256_avx, _mpc_sbox_layer_bitsliced_verify_256_avx,
-                   mzd_mul_v_avx_256, mzd_mul_vl_avx_256, mzd_xor_avx, mzd_mul_v_avx,
+                   mzd_mul_v_avx_256, mzd_mul_vl_avx_256, mzd_xor_avx_256, mzd_mul_v_avx,
                    mzd_mul_vl_avx, mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256);
 #ifdef WITH_CUSTOM_INSTANCES
 mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_384_avx, mpc_lowmc_call_verify_384_avx,
