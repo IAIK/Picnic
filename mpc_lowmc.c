@@ -710,7 +710,7 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   mzd_local_free_multiple(nl_part);
 
 #define loop(sbox_args, sbox, sbox_selector, no_scr, no_scr_active, const_mat_mul_func, add_func,  \
-             mul_more_cols, const_addmat_mul_func, ch, shares, lowmc_n, lowc_r)                    \
+             mul_more_cols, const_addmat_mul_func, ch, shares, lowmc_n, lowmc_r)                   \
   for (unsigned i = 0; i < (lowmc_r); ++i, ++views, ++round) {                                     \
     R(sbox_selector, shares);                                                                      \
     SBOX(sbox_args, sbox, sbox_selector, y, x, views, r, &lowmc->mask, &vars, lowmc_n, shares);    \
