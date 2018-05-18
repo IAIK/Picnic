@@ -1,4 +1,12 @@
 #include "../mzd_additional.h"
+
+#ifdef WITH_OPT
+#include "../simd.h"
+#if !defined(_MSC_VER)
+#include <stdalign.h>
+#endif
+#endif
+
 #include <m4ri/m4ri.h>
 
 #include "utils.h"
@@ -23,10 +31,9 @@ static void test_mzd_local_equal(void) {
   }
 }
 
+#ifdef WITH_AVX2
 static int test_mzd_mul_avx(void) {
   int ret = 0;
-
-#ifdef WITH_AVX2
 
   unsigned int size = 192;
   mzd_t* A    = mzd_init(size, size);
@@ -42,17 +49,16 @@ static int test_mzd_mul_avx(void) {
   mzd_local_t* c2 = mzd_convert(c);
 
   for (unsigned int k = 0; k < 3; ++k) {
-
     mzd_t* r  = mzd_mul_naive(c, v, A);
     mzd_local_t* rl = mzd_mul_v_avx(c2, vl, Al);
 
     mzd_local_t* rc = mzd_convert(r);
 
     if (!mzd_local_equal(rc, rl)) {
-      printf("mul: fail [%u x %u]\n", size, size);
+      printf("mul avx: fail [%u x %u]\n", size, size);
       ret = -1;
     } else {
-      printf("mul: ok [%u x %u]\n", size, size);
+      printf("mul avx: ok [%u x %u]\n", size, size);
     }
 
     mzd_local_free(rc);
@@ -65,43 +71,85 @@ static int test_mzd_mul_avx(void) {
   mzd_local_free(c2);
   mzd_local_free(Al);
   mzd_local_free(vl);
-#endif
 
   return ret;
 }
 
+static int test_mzd_mul_avx_128(void) {
+  int ret = 0;
+
+  unsigned int size = 128;
+  mzd_t* A    = mzd_init(size, size);
+  mzd_t* v    = mzd_init(1, size);
+  mzd_t* c    = mzd_init(1, size);
+
+  mzd_randomize(A);
+  mzd_randomize(v);
+  mzd_randomize(c);
+
+  mzd_local_t* Al = mzd_convert(A);
+  mzd_local_t* vl = mzd_convert(v);
+  mzd_local_t* c2 = mzd_convert(c);
+
+  for (unsigned int k = 0; k < 3; ++k) {
+    mzd_t* r  = mzd_mul_naive(c, v, A);
+    mzd_local_t* rl = mzd_mul_v_avx_128(c2, vl, Al);
+
+    mzd_local_t* rc = mzd_convert(r);
+
+    if (!mzd_local_equal(rc, rl)) {
+      printf("mul avx 128: fail [%u x %u]\n", size, size);
+      ret = -1;
+    } else {
+      printf("mul avx 128: ok [%u x %u]\n", size, size);
+    }
+
+    mzd_local_free(rc);
+  }
+
+  mzd_free(A);
+  mzd_free(v);
+  mzd_free(c);
+
+  mzd_local_free(c2);
+  mzd_local_free(Al);
+  mzd_local_free(vl);
+
+  return ret;
+}
+#endif
+
 #ifdef WITH_NEON
-static void test_mzd_mul_vl_neon_192(void) {
+static int test_mzd_mul_vl_neon_192(void) {
+  int ret = 0;
 
   unsigned int size = 192;
-  mzd_local_t* A    = mzd_init(size, size);
-  mzd_local_t* v    = mzd_init(1, size);
-  mzd_local_t* c    = mzd_init(1, size);
+  mzd_t* A    = mzd_init(size, size);
+  mzd_t* v    = mzd_init(1, size);
+  mzd_t* c    = mzd_init(1, size);
 
   mzd_randomize(A);
   mzd_randomize(v);
   mzd_randomize(c);
 
-  mzd_local_t* Al  = mzd_local_copy(NULL, A);
-  mzd_local_t* All = mzd_precompute_matrix_lookup(Al);
-  mzd_local_t* vl  = mzd_local_copy(NULL, v);
-
-  mzd_local_t* c2 = mzd_local_copy(NULL, c);
+  mzd_local_t* Al = mzd_convert(A);
+  mzd_local_t* vl = mzd_convert(v);
+  mzd_local_t* c2 = mzd_convert(c);
 
   for (unsigned int k = 0; k < 3; ++k) {
+    mzd_t* r  = mzd_mul_naive(c, v, A);
+    mzd_local_t* rl = mzd_mul_v_neon(c2, vl, Al);
 
-    mzd_local_t* r  = mzd_mul_naive(c, v, A);
-    mzd_local_t* rl = mzd_mul_vl_neon_multiple_of_128(c2, vl, All);
+    mzd_local_t* rc = mzd_convert(r);
 
-    if (!mzd_local_equal(r, rl)) {
-      printf("mul: fail [%u x %u]\n", size, size);
-      printf("r =  ");
-      mzd_print(r);
-      printf("rl = ");
-      mzd_print(rl);
+    if (!mzd_local_equal(rc, rl)) {
+      printf("mul neon 192: fail [%u x %u]\n", size, size);
+      ret = -1;
     } else {
-      printf("mul: ok [%u x %u]\n", size, size);
+      printf("mul neon 192: ok [%u x %u]\n", size, size);
     }
+
+    mzd_local_free(rc);
   }
 
   mzd_free(A);
@@ -111,82 +159,85 @@ static void test_mzd_mul_vl_neon_192(void) {
   mzd_local_free(c2);
   mzd_local_free(Al);
   mzd_local_free(vl);
+
+  return ret;
 }
 
-static void test_mzd_mul_vl_neon_256(void) {
+static int test_mzd_mul_vl_neon_256(void) {
+  int ret = 0;
 
   unsigned int size = 256;
-  mzd_local_t* A    = mzd_init(size, size);
-  mzd_local_t* v    = mzd_init(1, size);
-  mzd_local_t* c    = mzd_init(1, size);
+  mzd_t* A    = mzd_init(size, size);
+  mzd_t* v    = mzd_init(1, size);
+  mzd_t* c    = mzd_init(1, size);
 
   mzd_randomize(A);
   mzd_randomize(v);
   mzd_randomize(c);
 
-  mzd_local_t* Al  = mzd_local_copy(NULL, A);
+  mzd_local_t* Al = mzd_convert(A);
+  mzd_local_t* vl = mzd_convert(v);
+  mzd_local_t* c2 = mzd_convert(c);
   mzd_local_t* All = mzd_precompute_matrix_lookup(Al);
-  mzd_local_t* vl  = mzd_local_copy(NULL, v);
-
-  mzd_local_t* c2 = mzd_local_copy(NULL, c);
 
   for (unsigned int k = 0; k < 3; ++k) {
+    mzd_t* r  = mzd_mul_naive(c, v, A);
+    mzd_local_t* rl = mzd_mul_v_neon(c2, vl, Al);
 
-    mzd_local_t* r  = mzd_mul_naive(c, v, A);
-    mzd_local_t* rl = mzd_mul_vl_neon_multiple_of_128(c2, vl, All);
+    mzd_local_t* rc = mzd_convert(r);
 
-    if (!mzd_local_equal(r, rl)) {
-      printf("mul: fail [%u x %u]\n", size, size);
-      printf("r =  ");
-      mzd_print(r);
-      printf("rl = ");
-      mzd_print(rl);
+    if (!mzd_local_equal(rc, rl)) {
+      printf("mul neon 256: fail [%u x %u]\n", size, size);
+      ret = -1;
     } else {
-      printf("mul: ok [%u x %u]\n", size, size);
+      printf("mul neon 256: ok [%u x %u]\n", size, size);
     }
+
+    mzd_local_free(rc);
   }
 
   mzd_free(A);
   mzd_free(v);
   mzd_free(c);
 
+  mzd_local_free(All);
   mzd_local_free(c2);
   mzd_local_free(Al);
   mzd_local_free(vl);
+
+  return ret;
 }
 
-static void test_mzd_addmul_vl_neon_192(void) {
+static int test_mzd_addmul_vl_neon_192(void) {
+  int ret = 0;
 
   unsigned int size = 192;
-  mzd_local_t* A    = mzd_init(size, size);
-  mzd_local_t* v    = mzd_init(1, size);
-  mzd_local_t* c    = mzd_init(1, size);
+  mzd_t* A    = mzd_init(size, size);
+  mzd_t* v    = mzd_init(1, size);
+  mzd_t* c    = mzd_init(1, size);
 
   mzd_randomize(A);
   mzd_randomize(v);
   mzd_randomize(c);
 
-  mzd_local_t* Al  = mzd_local_copy(NULL, A);
-  mzd_local_t* All = mzd_precompute_matrix_lookup(Al);
-  mzd_local_t* vl  = mzd_local_copy(NULL, v);
-
-  mzd_local_t* c2 = mzd_local_copy(NULL, c);
-  mzd_local_t* c3 = mzd_local_copy(NULL, c);
+  mzd_local_t* Al = mzd_convert(A);
+  mzd_local_t* vl = mzd_convert(v);
+  mzd_local_t* c2 = mzd_convert(c);
 
   for (unsigned int k = 0; k < 3; ++k) {
+    mzd_t* r  = mzd_addmul_naive(c, v, A);
+    mzd_local_t* rl = mzd_addmul_v_neon(c2, vl, Al);
 
-    mzd_local_t* r   = mzd_addmul_naive(c, v, A);
-    mzd_local_t* rl2 = mzd_addmul_vl_neon(c3, vl, All);
+    mzd_local_t* rc = mzd_convert(r);
 
-    if (!mzd_local_equal(r, rl2)) {
-      printf("addmul2: fail [%u x %u]\n", size, size);
-      printf("r =  ");
-      mzd_print(r);
-      printf("rl = ");
-      mzd_print(rl2);
+    if (!mzd_local_equal(rc, rl)) {
+      printf("addmul neon 192: fail [%u x %u]\n", size, size);
+      ret = -1;
     } else {
-      printf("addmul2: ok [%u x %u]\n", size, size);
+      printf("addmul neon 192: ok [%u x %u]\n", size, size);
     }
+
+    mzd_local_free(rc);
   }
 
   mzd_free(A);
@@ -196,40 +247,40 @@ static void test_mzd_addmul_vl_neon_192(void) {
   mzd_local_free(c2);
   mzd_local_free(Al);
   mzd_local_free(vl);
+
+  return ret;
 }
 
-static void test_mzd_addmul_vl_neon_256(void) {
+static int test_mzd_addmul_vl_neon_256(void) {
+  int ret = 0;
 
   unsigned int size = 256;
-  mzd_local_t* A    = mzd_init(size, size);
-  mzd_local_t* v    = mzd_init(1, size);
-  mzd_local_t* c    = mzd_init(1, size);
+  mzd_t* A    = mzd_init(size, size);
+  mzd_t* v    = mzd_init(1, size);
+  mzd_t* c    = mzd_init(1, size);
 
   mzd_randomize(A);
   mzd_randomize(v);
   mzd_randomize(c);
 
-  mzd_local_t* Al  = mzd_local_copy(NULL, A);
-  mzd_local_t* All = mzd_precompute_matrix_lookup(Al);
-  mzd_local_t* vl  = mzd_local_copy(NULL, v);
-
-  mzd_local_t* c2 = mzd_local_copy(NULL, c);
-  mzd_local_t* c3 = mzd_local_copy(NULL, c);
+  mzd_local_t* Al = mzd_convert(A);
+  mzd_local_t* vl = mzd_convert(v);
+  mzd_local_t* c2 = mzd_convert(c);
 
   for (unsigned int k = 0; k < 3; ++k) {
+    mzd_t* r  = mzd_addmul_naive(c, v, A);
+    mzd_local_t* rl = mzd_addmul_v_neon(c2, vl, Al);
 
-    mzd_local_t* r   = mzd_addmul_naive(c, v, A);
-    mzd_local_t* rl2 = mzd_addmul_vl_neon(c3, vl, All);
+    mzd_local_t* rc = mzd_convert(r);
 
-    if (!mzd_local_equal(r, rl2)) {
-      printf("addmul2: fail [%u x %u]\n", size, size);
-      printf("r =  ");
-      mzd_print(r);
-      printf("rl = ");
-      mzd_print(rl2);
+    if (!mzd_local_equal(rc, rl)) {
+      printf("addmul neon 256: fail [%u x %u]\n", size, size);
+      ret = -1;
     } else {
-      printf("addmul2: ok [%u x %u]\n", size, size);
+      printf("addmul neon 256: ok [%u x %u]\n", size, size);
     }
+
+    mzd_local_free(rc);
   }
 
   mzd_free(A);
@@ -239,8 +290,9 @@ static void test_mzd_addmul_vl_neon_256(void) {
   mzd_local_free(c2);
   mzd_local_free(Al);
   mzd_local_free(vl);
-}
 
+  return ret;
+}
 #endif
 
 static void test_mzd_mul(void) {
@@ -322,7 +374,7 @@ static void test_mzd_shift(void) {
       mzd_shift_left(r, v, i);
       *wr = mm128_shift_left(*wr, i);
 
-      if (mzd_cmp(r, w) != 0) {
+      if (!mzd_local_equal(r, w)) {
         printf("lshift fail\n");
       }
     }
@@ -334,7 +386,7 @@ static void test_mzd_shift(void) {
       mzd_shift_right(r, v, i);
       *wr = mm128_shift_right(*wr, i);
 
-      if (mzd_cmp(r, w) != 0) {
+      if (!mzd_local_equal(r, w)) {
         printf("rshift fail\n");
       }
     }
@@ -358,7 +410,7 @@ static void test_mzd_shift(void) {
       mzd_shift_left(r, v, i);
       *wr = mm256_shift_left(*wr, i);
 
-      if (mzd_cmp(r, w) != 0) {
+      if (!mzd_local_equal(r, w)) {
         printf("lshift fail\n");
       }
     }
@@ -368,9 +420,9 @@ static void test_mzd_shift(void) {
       mzd_local_copy(w, v);
 
       mzd_shift_right(r, v, i);
-      mm512_shift_right_avx(wr, wr, i);
+      *wr = mm256_shift_right(*wr, i);
 
-      if (mzd_cmp(r, w) != 0) {
+      if (!mzd_local_equal(r, w)) {
         printf("rshift fail\n");
       }
     }
@@ -382,7 +434,7 @@ static void test_mzd_shift(void) {
 #endif
 #ifdef WITH_NEON
   if (CPU_SUPPORTS_NEON) {
-    mzd_local_t* v = mzd_local_init(1, 384);
+    mzd_local_t* v = mzd_local_init(1, 256);
     mzd_local_t* w = mzd_local_copy(NULL, v);
     mzd_local_t* r = mzd_local_copy(NULL, v);
     uint32x4_t* wr = __builtin_assume_aligned(FIRST_ROW(w), alignof(uint32x4_t));
@@ -392,15 +444,10 @@ static void test_mzd_shift(void) {
       mzd_local_copy(w, v);
 
       mzd_shift_left(r, v, i);
-      mm384_shift_left(wr, wr, i);
+      mm256_shift_left(wr, wr, i);
 
-      if (mzd_cmp(r, w) != 0) {
-        printf("lshift fail\nv = ");
-        mzd_print(v);
-        printf("r = ");
-        mzd_print(r);
-        printf("w = ");
-        mzd_print(w);
+      if (!mzd_local_equal(r, w)) {
+        printf("lshift fail\n");
       }
     }
 
@@ -409,15 +456,10 @@ static void test_mzd_shift(void) {
       mzd_local_copy(w, v);
 
       mzd_shift_right(r, v, i);
-      mm384_shift_right(wr, wr, i);
+      mm256_shift_right(wr, wr, i);
 
-      if (mzd_cmp(r, w) != 0) {
-        printf("rshift fail\nv = ");
-        mzd_print(v);
-        printf("r = ");
-        mzd_print(r);
-        printf("w = ");
-        mzd_print(w);
+      if (!mzd_local_equal(r, w)) {
+        printf("rshift fail\n");
       }
     }
 
@@ -432,7 +474,12 @@ static void test_mzd_shift(void) {
 int main() {
   test_mzd_local_equal();
   test_mzd_mul();
-  test_mzd_mul_avx();
+#ifdef WITH_AVX2
+  if (CPU_SUPPORTS_AVX2) {
+    test_mzd_mul_avx();
+    test_mzd_mul_avx_128();
+  }
+#endif
   test_mzd_shift();
 #ifdef WITH_NEON
   test_mzd_mul_vl_neon_192();
