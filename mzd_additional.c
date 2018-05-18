@@ -724,13 +724,12 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
 ATTR_TARGET("sse2")
 mzd_local_t* mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
-  const unsigned int width        = v->width;
   static const unsigned int moff2 = 256;
 
   __m128i mc           = _mm_setzero_si128();
   __m128i const* mAptr = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  for (unsigned int w = width; w; --w, ++vptr) {
+  for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
       const word comb = idx & 0xff;
@@ -752,14 +751,13 @@ mzd_local_t* mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
 ATTR_TARGET("sse2")
 mzd_local_t* mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
-  const unsigned int width        = v->width;
   static const unsigned int moff2 = 256;
 
   __m128i* mcptr       = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i mc           = *mcptr;
   __m128i const* mAptr = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  for (unsigned int w = width; w; --w, ++vptr) {
+  for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
       const word comb = idx & 0xff;
@@ -799,13 +797,12 @@ mzd_local_t* mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
 ATTR_TARGET("avx2")
 mzd_local_t* mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
-  const unsigned int width        = v->width;
   static const unsigned int moff2 = 256;
 
   __m256i mc           = _mm256_setzero_si256();
   __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
 
-  for (unsigned int w = width; w; --w, ++vptr) {
+  for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
       const word comb = idx & 0xff;
@@ -821,14 +818,13 @@ mzd_local_t* mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_
 ATTR_TARGET("avx2")
 mzd_local_t* mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
-  const unsigned int width        = v->width;
   static const unsigned int moff2 = 256;
 
   __m256i* mcptr       = (__m256i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
   __m256i mc           = *mcptr;
   __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
 
-  for (unsigned int w = width; w; --w, ++vptr) {
+  for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
       const word comb = idx & 0xff;
@@ -959,21 +955,21 @@ mzd_local_t* mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   if (A->nrows % (sizeof(word) * 8) == 0) {
 #ifdef WITH_AVX2
     if (CPU_SUPPORTS_AVX2) {
-      if (A->ncols == 256) {
+      if (A->ncols == 256 && v->ncols == 256) {
         return mzd_mul_vl_avx_256(c, v, A);
       }
     }
 #endif
 #ifdef WITH_SSE2
     if (CPU_SUPPORTS_SSE2) {
-      if (A->ncols == 128) {
+      if (A->ncols == 128 && v->ncols == 128) {
         return mzd_mul_vl_sse_128(c, v, A);
       }
     }
 #endif
 #ifdef WITH_NEON
     if (CPU_SUPPORTS_NEON) {
-      if (A->ncols == 128) {
+      if (A->ncols == 128 && v->ncols == 128) {
         return mzd_mul_vl_neon_128(c, v, A);
       }
     }
@@ -999,7 +995,7 @@ mzd_local_t* mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   if (A->nrows % (sizeof(word) * 8) == 0) {
 #ifdef WITH_AVX2
     if (CPU_SUPPORTS_AVX2) {
-      if (A->ncols == 256) {
+      if (A->ncols == 256 && v->ncols == 256) {
         return mzd_addmul_vl_avx_256(c, v, A);
       }
       if ((A->ncols & 0xff) == 0) {
@@ -1009,7 +1005,7 @@ mzd_local_t* mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 #endif
 #ifdef WITH_SSE2
     if (CPU_SUPPORTS_SSE2) {
-      if (A->ncols == 128) {
+      if (A->ncols == 128 && v->ncols == 128) {
         return mzd_addmul_vl_sse_128(c, v, A);
       }
       if ((A->ncols & 0x7f) == 0) {
@@ -1019,7 +1015,7 @@ mzd_local_t* mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 #endif
 #ifdef WITH_NEON
     if (CPU_SUPPORTS_NEON) {
-      if (A->ncols == 128) {
+      if (A->ncols == 128 && v->ncols == 128) {
         return mzd_addmul_vl_neon_128(c, v, A);
       }
       if ((A->ncols & 0x7f) == 0) {
