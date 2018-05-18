@@ -1029,8 +1029,8 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
 #ifdef WITH_SSE2
 mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_sse, mpc_lowmc_call_verify_128_sse,
                    _mpc_sbox_layer_bitsliced_128_sse, _mpc_sbox_layer_bitsliced_verify_128_sse,
-                   mzd_mul_v_sse, mzd_mul_vl_sse_128, mzd_xor_sse, mzd_mul_v_sse, mzd_mul_vl_sse,
-                   mzd_addmul_v_sse, mzd_addmul_vl_sse_128);
+                   mzd_mul_v_sse_128, mzd_mul_vl_sse_128, mzd_xor_sse_128, mzd_mul_v_sse,
+                   mzd_mul_vl_sse, mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128);
 mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_sse, mpc_lowmc_call_verify_192_sse,
                    _mpc_sbox_layer_bitsliced_256_sse, _mpc_sbox_layer_bitsliced_verify_256_sse,
                    mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse, mzd_mul_v_sse, mzd_mul_vl_sse,
@@ -1051,6 +1051,10 @@ mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_512_sse, mpc_lowmc_call_ve
 #endif
 #endif
 #ifdef WITH_AVX2
+mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_avx, mpc_lowmc_call_verify_128_avx,
+                   _mpc_sbox_layer_bitsliced_128_sse, _mpc_sbox_layer_bitsliced_verify_128_sse,
+                   mzd_mul_v_avx_128, mzd_mul_vl_avx_128, mzd_xor_sse_128, mzd_mul_v_avx,
+                   mzd_mul_vl_avx, mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128);
 mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_avx, mpc_lowmc_call_verify_192_avx,
                    _mpc_sbox_layer_bitsliced_256_avx, _mpc_sbox_layer_bitsliced_verify_256_avx,
                    mzd_mul_v_avx, mzd_mul_vl_avx_256, mzd_xor_avx, mzd_mul_v_avx, mzd_mul_vl_avx,
@@ -1131,13 +1135,10 @@ static sbox_vars_t* sbox_vars_init(sbox_vars_t* vars, uint32_t n, unsigned sc) {
 
 lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #ifdef WITH_OPT
-#ifdef WITH_SSE2
-  if (CPU_SUPPORTS_SSE2 && lowmc->n == 128) {
-    return general_or_10(lowmc, mpc_lowmc_call_128_sse);
-  }
-#endif
 #ifdef WITH_AVX2
-  if (CPU_SUPPORTS_AVX2 && lowmc->n == 192) {
+  if (CPU_SUPPORTS_AVX2 && lowmc->n == 128) {
+    return general_or_10(lowmc, mpc_lowmc_call_128_avx);
+  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 192) {
     return general_or_10(lowmc, mpc_lowmc_call_192_avx);
   } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 256) {
     return general_or_10(lowmc, mpc_lowmc_call_256_avx);
@@ -1151,7 +1152,9 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #endif
 #endif
 #ifdef WITH_SSE2
-  if (CPU_SUPPORTS_SSE2 && lowmc->n == 192) {
+  if (CPU_SUPPORTS_SSE2 && lowmc->n == 128) {
+    return general_or_10(lowmc, mpc_lowmc_call_128_sse);
+  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 192) {
     return general_or_10(lowmc, mpc_lowmc_call_192_sse);
   } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 256) {
     return general_or_10(lowmc, mpc_lowmc_call_256_sse);
@@ -1192,13 +1195,10 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 
 lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* lowmc) {
 #ifdef WITH_OPT
-#ifdef WITH_SSE2
-  if (CPU_SUPPORTS_SSE2 && lowmc->n == 128) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_128_sse);
-  }
-#endif
 #ifdef WITH_AVX2
-  if (CPU_SUPPORTS_AVX2 && lowmc->n == 192) {
+  if (CPU_SUPPORTS_AVX2 && lowmc->n == 128) {
+    return general_or_10(lowmc, mpc_lowmc_call_verify_128_avx);
+  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 192) {
     return general_or_10(lowmc, mpc_lowmc_call_verify_192_avx);
   } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 256) {
     return general_or_10(lowmc, mpc_lowmc_call_verify_256_avx);
@@ -1212,7 +1212,9 @@ lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* low
 #endif
 #endif
 #ifdef WITH_SSE2
-  if (CPU_SUPPORTS_SSE2 && lowmc->n == 192) {
+  if (CPU_SUPPORTS_SSE2 && lowmc->n == 128) {
+    return general_or_10(lowmc, mpc_lowmc_call_verify_128_sse);
+  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 192) {
     return general_or_10(lowmc, mpc_lowmc_call_verify_192_sse);
   } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 256) {
     return general_or_10(lowmc, mpc_lowmc_call_verify_256_sse);
