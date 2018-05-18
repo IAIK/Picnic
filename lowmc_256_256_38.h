@@ -1,4 +1,4 @@
-#ifndef LOWMC_256_256_38
+#ifndef LOWMC_256_256_38_H
 #define LOWMC_256_256_38_H
 
 #include <stdint.h>

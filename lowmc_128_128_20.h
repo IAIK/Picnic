@@ -1,4 +1,4 @@
-#ifndef LOWMC_128_128_20
+#ifndef LOWMC_128_128_20_H
 #define LOWMC_128_128_20_H
 
 #include <stdint.h>

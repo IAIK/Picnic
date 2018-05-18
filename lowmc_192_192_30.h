@@ -1,4 +1,4 @@
-#ifndef LOWMC_192_192_30
+#ifndef LOWMC_192_192_30_H
 #define LOWMC_192_192_30_H
 
 #include <stdint.h>
