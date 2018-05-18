@@ -746,12 +746,10 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
       VARS_FREE_##sbox_args;                                                                       \
   mzd_local_free_multiple(y);
 
-#define init_key mzd_local_t* const* lowmc_key = &in_out_shares->s[0];
-
 #define _mpc_lowmc_call_bitsliced_verify_m(ch, sbox_args, sbox, sbox_selector, no_scr,             \
                                            no_scr_active, optimize, const_mat_mul_func, add_func,  \
                                            mul_more_cols, const_addmat_mul_func, lowmc_n, lowmc_r) \
-  init_key;                                                                                        \
+  mzd_local_t* const* lowmc_key = &in_out_shares->s[0];                                            \
                                                                                                    \
   ++in_out_shares;                                                                                 \
   VARS_##sbox_args(SC_VERIFY);                                                                     \
