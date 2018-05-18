@@ -158,7 +158,6 @@ static void _mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* con
 static void _mpc_sbox_layer_bitsliced_uint64(uint64_t* in, view_t* view, uint64_t const* rvec) {
   bitsliced_step_1_uint64(SC_PROOF);
 
-  memset(view->t, 0, sizeof(uint64_t) * SC_PROOF);
   mpc_and_uint64(r0m, x0s, x1s, r2m, view, 0);
   mpc_and_uint64(r2m, x1s, x2m, r1s, view, 1);
   mpc_and_uint64(r1m, x0s, x2m, r0s, view, 2);
@@ -170,7 +169,6 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* in, view_t* view,
                                                     uint64_t const* rvec) {
   bitsliced_step_1_uint64(SC_VERIFY);
 
-  view->t[0] = 0;
   mpc_and_verify_uint64(r0m, x0s, x1s, r2m, view, MASK_X2I, 0);
   mpc_and_verify_uint64(r2m, x1s, x2m, r1s, view, MASK_X2I, 1);
   mpc_and_verify_uint64(r1m, x0s, x2m, r0s, view, MASK_X2I, 2);
