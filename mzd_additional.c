@@ -467,7 +467,7 @@ mzd_local_t* mzd_addmul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_loca
   word const* Aptr     = CONST_FIRST_ROW(A);
   __m128i const* mAptr = (__m128i const*)ASSUME_ALIGNED(Aptr, alignof(__m128i));
 
-  for (unsigned int w = 0; w < 2; ++w, ++vptr) {
+  for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, mAptr += 1) {
       const __m128i mask = _mm_set1_epi64x(-(idx & 1));
@@ -527,7 +527,7 @@ mzd_local_t* mzd_addmul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_loca
   __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(Aptr, alignof(__m256i));
 
   __m256i cval = _mm256_inserti128_si256(_mm256_setzero_si256(), *mcptr, 0);
-  for (unsigned int w = 0; w < 2; ++w, ++vptr) {
+  for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 1) {
       const int64_t m1 = -(idx & 1);
@@ -557,7 +557,7 @@ mzd_local_t* mzd_addmul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_loca
   __m256i* mcptr       = (__m256i*)ASSUME_ALIGNED(cptr, alignof(__m256i));
   __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(Aptr, alignof(__m256i));
 
-  for (unsigned int w = 0; w < 4; ++w, ++vptr) {
+  for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, ++mAptr) {
       const __m256i mask = _mm256_set1_epi64x(-(idx & 1));
