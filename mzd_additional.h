@@ -60,10 +60,12 @@ mzd_local_t* mzd_xor(mzd_local_t* res, mzd_local_t const* first,
                      mzd_local_t const* second) ATTR_NONNULL;
 mzd_local_t* mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first,
                          mzd_local_t const* second) ATTR_NONNULL;
+mzd_local_t* mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first,
+                             mzd_local_t const* second) ATTR_NONNULL;
 mzd_local_t* mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first,
                          mzd_local_t const* second) ATTR_NONNULL;
 mzd_local_t* mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
-                         mzd_local_t const* second) ATTR_NONNULL;
+                             mzd_local_t const* second) ATTR_NONNULL;
 mzd_local_t* mzd_xor_general(mzd_local_t* res, mzd_local_t const* first,
                              mzd_local_t const* second) ATTR_NONNULL;
 mzd_local_t* mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first,
@@ -88,8 +90,13 @@ mzd_local_t* mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
 mzd_local_t* mzd_mul_v_general(mzd_local_t* c, mzd_local_t const* v,
                                mzd_local_t const* At) ATTR_NONNULL;
 mzd_local_t* mzd_mul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+mzd_local_t* mzd_mul_v_sse_128(mzd_local_t* c, mzd_local_t const* v,
+                               mzd_local_t const* A) ATTR_NONNULL;
 mzd_local_t* mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-mzd_local_t* mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+mzd_local_t* mzd_mul_v_avx_128(mzd_local_t* c, mzd_local_t const* v,
+                               mzd_local_t const* A) ATTR_NONNULL;
+mzd_local_t* mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v,
+                               mzd_local_t const* A) ATTR_NONNULL;
 mzd_local_t* mzd_mul_v_neon(mzd_local_t* c, mzd_local_t const* v,
                             mzd_local_t const* A) ATTR_NONNULL;
 
@@ -100,7 +107,9 @@ mzd_local_t* mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
 mzd_local_t* mzd_addmul_v_general(mzd_local_t* c, mzd_local_t const* v,
                                   mzd_local_t const* A) ATTR_NONNULL;
 mzd_local_t* mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A);
+mzd_local_t* mzd_addmul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A);
 mzd_local_t* mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A);
+mzd_local_t* mzd_addmul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A);
 mzd_local_t* mzd_addmul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A);
 mzd_local_t* mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A);
 
