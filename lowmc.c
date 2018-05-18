@@ -43,13 +43,15 @@ static uint64_t sbox_layer_bitsliced_uint64(uint64_t in) {
 /**
  * S-box for m = 10
  */
-static void sbox_layer_uint64(mzd_local_t* y, mzd_local_t const* x, mask_t const* mask) {
+static void sbox_layer_uint64(mzd_local_t* x, mask_t const* mask) {
   (void)mask;
-  FIRST_ROW(y)[y->width - 1] = sbox_layer_bitsliced_uint64(CONST_FIRST_ROW(x)[x->width - 1]);
+
+  uint64_t* d = &FIRST_ROW(x)[x->width - 1];
+  *d = sbox_layer_bitsliced_uint64(*d);
 }
 
 #ifdef WITH_CUSTOM_INSTANCES
-static void sbox_layer_bitsliced(mzd_local_t* out, mzd_local_t const* in, mask_t const* mask) {
+static void sbox_layer_bitsliced(mzd_local_t* in, mask_t const* mask) {
   mzd_local_t* buffer[6] = {NULL};
   mzd_local_init_multiple_ex(buffer, 6, 1, in->ncols, false);
 
@@ -85,19 +87,19 @@ static void sbox_layer_bitsliced(mzd_local_t* out, mzd_local_t const* in, mask_t
   mzd_shift_right(t0, t0, 2);
   mzd_shift_right(t1, t1, 1);
 
-  mzd_and(out, in, mask->mask);
-  mzd_xor(out, out, t2);
-  mzd_xor(out, out, t0);
-  mzd_xor(out, out, t1);
+  mzd_and(in, in, mask->mask);
+  mzd_xor(in, in, t2);
+  mzd_xor(in, in, t0);
+  mzd_xor(in, in, t1);
 
   mzd_local_free_multiple(buffer);
 }
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-__attribute__((target("sse2"))) static void sbox_layer_sse(mzd_local_t* out, mzd_local_t const* in,
+ATTR_TARGET("sse") static void sbox_layer_sse(mzd_local_t* in,
                                                            mask_t const* mask) {
-  __m128i const* ip = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m128i));
+  __m128i* ip = (__m128i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m128i));
   __m128i const min = *ip;
 
   __m128i const* x0p = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(__m128i));
@@ -128,13 +130,12 @@ __attribute__((target("sse2"))) static void sbox_layer_sse(mzd_local_t* out, mzd
 
   __m128i const* xmp =
       (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(__m128i));
-  __m128i* op = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(out), alignof(__m128i));
 
   __m128i mout = _mm_and_si128(min, *xmp);
 
   mout = _mm_xor_si128(mout, t2);
   mout = _mm_xor_si128(mout, t1);
-  *op  = _mm_xor_si128(mout, t0);
+  *ip  = _mm_xor_si128(mout, t0);
 }
 #endif
 
@@ -143,9 +144,8 @@ __attribute__((target("sse2"))) static void sbox_layer_sse(mzd_local_t* out, mzd
  * AVX2 version of LowMC. It assumes that mzd_local_t's row[0] is always 32 byte
  * aligned.
  */
-__attribute__((target("avx2"))) static void sbox_layer_avx(mzd_local_t* out, mzd_local_t const* in,
-                                                           mask_t const* mask) {
-  __m256i const* ip = (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m256i));
+ATTR_TARGET("avx2") static void sbox_layer_avx(mzd_local_t* in, mask_t const* mask) {
+  __m256i* ip = (__m256i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m256i));
   __m256i const min = *ip;
 
   __m256i const* x0p = (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(__m256i));
@@ -176,20 +176,19 @@ __attribute__((target("avx2"))) static void sbox_layer_avx(mzd_local_t* out, mzd
 
   __m256i const* xmp =
       (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(__m256i));
-  __m256i* op = (__m256i*)ASSUME_ALIGNED(FIRST_ROW(out), alignof(__m256i));
 
   __m256i mout = _mm256_and_si256(min, *xmp);
 
   mout = _mm256_xor_si256(mout, t2);
   mout = _mm256_xor_si256(mout, t1);
-  *op  = _mm256_xor_si256(mout, t0);
+  *ip  = _mm256_xor_si256(mout, t0);
 }
 #endif
 
 #ifdef WITH_NEON
-static void sbox_layer_neon(mzd_local_t* out, mzd_local_t const* in, mask_t const* mask) {
-  uint32x4_t const* ip =
-      (uint32x4_t const*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(uint32x4_t));
+static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
+  uint32x4_t* ip =
+      (uint32x4_t*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(uint32x4_t));
   uint32x4_t const min = *ip;
 
   uint32x4_t const* x0p =
@@ -223,19 +222,18 @@ static void sbox_layer_neon(mzd_local_t* out, mzd_local_t const* in, mask_t cons
 
   uint32x4_t const* xmp =
       (uint32x4_t const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(uint32x4_t));
-  uint32x4_t* op = (uint32x4_t*)ASSUME_ALIGNED(FIRST_ROW(out), alignof(uint32x4_t));
 
   uint32x4_t mout = vandq_u32(min, *xmp);
 
   mout = veorq_u32(mout, t2);
   mout = veorq_u32(mout, t1);
-  *op  = veorq_u32(mout, t0);
+  *ip  = veorq_u32(mout, t0);
 }
 #endif
 #endif
 #endif
 
-typedef void (*sbox_layer_impl)(mzd_local_t*, mzd_local_t const*, mask_t const*);
+typedef void (*sbox_layer_impl)(mzd_local_t*, mask_t const*);
 
 static sbox_layer_impl get_sbox_layer(const lowmc_t* lowmc) {
   if (lowmc->m == 10) {
@@ -283,7 +281,7 @@ static mzd_local_t* lowmc_reduced_linear_layer(lowmc_t const* lowmc, lowmc_key_t
 
   lowmc_round_t const* round = lowmc->rounds;
   for (unsigned i = 0; i < lowmc->r; ++i, ++round) {
-    sbox_layer_uint64(x, x, NULL);
+    sbox_layer_uint64(x, NULL);
 
     const word mask          = (i & 1) ? WORD_C(0xFFFFFFFF00000000) : WORD_C(0x00000000FFFFFFFF);
     const unsigned int shift = (i & 1) ? 2 : 34;
@@ -320,9 +318,9 @@ static mzd_local_t* lowmc_plain(lowmc_t const* lowmc, lowmc_key_t const* lowmc_k
   lowmc_round_t const* round = lowmc->rounds;
   for (unsigned int i = lowmc->r; i; --i, ++round) {
 #if defined(WITH_CUSTOM_INSTANCE)
-    sbox_layer(x, x, &lowmc->mask);
+    sbox_layer(x, &lowmc->mask);
 #else
-    sbox_layer_uint64(x, x, NULL);
+    sbox_layer_uint64(x, NULL);
 #endif
 
 #if defined(MUL_M4RI)
