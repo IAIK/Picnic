@@ -123,6 +123,8 @@ mzd_local_t* mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v,
                                 mzd_local_t const* A) ATTR_NONNULL;
 mzd_local_t* mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v,
                             mzd_local_t const* A) ATTR_NONNULL;
+mzd_local_t* mzd_mul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v,
+                                mzd_local_t const* A) ATTR_NONNULL;
 mzd_local_t* mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v,
                                 mzd_local_t const* A) ATTR_NONNULL;
 mzd_local_t* mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v,
@@ -138,6 +140,8 @@ mzd_local_t* mzd_mul_vl_neon_multiple_of_128(mzd_local_t* c, mzd_local_t const* 
 mzd_local_t* mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v,
                            mzd_local_t const* At) ATTR_NONNULL;
 mzd_local_t* mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v,
+                                   mzd_local_t const* A) ATTR_NONNULL;
+mzd_local_t* mzd_addmul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v,
                                    mzd_local_t const* A) ATTR_NONNULL;
 mzd_local_t* mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v,
                                    mzd_local_t const* A) ATTR_NONNULL;

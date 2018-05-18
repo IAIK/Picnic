@@ -888,6 +888,57 @@ mzd_local_t* mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_loc
 }
 
 ATTR_TARGET("avx2")
+mzd_local_t* mzd_mul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
+  static const unsigned int moff2 = 256;
+
+  __m256i mc           = _mm256_setzero_si256();
+  __m128i const* mAptr = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+
+  for (unsigned int w = 2; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16, mAptr += 2 * moff2) {
+      const word comb1 = idx & 0xff;
+      const word comb2 = (idx & 0xff00) >> 8;
+
+      const __m256i t = _mm256_inserti128_si256(_mm256_setzero_si256(), mAptr[comb1], 0);
+      mc              = _mm256_xor_si256(mc, _mm256_inserti128_si256(t, mAptr[comb2 + moff2], 1));
+    }
+  }
+
+  __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  *mcptr = _mm_xor_si128(_mm256_extractf128_si256(mc, 0), _mm256_extractf128_si256(mc, 1));
+
+  return c;
+}
+
+ATTR_TARGET("avx2")
+mzd_local_t* mzd_addmul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
+  static const unsigned int moff2 = 256;
+
+  __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+
+  __m256i mc           = _mm256_inserti128_si256(_mm256_setzero_si256(), *mcptr, 0);
+  __m128i const* mAptr = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+
+  for (unsigned int w = 2; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16, mAptr += 2 * moff2) {
+      const word comb1 = idx & 0xff;
+      const word comb2 = (idx & 0xff00) >> 8;
+
+      const __m256i t = _mm256_inserti128_si256(_mm256_setzero_si256(), mAptr[comb1], 0);
+      mc              = _mm256_xor_si256(mc, _mm256_inserti128_si256(t, mAptr[comb2 + moff2], 1));
+    }
+  }
+
+    *mcptr = _mm_xor_si128(_mm256_extractf128_si256(mc, 0), _mm256_extractf128_si256(mc, 1));
+
+  return c;
+}
+
+ATTR_TARGET("avx2")
 mzd_local_t* mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   return mzd_addmul_vl_avx(c, v, A);
