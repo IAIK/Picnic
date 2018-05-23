@@ -219,19 +219,19 @@ static bool parse_args(bench_options_t* options, int argc, char** argv) {
   }
 #else
   if (argc != 3) {
-	print_usage(argv[0]);
-	return false;
+    print_usage(argv[0]);
+    return false;
   }
 
   uint32_t p = -1;
   if (!parse_uint32_t(&options->iter, argv[1]) || !parse_uint32_t(&p, argv[2])) { 
-	printf("Failed to parse argument as positive base-10 number!\n");
-	return false;
+    printf("Failed to parse argument as positive base-10 number!\n");
+    return false;
   }
 
   if (p <= PARAMETER_SET_INVALID || p >= PARAMETER_SET_MAX_INDEX) {
-	printf("Invalid parameter set selected!\n");
-	return false;
+    printf("Invalid parameter set selected!\n");
+    return false;
   }
   options->params = p;
 #endif
