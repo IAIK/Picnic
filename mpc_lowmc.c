@@ -768,124 +768,6 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   mzd_local_free_multiple(x);                                                                      \
   VARS_FREE_##sbox_args;
 
-static void mpc_lowmc_call(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key, mzd_local_t const* p,
-                           view_t* views, in_out_shares_t* in_out_shares, rvec_t* rvec) {
-#ifdef REDUCED_LINEAR_LAYER
-#ifdef MUL_M4RI
-#ifdef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    _mpc_lowmc_call_bitsliced(0, 6, _mpc_sbox_layer_bitsliced, mzd, lookup, noscr, _optimize,
-                              mzd_mul_vl_general, mzd_xor_general, mzd_mul_vl_general,
-                              mzd_addmul_vl_general, lowmc->n, lowmc->r);
-  } else
-#endif
-  {
-    _mpc_lowmc_call_bitsliced(0, 5, , uint64, lookup, noscr, _optimize, mzd_mul_vl_general,
-                              mzd_xor_general, mzd_mul_vl_general, mzd_addmul_vl_general, lowmc->n,
-                              lowmc->r);
-  }
-#else
-#ifdef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    _mpc_lowmc_call_bitsliced(0, 6, _mpc_sbox_layer_bitsliced, mzd, matrix, scr, _optimize,
-                              mzd_mul_v_general, mzd_xor_general, mzd_mul_v_general,
-                              mzd_addmul_v_general, lowmc->n, lowmc->r);
-  } else
-#endif
-  {
-    _mpc_lowmc_call_bitsliced(0, 5, , uint64, matrix, scr, _optimize, mzd_mul_v_general,
-                              mzd_xor_general, mzd_mul_v_general, mzd_addmul_v_general, lowmc->n,
-                              lowmc->r);
-  }
-#endif
-#else
-#ifdef MUL_M4RI
-#ifdef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    _mpc_lowmc_call_bitsliced(0, 6, _mpc_sbox_layer_bitsliced, mzd, lookup, noscr, ,
-                              mzd_mul_vl_general, mzd_xor_general, , mzd_addmul_vl_general,
-                              lowmc->n, lowmc->r);
-  } else
-#endif
-  {
-    _mpc_lowmc_call_bitsliced(0, 5, , uint64, lookup, noscr, , mzd_mul_vl_general, mzd_xor_general,
-                              , mzd_addmul_vl_general, lowmc->n, lowmc->r);
-  }
-#else
-#ifdef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    _mpc_lowmc_call_bitsliced(0, 6, _mpc_sbox_layer_bitsliced, mzd, matrix, scr, ,
-                              mzd_mul_v_general, mzd_xor_general, , mzd_addmul_v_general, lowmc->n,
-                              lowmc->r);
-  } else
-#endif
-  {
-    _mpc_lowmc_call_bitsliced(0, 5, , uint64, matrix, scr, , mzd_mul_v_general, mzd_xor_general, ,
-                              mzd_addmul_v_general, lowmc->n, lowmc->r);
-  }
-#endif
-#endif
-}
-
-static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, view_t* views,
-                                  in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {
-#ifdef REDUCED_LINEAR_LAYER
-#ifdef MUL_M4RI
-#ifdef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    _mpc_lowmc_call_bitsliced_verify_m(
-        ch, 6, _mpc_sbox_layer_bitsliced_verify, mzd, lookup, noscr, _optimize, mzd_mul_vl_general,
-        mzd_xor_general, mzd_mul_vl_general, mzd_addmul_vl_general, lowmc->n, lowmc->r);
-  } else
-#endif
-  {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 5, , uint64, lookup, noscr, _optimize,
-                                       mzd_mul_vl_general, mzd_xor_general, mzd_mul_vl_general,
-                                       mzd_addmul_vl_general, lowmc->n, lowmc->r);
-  }
-#else
-#ifdef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 6, _mpc_sbox_layer_bitsliced_verify, mzd, matrix, scr,
-                                       _optimize, mzd_mul_v_general, mzd_xor_general,
-                                       mzd_mul_v_general, mzd_addmul_v_general, lowmc->n, lowmc->r);
-  } else
-#endif
-  {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 5, , uint64, matrix, scr, _optimize, mzd_mul_v_general,
-                                       mzd_xor_general, mzd_mul_v_general, mzd_addmul_v_general,
-                                       lowmc->n, lowmc->r);
-  }
-#endif
-#else
-#ifdef MUL_M4RI
-#ifdef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 6, _mpc_sbox_layer_bitsliced_verify, mzd, lookup, noscr,
-                                       , mzd_mul_vl_general, mzd_xor_general, ,
-                                       mzd_addmul_vl_general, lowmc->n, lowmc->r);
-  } else
-#endif
-  {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 5, , uint64, lookup, noscr, , mzd_mul_vl_general,
-                                       mzd_xor_general, , mzd_addmul_vl_general, lowmc->n,
-                                       lowmc->r);
-  }
-#else
-#ifdef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 6, _mpc_sbox_layer_bitsliced_verify, mzd, matrix, scr, ,
-                                       mzd_mul_v_general, mzd_xor_general, , mzd_addmul_v_general,
-                                       lowmc->n, lowmc->r);
-  } else
-#endif
-  {
-    _mpc_lowmc_call_bitsliced_verify_m(ch, 5, , uint64, matrix, scr, , mzd_mul_v_general,
-                                       mzd_xor_general, , mzd_addmul_v_general, lowmc->n, lowmc->r);
-  }
-#endif
-#endif
-}
 
 #ifdef REDUCED_LINEAR_LAYER
 #ifdef MUL_M4RI
@@ -1021,6 +903,10 @@ static void mpc_lowmc_call_verify(lowmc_t const* lowmc, mzd_local_t const* p, vi
                         MUL_MC_L, ADDMUL, ADDMUL_L);
 #endif
 
+mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call, mpc_lowmc_call_verify,
+                   _mpc_sbox_layer_bitsliced, _mpc_sbox_layer_bitsliced,
+                   mzd_mul_v, mzd_mul_vl, mzd_xor, mzd_mul_v, mzd_mul_vl,
+                   mzd_addmul_v, mzd_addmul_vl);
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
 mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_sse, mpc_lowmc_call_verify_128_sse,
@@ -1075,7 +961,11 @@ mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_neon, mpc_lowmc_ca
                    _mpc_sbox_layer_bitsliced_128_neon, _mpc_sbox_layer_bitsliced_verify_128_neon,
                    mzd_mul_v_neon, mzd_mul_vl_neon_128, mzd_xor_neon, mzd_mul_v_neon,
                    mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon, mzd_addmul_vl_neon_128);
-mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_256_neon, mpc_lowmc_call_verify_256_neon,
+mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_neon, mpc_lowmc_call_verify_192_neon,
+                   _mpc_sbox_layer_bitsliced_256_neon, _mpc_sbox_layer_bitsliced_verify_256_neon,
+                   mzd_mul_v_neon, mzd_mul_vl_neon_multiple_of_128, mzd_xor_neon, mzd_mul_v_neon,
+                   mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon, mzd_addmul_vl_neon);
+mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_neon, mpc_lowmc_call_verify_256_neon,
                    _mpc_sbox_layer_bitsliced_256_neon, _mpc_sbox_layer_bitsliced_verify_256_neon,
                    mzd_mul_v_neon, mzd_mul_vl_neon_multiple_of_128, mzd_xor_neon, mzd_mul_v_neon,
                    mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon, mzd_addmul_vl_neon);
@@ -1132,119 +1022,115 @@ static sbox_vars_t* sbox_vars_init(sbox_vars_t* vars, uint32_t n, unsigned sc) {
 lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #ifdef WITH_OPT
 #ifdef WITH_AVX2
-  if (CPU_SUPPORTS_AVX2 && lowmc->n == 128) {
-    return general_or_10(lowmc, mpc_lowmc_call_128_avx);
-  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 192) {
-    return general_or_10(lowmc, mpc_lowmc_call_192_avx);
-  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 256) {
-    return general_or_10(lowmc, mpc_lowmc_call_256_avx);
-  }
+  if (CPU_SUPPORTS_AVX2)
+    switch (lowmc->n) {
+      case 128:
+        return general_or_10(lowmc, mpc_lowmc_call_128_avx);
+      case 192:
+        return general_or_10(lowmc, mpc_lowmc_call_192_avx);
+      case 256:
+        return general_or_10(lowmc, mpc_lowmc_call_256_avx);
 #ifdef WITH_CUSTOM_INSTANCES
-  if (CPU_SUPPORTS_AVX2 && lowmc->n == 384) {
-    return general_or_10(lowmc, mpc_lowmc_call_384_avx);
-  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 512) {
-    return general_or_10(lowmc, mpc_lowmc_call_512_avx);
-  }
+      case 384:
+        return general_or_10(lowmc, mpc_lowmc_call_384_avx);
+      case 512:
+        return general_or_10(lowmc, mpc_lowmc_call_512_avx);
 #endif
+    }
 #endif
 #ifdef WITH_SSE2
-  if (CPU_SUPPORTS_SSE2 && lowmc->n == 128) {
-    return general_or_10(lowmc, mpc_lowmc_call_128_sse);
-  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 192) {
-    return general_or_10(lowmc, mpc_lowmc_call_192_sse);
-  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 256) {
-    return general_or_10(lowmc, mpc_lowmc_call_256_sse);
-  }
+  if (CPU_SUPPORTS_SSE2)
+    switch (lowmc->n) {
+      case 128:
+        return general_or_10(lowmc, mpc_lowmc_call_128_sse);
+      case 192:
+        return general_or_10(lowmc, mpc_lowmc_call_192_sse);
+      case 256:
+        return general_or_10(lowmc, mpc_lowmc_call_256_sse);
 #ifdef WITH_CUSTOM_INSTANCES
-  if (CPU_SUPPORTS_SSE2 && lowmc->n == 384) {
-    return general_or_10(lowmc, mpc_lowmc_call_384_sse);
-  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 512) {
-    return general_or_10(lowmc, mpc_lowmc_call_512_sse);
-  }
+      case 384:
+        return general_or_10(lowmc, mpc_lowmc_call_384_sse);
+      case 512:
+        return general_or_10(lowmc, mpc_lowmc_call_512_sse);
 #endif
+    }
 #endif
 #ifdef WITH_NEON
-  if (CPU_SUPPORTS_NEON && lowmc->n == 128) {
-    return general_or_10(lowmc, mpc_lowmc_call_128_neon);
-  } else if (CPU_SUPPORTS_NEON && (lowmc->n == 192 || lowmc->n == 256)) {
-    return general_or_10(lowmc, mpc_lowmc_call_256_neon);
-  }
+  if (CPU_SUPPORTS_NEON)
+    switch (lowmc->n) {
+      case 128:
+        return general_or_10(lowmc, mpc_lowmc_call_128_neon);
+      case 192:
+        return general_or_10(lowmc, mpc_lowmc_call_192_neon);
+      case 256:
+        return general_or_10(lowmc, mpc_lowmc_call_256_neon);
 #ifdef WITH_CUSTOM_INSTANCES
-  if (CPU_SUPPORTS_NEON && lowmc->n == 384) {
-    return general_or_10(lowmc, mpc_lowmc_call_384_neon);
-  } else if (CPU_SUPPORTS_NEON && lowmc->n == 512) {
-    return general_or_10(lowmc, mpc_lowmc_call_512_neon);
-  }
+      case 384:
+        return general_or_10(lowmc, mpc_lowmc_call_384_neon);
+      case 512:
+        return general_or_10(lowmc, mpc_lowmc_call_512_neon);
 #endif
+    }
 #endif
 #endif
 
-#ifndef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    return NULL;
-  }
-#endif
-
-  (void)lowmc;
-  return mpc_lowmc_call;
+  return general_or_10(lowmc, mpc_lowmc_call);
 }
 
 lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* lowmc) {
 #ifdef WITH_OPT
 #ifdef WITH_AVX2
-  if (CPU_SUPPORTS_AVX2 && lowmc->n == 128) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_128_avx);
-  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 192) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_192_avx);
-  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 256) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_256_avx);
-  }
+  if (CPU_SUPPORTS_AVX2)
+    switch (lowmc->n) {
+      case 128:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_128_avx);
+      case 192:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_192_avx);
+      case 256:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_256_avx);
 #ifdef WITH_CUSTOM_INSTANCES
-  if (CPU_SUPPORTS_AVX2 && lowmc->n == 384) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_384_avx);
-  } else if (CPU_SUPPORTS_AVX2 && lowmc->n == 512) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_512_avx);
-  }
+      case 384:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_384_avx);
+      case 512:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_512_avx);
 #endif
+    }
 #endif
 #ifdef WITH_SSE2
-  if (CPU_SUPPORTS_SSE2 && lowmc->n == 128) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_128_sse);
-  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 192) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_192_sse);
-  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 256) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_256_sse);
-  }
+  if (CPU_SUPPORTS_SSE2)
+    switch (lowmc->n) {
+      case 128:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_128_sse);
+      case 192:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_192_sse);
+      case 256:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_256_sse);
 #ifdef WITH_CUSTOM_INSTANCES
-  if (CPU_SUPPORTS_SSE2 && lowmc->n == 384) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_384_sse);
-  } else if (CPU_SUPPORTS_SSE2 && lowmc->n == 512) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_512_sse);
-  }
+      case 384:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_384_sse);
+      case 512:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_512_sse);
 #endif
+    }
 #endif
 #ifdef WITH_NEON
-  if (CPU_SUPPORTS_NEON && lowmc->n == 128) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_128_neon);
-  } else if (CPU_SUPPORTS_NEON && (lowmc->n == 192 || lowmc->n == 256)) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_256_neon);
-  }
+  if (CPU_SUPPORTS_NEON)
+    switch (lowmc->n) {
+      case 128:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_128_neon);
+      case 192:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_192_neon);
+      case 256:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_256_neon);
 #ifdef WITH_CUSTOM_INSTANCES
-  if (CPU_SUPPORTS_NEON && lowmc->n == 384) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_384_neon);
-  } else if (CPU_SUPPORTS_NEON && lowmc->n == 512) {
-    return general_or_10(lowmc, mpc_lowmc_call_verify_512_neon);
-  }
+      case 384:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_384_neon);
+      case 512:
+        return general_or_10(lowmc, mpc_lowmc_call_verify_512_neon);
 #endif
+    }
 #endif
 #endif
 
-#ifndef WITH_CUSTOM_INSTANCES
-  if (lowmc->m != 10) {
-    return NULL;
-  }
-#endif
-
-  (void)lowmc;
-  return mpc_lowmc_call_verify;
+  return general_or_10(lowmc, mpc_lowmc_call_verify);
 }
