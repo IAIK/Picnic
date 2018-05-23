@@ -749,20 +749,16 @@ mzd_local_t* mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local
   word* cptr                   = FIRST_ROW(c);
   word const* vptr             = CONST_FIRST_ROW(v);
   const unsigned int width     = v->width;
+  word const* Aptr             = CONST_FIRST_ROW(A);
 
   for (unsigned int w = 0; w < width; ++w, ++vptr) {
     word idx = *vptr;
 
-    word const* Aptr = CONST_ROW(A, w * sizeof(word) * 8);
-    while (idx) {
-      if (idx & 0x1) {
-        for (unsigned int i = 0; i < len; ++i) {
-          cptr[i] ^= Aptr[i];
-        }
+    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, Aptr += rowstride) {
+      const uint64_t mask = -(idx & 1);
+      for (unsigned int i = 0; i < len; ++i) {
+        cptr[i] ^= (Aptr[i] & mask);
       }
-
-      Aptr += rowstride;
-      idx >>= 1;
     }
   }
 
