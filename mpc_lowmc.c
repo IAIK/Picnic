@@ -1073,6 +1073,7 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #endif
 #endif
 
+  (void) lowmc;
   return general_or_10(lowmc, mpc_lowmc_call);
 }
 
@@ -1131,5 +1132,6 @@ lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* low
 #endif
 #endif
 
+  (void) lowmc;
   return general_or_10(lowmc, mpc_lowmc_call_verify);
 }
