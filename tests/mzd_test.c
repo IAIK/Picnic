@@ -11,7 +11,9 @@
 
 #include "utils.h"
 
-static void test_mzd_local_equal(void) {
+static int test_mzd_local_equal(void) {
+  int ret = 0;
+
   for (unsigned int i = 0; i < 10; ++i) {
     mzd_local_t* a = mzd_local_init(1, (i + 1) * 64);
     mzd_randomize_ssl(a);
@@ -19,16 +21,22 @@ static void test_mzd_local_equal(void) {
 
     if (mzd_local_equal(a, b)) {
       printf("equal: ok [%u]\n", (i + 1) * 64);
+    } else {
+      ret = -1;
     }
 
     b = mzd_xor(b, b, a);
     if (mzd_local_equal(a, b)) {
       printf("equal: ok [%u]\n", (i + 1) * 64);
+    } else {
+      ret = -1;
     }
 
     mzd_local_free(a);
     mzd_local_free(b);
   }
+
+  return ret;
 }
 
 #ifdef WITH_AVX2
@@ -102,6 +110,49 @@ static int test_mzd_mul_avx_128(void) {
       ret = -1;
     } else {
       printf("mul avx 128: ok [%u x %u]\n", size, size);
+    }
+
+    mzd_local_free(rc);
+  }
+
+  mzd_free(A);
+  mzd_free(v);
+  mzd_free(c);
+
+  mzd_local_free(c2);
+  mzd_local_free(Al);
+  mzd_local_free(vl);
+
+  return ret;
+}
+
+static int test_mzd_mul_avx_192(void) {
+  int ret = 0;
+
+  unsigned int size = 192;
+  mzd_t* A    = mzd_init(size, size);
+  mzd_t* v    = mzd_init(1, size);
+  mzd_t* c    = mzd_init(1, size);
+
+  mzd_randomize(A);
+  mzd_randomize(v);
+  mzd_randomize(c);
+
+  mzd_local_t* Al = mzd_convert(A);
+  mzd_local_t* vl = mzd_convert(v);
+  mzd_local_t* c2 = mzd_convert(c);
+
+  for (unsigned int k = 0; k < 3; ++k) {
+    mzd_t* r  = mzd_mul_naive(c, v, A);
+    mzd_local_t* rl = mzd_mul_v_avx_192(c2, vl, Al);
+
+    mzd_local_t* rc = mzd_convert(r);
+
+    if (!mzd_local_equal(rc, rl)) {
+      printf("mul avx 192: fail [%u x %u]\n", size, size);
+      ret = -1;
+    } else {
+      printf("mul avx 192: ok [%u x %u]\n", size, size);
     }
 
     mzd_local_free(rc);
@@ -295,7 +346,9 @@ static int test_mzd_addmul_vl_neon_256(void) {
 }
 #endif
 
-static void test_mzd_mul(void) {
+static int test_mzd_mul(void) {
+  int ret = 0;
+
   for (unsigned int i = 1; i <= 10; ++i) {
     for (unsigned int j = 1; j <= 10; ++j) {
       mzd_t* A = mzd_init(i * 64, j * 64);
@@ -325,17 +378,20 @@ static void test_mzd_mul(void) {
 
         if (!mzd_local_equal(r, rl)) {
           printf("mul: fail [%u x %u]\n", i * 64, j * 64);
+          ret = -1;
         }
 
         mzd_local_t* rc = mzd_convert(r2);
         if (!mzd_local_equal(r, rc)) {
           printf("mul: fail [%u x %u]\n", i * 64, j * 64);
+          ret = -1;
         }
         mzd_local_free(rc);
 
         mzd_t* r4 = mzd_transpose(NULL, r3);
         if (mzd_cmp(r4, r2) != 0) {
           printf("mul: fail [%u x %u]\n", i * 64, j * 64);
+          ret = -1;
         }
         mzd_free(r4);
       }
@@ -356,9 +412,12 @@ static void test_mzd_mul(void) {
       mzd_local_free(vl);
     }
   }
+
+  return ret;
 }
 
-static void test_mzd_shift(void) {
+static int test_mzd_shift(void) {
+  int ret = 0;
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2) {
@@ -376,6 +435,7 @@ static void test_mzd_shift(void) {
 
       if (!mzd_local_equal(r, w)) {
         printf("lshift fail\n");
+        ret = -1;
       }
     }
 
@@ -388,6 +448,7 @@ static void test_mzd_shift(void) {
 
       if (!mzd_local_equal(r, w)) {
         printf("rshift fail\n");
+        ret = -1;
       }
     }
 
@@ -412,6 +473,7 @@ static void test_mzd_shift(void) {
 
       if (!mzd_local_equal(r, w)) {
         printf("lshift fail\n");
+        ret = -1;
       }
     }
 
@@ -424,6 +486,7 @@ static void test_mzd_shift(void) {
 
       if (!mzd_local_equal(r, w)) {
         printf("rshift fail\n");
+        ret = -1;
       }
     }
 
@@ -448,6 +511,7 @@ static void test_mzd_shift(void) {
 
       if (!mzd_local_equal(r, w)) {
         printf("lshift fail\n");
+        ret = -1;
       }
     }
 
@@ -460,6 +524,7 @@ static void test_mzd_shift(void) {
 
       if (!mzd_local_equal(r, w)) {
         printf("rshift fail\n");
+        ret = -1;
       }
     }
 
@@ -469,23 +534,28 @@ static void test_mzd_shift(void) {
   }
 #endif
 #endif
+  return ret;
 }
 
 int main() {
-  test_mzd_local_equal();
-  test_mzd_mul();
+  int ret = 0;
+
+  ret |= test_mzd_local_equal();
+  ret |= test_mzd_mul();
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2) {
-    test_mzd_mul_avx();
-    test_mzd_mul_avx_128();
+    ret |= test_mzd_mul_avx();
+    ret |= test_mzd_mul_avx_128();
+    ret |= test_mzd_mul_avx_192();
   }
 #endif
-  test_mzd_shift();
+  ret |= test_mzd_shift();
 #ifdef WITH_NEON
-  test_mzd_mul_vl_neon_192();
-  test_mzd_mul_vl_neon_256();
+  ret |= test_mzd_mul_vl_neon_192();
+  ret |= test_mzd_mul_vl_neon_256();
 
-  test_mzd_addmul_vl_neon_192();
-  test_mzd_addmul_vl_neon_256();
+  ret |= test_mzd_addmul_vl_neon_192();
+  ret |=test_mzd_addmul_vl_neon_256();
 #endif
+  return ret;
 }
