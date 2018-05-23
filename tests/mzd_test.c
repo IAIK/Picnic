@@ -22,13 +22,15 @@ static int test_mzd_local_equal(void) {
     if (mzd_local_equal(a, b)) {
       printf("equal: ok [%u]\n", (i + 1) * 64);
     } else {
+      printf("equal: fail [%u]\n", (i + 1) * 64);
       ret = -1;
     }
 
     b = mzd_xor(b, b, a);
-    if (mzd_local_equal(a, b)) {
+    if (!mzd_local_equal(a, b)) {
       printf("equal: ok [%u]\n", (i + 1) * 64);
     } else {
+      printf("equal: fail [%u]\n", (i + 1) * 64);
       ret = -1;
     }
 
