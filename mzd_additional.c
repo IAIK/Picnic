@@ -308,6 +308,22 @@ mzd_local_t* mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first,
   return res;
 }
 
+ATTR_TARGET("sse2")
+mzd_local_t* mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first,
+                             mzd_local_t const* second) {
+  word* resptr          = FIRST_ROW(res);
+  word const* firstptr  = CONST_FIRST_ROW(first);
+  word const* secondptr = CONST_FIRST_ROW(second);
+
+  __m128i* mresptr          = (__m128i*)ASSUME_ALIGNED(resptr, alignof(__m128i));
+  __m128i const* mfirstptr  = (__m128i const*)ASSUME_ALIGNED(firstptr, alignof(__m128i));
+  __m128i const* msecondptr = (__m128i const*)ASSUME_ALIGNED(secondptr, alignof(__m128i));
+
+  mresptr[0] = _mm_xor_si128(mfirstptr[0], msecondptr[0]);
+  mresptr[1] = _mm_xor_si128(mfirstptr[1], msecondptr[1]);
+
+  return res;
+}
 #endif
 
 #ifdef WITH_AVX2
@@ -345,7 +361,6 @@ mzd_local_t* mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
 
   return res;
 }
-
 #endif
 
 #ifdef WITH_NEON

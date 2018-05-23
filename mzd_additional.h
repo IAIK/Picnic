@@ -62,6 +62,8 @@ mzd_local_t* mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first,
                          mzd_local_t const* second) ATTR_NONNULL;
 mzd_local_t* mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first,
                              mzd_local_t const* second) ATTR_NONNULL;
+mzd_local_t* mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first,
+                             mzd_local_t const* second) ATTR_NONNULL;
 mzd_local_t* mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first,
                          mzd_local_t const* second) ATTR_NONNULL;
 mzd_local_t* mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
