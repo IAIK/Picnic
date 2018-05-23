@@ -403,11 +403,10 @@ mzd_local_t* mzd_xor(mzd_local_t* res, mzd_local_t const* first, mzd_local_t con
   }
 #endif
 #endif
-  return mzd_xor_general(res, first, second);
+  return mzd_xor_uint64(res, first, second);
 }
 
-mzd_local_t* mzd_xor_general(mzd_local_t* res, mzd_local_t const* first,
-                             mzd_local_t const* second) {
+mzd_local_t* mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->width;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -430,14 +429,14 @@ mzd_local_t* mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
   return mzd_addmul_v(c, v, At);
 }
 
-mzd_local_t* mzd_mul_v_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+mzd_local_t* mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   if (At->nrows != v->ncols) {
     // number of columns does not match
     return NULL;
   }
 
   mzd_local_clear(c);
-  return mzd_addmul_v_general(c, v, At);
+  return mzd_addmul_v_uint64(c, v, At);
 }
 
 #ifdef WITH_OPT
@@ -741,10 +740,10 @@ mzd_local_t* mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   }
 #endif
 
-  return mzd_addmul_v_general(c, v, A);
+  return mzd_addmul_v_uint64(c, v, A);
 }
 
-mzd_local_t* mzd_addmul_v_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+mzd_local_t* mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   const unsigned int len       = A->width;
   const unsigned int rowstride = A->rowstride;
   word* cptr                   = FIRST_ROW(c);
@@ -1006,7 +1005,7 @@ mzd_local_t* mzd_mul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_
   }
 
   __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
-  *mcptr = _mm_xor_si128(_mm256_extractf128_si256(mc, 0), _mm256_extractf128_si256(mc, 1));
+  *mcptr         = _mm_xor_si128(_mm256_extractf128_si256(mc, 0), _mm256_extractf128_si256(mc, 1));
 
   return c;
 }
@@ -1032,7 +1031,7 @@ mzd_local_t* mzd_addmul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_loc
     }
   }
 
-    *mcptr = _mm_xor_si128(_mm256_extractf128_si256(mc, 0), _mm256_extractf128_si256(mc, 1));
+  *mcptr = _mm_xor_si128(_mm256_extractf128_si256(mc, 0), _mm256_extractf128_si256(mc, 1));
 
   return c;
 }
@@ -1181,9 +1180,9 @@ mzd_local_t* mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   return mzd_addmul_vl(c, v, A);
 }
 
-mzd_local_t* mzd_mul_vl_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+mzd_local_t* mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  return mzd_addmul_vl_general(c, v, A);
+  return mzd_addmul_vl_uint64(c, v, A);
 }
 
 mzd_local_t* mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -1226,10 +1225,10 @@ mzd_local_t* mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 #endif
   }
 #endif
-  return mzd_addmul_vl_general(c, v, A);
+  return mzd_addmul_vl_uint64(c, v, A);
 }
 
-mzd_local_t* mzd_addmul_vl_general(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+mzd_local_t* mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   const unsigned int len   = A->width;
   word* cptr               = FIRST_ROW(c);
   word const* vptr         = CONST_FIRST_ROW(v);

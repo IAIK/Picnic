@@ -768,7 +768,6 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   mzd_local_free_multiple(x);                                                                      \
   VARS_FREE_##sbox_args;
 
-
 #ifdef REDUCED_LINEAR_LAYER
 #ifdef MUL_M4RI
 #define mpc_lowmc_call_def_gen(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, MUL_L, XOR,    \
@@ -904,9 +903,9 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
 #endif
 
 mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call, mpc_lowmc_call_verify,
-                   _mpc_sbox_layer_bitsliced, _mpc_sbox_layer_bitsliced,
-                   mzd_mul_v, mzd_mul_vl, mzd_xor, mzd_mul_v, mzd_mul_vl,
-                   mzd_addmul_v, mzd_addmul_vl);
+                   _mpc_sbox_layer_bitsliced, _mpc_sbox_layer_bitsliced, mzd_mul_v_uint64,
+                   mzd_mul_vl_uint64, mzd_xor_uint64, mzd_mul_v_uint64, mzd_mul_vl_uint64,
+                   mzd_addmul_v_uint64, mzd_addmul_vl_uint64);
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
 mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_sse, mpc_lowmc_call_verify_128_sse,
@@ -939,8 +938,8 @@ mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_avx, mpc_lowmc_cal
                    mzd_mul_vl_avx, mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128);
 mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_avx, mpc_lowmc_call_verify_192_avx,
                    _mpc_sbox_layer_bitsliced_256_avx, _mpc_sbox_layer_bitsliced_verify_256_avx,
-                   mzd_mul_v_avx_192, mzd_mul_vl_avx_192, mzd_xor_avx_256, mzd_mul_v_avx, mzd_mul_vl_avx,
-                   mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192);
+                   mzd_mul_v_avx_192, mzd_mul_vl_avx_192, mzd_xor_avx_256, mzd_mul_v_avx,
+                   mzd_mul_vl_avx, mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192);
 mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_avx, mpc_lowmc_call_verify_256_avx,
                    _mpc_sbox_layer_bitsliced_256_avx, _mpc_sbox_layer_bitsliced_verify_256_avx,
                    mzd_mul_v_avx_256, mzd_mul_vl_avx_256, mzd_xor_avx_256, mzd_mul_v_avx,
@@ -1024,51 +1023,51 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2)
     switch (lowmc->n) {
-      case 128:
-        return general_or_10(lowmc, mpc_lowmc_call_128_avx);
-      case 192:
-        return general_or_10(lowmc, mpc_lowmc_call_192_avx);
-      case 256:
-        return general_or_10(lowmc, mpc_lowmc_call_256_avx);
+    case 128:
+      return general_or_10(lowmc, mpc_lowmc_call_128_avx);
+    case 192:
+      return general_or_10(lowmc, mpc_lowmc_call_192_avx);
+    case 256:
+      return general_or_10(lowmc, mpc_lowmc_call_256_avx);
 #ifdef WITH_CUSTOM_INSTANCES
-      case 384:
-        return general_or_10(lowmc, mpc_lowmc_call_384_avx);
-      case 512:
-        return general_or_10(lowmc, mpc_lowmc_call_512_avx);
+    case 384:
+      return general_or_10(lowmc, mpc_lowmc_call_384_avx);
+    case 512:
+      return general_or_10(lowmc, mpc_lowmc_call_512_avx);
 #endif
     }
 #endif
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2)
     switch (lowmc->n) {
-      case 128:
-        return general_or_10(lowmc, mpc_lowmc_call_128_sse);
-      case 192:
-        return general_or_10(lowmc, mpc_lowmc_call_192_sse);
-      case 256:
-        return general_or_10(lowmc, mpc_lowmc_call_256_sse);
+    case 128:
+      return general_or_10(lowmc, mpc_lowmc_call_128_sse);
+    case 192:
+      return general_or_10(lowmc, mpc_lowmc_call_192_sse);
+    case 256:
+      return general_or_10(lowmc, mpc_lowmc_call_256_sse);
 #ifdef WITH_CUSTOM_INSTANCES
-      case 384:
-        return general_or_10(lowmc, mpc_lowmc_call_384_sse);
-      case 512:
-        return general_or_10(lowmc, mpc_lowmc_call_512_sse);
+    case 384:
+      return general_or_10(lowmc, mpc_lowmc_call_384_sse);
+    case 512:
+      return general_or_10(lowmc, mpc_lowmc_call_512_sse);
 #endif
     }
 #endif
 #ifdef WITH_NEON
   if (CPU_SUPPORTS_NEON)
     switch (lowmc->n) {
-      case 128:
-        return general_or_10(lowmc, mpc_lowmc_call_128_neon);
-      case 192:
-        return general_or_10(lowmc, mpc_lowmc_call_192_neon);
-      case 256:
-        return general_or_10(lowmc, mpc_lowmc_call_256_neon);
+    case 128:
+      return general_or_10(lowmc, mpc_lowmc_call_128_neon);
+    case 192:
+      return general_or_10(lowmc, mpc_lowmc_call_192_neon);
+    case 256:
+      return general_or_10(lowmc, mpc_lowmc_call_256_neon);
 #ifdef WITH_CUSTOM_INSTANCES
-      case 384:
-        return general_or_10(lowmc, mpc_lowmc_call_384_neon);
-      case 512:
-        return general_or_10(lowmc, mpc_lowmc_call_512_neon);
+    case 384:
+      return general_or_10(lowmc, mpc_lowmc_call_384_neon);
+    case 512:
+      return general_or_10(lowmc, mpc_lowmc_call_512_neon);
 #endif
     }
 #endif
@@ -1082,51 +1081,51 @@ lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* low
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2)
     switch (lowmc->n) {
-      case 128:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_128_avx);
-      case 192:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_192_avx);
-      case 256:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_256_avx);
+    case 128:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_128_avx);
+    case 192:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_192_avx);
+    case 256:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_256_avx);
 #ifdef WITH_CUSTOM_INSTANCES
-      case 384:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_384_avx);
-      case 512:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_512_avx);
+    case 384:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_384_avx);
+    case 512:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_512_avx);
 #endif
     }
 #endif
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2)
     switch (lowmc->n) {
-      case 128:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_128_sse);
-      case 192:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_192_sse);
-      case 256:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_256_sse);
+    case 128:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_128_sse);
+    case 192:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_192_sse);
+    case 256:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_256_sse);
 #ifdef WITH_CUSTOM_INSTANCES
-      case 384:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_384_sse);
-      case 512:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_512_sse);
+    case 384:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_384_sse);
+    case 512:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_512_sse);
 #endif
     }
 #endif
 #ifdef WITH_NEON
   if (CPU_SUPPORTS_NEON)
     switch (lowmc->n) {
-      case 128:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_128_neon);
-      case 192:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_192_neon);
-      case 256:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_256_neon);
+    case 128:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_128_neon);
+    case 192:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_192_neon);
+    case 256:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_256_neon);
 #ifdef WITH_CUSTOM_INSTANCES
-      case 384:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_384_neon);
-      case 512:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_512_neon);
+    case 384:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_384_neon);
+    case 512:
+      return general_or_10(lowmc, mpc_lowmc_call_verify_512_neon);
 #endif
     }
 #endif
