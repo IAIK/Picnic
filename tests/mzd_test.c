@@ -420,6 +420,7 @@ static int test_mzd_mul(void) {
 
 static int test_mzd_shift(void) {
   int ret = 0;
+#ifdef WITH_CUSTOM_INSTANCES
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2) {
@@ -534,6 +535,7 @@ static int test_mzd_shift(void) {
     mzd_local_free(v);
     mzd_local_free(r);
   }
+#endif
 #endif
 #endif
   return ret;

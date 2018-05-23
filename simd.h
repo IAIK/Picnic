@@ -95,12 +95,16 @@
 #define apply_array(name, type, xor, count, attributes)                                            \
   static inline void attributes name(type dst[count], type const lhs[count],                       \
                                      type const rhs[count]) {                                      \
-    for (unsigned int i = 0; i < count; ++i) {                                                     \
-      dst[i] = (xor)(lhs[i], rhs[i]);                                                              \
+    type* d       = dst;                                                                           \
+    const type* l = lhs;                                                                           \
+    const type* r = rhs;                                                                           \
+    for (unsigned int i = count; i; --i, ++d, ++l, ++r) {                                          \
+      *d = (xor)(*l, *r);                                                                          \
     }                                                                                              \
   }
 
 #ifdef WITH_AVX2
+#ifdef WITH_CUSTOM_INSTANCES
 /**
  * \brief Perform a left shift on a 256 bit value.
  */
@@ -131,7 +135,6 @@ static inline __m256i FN_ATTRIBUTES_AVX2 mm256_shift_right(__m256i data, unsigne
   return _mm256_or_si256(data, carry);
 }
 
-#ifdef WITH_CUSTOM_INSTANCES
 static inline void FN_ATTRIBUTES_AVX2_NP mm512_shift_left_avx(__m256i res[2], __m256i const data[2],
                                                               unsigned int count) {
   if (!count) {
@@ -177,6 +180,7 @@ apply_array(mm512_and_avx, __m256i, _mm256_and_si256, 2, FN_ATTRIBUTES_AVX2_NP);
 #endif
 
 #ifdef WITH_SSE2
+#ifdef WITH_CUSTOM_INSTANCES
 /**
  * \brief Perform a left shift on a 128 bit value.
  */
@@ -323,6 +327,7 @@ static inline void FN_ATTRIBUTES_SSE2_NP mm512_shift_left_sse(__m128i res[4], __
   mm256_shift_left_sse(&(res[2]), &(data[2]), count);
   res[2] = _mm_or_si128(res[2], total_carry);
 }
+#endif
 
 apply_region(mm128_xor_region, __m128i, _mm_xor_si128, FN_ATTRIBUTES_SSE2_NP);
 apply_mask_region(mm128_xor_mask_region, __m128i, _mm_xor_si128, _mm_and_si128,
@@ -338,6 +343,7 @@ apply_array(mm512_and_sse, __m128i, _mm_and_si128, 4, FN_ATTRIBUTES_SSE2_NP);
 #endif
 
 #ifdef WITH_NEON
+#ifdef WITH_CUSTOM_INSTANCES
 /**
  * \brief Perform a right shift on a 128 bit value.
  */
@@ -413,7 +419,6 @@ static inline void mm256_shift_left(uint32x4_t res[2], uint32x4_t const data[2],
   res[1] = vorrq_u32(res[1], total_carry);
 }
 
-#ifdef WITH_CUSTOM_INSTANCES
 static inline void mm384_shift_left(uint32x4_t res[3], uint32x4_t const data[3],
                                     unsigned int count) {
   if (!count) {
