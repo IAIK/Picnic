@@ -914,12 +914,12 @@ mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_sse, mpc_lowmc_cal
                    mzd_mul_vl_sse, mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128);
 mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_sse, mpc_lowmc_call_verify_192_sse,
                    _mpc_sbox_layer_bitsliced_256_sse, _mpc_sbox_layer_bitsliced_verify_256_sse,
-                   mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse_256, mzd_mul_v_sse, mzd_mul_vl_sse,
-                   mzd_addmul_v_sse, mzd_addmul_vl_sse);
+                   mzd_mul_v_sse_192, mzd_mul_vl_sse_192, mzd_xor_sse_256, mzd_mul_v_sse, mzd_mul_vl_sse,
+                   mzd_addmul_v_sse_192, mzd_addmul_vl_sse_192);
 mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_sse, mpc_lowmc_call_verify_256_sse,
                    _mpc_sbox_layer_bitsliced_256_sse, _mpc_sbox_layer_bitsliced_verify_256_sse,
-                   mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse_256, mzd_mul_v_sse, mzd_mul_vl_sse,
-                   mzd_addmul_v_sse, mzd_addmul_vl_sse);
+                   mzd_mul_v_sse_256, mzd_mul_vl_sse_256, mzd_xor_sse_256, mzd_mul_v_sse, mzd_mul_vl_sse,
+                   mzd_addmul_v_sse_256, mzd_addmul_vl_sse_256);
 #ifdef WITH_CUSTOM_INSTANCES
 mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_384_sse, mpc_lowmc_call_verify_384_sse,
                    _mpc_sbox_layer_bitsliced_384_sse, _mpc_sbox_layer_bitsliced_verify_384_sse,
