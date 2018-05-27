@@ -958,16 +958,16 @@ mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_512_avx, mpc_lowmc_call_ve
 #ifdef WITH_NEON
 mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_neon, mpc_lowmc_call_verify_128_neon,
                    _mpc_sbox_layer_bitsliced_128_neon, _mpc_sbox_layer_bitsliced_verify_128_neon,
-                   mzd_mul_v_neon, mzd_mul_vl_neon_128, mzd_xor_neon, mzd_mul_v_neon,
-                   mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon, mzd_addmul_vl_neon_128);
+                   mzd_mul_v_neon_128, mzd_mul_vl_neon_128, mzd_xor_neon_128, mzd_mul_v_neon,
+                   mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon_128, mzd_addmul_vl_neon_128);
 mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_neon, mpc_lowmc_call_verify_192_neon,
                    _mpc_sbox_layer_bitsliced_256_neon, _mpc_sbox_layer_bitsliced_verify_256_neon,
-                   mzd_mul_v_neon, mzd_mul_vl_neon_multiple_of_128, mzd_xor_neon, mzd_mul_v_neon,
-                   mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon, mzd_addmul_vl_neon);
+                   mzd_mul_v_neon_192, mzd_mul_vl_neon_multiple_of_128, mzd_xor_neon_256, mzd_mul_v_neon,
+                   mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon_192, mzd_addmul_vl_neon_192);
 mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_neon, mpc_lowmc_call_verify_256_neon,
                    _mpc_sbox_layer_bitsliced_256_neon, _mpc_sbox_layer_bitsliced_verify_256_neon,
-                   mzd_mul_v_neon, mzd_mul_vl_neon_multiple_of_128, mzd_xor_neon, mzd_mul_v_neon,
-                   mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon, mzd_addmul_vl_neon);
+                   mzd_mul_v_neon_256, mzd_mul_vl_neon_multiple_of_128, mzd_xor_neon_256, mzd_mul_v_neon,
+                   mzd_mul_vl_neon_multiple_of_128, mzd_addmul_v_neon_256, mzd_addmul_vl_neon_256);
 #ifdef WITH_CUSTOM_INSTANCES
 mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_384_neon, mpc_lowmc_call_verify_384_neon,
                    _mpc_sbox_layer_bitsliced_384_neon, _mpc_sbox_layer_bitsliced_verify_384_neon,

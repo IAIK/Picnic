@@ -349,8 +349,7 @@ void mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
 #endif
 
 #ifdef WITH_NEON
-inline void mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first,
-                                 mzd_local_t const* second) {
+void mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -364,6 +363,31 @@ inline void mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first,
     *mresptr++ = veorq_u32(*mfirstptr++, *msecondptr++);
     width -= sizeof(uint32x4_t) / sizeof(word);
   } while (width);
+}
+
+void mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  word* resptr          = FIRST_ROW(res);
+  word const* firstptr  = CONST_FIRST_ROW(first);
+  word const* secondptr = CONST_FIRST_ROW(second);
+
+  uint32x4_t* mresptr          = (uint32x4_t*)ASSUME_ALIGNED(resptr, alignof(uint32x4_t));
+  uint32x4_t const* mfirstptr  = (uint32x4_t const*)ASSUME_ALIGNED(firstptr, alignof(uint32x4_t));
+  uint32x4_t const* msecondptr = (uint32x4_t const*)ASSUME_ALIGNED(secondptr, alignof(uint32x4_t));
+
+  *mresptr = veorq_u32(*mfirstptr, *msecondptr);
+}
+
+void mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  word* resptr          = FIRST_ROW(res);
+  word const* firstptr  = CONST_FIRST_ROW(first);
+  word const* secondptr = CONST_FIRST_ROW(second);
+
+  uint32x4_t* mresptr          = (uint32x4_t*)ASSUME_ALIGNED(resptr, alignof(uint32x4_t));
+  uint32x4_t const* mfirstptr  = (uint32x4_t const*)ASSUME_ALIGNED(firstptr, alignof(uint32x4_t));
+  uint32x4_t const* msecondptr = (uint32x4_t const*)ASSUME_ALIGNED(secondptr, alignof(uint32x4_t));
+
+  mresptr[0] = veorq_u32(mfirstptr[0], msecondptr[0]);
+  mresptr[1] = veorq_u32(mfirstptr[1], msecondptr[1]);
 }
 #endif
 #endif
@@ -787,10 +811,131 @@ void mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
     uint32x4_t const* mAptr = ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
 
     for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, mAptr += mrowstride) {
-      const uint32x4_t mask = vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1)));
-      mm128_xor_mask_region(mcptr, mAptr, mask, len);
+      mm128_xor_mask_region(mcptr, mAptr, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), len);
     }
   }
+}
+
+void mzd_mul_v_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word* cptr       = FIRST_ROW(c);
+  word const* vptr = CONST_FIRST_ROW(v);
+
+  uint32x4_t* mcptr       = (uint32x4_t*)ASSUME_ALIGNED(cptr, alignof(uint32x4_t));
+  word const* Aptr     = CONST_FIRST_ROW(A);
+  uint32x4_t const* mAptr = (uint32x4_t const*)ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
+
+  uint32x4_t cval[2] = { vmovq_n_u32(0), vmovq_n_u32(0) };
+  for (unsigned int w = 2; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
+      mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 1, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 1);
+      mm128_xor_mask_region(&cval[0], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 3, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 3) & 1))), 1);
+    }
+  }
+  *mcptr = veorq_u32(cval[0], cval[1]);
+}
+
+void mzd_addmul_v_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word* cptr       = FIRST_ROW(c);
+  word const* vptr = CONST_FIRST_ROW(v);
+
+  uint32x4_t* mcptr       = (uint32x4_t*)ASSUME_ALIGNED(cptr, alignof(uint32x4_t));
+  word const* Aptr     = CONST_FIRST_ROW(A);
+  uint32x4_t const* mAptr = (uint32x4_t const*)ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
+
+  uint32x4_t cval[2] = { *mcptr, vmovq_n_u32(0) };
+  for (unsigned int w = 2; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
+      mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 1, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 1);
+      mm128_xor_mask_region(&cval[0], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 3, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 3) & 1))), 1);
+    }
+  }
+  *mcptr = veorq_u32(cval[0], cval[1]);
+}
+
+void mzd_mul_v_neon_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word* cptr       = FIRST_ROW(c);
+  word const* vptr = CONST_FIRST_ROW(v);
+
+  uint32x4_t* mcptr       = (uint32x4_t*)ASSUME_ALIGNED(cptr, alignof(uint32x4_t));
+  word const* Aptr     = CONST_FIRST_ROW(A);
+  uint32x4_t const* mAptr = (uint32x4_t const*)ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
+
+  uint32x4_t cval[4] = { vmovq_n_u32(0), vmovq_n_u32(0), vmovq_n_u32(0), vmovq_n_u32(0) };
+  for (unsigned int w = 3; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
+      mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
+    }
+  }
+  mcptr[0] = veorq_u32(cval[0], cval[2]);
+  mcptr[1] = veorq_u32(cval[1], cval[3]);
+}
+
+void mzd_addmul_v_neon_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word* cptr       = FIRST_ROW(c);
+  word const* vptr = CONST_FIRST_ROW(v);
+
+  uint32x4_t* mcptr       = (uint32x4_t*)ASSUME_ALIGNED(cptr, alignof(uint32x4_t));
+  word const* Aptr     = CONST_FIRST_ROW(A);
+  uint32x4_t const* mAptr = (uint32x4_t const*)ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
+
+  uint32x4_t cval[4] = { mcptr[0], mcptr[1], vmovq_n_u32(0), vmovq_n_u32(0) };
+  for (unsigned int w = 3; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
+      mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
+    }
+  }
+  mcptr[0] = veorq_u32(cval[0], cval[2]);
+  mcptr[1] = veorq_u32(cval[1], cval[3]);
+}
+
+void mzd_mul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word* cptr       = FIRST_ROW(c);
+  word const* vptr = CONST_FIRST_ROW(v);
+
+  uint32x4_t* mcptr       = (uint32x4_t*)ASSUME_ALIGNED(cptr, alignof(uint32x4_t));
+  word const* Aptr     = CONST_FIRST_ROW(A);
+  uint32x4_t const* mAptr = (uint32x4_t const*)ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
+
+  uint32x4_t cval[4] = { vmovq_n_u32(0), vmovq_n_u32(0), vmovq_n_u32(0), vmovq_n_u32(0) };
+  for (unsigned int w = 4; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
+      mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
+    }
+  }
+  mcptr[0] = veorq_u32(cval[0], cval[2]);
+  mcptr[1] = veorq_u32(cval[1], cval[3]);
+}
+
+void mzd_addmul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word* cptr       = FIRST_ROW(c);
+  word const* vptr = CONST_FIRST_ROW(v);
+
+  uint32x4_t* mcptr       = (uint32x4_t*)ASSUME_ALIGNED(cptr, alignof(uint32x4_t));
+  word const* Aptr     = CONST_FIRST_ROW(A);
+  uint32x4_t const* mAptr = (uint32x4_t const*)ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
+
+  uint32x4_t cval[4] = { mcptr[0], mcptr[1], vmovq_n_u32(0), vmovq_n_u32(0) };
+  for (unsigned int w = 4; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
+      mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
+    }
+  }
+  mcptr[0] = veorq_u32(cval[0], cval[2]);
+  mcptr[1] = veorq_u32(cval[1], cval[3]);
 }
 #endif
 #endif
