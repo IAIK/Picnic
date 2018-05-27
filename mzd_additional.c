@@ -686,7 +686,7 @@ void mzd_addmul_v_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(Aptr, alignof(__m256i));
 
   __m256i cval[2] = { *mcptr, _mm256_setzero_si256() };
-  for (unsigned int w = 4; w; --w, ++vptr) {
+  for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
       mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
@@ -708,7 +708,7 @@ void mzd_mul_v_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
   __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(Aptr, alignof(__m256i));
 
   __m256i cval[2] = { _mm256_setzero_si256(), _mm256_setzero_si256() };
-  for (unsigned int w = 4; w; --w, ++vptr) {
+  for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
       mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
