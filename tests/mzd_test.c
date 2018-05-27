@@ -97,6 +97,18 @@ static int test_mzd_mul_uint64_256(void) {
   return test_mzd_mul_f("mul uint64 256", 256, 256, mzd_mul_v_uint64, false);
 }
 
+static int test_mzd_addmul_uint64_128(void) {
+  return test_mzd_mul_f("addmul uint64 128", 128, 128, mzd_addmul_v_uint64, true);
+}
+
+static int test_mzd_addmul_uint64_192(void) {
+  return test_mzd_mul_f("addmul uint64 192", 192, 192, mzd_addmul_v_uint64, true);
+}
+
+static int test_mzd_addmul_uint64_256(void) {
+  return test_mzd_mul_f("addmul uint64 256", 256, 256, mzd_addmul_v_uint64, true);
+}
+
 #ifdef WITH_AVX2
 static int test_mzd_mul_avx(void) {
   return test_mzd_mul_f("mul avx", 192, 192, mzd_mul_v_avx, false);
@@ -115,19 +127,19 @@ static int test_mzd_mul_avx_256(void) {
 }
 
 static int test_mzd_addmul_avx(void) {
-  return test_mzd_addmul_f("addmul avx", 192, 192, mzd_addmul_v_avx, true);
+  return test_mzd_mul_f("addmul avx", 192, 192, mzd_addmul_v_avx, true);
 }
 
 static int test_mzd_addmul_avx_128(void) {
-  return test_mzd_addmul_f("addmul avx 128", 128, 128, mzd_addmul_v_avx_128, true);
+  return test_mzd_mul_f("addmul avx 128", 128, 128, mzd_addmul_v_avx_128, true);
 }
 
 static int test_mzd_addmul_avx_192(void) {
-  return test_mzd_addmul_f("addmul avx 192", 192, 192, mzd_addmul_v_avx_192, true);
+  return test_mzd_mul_f("addmul avx 192", 192, 192, mzd_addmul_v_avx_192, true);
 }
 
 static int test_mzd_addmul_avx_256(void) {
-  return test_mzd_addmul_f("addmul avx 256", 256, 256, mzd_addmul_v_avx_256, true);
+  return test_mzd_mul_f("addmul avx 256", 256, 256, mzd_addmul_v_avx_256, true);
 }
 #endif
 
@@ -400,6 +412,9 @@ int main() {
   ret |= test_mzd_mul_uint64_128();
   ret |= test_mzd_mul_uint64_192();
   ret |= test_mzd_mul_uint64_256();
+  ret |= test_mzd_addmul_uint64_128();
+  ret |= test_mzd_addmul_uint64_192();
+  ret |= test_mzd_addmul_uint64_256();
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2) {
     ret |= test_mzd_mul_avx();
