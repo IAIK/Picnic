@@ -26,7 +26,7 @@ static int test_mzd_local_equal(void) {
       ret = -1;
     }
 
-    b = mzd_xor(b, b, a);
+    mzd_xor(b, b, a);
     if (!mzd_local_equal(a, b)) {
       printf("equal: ok [%u]\n", (i + 1) * 64);
     } else {
@@ -41,7 +41,7 @@ static int test_mzd_local_equal(void) {
   return ret;
 }
 
-typedef mzd_local_t* (*mul_fn)(mzd_local_t*, const mzd_local_t*, const mzd_local_t*);
+typedef void (*mul_fn)(mzd_local_t*, const mzd_local_t*, const mzd_local_t*);
 
 static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, mul_fn f, bool is_addmul) {
   int ret = 0;
@@ -60,11 +60,11 @@ static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, m
 
   for (unsigned int k = 0; k < 3; ++k) {
     mzd_t* r  = is_addmul ? mzd_addmul_naive(c, v, A) : mzd_mul_naive(c, v, A);
-    mzd_local_t* rl = f(c2, vl, Al);
+    f(c2, vl, Al);
 
     mzd_local_t* rc = mzd_convert(r);
 
-    if (!mzd_local_equal(rc, rl)) {
+    if (!mzd_local_equal(rc, c2)) {
       printf("%s: fail [%u x %u]\n", n, rows, cols);
       ret = -1;
     } else {
@@ -236,18 +236,18 @@ static int test_mzd_mul(void) {
       mzd_t* c3 = mzd_transpose(NULL, c);
 
       for (unsigned int k = 0; k < 3; ++k) {
-        mzd_local_t* r  = mzd_mul_v(cl, vl, Al);
-        mzd_local_t* rl = mzd_mul_vl(cll, vl, All);
+        mzd_mul_v(cl, vl, Al);
+        mzd_mul_vl(cll, vl, All);
         mzd_t* r2 = mzd_mul(c2, v, A, __M4RI_STRASSEN_MUL_CUTOFF);
         mzd_t* r3 = mzd_mul(c3, At, vt, __M4RI_STRASSEN_MUL_CUTOFF);
 
-        if (!mzd_local_equal(r, rl)) {
+        if (!mzd_local_equal(cl, cll)) {
           printf("mul: fail [%u x %u]\n", i * 64, j * 64);
           ret = -1;
         }
 
         mzd_local_t* rc = mzd_convert(r2);
-        if (!mzd_local_equal(r, rc)) {
+        if (!mzd_local_equal(cl, rc)) {
           printf("mul: fail [%u x %u]\n", i * 64, j * 64);
           ret = -1;
         }

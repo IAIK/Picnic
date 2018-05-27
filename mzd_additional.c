@@ -176,7 +176,7 @@ void mzd_shift_left(mzd_local_t* res, mzd_local_t const* val, unsigned count) {
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
 ATTR_TARGET("sse2")
-static inline mzd_local_t* mzd_and_sse(mzd_local_t* res, mzd_local_t const* first,
+static inline void mzd_and_sse(mzd_local_t* res, mzd_local_t const* first,
                                        mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
@@ -191,14 +191,12 @@ static inline mzd_local_t* mzd_and_sse(mzd_local_t* res, mzd_local_t const* firs
     *mresptr++ = _mm_and_si128(*mfirstptr++, *msecondptr++);
     width -= sizeof(__m128i) / sizeof(word);
   } while (width);
-
-  return res;
 }
 #endif
 
 #ifdef WITH_AVX2
 ATTR_TARGET("avx2")
-static inline mzd_local_t* mzd_and_avx(mzd_local_t* res, mzd_local_t const* first,
+static inline void mzd_and_avx(mzd_local_t* res, mzd_local_t const* first,
                                        mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
@@ -213,13 +211,11 @@ static inline mzd_local_t* mzd_and_avx(mzd_local_t* res, mzd_local_t const* firs
     *mresptr++ = _mm256_and_si256(*mfirstptr++, *msecondptr++);
     width -= sizeof(__m256i) / sizeof(word);
   } while (width);
-
-  return res;
 }
 #endif
 
 #ifdef WITH_NEON
-static inline mzd_local_t* mzd_and_neon(mzd_local_t* res, mzd_local_t const* first,
+static inline void mzd_and_neon(mzd_local_t* res, mzd_local_t const* first,
                                         mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
@@ -234,27 +230,28 @@ static inline mzd_local_t* mzd_and_neon(mzd_local_t* res, mzd_local_t const* fir
     *mresptr++ = vandq_u32(*mfirstptr++, *msecondptr++);
     width -= sizeof(uint32x4_t) / sizeof(word);
   } while (width);
-
-  return res;
 }
 #endif
 #endif
 
-mzd_local_t* mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+void mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
 #ifdef WITH_OPT
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2 && first->ncols >= 256 && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    return mzd_and_avx(res, first, second);
+    mzd_and_avx(res, first, second);
+    return;
   }
 #endif
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2 && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    return mzd_and_sse(res, first, second);
+    mzd_and_sse(res, first, second);
+    return;
   }
 #endif
 #ifdef WITH_NEON
   if (CPU_SUPPORTS_NEON && first->ncols % ((first->ncols & (word_size_bits - 1)) == 0)) {
-    return mzd_and_neon(res, first, second);
+    mzd_and_neon(res, first, second);
+    return;
   }
 #endif
 #endif
@@ -267,14 +264,12 @@ mzd_local_t* mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t con
   while (width--) {
     *resptr++ = *firstptr++ & *secondptr++;
   }
-
-  return res;
 }
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+void mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -288,12 +283,10 @@ mzd_local_t* mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t
     *mresptr++ = _mm_xor_si128(*mfirstptr++, *msecondptr++);
     width -= sizeof(__m128i) / sizeof(word);
   } while (width);
-
-  return res;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first,
+void mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first,
                              mzd_local_t const* second) {
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -304,12 +297,10 @@ mzd_local_t* mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first,
   __m128i const* msecondptr = (__m128i const*)ASSUME_ALIGNED(secondptr, alignof(__m128i));
 
   *mresptr = _mm_xor_si128(*mfirstptr, *msecondptr);
-
-  return res;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first,
+void mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first,
                              mzd_local_t const* second) {
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -321,14 +312,12 @@ mzd_local_t* mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first,
 
   mresptr[0] = _mm_xor_si128(mfirstptr[0], msecondptr[0]);
   mresptr[1] = _mm_xor_si128(mfirstptr[1], msecondptr[1]);
-
-  return res;
 }
 #endif
 
 #ifdef WITH_AVX2
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+void mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -342,12 +331,10 @@ mzd_local_t* mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t
     *mresptr++ = _mm256_xor_si256(*mfirstptr++, *msecondptr++);
     width -= sizeof(__m256i) / sizeof(word);
   } while (width);
-
-  return res;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
+void mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
                              mzd_local_t const* second) {
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -358,13 +345,11 @@ mzd_local_t* mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
   __m256i const* msecondptr = (__m256i const*)ASSUME_ALIGNED(secondptr, alignof(__m256i));
 
   *mresptr = _mm256_xor_si256(*mfirstptr, *msecondptr);
-
-  return res;
 }
 #endif
 
 #ifdef WITH_NEON
-inline mzd_local_t* mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first,
+inline void mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first,
                                  mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
@@ -379,34 +364,35 @@ inline mzd_local_t* mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first,
     *mresptr++ = veorq_u32(*mfirstptr++, *msecondptr++);
     width -= sizeof(uint32x4_t) / sizeof(word);
   } while (width);
-
-  return res;
 }
 #endif
 #endif
 
-mzd_local_t* mzd_xor(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+void mzd_xor(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
 #ifdef WITH_OPT
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2 && first->ncols >= 256 && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    return mzd_xor_avx(res, first, second);
+    mzd_xor_avx(res, first, second);
+    return;
   }
 #endif
 #ifdef WITH_SSE2
   if (CPU_SUPPORTS_SSE2 && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    return mzd_xor_sse(res, first, second);
+    mzd_xor_sse(res, first, second);
+    return;
   }
 #endif
 #ifdef WITH_NEON
   if (CPU_SUPPORTS_NEON && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    return mzd_xor_neon(res, first, second);
+    mzd_xor_neon(res, first, second);
+    return;
   }
 #endif
 #endif
-  return mzd_xor_uint64(res, first, second);
+  mzd_xor_uint64(res, first, second);
 }
 
-mzd_local_t* mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+void mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->width;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -415,34 +401,32 @@ mzd_local_t* mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_loca
   while (width--) {
     *resptr++ = *firstptr++ ^ *secondptr++;
   }
-
-  return res;
 }
 
-mzd_local_t* mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   if (At->nrows != v->ncols) {
     // number of columns does not match
-    return NULL;
+    return;
   }
 
   mzd_local_clear(c);
-  return mzd_addmul_v(c, v, At);
+  mzd_addmul_v(c, v, At);
 }
 
-mzd_local_t* mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   if (At->nrows != v->ncols) {
     // number of columns does not match
-    return NULL;
+    return;
   }
 
   mzd_local_clear(c);
-  return mzd_addmul_v_uint64(c, v, At);
+  mzd_addmul_v_uint64(c, v, At);
 }
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr                    = FIRST_ROW(c);
   word const* vptr              = CONST_FIRST_ROW(v);
   const unsigned int width      = v->width;
@@ -462,18 +446,16 @@ mzd_local_t* mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
       mm128_xor_mask_region(mcptr, mAptr, mask, len);
     }
   }
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_mul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  return mzd_addmul_v_sse(c, v, A);
+  mzd_addmul_v_sse(c, v, A);
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_mul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
 
@@ -492,12 +474,10 @@ mzd_local_t* mzd_mul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
     }
   }
   *mcptr = _mm_xor_si128(cval[0], cval[1]);
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_addmul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
 
@@ -516,12 +496,10 @@ mzd_local_t* mzd_addmul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_loca
     }
   }
   *mcptr = _mm_xor_si128(cval[0], cval[1]);
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_mul_v_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
 
@@ -539,12 +517,10 @@ mzd_local_t* mzd_mul_v_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   }
   mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
   mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_addmul_v_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
 
@@ -562,12 +538,10 @@ mzd_local_t* mzd_addmul_v_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_loca
   }
   mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
   mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_mul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
 
@@ -585,12 +559,10 @@ mzd_local_t* mzd_mul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   }
   mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
   mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_addmul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
 
@@ -608,20 +580,18 @@ mzd_local_t* mzd_addmul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_loca
   }
   mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
   mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
-
-  return c;
 }
 #endif
 
 #ifdef WITH_AVX2
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  return mzd_addmul_v_avx(c, v, A);
+  mzd_addmul_v_avx(c, v, A);
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr                    = FIRST_ROW(c);
   word const* vptr              = CONST_FIRST_ROW(v);
   const unsigned int width      = v->width;
@@ -640,12 +610,10 @@ mzd_local_t* mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
       mm256_xor_mask_region(mcptr, mAptr,  _mm256_set1_epi64x(-(idx & 1)), len);
     }
   }
-
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_addmul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
   word const* Aptr = CONST_FIRST_ROW(A);
@@ -674,12 +642,10 @@ mzd_local_t* mzd_addmul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_loca
   }
   cval[0] = _mm256_xor_si256(cval[0], cval[1]);
   *mcptr = _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
-
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_mul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
   word const* Aptr = CONST_FIRST_ROW(A);
@@ -708,12 +674,10 @@ mzd_local_t* mzd_mul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   }
   cval[0] = _mm256_xor_si256(cval[0], cval[1]);
   *mcptr = _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
-
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_addmul_v_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
   word const* Aptr = CONST_FIRST_ROW(A);
@@ -732,12 +696,10 @@ mzd_local_t* mzd_addmul_v_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_loca
     }
   }
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
-
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_mul_v_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
   word const* Aptr = CONST_FIRST_ROW(A);
@@ -756,12 +718,10 @@ mzd_local_t* mzd_mul_v_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
     }
   }
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
-
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_addmul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
   word const* Aptr = CONST_FIRST_ROW(A);
@@ -780,13 +740,10 @@ mzd_local_t* mzd_addmul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_loca
     }
   }
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
-
-
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr       = FIRST_ROW(c);
   word const* vptr = CONST_FIRST_ROW(v);
   word const* Aptr = CONST_FIRST_ROW(A);
@@ -805,19 +762,17 @@ mzd_local_t* mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
     }
   }
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
-
-  return c;
 }
 
 #endif
 
 #ifdef WITH_NEON
-mzd_local_t* mzd_mul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  return mzd_addmul_v_neon(c, v, A);
+  mzd_addmul_v_neon(c, v, A);
 }
 
-inline mzd_local_t* mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word* cptr                    = FIRST_ROW(c);
   word const* vptr              = CONST_FIRST_ROW(v);
   const unsigned int width      = v->width;
@@ -836,42 +791,43 @@ inline mzd_local_t* mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_
       mm128_xor_mask_region(mcptr, mAptr, mask, len);
     }
   }
-
-  return c;
 }
 #endif
 #endif
 
-mzd_local_t* mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   if (A->ncols != c->ncols || A->nrows != v->ncols) {
     // number of columns does not match
-    return NULL;
+    return;
   }
 
 #ifdef WITH_OPT
   if (A->nrows % (sizeof(word) * 8) == 0) {
 #ifdef WITH_AVX2
     if (CPU_SUPPORTS_AVX2 && (A->ncols & 0xff) == 0) {
-      return mzd_addmul_v_avx(c, v, A);
+      mzd_addmul_v_avx(c, v, A);
+      return;
     }
 #endif
 #ifdef WITH_SSE2
     if (CPU_SUPPORTS_SSE2 && (A->ncols & 0x7f) == 0) {
-      return mzd_addmul_v_sse(c, v, A);
+      mzd_addmul_v_sse(c, v, A);
+      return;
     }
 #endif
 #ifdef WITH_NEON
     if (CPU_SUPPORTS_NEON && (A->ncols & 0x7f) == 0) {
-      return mzd_addmul_v_neon(c, v, A);
+      mzd_addmul_v_neon(c, v, A);
+      return;
     }
 #endif
   }
 #endif
 
-  return mzd_addmul_v_uint64(c, v, A);
+  mzd_addmul_v_uint64(c, v, A);
 }
 
-mzd_local_t* mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   const unsigned int len       = A->width;
   const unsigned int rowstride = A->rowstride;
   word* cptr                   = FIRST_ROW(c);
@@ -889,8 +845,6 @@ mzd_local_t* mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local
       }
     }
   }
-
-  return c;
 }
 
 bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second) {
@@ -953,13 +907,13 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  return mzd_addmul_vl_sse(c, v, A);
+  mzd_addmul_vl_sse(c, v, A);
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width      = v->width;
   const unsigned int rowstride  = A->rowstride;
@@ -977,12 +931,10 @@ mzd_local_t* mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
       mm128_xor_region(mcptr, mAptr + comb * mrowstride, len);
     }
   }
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -997,13 +949,11 @@ mzd_local_t* mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_loc
       mc              = _mm_xor_si128(mc, mAptr[comb]);
     }
   }
-
   *mcptr = mc;
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -1020,11 +970,10 @@ mzd_local_t* mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_
 
   __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   *mcptr         = mc;
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_addmul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   static const unsigned int moff2 = 256;
 
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
@@ -1042,12 +991,10 @@ mzd_local_t* mzd_addmul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_loc
 
   mcptr[0] = cval[0];
   mcptr[1] = cval[1];
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_mul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   static const unsigned int moff2 = 256;
 
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
@@ -1065,12 +1012,10 @@ mzd_local_t* mzd_mul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_
   __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   mcptr[0] = cval[0];
   mcptr[1] = cval[1];
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_addmul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   static const unsigned int moff2 = 256;
 
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
@@ -1088,12 +1033,10 @@ mzd_local_t* mzd_addmul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_loc
 
   mcptr[0] = cval[0];
   mcptr[1] = cval[1];
-
-  return c;
 }
 
 ATTR_TARGET("sse2")
-mzd_local_t* mzd_mul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   static const unsigned int moff2 = 256;
 
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
@@ -1111,14 +1054,12 @@ mzd_local_t* mzd_mul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_
   __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   mcptr[0] = cval[0];
   mcptr[1] = cval[1];
-
-  return c;
 }
 #endif
 
 #ifdef WITH_AVX2
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -1135,11 +1076,10 @@ mzd_local_t* mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_
 
   __m256i* mcptr = (__m256i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
   *mcptr         = mc;
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -1154,13 +1094,11 @@ mzd_local_t* mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_loc
       mc              = _mm256_xor_si256(mc, mAptr[comb]);
     }
   }
-
   *mcptr = mc;
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_mul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -1177,11 +1115,10 @@ mzd_local_t* mzd_mul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_
 
   __m256i* mcptr = (__m256i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
   *mcptr         = mc;
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_addmul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -1196,13 +1133,11 @@ mzd_local_t* mzd_addmul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_loc
       mc              = _mm256_xor_si256(mc, mAptr[comb]);
     }
   }
-
   *mcptr = mc;
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_mul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -1222,12 +1157,10 @@ mzd_local_t* mzd_mul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_
 
   __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   *mcptr         = _mm_xor_si128(_mm256_extractf128_si256(mc, 0), _mm256_extractf128_si256(mc, 1));
-
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_addmul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -1246,20 +1179,17 @@ mzd_local_t* mzd_addmul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_loc
       mc              = _mm256_xor_si256(mc, _mm256_inserti128_si256(t, mAptr[comb2 + moff2], 1));
     }
   }
-
   *mcptr = _mm_xor_si128(_mm256_extractf128_si256(mc, 0), _mm256_extractf128_si256(mc, 1));
-
-  return c;
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  return mzd_addmul_vl_avx(c, v, A);
+  mzd_addmul_vl_avx(c, v, A);
 }
 
 ATTR_TARGET("avx2")
-mzd_local_t* mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width      = v->width;
   const unsigned int rowstride  = A->rowstride;
@@ -1277,13 +1207,11 @@ mzd_local_t* mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
       mm256_xor_region(mcptr, mAptr + comb * mrowstride, len);
     }
   }
-
-  return c;
 }
 #endif
 
 #ifdef WITH_NEON
-mzd_local_t* mzd_mul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
 
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   const unsigned int width        = v->width;
@@ -1303,10 +1231,9 @@ mzd_local_t* mzd_mul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local
 
   uint32x4_t* mcptr = (uint32x4_t*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(uint32x4_t));
   *mcptr            = mc;
-  return c;
 }
 
-mzd_local_t* mzd_addmul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 16);
   static const unsigned int moff2 = 256;
 
@@ -1327,16 +1254,14 @@ mzd_local_t* mzd_addmul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_lo
     mc              = veorq_u32(mc, mAptr[comb]);
   }
   *mcptr = mc;
-  return c;
 }
 
-mzd_local_t* mzd_mul_vl_neon_multiple_of_128(mzd_local_t* c, mzd_local_t const* v,
-                                             mzd_local_t const* A) {
+void mzd_mul_vl_neon_multiple_of_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  return mzd_addmul_vl_neon(c, v, A);
+  mzd_addmul_vl_neon(c, v, A);
 }
 
-mzd_local_t* mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), alignof(uint32x4_t));
   const unsigned int width      = v->width;
   const unsigned int rowstride  = A->rowstride;
@@ -1355,16 +1280,14 @@ mzd_local_t* mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_
       mm128_xor_region(mcptr, mAptr + comb * mrowstride, len);
     }
   }
-
-  return c;
 }
 #endif
 #endif
 
-mzd_local_t* mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   if (A->nrows != 32 * v->ncols) {
     // number of columns does not match
-    return NULL;
+    return;
   }
 
 #ifdef WITH_OPT
@@ -1372,39 +1295,42 @@ mzd_local_t* mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
 #ifdef WITH_AVX2
     if (CPU_SUPPORTS_AVX2) {
       if (A->ncols == 256 && v->ncols == 256) {
-        return mzd_mul_vl_avx_256(c, v, A);
+        mzd_mul_vl_avx_256(c, v, A);
+        return;
       }
     }
 #endif
 #ifdef WITH_SSE2
     if (CPU_SUPPORTS_SSE2) {
       if (A->ncols == 128 && v->ncols == 128) {
-        return mzd_mul_vl_sse_128(c, v, A);
+        mzd_mul_vl_sse_128(c, v, A);
+        return;
       }
     }
 #endif
 #ifdef WITH_NEON
     if (CPU_SUPPORTS_NEON) {
       if (A->ncols == 128 && v->ncols == 128) {
-        return mzd_mul_vl_neon_128(c, v, A);
+        mzd_mul_vl_neon_128(c, v, A);
+        return;
       }
     }
 #endif
   }
 #endif
   mzd_local_clear(c);
-  return mzd_addmul_vl(c, v, A);
+  mzd_addmul_vl(c, v, A);
 }
 
-mzd_local_t* mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  return mzd_addmul_vl_uint64(c, v, A);
+  mzd_addmul_vl_uint64(c, v, A);
 }
 
-mzd_local_t* mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   if (A->ncols != c->ncols || A->nrows != 32 * v->ncols) {
     // number of columns does not match
-    return NULL;
+    return;
   }
 
 #ifdef WITH_OPT
@@ -1412,39 +1338,46 @@ mzd_local_t* mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 #ifdef WITH_AVX2
     if (CPU_SUPPORTS_AVX2) {
       if (A->ncols == 256 && v->ncols == 256) {
-        return mzd_addmul_vl_avx_256(c, v, A);
+        mzd_addmul_vl_avx_256(c, v, A);
+        return;
       }
       if ((A->ncols & 0xff) == 0) {
-        return mzd_addmul_vl_avx(c, v, A);
+        mzd_addmul_vl_avx(c, v, A);
+        return;
       }
     }
 #endif
 #ifdef WITH_SSE2
     if (CPU_SUPPORTS_SSE2) {
       if (A->ncols == 128 && v->ncols == 128) {
-        return mzd_addmul_vl_sse_128(c, v, A);
+        mzd_addmul_vl_sse_128(c, v, A);
+        return;
       }
       if ((A->ncols & 0x7f) == 0) {
-        return mzd_addmul_vl_sse(c, v, A);
+        mzd_addmul_vl_sse(c, v, A);
+        return;
       }
     }
 #endif
 #ifdef WITH_NEON
     if (CPU_SUPPORTS_NEON) {
       if (A->ncols == 128 && v->ncols == 128) {
-        return mzd_addmul_vl_neon_128(c, v, A);
+        mzd_addmul_vl_neon_128(c, v, A);
+        return;
       }
       if ((A->ncols & 0x7f) == 0) {
-        return mzd_addmul_vl_neon(c, v, A);
+        mzd_addmul_vl_neon(c, v, A);
+        return;
       }
     }
 #endif
   }
 #endif
-  return mzd_addmul_vl_uint64(c, v, A);
+  mzd_addmul_vl_uint64(c, v, A);
+  return;
 }
 
-mzd_local_t* mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   const unsigned int len   = A->width;
   word* cptr               = FIRST_ROW(c);
   word const* vptr         = CONST_FIRST_ROW(v);
@@ -1466,6 +1399,4 @@ mzd_local_t* mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_loca
       add += 256;
     }
   }
-
-  return c;
 }

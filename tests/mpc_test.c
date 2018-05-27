@@ -21,7 +21,8 @@ static mzd_local_t* mpc_reconstruct_from_share(mzd_local_t* dst, mzd_local_t** s
   }
 
   mzd_xor(dst, shared_vec[0], shared_vec[1]);
-  return mzd_xor(dst, dst, shared_vec[2]);
+  mzd_xor(dst, dst, shared_vec[2]);
+  return dst;
 }
 
 static mzd_local_t* mzd_init_random_vector(rci_t n) {
