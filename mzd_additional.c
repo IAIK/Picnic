@@ -177,7 +177,7 @@ void mzd_shift_left(mzd_local_t* res, mzd_local_t const* val, unsigned count) {
 #ifdef WITH_SSE2
 ATTR_TARGET("sse2")
 static inline void mzd_and_sse(mzd_local_t* res, mzd_local_t const* first,
-                                       mzd_local_t const* second) {
+                               mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -197,7 +197,7 @@ static inline void mzd_and_sse(mzd_local_t* res, mzd_local_t const* first,
 #ifdef WITH_AVX2
 ATTR_TARGET("avx2")
 static inline void mzd_and_avx(mzd_local_t* res, mzd_local_t const* first,
-                                       mzd_local_t const* second) {
+                               mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -216,7 +216,7 @@ static inline void mzd_and_avx(mzd_local_t* res, mzd_local_t const* first,
 
 #ifdef WITH_NEON
 static inline void mzd_and_neon(mzd_local_t* res, mzd_local_t const* first,
-                                        mzd_local_t const* second) {
+                                mzd_local_t const* second) {
   unsigned int width    = first->rowstride;
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
@@ -286,8 +286,7 @@ void mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* 
 }
 
 ATTR_TARGET("sse2")
-void mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first,
-                             mzd_local_t const* second) {
+void mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
   word const* secondptr = CONST_FIRST_ROW(second);
@@ -300,8 +299,7 @@ void mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first,
 }
 
 ATTR_TARGET("sse2")
-void mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first,
-                             mzd_local_t const* second) {
+void mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
   word const* secondptr = CONST_FIRST_ROW(second);
@@ -334,8 +332,7 @@ void mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* 
 }
 
 ATTR_TARGET("avx2")
-void mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first,
-                             mzd_local_t const* second) {
+void mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
   word const* secondptr = CONST_FIRST_ROW(second);
@@ -491,10 +488,10 @@ void mzd_mul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
-      mm128_xor_mask_region(&cval[0], mAptr + 0,  _mm_set1_epi64x(-(idx & 1)), 1);
-      mm128_xor_mask_region(&cval[1], mAptr + 1,  _mm_set1_epi64x(-((idx >> 1) & 1)), 1);
-      mm128_xor_mask_region(&cval[0], mAptr + 2,  _mm_set1_epi64x(-((idx >> 2) & 1)), 1);
-      mm128_xor_mask_region(&cval[1], mAptr + 3,  _mm_set1_epi64x(-((idx >> 3) & 1)), 1);
+      mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 1, _mm_set1_epi64x(-((idx >> 1) & 1)), 1);
+      mm128_xor_mask_region(&cval[0], mAptr + 2, _mm_set1_epi64x(-((idx >> 2) & 1)), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 3, _mm_set1_epi64x(-((idx >> 3) & 1)), 1);
     }
   }
   *mcptr = _mm_xor_si128(cval[0], cval[1]);
@@ -513,10 +510,10 @@ void mzd_addmul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
-      mm128_xor_mask_region(&cval[0], mAptr + 0,  _mm_set1_epi64x(-(idx & 1)), 1);
-      mm128_xor_mask_region(&cval[1], mAptr + 1,  _mm_set1_epi64x(-((idx >> 1) & 1)), 1);
-      mm128_xor_mask_region(&cval[0], mAptr + 2,  _mm_set1_epi64x(-((idx >> 2) & 1)), 1);
-      mm128_xor_mask_region(&cval[1], mAptr + 3,  _mm_set1_epi64x(-((idx >> 3) & 1)), 1);
+      mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 1, _mm_set1_epi64x(-((idx >> 1) & 1)), 1);
+      mm128_xor_mask_region(&cval[0], mAptr + 2, _mm_set1_epi64x(-((idx >> 2) & 1)), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 3, _mm_set1_epi64x(-((idx >> 3) & 1)), 1);
     }
   }
   *mcptr = _mm_xor_si128(cval[0], cval[1]);
@@ -536,8 +533,8 @@ void mzd_mul_v_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
-      mm128_xor_mask_region(&cval[0], mAptr + 0,  _mm_set1_epi64x(-(idx & 1)), 2);
-      mm128_xor_mask_region(&cval[2], mAptr + 2,  _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
+      mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2, _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
     }
   }
   mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
@@ -558,8 +555,8 @@ void mzd_addmul_v_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
-      mm128_xor_mask_region(&cval[0], mAptr + 0,  _mm_set1_epi64x(-(idx & 1)), 2);
-      mm128_xor_mask_region(&cval[2], mAptr + 2,  _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
+      mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2, _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
     }
   }
   mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
@@ -580,8 +577,8 @@ void mzd_mul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
-      mm128_xor_mask_region(&cval[0], mAptr + 0,  _mm_set1_epi64x(-(idx & 1)), 2);
-      mm128_xor_mask_region(&cval[2], mAptr + 2,  _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
+      mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2, _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
     }
   }
   mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
@@ -602,8 +599,8 @@ void mzd_addmul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
-      mm128_xor_mask_region(&cval[0], mAptr + 0,  _mm_set1_epi64x(-(idx & 1)), 2);
-      mm128_xor_mask_region(&cval[2], mAptr + 2,  _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
+      mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2, _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
     }
   }
   mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
@@ -635,7 +632,7 @@ void mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
     __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(Aptr, alignof(__m256i));
 
     for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, mAptr += mrowstride) {
-      mm256_xor_mask_region(mcptr, mAptr,  _mm256_set1_epi64x(-(idx & 1)), len);
+      mm256_xor_mask_region(mcptr, mAptr, _mm256_set1_epi64x(-(idx & 1)), len);
     }
   }
 }
@@ -670,7 +667,8 @@ void mzd_addmul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
     }
   }
   cval[0] = _mm256_xor_si256(cval[0], cval[1]);
-  *mcptr = _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
+  *mcptr =
+      _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
 }
 
 ATTR_TARGET("avx2")
@@ -702,7 +700,8 @@ void mzd_mul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
     }
   }
   cval[0] = _mm256_xor_si256(cval[0], cval[1]);
-  *mcptr = _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
+  *mcptr =
+      _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
 }
 
 ATTR_TARGET("avx2")
@@ -780,7 +779,7 @@ void mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
   __m256i* mcptr       = (__m256i*)ASSUME_ALIGNED(cptr, alignof(__m256i));
   __m256i const* mAptr = (__m256i const*)ASSUME_ALIGNED(Aptr, alignof(__m256i));
 
-  __m256i cval[2] = { _mm256_setzero_si256(), _mm256_setzero_si256() };
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
@@ -834,9 +833,12 @@ void mzd_mul_v_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
       mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 1);
-      mm128_xor_mask_region(&cval[1], mAptr + 1, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 1);
-      mm128_xor_mask_region(&cval[0], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 1);
-      mm128_xor_mask_region(&cval[1], mAptr + 3, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 3) & 1))), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 1,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 1);
+      mm128_xor_mask_region(&cval[0], mAptr + 2,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 3,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 3) & 1))), 1);
     }
   }
   *mcptr = veorq_u32(cval[0], cval[1]);
@@ -855,9 +857,12 @@ void mzd_addmul_v_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 4, idx >>= 4, mAptr += 4) {
       mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 1);
-      mm128_xor_mask_region(&cval[1], mAptr + 1, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 1);
-      mm128_xor_mask_region(&cval[0], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 1);
-      mm128_xor_mask_region(&cval[1], mAptr + 3, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 3) & 1))), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 1,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 1);
+      mm128_xor_mask_region(&cval[0], mAptr + 2,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 1);
+      mm128_xor_mask_region(&cval[1], mAptr + 3,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 3) & 1))), 1);
     }
   }
   *mcptr = veorq_u32(cval[0], cval[1]);
@@ -872,11 +877,13 @@ void mzd_mul_v_neon_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   uint32x4_t const* mAptr = (uint32x4_t const*)ASSUME_ALIGNED(Aptr, alignof(uint32x4_t));
 
   uint32x4_t cval[4] ATTR_ALIGNED(alignof(uint32x4_t)) = {vmovq_n_u32(0), vmovq_n_u32(0),
+                                                          vmovq_n_u32(0), vmovq_n_u32(0)};
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
       mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
-      mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
     }
   }
   mcptr[0] = veorq_u32(cval[0], cval[2]);
@@ -897,7 +904,8 @@ void mzd_addmul_v_neon_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
       mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
-      mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
     }
   }
   mcptr[0] = veorq_u32(cval[0], cval[2]);
@@ -918,7 +926,8 @@ void mzd_mul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
       mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
-      mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
     }
   }
   mcptr[0] = veorq_u32(cval[0], cval[2]);
@@ -939,7 +948,8 @@ void mzd_addmul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 2, idx >>= 2, mAptr += 4) {
       mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
-      mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
+      mm128_xor_mask_region(&cval[2], mAptr + 2,
+                            vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
     }
   }
   mcptr[0] = veorq_u32(cval[0], cval[2]);
@@ -1163,8 +1173,8 @@ void mzd_mul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   }
 
   __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
-  mcptr[0] = cval[0];
-  mcptr[1] = cval[1];
+  mcptr[0]       = cval[0];
+  mcptr[1]       = cval[1];
 }
 
 ATTR_TARGET("sse2")
@@ -1205,8 +1215,8 @@ void mzd_mul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   }
 
   __m128i* mcptr = (__m128i*)ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
-  mcptr[0] = cval[0];
-  mcptr[1] = cval[1];
+  mcptr[0]       = cval[0];
+  mcptr[1]       = cval[1];
 }
 #endif
 
