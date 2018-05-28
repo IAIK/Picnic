@@ -47,6 +47,10 @@ static uint32_t calculate_rowstride(uint32_t width) {
   }
 }
 
+static uint32_t calculate_width(uint32_t c) {
+  return (c + sizeof(word) * 8 - 1) / (sizeof(word) * 8);
+}
+
 // Notes on the memory layout: mzd_init allocates multiple memory blocks (one
 // for mzd_local_t, one for rows and multiple for the buffers). We use one memory
 // block for mzd_local_t, rows and the buffer. This improves memory locality and
@@ -56,7 +60,7 @@ static uint32_t calculate_rowstride(uint32_t width) {
 // memory block.
 
 mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) {
-  const uint32_t width     = (c + 64 - 1) / 64;
+  const uint32_t width     = calculate_width(c);
   const uint32_t rowstride = calculate_rowstride(width);
 
   const size_t buffer_size = r * rowstride * sizeof(word);
@@ -87,7 +91,7 @@ void mzd_local_free(mzd_local_t* v) {
 }
 
 void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_t c, bool clear) {
-  const uint32_t width     = (c + 64 - 1) / 64;
+  const uint32_t width     = calculate_width(c);
   const uint32_t rowstride = calculate_rowstride(width);
 
   const size_t buffer_size   = r * rowstride * sizeof(word);
