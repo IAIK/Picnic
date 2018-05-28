@@ -365,7 +365,7 @@ void mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const*
   } while (width);
 }
 
-void mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+void mzd_xor_neon_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
   word const* secondptr = CONST_FIRST_ROW(second);
@@ -377,7 +377,7 @@ void mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t con
   *mresptr = veorq_u32(*mfirstptr, *msecondptr);
 }
 
-void mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+void mzd_xor_neon_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   word* resptr          = FIRST_ROW(res);
   word const* firstptr  = CONST_FIRST_ROW(first);
   word const* secondptr = CONST_FIRST_ROW(second);
