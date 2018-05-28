@@ -420,8 +420,7 @@ void mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
     __m128i const* mAptr = ASSUME_ALIGNED(CONST_ROW(A, w * sizeof(word) * 8), alignof(__m128i));
 
     for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, mAptr += mrowstride) {
-      const __m128i mask = _mm_set1_epi64x(-(idx & 1));
-      mm128_xor_mask_region(mcptr, mAptr, mask, len);
+      mm128_xor_mask_region(mcptr, mAptr, _mm_set1_epi64x(-(idx & 1)), len);
     }
   }
 }
@@ -587,16 +586,15 @@ void mzd_addmul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
     for (unsigned int i = sizeof(word) * 8; i; i -= 8, idx >>= 8, mAptr += 4) {
       const int64_t m1 = -(idx & 1);
       const int64_t m2 = -((idx >> 1) & 1);
+      mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi64x(m2, m2, m1, m1), 1);
       const int64_t m3 = -((idx >> 2) & 1);
       const int64_t m4 = -((idx >> 3) & 1);
+      mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi64x(m4, m4, m3, m3), 1);
       const int64_t m5 = -((idx >> 4) & 1);
       const int64_t m6 = -((idx >> 5) & 1);
+      mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi64x(m6, m6, m5, m5), 1);
       const int64_t m7 = -((idx >> 6) & 1);
       const int64_t m8 = -((idx >> 7) & 1);
-
-      mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi64x(m2, m2, m1, m1), 1);
-      mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi64x(m4, m4, m3, m3), 1);
-      mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi64x(m6, m6, m5, m5), 1);
       mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set_epi64x(m8, m8, m7, m7), 1);
     }
   }
@@ -617,16 +615,15 @@ void mzd_mul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
     for (unsigned int i = sizeof(word) * 8; i; i -= 8, idx >>= 8, mAptr += 4) {
       const int64_t m1 = -(idx & 1);
       const int64_t m2 = -((idx >> 1) & 1);
+      mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi64x(m2, m2, m1, m1), 1);
       const int64_t m3 = -((idx >> 2) & 1);
       const int64_t m4 = -((idx >> 3) & 1);
+      mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi64x(m4, m4, m3, m3), 1);
       const int64_t m5 = -((idx >> 4) & 1);
       const int64_t m6 = -((idx >> 5) & 1);
+      mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi64x(m6, m6, m5, m5), 1);
       const int64_t m7 = -((idx >> 6) & 1);
       const int64_t m8 = -((idx >> 7) & 1);
-
-      mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi64x(m2, m2, m1, m1), 1);
-      mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi64x(m4, m4, m3, m3), 1);
-      mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi64x(m6, m6, m5, m5), 1);
       mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set_epi64x(m8, m8, m7, m7), 1);
     }
   }
