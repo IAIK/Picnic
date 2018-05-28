@@ -1401,7 +1401,7 @@ void mzd_addmul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
   *mcptr = mc;
 }
 
-void mzd_mul_vl_neon_multiple_of_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   mzd_addmul_vl_neon(c, v, A);
 }

@@ -128,9 +128,7 @@ void mzd_mul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
 void mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-
-void mzd_mul_vl_neon_multiple_of_128(mzd_local_t* c, mzd_local_t const* v,
-                                             mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 /**
  * Compute c + v * A optimized for c and v being vectors.
  */
