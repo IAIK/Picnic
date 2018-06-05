@@ -18,7 +18,91 @@
 #include <string.h>
 #include <time.h>
 
-#if defined(__linux__)
+#if defined(__linux__) && defined(__aarch64__)
+/* Based on code from https://github.com/IAIK/armageddon/tree/master/libflush
+ *
+ * Copyright (c) 2015-2016 Moritz Lipp
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ *   1. The origin of this software must not be misrepresented; you must not
+ *   claim that you wrote the original software. If you use this software
+ *   in a product, an acknowledgment in the product documentation would be
+ *   appreciated but is not required.
+ *
+ *   2. Altered source versions must be plainly marked as such, and must not be
+ *   misrepresented as being the original software.
+ *
+ *   3. This notice may not be removed or altered from any source
+ *   distribution. */
+
+#define ARMV8_PMCR_E            (1 << 0) /* Enable all counters */
+#define ARMV8_PMCR_P            (1 << 1) /* Reset all counters */
+#define ARMV8_PMCR_C            (1 << 2) /* Cycle counter reset */
+
+#define ARMV8_PMUSERENR_EN      (1 << 0) /* EL0 access enable */
+#define ARMV8_PMUSERENR_CR      (1 << 2) /* Cycle counter read enable */
+#define ARMV8_PMUSERENR_ER      (1 << 3) /* Event counter read enable */
+
+#define ARMV8_PMCNTENSET_EL0_EN (1 << 31) /* Performance Monitors Count Enable Set register */
+
+typedef void* timing_context_t;
+
+static uint64_t timing_read(timing_context_t* ctx)
+{
+  (void)ctx;
+  uint64_t result = 0;
+  asm volatile("MRS %0, PMCCNTR_EL0" : "=r" (result));
+  return result;
+}
+
+static bool timing_init(timing_context_t* ctx)
+{
+  (void)ctx;
+  uint32_t value = 0;
+
+  /* Enable Performance Counter */
+  asm volatile("MRS %0, PMCR_EL0" : "=r" (value));
+  value |= ARMV8_PMCR_E; /* Enable */
+  value |= ARMV8_PMCR_C; /* Cycle counter reset */
+  value |= ARMV8_PMCR_P; /* Reset all counters */
+  asm volatile("MSR PMCR_EL0, %0" : : "r" (value));
+
+  /* Enable cycle counter register */
+  asm volatile("MRS %0, PMCNTENSET_EL0" : "=r" (value));
+  value |= ARMV8_PMCNTENSET_EL0_EN;
+  asm volatile("MSR PMCNTENSET_EL0, %0" : : "r" (value));
+
+  return true;
+}
+
+static void timing_close(timing_context_t* ctx)
+{
+  (void)ctx;
+  uint32_t value = 0;
+  uint32_t mask = 0;
+
+  /* Disable Performance Counter */
+  asm volatile("MRS %0, PMCR_EL0" : "=r" (value));
+  mask = 0;
+  mask |= ARMV8_PMCR_E; /* Enable */
+  mask |= ARMV8_PMCR_C; /* Cycle counter reset */
+  mask |= ARMV8_PMCR_P; /* Reset all counters */
+  asm volatile("MSR PMCR_EL0, %0" : : "r" (value & ~mask));
+
+  /* Disable cycle counter register */
+  asm volatile("MRS %0, PMCNTENSET_EL0" : "=r" (value));
+  mask = 0;
+  mask |= ARMV8_PMCNTENSET_EL0_EN;
+  asm volatile("MSR PMCNTENSET_EL0, %0" : : "r" (value & ~mask));
+}
+#elif defined(__linux__)
 #include <unistd.h>
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
