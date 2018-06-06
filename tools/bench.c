@@ -18,6 +18,20 @@
 #include <string.h>
 #include <time.h>
 
+typedef struct timing_context_s timing_context_t;
+
+typedef uint64_t (*timing_read_f)(timing_context_t* ctx);
+typedef void (*timing_close_f)(timing_context_t* ctx);
+
+struct timing_context_s {
+  timing_read_f read;
+  timing_close_f close;
+
+  union {
+    int fd;
+  };
+};
+
 #if defined(__linux__) && defined(__aarch64__)
 /* Based on code from https://github.com/IAIK/armageddon/tree/master/libflush
  *
@@ -52,37 +66,7 @@
 
 #define ARMV8_PMCNTENSET_EL0_EN (1 << 31) /* Performance Monitors Count Enable Set register */
 
-typedef void* timing_context_t;
-
-static uint64_t timing_read(timing_context_t* ctx)
-{
-  (void)ctx;
-  uint64_t result = 0;
-  asm volatile("MRS %0, PMCCNTR_EL0" : "=r" (result));
-  return result;
-}
-
-static bool timing_init(timing_context_t* ctx)
-{
-  (void)ctx;
-  uint32_t value = 0;
-
-  /* Enable Performance Counter */
-  asm volatile("MRS %0, PMCR_EL0" : "=r" (value));
-  value |= ARMV8_PMCR_E; /* Enable */
-  value |= ARMV8_PMCR_C; /* Cycle counter reset */
-  value |= ARMV8_PMCR_P; /* Reset all counters */
-  asm volatile("MSR PMCR_EL0, %0" : : "r" (value));
-
-  /* Enable cycle counter register */
-  asm volatile("MRS %0, PMCNTENSET_EL0" : "=r" (value));
-  value |= ARMV8_PMCNTENSET_EL0_EN;
-  asm volatile("MSR PMCNTENSET_EL0, %0" : : "r" (value));
-
-  return true;
-}
-
-static void timing_close(timing_context_t* ctx)
+static void armv8_close(timing_context_t* ctx)
 {
   (void)ctx;
   uint32_t value = 0;
@@ -102,14 +86,60 @@ static void timing_close(timing_context_t* ctx)
   mask |= ARMV8_PMCNTENSET_EL0_EN;
   asm volatile("MSR PMCNTENSET_EL0, %0" : : "r" (value & ~mask));
 }
-#elif defined(__linux__)
+
+static uint64_t armv8_read(timing_context_t* ctx)
+{
+  (void)ctx;
+  uint64_t result = 0;
+  asm volatile("MRS %0, PMCCNTR_EL0" : "=r" (result));
+  return result;
+}
+
+static bool armv8_init(timing_context_t* ctx)
+{
+  uint32_t value = 0;
+
+  /* Enable Performance Counter */
+  asm volatile("MRS %0, PMCR_EL0" : "=r" (value));
+  value |= ARMV8_PMCR_E; /* Enable */
+  value |= ARMV8_PMCR_C; /* Cycle counter reset */
+  value |= ARMV8_PMCR_P; /* Reset all counters */
+  asm volatile("MSR PMCR_EL0, %0" : : "r" (value));
+
+  /* Enable cycle counter register */
+  asm volatile("MRS %0, PMCNTENSET_EL0" : "=r" (value));
+  value |= ARMV8_PMCNTENSET_EL0_EN;
+  asm volatile("MSR PMCNTENSET_EL0, %0" : : "r" (value));
+
+  ctx->read = armv8_read;
+  ctx->close = armv8_close;
+
+  return true;
+}
+#endif
+
+#if defined(__linux__)
 #include <unistd.h>
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
 
-typedef struct { int fd; } timing_context_t;
+static void perf_close(timing_context_t* ctx) {
+  if (ctx->fd != -1) {
+    close(ctx->fd);
+    ctx->fd = -1;
+  }
+}
 
-static bool timing_init(timing_context_t* ctx) {
+static uint64_t perf_read(timing_context_t* ctx) {
+  uint64_t tmp_time;
+  if (read(ctx->fd, &tmp_time, sizeof(tmp_time)) != sizeof(tmp_time)) {
+    return UINT64_MAX;
+  }
+
+  return tmp_time;
+}
+
+static bool perf_init(timing_context_t* ctx) {
   struct perf_event_attr pea;
   memset(&pea, 0, sizeof(struct perf_event_attr));
 
@@ -124,46 +154,51 @@ static bool timing_init(timing_context_t* ctx) {
 
   const long fd = syscall(__NR_perf_event_open, &pea, 0, -1, -1, 0);
   if (fd == -1) {
-    printf("Could not open file descriptor\n");
     return false;
   }
 
+  ctx->read = perf_read;
+  ctx->close = perf_close;
   ctx->fd = fd;
   return true;
 }
-
-static void timing_close(timing_context_t* ctx) {
-  if (ctx->fd != -1) {
-    close(ctx->fd);
-    ctx->fd = -1;
-  }
-}
-
-static uint64_t timing_read(timing_context_t* ctx) {
-  uint64_t tmp_time;
-  if (read(ctx->fd, &tmp_time, sizeof(tmp_time)) != sizeof(tmp_time)) {
-    return UINT64_MAX;
-  }
-
-  return tmp_time;
-}
-#else
-typedef void* timing_context_t;
-
-static bool timing_init(timing_context_t* ctx) {
-  (void)ctx;
-  return true;
-}
-
-static void timing_close(timing_context_t* ctx) {
+#endif
+static void clock_close(timing_context_t* ctx) {
   (void)ctx;
 }
 
-static uint64_t timing_read(timing_context_t* ctx) {
+static uint64_t clock_read(timing_context_t* ctx) {
   (void)ctx;
   return gettime_clock();
 }
+
+static bool clock_init(timing_context_t* ctx) {
+  ctx->read = clock_read;
+  ctx->close = clock_close;
+  return true;
+}
+
+static bool timing_init(timing_context_t* ctx) {
+#if defined(__linux__) && defined(__aarch64__)
+  if (armv8_init(ctx)) {
+    return true;
+  }
 #endif
+#if defined(__linux__)
+  if (perf_init(ctx)) {
+    return true;
+  }
+#endif
+  return clock_init(ctx);
+}
+
+static uint64_t timing_read(timing_context_t* ctx) {
+  return ctx->read(ctx);
+}
+
+static void timing_close(timing_context_t* ctx) {
+  return ctx->close(ctx);
+}
 
 #ifndef VERBOSE
 static void print_timings(timing_and_size_t* timings, unsigned int iter) {
@@ -338,7 +373,10 @@ static void sign_and_verify(const bench_options_t* options) {
   uint8_t sig[PICNIC_MAX_SIGNATURE_SIZE];
 
   timing_context_t ctx;
-  timing_init(&ctx);
+  if (!timing_init(&ctx)) {
+    printf("Failed to initialize timing functionality.\n");
+    return;
+  }
 
   for (unsigned int i = 0; i != options->iter; ++i) {
 #ifndef WITH_DETAILED_TIMING
