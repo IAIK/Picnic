@@ -33,6 +33,9 @@ struct timing_context_s {
 };
 
 #if defined(__linux__) && defined(__aarch64__)
+#include <signal.h>
+#include <setjmp.h>
+
 /* Based on code from https://github.com/IAIK/armageddon/tree/master/libflush
  *
  * Copyright (c) 2015-2016 Moritz Lipp
@@ -95,8 +98,36 @@ static uint64_t armv8_read(timing_context_t* ctx)
   return result;
 }
 
+static sigjmp_buf jmpbuf;
+static volatile sig_atomic_t armv8_sigill = 0;
+
+static void armv8_sigill_handler(int sig)
+{
+  (void)sig;
+  armv8_sigill = 1;
+  // Return to sigsetjump
+  siglongjmp(jmpbuf, 1);
+}
+
 static bool armv8_init(timing_context_t* ctx)
 {
+  if (armv8_sigill) {
+    return false;
+  }
+
+  struct sigaction act, oldact;
+  memset(&act, 0, sizeof(act));
+  act.sa_handler = &armv8_sigill_handler;
+  if (sigaction(SIGILL, &act, &oldact) < 0) {
+    return false;
+  }
+
+  if (sigsetjmp(jmpbuf, 1)) {
+    // Returned from armv8_sigill_handler
+    sigaction(SIGILL, &oldact, NULL);
+    return false;
+  }
+
   uint32_t value = 0;
 
   /* Enable Performance Counter */
@@ -110,6 +141,9 @@ static bool armv8_init(timing_context_t* ctx)
   asm volatile("MRS %0, PMCNTENSET_EL0" : "=r" (value));
   value |= ARMV8_PMCNTENSET_EL0_EN;
   asm volatile("MSR PMCNTENSET_EL0, %0" : : "r" (value));
+
+  // Restore old signal handler
+  sigaction(SIGILL, &oldact, NULL);
 
   ctx->read = armv8_read;
   ctx->close = armv8_close;
@@ -163,6 +197,7 @@ static bool perf_init(timing_context_t* ctx) {
   return true;
 }
 #endif
+
 static void clock_close(timing_context_t* ctx) {
   (void)ctx;
 }
