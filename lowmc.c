@@ -55,22 +55,29 @@ static void sbox_layer_bitsliced(mzd_local_t* in, mask_t const* mask) {
   mzd_local_t* buffer[6] = {NULL};
   mzd_local_init_multiple_ex(buffer, 6, 1, in->ncols, false);
 
+  mzd_local_t* x0m = buffer[0];
+  mzd_local_t* x1m = buffer[1];
+  mzd_local_t* x2m = buffer[2];
+  mzd_local_t* t0 = buffer[3];
+  mzd_local_t* t1 = buffer[4];
+  mzd_local_t* t2 = buffer[5];
+
   // a
-  mzd_local_t* x0m = mzd_and(buffer[0], mask->x0, in);
+  mzd_and(x0m, mask->x0, in);
   // b
-  mzd_local_t* x1m = mzd_and(buffer[1], mask->x1, in);
+  mzd_and(x1m, mask->x1, in);
   // c
-  mzd_local_t* x2m = mzd_and(buffer[2], mask->x2, in);
+  mzd_and(x2m, mask->x2, in);
 
   mzd_shift_left(x0m, x0m, 2);
   mzd_shift_left(x1m, x1m, 1);
 
   // b & c
-  mzd_local_t* t0 = mzd_and(buffer[3], x1m, x2m);
+  mzd_and(t0, x1m, x2m);
   // c & a
-  mzd_local_t* t1 = mzd_and(buffer[4], x0m, x2m);
+  mzd_and(t1, x0m, x2m);
   // a & b
-  mzd_local_t* t2 = mzd_and(buffer[5], x0m, x1m);
+  mzd_and(t2, x0m, x1m);
 
   // (b & c) ^ a
   mzd_xor(t0, t0, x0m);
