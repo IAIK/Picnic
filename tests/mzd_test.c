@@ -456,7 +456,7 @@ static int test_mzd_shift(void) {
     mzd_local_t* r = mzd_local_copy(NULL, v);
     __m128i* wr    = __builtin_assume_aligned(FIRST_ROW(w), 16);
 
-    for (unsigned int i = 0; i < 32; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
       mzd_randomize_ssl(v);
       mzd_local_copy(w, v);
 
@@ -469,7 +469,7 @@ static int test_mzd_shift(void) {
       }
     }
 
-    for (unsigned int i = 0; i < 32; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
       mzd_randomize_ssl(v);
       mzd_local_copy(w, v);
 
@@ -494,7 +494,7 @@ static int test_mzd_shift(void) {
     mzd_local_t* r = mzd_local_copy(NULL, v);
     __m256i* wr    = __builtin_assume_aligned(FIRST_ROW(w), 32);
 
-    for (unsigned int i = 0; i < 32; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
       mzd_randomize_ssl(v);
       mzd_local_copy(w, v);
 
@@ -507,7 +507,7 @@ static int test_mzd_shift(void) {
       }
     }
 
-    for (unsigned int i = 0; i < 32; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
       mzd_randomize_ssl(v);
       mzd_local_copy(w, v);
 
@@ -532,7 +532,7 @@ static int test_mzd_shift(void) {
     mzd_local_t* r = mzd_local_copy(NULL, v);
     uint32x4_t* wr = __builtin_assume_aligned(FIRST_ROW(w), alignof(uint32x4_t));
 
-    for (unsigned int i = 0; i < 32; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
       mzd_randomize_ssl(v);
       mzd_local_copy(w, v);
 
@@ -545,12 +545,48 @@ static int test_mzd_shift(void) {
       }
     }
 
-    for (unsigned int i = 0; i < 32; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
       mzd_randomize_ssl(v);
       mzd_local_copy(w, v);
 
       mzd_shift_right(r, v, i);
       mm256_shift_right(wr, wr, i);
+
+      if (!mzd_local_equal(r, w)) {
+        printf("rshift fail\n");
+        ret = -1;
+      }
+    }
+
+    mzd_local_free(w);
+    mzd_local_free(v);
+    mzd_local_free(r);
+  }
+  if (CPU_SUPPORTS_NEON) {
+    mzd_local_t* v = mzd_local_init(1, 512);
+    mzd_local_t* w = mzd_local_copy(NULL, v);
+    mzd_local_t* r = mzd_local_copy(NULL, v);
+    uint32x4_t* wr = __builtin_assume_aligned(FIRST_ROW(w), alignof(uint32x4_t));
+
+    for (unsigned int i = 0; i < 3; ++i) {
+      mzd_randomize_ssl(v);
+      mzd_local_copy(w, v);
+
+      mzd_shift_left(r, v, i);
+      mm512_shift_left(wr, wr, i);
+
+      if (!mzd_local_equal(r, w)) {
+        printf("lshift fail\n");
+        ret = -1;
+      }
+    }
+
+    for (unsigned int i = 0; i < 3; ++i) {
+      mzd_randomize_ssl(v);
+      mzd_local_copy(w, v);
+
+      mzd_shift_right(r, v, i);
+      mm512_shift_right(wr, wr, i);
 
       if (!mzd_local_equal(r, w)) {
         printf("rshift fail\n");
