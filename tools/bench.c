@@ -33,8 +33,8 @@ struct timing_context_s {
 };
 
 #if defined(__linux__) && defined(__aarch64__)
-#include <signal.h>
 #include <setjmp.h>
+#include <signal.h>
 
 /* Based on code from https://github.com/IAIK/armageddon/tree/master/libflush
  *
@@ -59,58 +59,54 @@ struct timing_context_s {
  *   3. This notice may not be removed or altered from any source
  *   distribution. */
 
-#define ARMV8_PMCR_E            (1 << 0) /* Enable all counters */
-#define ARMV8_PMCR_P            (1 << 1) /* Reset all counters */
-#define ARMV8_PMCR_C            (1 << 2) /* Cycle counter reset */
+#define ARMV8_PMCR_E (1 << 0) /* Enable all counters */
+#define ARMV8_PMCR_P (1 << 1) /* Reset all counters */
+#define ARMV8_PMCR_C (1 << 2) /* Cycle counter reset */
 
-#define ARMV8_PMUSERENR_EN      (1 << 0) /* EL0 access enable */
-#define ARMV8_PMUSERENR_CR      (1 << 2) /* Cycle counter read enable */
-#define ARMV8_PMUSERENR_ER      (1 << 3) /* Event counter read enable */
+#define ARMV8_PMUSERENR_EN (1 << 0) /* EL0 access enable */
+#define ARMV8_PMUSERENR_CR (1 << 2) /* Cycle counter read enable */
+#define ARMV8_PMUSERENR_ER (1 << 3) /* Event counter read enable */
 
 #define ARMV8_PMCNTENSET_EL0_EN (1 << 31) /* Performance Monitors Count Enable Set register */
 
-static void armv8_close(timing_context_t* ctx)
-{
+static void armv8_close(timing_context_t* ctx) {
   (void)ctx;
   uint32_t value = 0;
-  uint32_t mask = 0;
+  uint32_t mask  = 0;
 
   /* Disable Performance Counter */
-  asm volatile("MRS %0, PMCR_EL0" : "=r" (value));
+  asm volatile("MRS %0, PMCR_EL0" : "=r"(value));
   mask = 0;
   mask |= ARMV8_PMCR_E; /* Enable */
   mask |= ARMV8_PMCR_C; /* Cycle counter reset */
   mask |= ARMV8_PMCR_P; /* Reset all counters */
-  asm volatile("MSR PMCR_EL0, %0" : : "r" (value & ~mask));
+  asm volatile("MSR PMCR_EL0, %0" : : "r"(value & ~mask));
 
   /* Disable cycle counter register */
-  asm volatile("MRS %0, PMCNTENSET_EL0" : "=r" (value));
+  asm volatile("MRS %0, PMCNTENSET_EL0" : "=r"(value));
   mask = 0;
   mask |= ARMV8_PMCNTENSET_EL0_EN;
-  asm volatile("MSR PMCNTENSET_EL0, %0" : : "r" (value & ~mask));
+  asm volatile("MSR PMCNTENSET_EL0, %0" : : "r"(value & ~mask));
 }
 
-static uint64_t armv8_read(timing_context_t* ctx)
-{
+static uint64_t armv8_read(timing_context_t* ctx) {
   (void)ctx;
   uint64_t result = 0;
-  asm volatile("MRS %0, PMCCNTR_EL0" : "=r" (result));
+  asm volatile("MRS %0, PMCCNTR_EL0" : "=r"(result));
   return result;
 }
 
 static sigjmp_buf jmpbuf;
 static volatile sig_atomic_t armv8_sigill = 0;
 
-static void armv8_sigill_handler(int sig)
-{
+static void armv8_sigill_handler(int sig) {
   (void)sig;
   armv8_sigill = 1;
   // Return to sigsetjump
   siglongjmp(jmpbuf, 1);
 }
 
-static bool armv8_init(timing_context_t* ctx)
-{
+static bool armv8_init(timing_context_t* ctx) {
   if (armv8_sigill) {
     return false;
   }
@@ -131,21 +127,21 @@ static bool armv8_init(timing_context_t* ctx)
   uint32_t value = 0;
 
   /* Enable Performance Counter */
-  asm volatile("MRS %0, PMCR_EL0" : "=r" (value));
+  asm volatile("MRS %0, PMCR_EL0" : "=r"(value));
   value |= ARMV8_PMCR_E; /* Enable */
   value |= ARMV8_PMCR_C; /* Cycle counter reset */
   value |= ARMV8_PMCR_P; /* Reset all counters */
-  asm volatile("MSR PMCR_EL0, %0" : : "r" (value));
+  asm volatile("MSR PMCR_EL0, %0" : : "r"(value));
 
   /* Enable cycle counter register */
-  asm volatile("MRS %0, PMCNTENSET_EL0" : "=r" (value));
+  asm volatile("MRS %0, PMCNTENSET_EL0" : "=r"(value));
   value |= ARMV8_PMCNTENSET_EL0_EN;
-  asm volatile("MSR PMCNTENSET_EL0, %0" : : "r" (value));
+  asm volatile("MSR PMCNTENSET_EL0, %0" : : "r"(value));
 
   // Restore old signal handler
   sigaction(SIGILL, &oldact, NULL);
 
-  ctx->read = armv8_read;
+  ctx->read  = armv8_read;
   ctx->close = armv8_close;
 
   return true;
@@ -153,10 +149,10 @@ static bool armv8_init(timing_context_t* ctx)
 #endif
 
 #if defined(__linux__)
-#include <unistd.h>
 #include <linux/perf_event.h>
 #include <linux/version.h>
 #include <sys/syscall.h>
+#include <unistd.h>
 
 static void perf_close(timing_context_t* ctx) {
   if (ctx->fd != -1) {
@@ -174,29 +170,40 @@ static uint64_t perf_read(timing_context_t* ctx) {
   return tmp_time;
 }
 
+static int perf_event_open(struct perf_event_attr* event, pid_t pid, int cpu, int gfd,
+                           unsigned long flags) {
+  const long fd = syscall(__NR_perf_event_open, event, pid, cpu, gfd, flags);
+  if (fd > INT_MAX) {
+    /* too large to handle, but should never happen */
+    return -1;
+  }
+
+  return fd;
+}
+
 static bool perf_init(timing_context_t* ctx) {
   struct perf_event_attr pea;
   memset(&pea, 0, sizeof(struct perf_event_attr));
 
-  pea.size                     = sizeof(pea);
-  pea.type                     = PERF_TYPE_HARDWARE;
-  pea.config                   = PERF_COUNT_HW_CPU_CYCLES;
-  pea.disabled                 = 0;
-  pea.exclude_kernel           = 1;
-  pea.exclude_hv               = 1;
+  pea.size           = sizeof(pea);
+  pea.type           = PERF_TYPE_HARDWARE;
+  pea.config         = PERF_COUNT_HW_CPU_CYCLES;
+  pea.disabled       = 0;
+  pea.exclude_kernel = 1;
+  pea.exclude_hv     = 1;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
   pea.exclude_callchain_kernel = 1;
   pea.exclude_callchain_user   = 1;
 #endif
 
-  const long fd = syscall(__NR_perf_event_open, &pea, 0, -1, -1, 0);
-  if (fd == -1 || fd > INT_MAX) {
+  const int fd = perf_event_open(&pea, 0, -1, -1, 0);
+  if (fd == -1) {
     return false;
   }
 
-  ctx->read = perf_read;
+  ctx->read  = perf_read;
   ctx->close = perf_close;
-  ctx->fd = fd;
+  ctx->fd    = fd;
   return true;
 }
 #endif
@@ -211,7 +218,7 @@ static uint64_t clock_read(timing_context_t* ctx) {
 }
 
 static bool clock_init(timing_context_t* ctx) {
-  ctx->read = clock_read;
+  ctx->read  = clock_read;
   ctx->close = clock_close;
   return true;
 }
@@ -381,7 +388,7 @@ static bool parse_args(bench_options_t* options, int argc, char** argv) {
   }
 
   uint32_t p = -1;
-  if (!parse_uint32_t(&options->iter, argv[1]) || !parse_uint32_t(&p, argv[2])) { 
+  if (!parse_uint32_t(&options->iter, argv[1]) || !parse_uint32_t(&p, argv[2])) {
     printf("Failed to parse argument as positive base-10 number!\n");
     return false;
   }
