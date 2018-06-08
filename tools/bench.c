@@ -155,6 +155,7 @@ static bool armv8_init(timing_context_t* ctx)
 #if defined(__linux__)
 #include <unistd.h>
 #include <linux/perf_event.h>
+#include <linux/version.h>
 #include <sys/syscall.h>
 
 static void perf_close(timing_context_t* ctx) {
@@ -183,11 +184,13 @@ static bool perf_init(timing_context_t* ctx) {
   pea.disabled                 = 0;
   pea.exclude_kernel           = 1;
   pea.exclude_hv               = 1;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
   pea.exclude_callchain_kernel = 1;
   pea.exclude_callchain_user   = 1;
+#endif
 
   const long fd = syscall(__NR_perf_event_open, &pea, 0, -1, -1, 0);
-  if (fd == -1) {
+  if (fd == -1 || fd > INT_MAX) {
     return false;
   }
 
