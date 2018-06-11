@@ -81,8 +81,7 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
 
 #ifdef WITH_OPT
 #include "simd.h"
-#if defined(WITH_SSE2) || defined(WITH_AVX) || defined(WITH_SSE4_1)
-
+#if defined(WITH_SSE2)
 void mpc_and_sse(__m128i* res, __m128i const* first, __m128i const* second, __m128i const* r,
                  view_t* view, unsigned viewshift) ATTR_NONNULL;
 
@@ -112,7 +111,6 @@ void mpc_and_512_sse(__m128i res[SC_PROOF][4], __m128i const first[SC_PROOF][4],
 void mpc_and_verify_512_sse(__m128i res[SC_VERIFY][4], __m128i const first[SC_VERIFY][4],
                             __m128i const second[SC_VERIFY][4], __m128i const r[SC_VERIFY][4],
                             view_t* view, __m128i const* mask, unsigned viewshift) ATTR_NONNULL;
-
 #endif
 
 #if defined(WITH_AVX2)
@@ -165,7 +163,6 @@ void mpc_and_verify_512_neon(uint32x4_t res[SC_VERIFY][4], uint32x4_t const firs
                              uint32x4_t const second[SC_VERIFY][4],
                              uint32x4_t const r[SC_VERIFY][4], view_t* view, uint32x4_t const* mask,
                              unsigned viewshift) ATTR_NONNULL;
-
 #endif
 #endif
 
