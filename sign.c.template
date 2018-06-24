@@ -29,6 +29,10 @@ int crypto_sign(unsigned char* sm, unsigned long long* smlen, const unsigned cha
     return ret;
   }
 
+  // Serialize signature as:
+  // 4-byte signature length (little endian)
+  // message
+  // signature
   len    = htole32(signature_len);
   *smlen = sizeof(len) + mlen + signature_len;
   memmove(sm + sizeof(len), m, mlen);
