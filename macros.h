@@ -60,7 +60,7 @@
 #define ATTR_ALIGNED(i)
 #endif
 
-#if GNUC_CHECK(4, 9) || __has_builtin(assume_aligned)
+#if GNUC_CHECK(4, 9) || __has_builtin(__builtin_assume_aligned)
 #define ASSUME_ALIGNED(p, a) __builtin_assume_aligned((p), (a))
 #else
 #define ASSUME_ALIGNED(p, a) (p)
