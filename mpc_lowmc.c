@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT)
 #include "simd.h"
 #endif
 
@@ -82,7 +82,7 @@ static void sbox_vars_clear(sbox_vars_t* vars);
   mpc_xor(out, out, vars->x0s, sc);                                                                \
   mpc_xor(out, out, vars->x1s, sc)
 
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_CUSTOM_INSTANCES)
 static void _mpc_sbox_layer_bitsliced(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                       mzd_local_t* const* rvec, mask_t const* mask,
                                       sbox_vars_t const* vars) {
@@ -176,7 +176,7 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* in, view_t* view,
   bitsliced_step_2_uint64(SC_VERIFY);
 }
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT) && defined(WITH_CUSTOM_INSTANCES)
 #define bitsliced_mm_step_1(sc, type, and, shift_left)                                             \
   type r0m[sc] ATTR_ALIGNED(alignof(type));                                                        \
   type r0s[sc] ATTR_ALIGNED(alignof(type));                                                        \
@@ -317,8 +317,7 @@ static void _mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* in, view_t* view,
     }                                                                                              \
   } while (0)
 
-#ifdef WITH_SSE2
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_SSE2)
 ATTR_TARGET("sse2")
 static void _mpc_sbox_layer_bitsliced_128_sse(mzd_local_t** out, mzd_local_t* const* in,
                                               view_t* view, mzd_local_t** rvec,
@@ -437,10 +436,8 @@ static void _mpc_sbox_layer_bitsliced_verify_512_sse(mzd_local_t** out, mzd_loca
                                       mm512_shift_right_sse, 4);
 }
 #endif
-#endif
 //----------------------------------------------------------------------------------------------------------------------
-#ifdef WITH_AVX2
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_AVX2)
 ATTR_TARGET("avx2")
 static void _mpc_sbox_layer_bitsliced_256_avx(mzd_local_t** out, mzd_local_t* const* in,
                                               view_t* view, mzd_local_t** rvec,
@@ -499,10 +496,8 @@ static void _mpc_sbox_layer_bitsliced_verify_512_avx(mzd_local_t** out, mzd_loca
                                       mm512_shift_right_avx, 2);
 }
 #endif
-#endif
 //----------------------------------------------------------------------------------------------------------------------
-#ifdef WITH_NEON
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_NEON)
 static void _mpc_sbox_layer_bitsliced_128_neon(mzd_local_t** out, mzd_local_t* const* in,
                                                view_t* view, mzd_local_t** rvec,
                                                mask_t const* mask) {
@@ -613,7 +608,6 @@ static void _mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loc
   bitsliced_mm_step_2_multiple_of_128(SC_VERIFY, uint32x4_t, mm512_and, mm512_xor,
                                       mm512_shift_right, 4);
 }
-#endif
 #endif
 #endif
 

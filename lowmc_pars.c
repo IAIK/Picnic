@@ -16,19 +16,16 @@
 #include "macros.h"
 #include "mzd_additional.h"
 
-#ifdef WITH_LOWMC_128_128_20
+#if defined(WITH_LOWMC_128_128_20)
 #include "lowmc_128_128_20.h"
 #endif
-#ifdef WITH_LOWMC_192_192_30
+#if defined(WITH_LOWMC_192_192_30)
 #include "lowmc_192_192_30.h"
 #endif
-#ifdef WITH_LOWMC_256_256_38
+#if defined(WITH_LOWMC_256_256_38)
 #include "lowmc_256_256_38.h"
 #endif
-#ifdef WITH_LOWMC_256_256_38
-#include "lowmc_256_256_38.h"
-#endif
-#ifdef WITH_LOWMC_512_512_38
+#if defined(WITH_LOWMC_512_512_38)
 #include "lowmc_512_512_38.h"
 #endif
 
@@ -97,31 +94,31 @@ bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, 
   }                                                                                                \
   LOAD##PREC(N, K, R);
 
-#ifdef REDUCED_LINEAR_LAYER
+#if defined(REDUCED_LINEAR_LAYER)
 #define LOAD_FROM_FIXED(N, K, R) LOAD_FROM_FIXED_IMPL(N, K, R, _OPT)
 #else
 #define LOAD_FROM_FIXED(N, K, R) LOAD_FROM_FIXED_IMPL(N, K, R, )
 #endif
 
-#ifdef WITH_LOWMC_128_128_20
+#if defined(WITH_LOWMC_128_128_20)
   if (n == 128 && k == 128 && r == 20) {
     LOAD_FROM_FIXED(128, 128, 20);
     goto precomp;
   }
 #endif
-#ifdef WITH_LOWMC_192_192_30
+#if defined(WITH_LOWMC_192_192_30)
   if (n == 192 && k == 192 && r == 30) {
     LOAD_FROM_FIXED(192, 192, 30);
     goto precomp;
   }
 #endif
-#ifdef WITH_LOWMC_256_256_38
+#if defined(WITH_LOWMC_256_256_38)
   if (n == 256 && k == 256 && r == 38) {
     LOAD_FROM_FIXED(256, 256, 38);
     goto precomp;
   }
 #endif
-#ifdef WITH_LOWMC_512_512_38
+#if defined(WITH_LOWMC_512_512_38)
   if (n == 512 && k == 512 && r == 38) {
     LOAD_FROM_FIXED(512, 512, 38);
     goto precomp;
@@ -133,14 +130,14 @@ bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, 
 
 precomp:
 
-#ifdef MUL_M4RI
+#if defined(MUL_M4RI)
   lowmc->k0_lookup = mzd_precompute_matrix_lookup(lowmc->k0_matrix);
-#ifdef REDUCED_LINEAR_LAYER
+#if defined(REDUCED_LINEAR_LAYER)
   lowmc->precomputed_non_linear_part_lookup =
       mzd_precompute_matrix_lookup(lowmc->precomputed_non_linear_part_matrix);
 #endif
 #endif
-#ifdef MUL_M4RI
+#if defined(MUL_M4RI)
   for (unsigned int i = 0; i < r; ++i) {
     lowmc->rounds[i].l_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].l_matrix);
 #if !defined(REDUCED_LINEAR_LAYER)
@@ -159,7 +156,7 @@ precomp:
   return true;
 }
 
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_CUSTOM_INSTANCES)
 static mzd_local_t* readMZD_TStructFromFile(FILE* file) {
   int ret   = 0;
   int nrows = 0;
@@ -222,7 +219,7 @@ bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned in
 
 void lowmc_clear(lowmc_t* lowmc) {
   for (unsigned int i = 0; i < lowmc->r; ++i) {
-#ifdef MUL_M4RI
+#if defined(MUL_M4RI)
 #if !defined(REDUCED_LINEAR_LAYER)
     mzd_local_free(lowmc->rounds[i].k_lookup);
 #endif
@@ -236,14 +233,14 @@ void lowmc_clear(lowmc_t* lowmc) {
       mzd_local_free((mzd_local_t*)lowmc->rounds[i].l_matrix);
     }
   }
-#ifdef REDUCED_LINEAR_LAYER
+#if defined(REDUCED_LINEAR_LAYER)
   if (lowmc->needs_free) {
     mzd_local_free((mzd_local_t*)lowmc->precomputed_non_linear_part_matrix);
   }
 #endif
-#ifdef MUL_M4RI
+#if defined(MUL_M4RI)
   mzd_local_free(lowmc->k0_lookup);
-#ifdef REDUCED_LINEAR_LAYER
+#if defined(REDUCED_LINEAR_LAYER)
   mzd_local_free(lowmc->precomputed_non_linear_part_lookup);
 #endif
 #endif
