@@ -62,8 +62,8 @@
 /* note that C11's alignas will only do the job once DR 444 is implemented */
 #if GNUC_CHECK(4, 9) || __has_attribute(aligned)
 #define ATTR_ALIGNED(i) __attribute__((aligned((i))))
-#elif defined(_MSC_VER)
-#define ATTR_ALIGNED(i) __declspec(align((i)))
+/* #elif defined(_MSC_VER)
+#define ATTR_ALIGNED(i) __declspec(align((i))) */
 #else
 #define ATTR_ALIGNED(i)
 #endif
@@ -71,8 +71,8 @@
 /* unreachable builtin */
 #if GNUC_CHECK(4, 5) ||  __has_builtin(__builtin_unreachable)
 #define UNREACHABLE __builtin_unreachable()
-#elif defined(_MSC_VER)
-#define UNREACHABLE __assume(0)
+/* #elif defined(_MSC_VER)
+#define UNREACHABLE __assume(0) */
 #endif
 
 /* assume aligned builtin */
