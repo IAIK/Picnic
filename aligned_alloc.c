@@ -12,9 +12,7 @@
 #endif
 
 #include "compat.h"
-
 #if !defined(HAVE_ALIGNED_ALLOC)
-
 #include <errno.h>
 #include <stdlib.h>
 #if !defined(HAVE_POSIX_MEMALIGN) || defined(__MING32__) || defined(__MING64__) || defined(_MSC_VER)
