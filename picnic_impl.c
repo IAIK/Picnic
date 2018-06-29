@@ -21,7 +21,9 @@
 #include "mpc_lowmc.h"
 #include "picnic_impl.h"
 #include "randomness.h"
+#if defined(WITH_DETAILED_TIMING)
 #include "timing.h"
+#endif
 
 #include <limits.h>
 #include <math.h>
@@ -741,8 +743,9 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
                       const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
                       const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
                       size_t* siglen) {
+#if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
-
+#endif
   const lowmc_t* lowmc                    = &pp->lowmc;
   const lowmc_implementation_f lowmc_impl = pp->lowmc_impl;
   const size_t seed_size                  = pp->seed_size;
@@ -771,7 +774,9 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
 
   // Generate seeds
+#if defined(WITH_DETAILED_TIMING)
   START_TIMING;
+#endif
   {
     kdf_shake_t ctx;
     kdf_shake_init(&ctx, pp);
@@ -793,12 +798,16 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     kdf_shake_get_randomness(&ctx, prf->round[0].seeds[0], seed_size * num_rounds * SC_PROOF);
     kdf_shake_clear(&ctx);
   }
+#if defined(WITH_DETAILED_TIMING)
   END_TIMING(timing_and_size->sign.rand);
-
   START_TIMING;
+#endif
+
   mzd_local_t* shared_key[SC_PROOF];
   mzd_local_init_multiple(shared_key, SC_PROOF, 1, lowmc_k);
+#if defined(WITH_DETAILED_TIMING)
   END_TIMING(timing_and_size->sign.secret_sharing);
+#endif
 
   rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for AND-gates
 #if defined(WITH_CUSTOM_INSTANCES)
@@ -810,8 +819,9 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 #endif
 
   uint8_t* tape_bytes = malloc(view_size);
+#if defined(WITH_DETAILED_TIMING)
   START_TIMING;
-
+#endif
   proof_round_t* round = prf->round;
   for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
     kdf_shake_t kdfs[SC_PROOF];
@@ -855,9 +865,10 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       }
     }
   }
+#if defined(WITH_DETAILED_TIMING)
   END_TIMING(timing_and_size->sign.lowmc_enc);
-
   START_TIMING;
+#endif
   fs_H3(pp, prf, public_key, plaintext, m, m_len);
 
   const bool ret = sig_proof_to_char_array(pp, prf, sig, siglen);
@@ -881,16 +892,18 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   mzd_local_free_multiple(in_out_shares[0].s);
   proof_free(prf);
 
+#if defined(WITH_DETAILED_TIMING)
   END_TIMING(timing_and_size->sign.challenge);
-
+#endif
   return ret;
 }
 
 static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mzd_local_t const* p,
                         const uint8_t* ciphertext, mzd_local_t const* c, const uint8_t* m,
                         unsigned m_len, const uint8_t* sig, size_t siglen) {
+#if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
-
+#endif
   const size_t num_rounds                         = pp->num_rounds;
   const lowmc_t* lowmc                            = &pp->lowmc;
   const transform_t transform                     = pp->transform;
@@ -920,8 +933,9 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
   }
 #endif
 
+#if defined(WITH_DETAILED_TIMING)
   START_TIMING;
-
+#endif
   rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for and-gates
 #if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
@@ -990,7 +1004,9 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
   unsigned char challenge[MAX_NUM_ROUNDS] = {0};
   fs_H3_verify(pp, prf, ciphertext, plaintext, m, m_len, challenge);
   const int success_status = memcmp(challenge, prf->challenge, pp->num_rounds);
+#if defined(WITH_DETAILED_TIMING)
   END_TIMING(timing_and_size->verify.verify);
+#endif
 
   // clean up
   free(tape_bytes);
@@ -1141,8 +1157,9 @@ static transform_t param_to_transform(picnic_params_t param) {
 
 static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32_t m, uint32_t n,
                             uint32_t r, uint32_t k) {
+#if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
-
+#endif
 #if defined(WITH_CUSTOM_INSTANCES)
   bool known_instance = true;
 #endif
@@ -1191,7 +1208,9 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
   digest_size = MAX(32, (4 * pq_security_level + 7) / 8);
   seed_size   = (2 * pq_security_level + 7) / 8;
 
+#if defined(WITH_DETAILED_TIMING)
   START_TIMING;
+#endif
   bool have_instance = false;
 #if defined(WITH_CUSTOM_INSTANCES)
   if (!known_instance) {
@@ -1237,9 +1256,9 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
   const size_t per_round_size = pp->input_size + pp->view_size + pp->digest_size +
                                 2 * pp->seed_size + pp->unruh_without_input_bytes_size;
   pp->max_signature_size = pp->collapsed_challenge_size + num_rounds * per_round_size;
-
+#if defined(WITH_DETAILED_TIMING)
   END_TIMING(timing_and_size->gen.lowmc_init);
-
+#endif
   return true;
 }
 
