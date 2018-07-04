@@ -911,8 +911,8 @@ void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
 
     for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, Aptr += rowstride) {
       const uint64_t mask = -(idx & 1);
-      for (unsigned int i = 0; i < len; ++i) {
-        cptr[i] ^= (Aptr[i] & mask);
+      for (unsigned int j = 0; j < len; ++j) {
+        cptr[j] ^= (Aptr[j] & mask);
       }
     }
   }
