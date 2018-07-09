@@ -9,6 +9,15 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
+#else
+/* define HAVE_* for more known good configurations */
+#if !defined(HAVE_POSIX_MEMALIGN) && defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
+#define HAVE_POSIX_MEMALIGN
+#endif
+
+#if !defined(HAVE_MEMALIGN) && defined(__linux__)
+#define HAVE_MEMALIGN
+#endif
 #endif
 
 #include "compat.h"

@@ -21,14 +21,6 @@
       !defined(__MINGW64__) && !defined(__APPLE__)))
 #define HAVE_ALIGNED_ALLOC
 #endif
-
-#if !defined(HAVE_POSIX_MEMALIGN) && defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
-#define HAVE_POSIX_MEMALIGN
-#endif
-
-#if !defined(HAVE_MEMALIGN) && defined(__linux__)
-#define HAVE_MEMALIGN
-#endif
 #endif
 
 #if defined(HAVE_ALIGNED_ALLOC)
