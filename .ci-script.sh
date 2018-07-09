@@ -9,4 +9,4 @@ powerset() {
   done
 }
 
-powerset "$@" | xargs -L 1 -d '\n' bash .ci-build.sh
+powerset "$@" | xargs -L 1 bash .ci-build.sh
