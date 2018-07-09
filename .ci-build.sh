@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# OS X has shasum, but no sha1sum.
+if [[ "$TRAVIS_OS_NAME" == "osx" ]]
+then
+  function sha1sum
+  {
+    shasum "$@"
+  }
+fi
+
 directory=build-$(sha1sum <<< "$@" | awk '{print $1}')
 set -x
 
