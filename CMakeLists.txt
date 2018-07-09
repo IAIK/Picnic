@@ -196,11 +196,13 @@ list(APPEND PICNIC_SOURCES
     mzd_additional.c
     picnic.c
     picnic_impl.c
-    randomness.c
-    timing.c)
+    randomness.c)
 
 if(WITH_CUSTOM_INSTANCES)
   list(APPEND PICNIC_SOURCES lowmc_512_512_38.c)
+endif()
+if(ENABLED_DETAILED_TIMINGS)
+  list(APPEND PICNIC_SOURCES timing.c)
 endif()
 
 # shared library
