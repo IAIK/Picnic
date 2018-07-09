@@ -161,7 +161,7 @@ if(CC_SUPPORTS_FOMIT_FRAME_POINTER)
   add_compile_options(-fomit-frame-pointer)
 endif()
 
-if(NOT WITH_CONFIG_H)
+if(WITH_CONFIG_H)
   configure_file(config.h.in config.h)
 endif()
 
@@ -223,7 +223,7 @@ endif()
 target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC_DEFINE)
 
 function(apply_base_options lib)
-  if(NOT WITH_CONFIG_H)
+  if(WITH_CONFIG_H)
     target_compile_definitions(${lib} PRIVATE HAVE_CONFIG_H)
   endif()
 endfunction()
