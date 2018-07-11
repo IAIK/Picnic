@@ -70,7 +70,7 @@ check_simd(AVX2 CC_SUPPORTS_AVX2)
 check_simd(NEON CC_SUPPORTS_NEON)
 
 # test endianess
-test_big_endian(is_big_endian)
+test_big_endian(IS_BIG_ENDIAN)
 
 # user-settable options
 if(APPLE AND ${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
