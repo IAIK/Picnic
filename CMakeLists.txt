@@ -24,7 +24,8 @@ endif()
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# required fuctions
+# cmake checks and tools
+include(GNUInstallDirs)
 include(CheckSIMD)
 include(CheckFunctionExists)
 include(CheckCCompilerFlag)
@@ -200,6 +201,7 @@ list(APPEND PICNIC_SOURCES
     picnic.c
     picnic_impl.c
     randomness.c)
+list(APPEND PICNIC_HEADERS picnic.h)
 
 if(WITH_CUSTOM_INSTANCES)
   list(APPEND PICNIC_SOURCES lowmc_512_512_38.c)
@@ -344,3 +346,9 @@ endforeach(target)
 # tests
 enable_testing()
 add_subdirectory(tests)
+
+# install
+install(TARGETS picnic DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS picnic_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES ${PICNIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picnic.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
