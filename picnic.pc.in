@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: picnic
+Description: Picnic digitial signatures library
+Version: @PICNIC_VERSION@
+
+Libs: -L${libdir} -lpicnic
+Libs.private: -L${libdir} -lpicnic_static
+Cflags: -I${includedir}

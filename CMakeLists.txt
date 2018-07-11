@@ -294,6 +294,10 @@ if(MSVC)
   endif()
 endif()
 
+# pkg-config file
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/picnic.pc.in
+               ${CMAKE_CURRENT_BINARY_DIR}/picnic.pc @ONLY)
+
 # genparams executable
 if(M4RI_FOUND AND OPENSSL_FOUND)
   add_executable(genparams tools/genparams.c)
