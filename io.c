@@ -35,16 +35,6 @@ void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, unsigned len)
   }
 }
 
-void uint64_to_char_array(uint8_t* dst, const uint64_t data) {
-  uint64_t* wdst = (uint64_t*)dst;
-  *wdst          = htobe64(data);
-}
-
-void uint64_from_char_array(uint64_t* result, const uint8_t* data) {
-  const uint64_t* wsrc = (const uint64_t*)data;
-  *result              = be64toh(*wsrc);
-}
-
 void print_hex(FILE* out, const uint8_t* data, size_t len) {
   for (size_t i = len; i; --i, ++data) {
     fprintf(out, "%02X", *data);
