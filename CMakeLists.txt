@@ -170,7 +170,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} sha3
 
 list(APPEND SHA3_SOURCES
     sha3/KeccakHash.c
-    sha3/KeccakSponge.c)
+    sha3/KeccakSpongeWidth1600.c)
 
 if(${SHA3_IMPL} STREQUAL "avx2")
   list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.c)
