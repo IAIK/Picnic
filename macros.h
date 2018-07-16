@@ -69,7 +69,7 @@
 #endif
 
 /* unreachable builtin */
-#if GNUC_CHECK(4, 5) ||  __has_builtin(__builtin_unreachable)
+#if GNUC_CHECK(4, 5) || __has_builtin(__builtin_unreachable)
 #define UNREACHABLE __builtin_unreachable()
 /* #elif defined(_MSC_VER)
 #define UNREACHABLE __assume(0) */

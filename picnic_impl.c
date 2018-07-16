@@ -738,7 +738,6 @@ err:
   return NULL;
 }
 
-
 static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
                       const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
                       const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,

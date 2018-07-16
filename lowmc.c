@@ -47,7 +47,7 @@ static void sbox_layer_uint64(mzd_local_t* x, mask_t const* mask) {
   (void)mask;
 
   uint64_t* d = &FIRST_ROW(x)[x->width - 1];
-  *d = sbox_layer_bitsliced_uint64(*d);
+  *d          = sbox_layer_bitsliced_uint64(*d);
 }
 
 #ifdef WITH_CUSTOM_INSTANCES
@@ -58,9 +58,9 @@ static void sbox_layer_bitsliced(mzd_local_t* in, mask_t const* mask) {
   mzd_local_t* x0m = buffer[0];
   mzd_local_t* x1m = buffer[1];
   mzd_local_t* x2m = buffer[2];
-  mzd_local_t* t0 = buffer[3];
-  mzd_local_t* t1 = buffer[4];
-  mzd_local_t* t2 = buffer[5];
+  mzd_local_t* t0  = buffer[3];
+  mzd_local_t* t1  = buffer[4];
+  mzd_local_t* t2  = buffer[5];
 
   // a
   mzd_and(x0m, mask->x0, in);
@@ -104,9 +104,8 @@ static void sbox_layer_bitsliced(mzd_local_t* in, mask_t const* mask) {
 
 #ifdef WITH_OPT
 #ifdef WITH_SSE2
-ATTR_TARGET("sse") static void sbox_layer_sse(mzd_local_t* in,
-                                                           mask_t const* mask) {
-  __m128i* ip = (__m128i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m128i));
+ATTR_TARGET("sse") static void sbox_layer_sse(mzd_local_t* in, mask_t const* mask) {
+  __m128i* ip       = (__m128i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m128i));
   __m128i const min = *ip;
 
   __m128i const* x0p = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(__m128i));
@@ -152,7 +151,7 @@ ATTR_TARGET("sse") static void sbox_layer_sse(mzd_local_t* in,
  * aligned.
  */
 ATTR_TARGET("avx2") static void sbox_layer_avx(mzd_local_t* in, mask_t const* mask) {
-  __m256i* ip = (__m256i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m256i));
+  __m256i* ip       = (__m256i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m256i));
   __m256i const min = *ip;
 
   __m256i const* x0p = (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(__m256i));
@@ -194,8 +193,7 @@ ATTR_TARGET("avx2") static void sbox_layer_avx(mzd_local_t* in, mask_t const* ma
 
 #ifdef WITH_NEON
 static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
-  uint32x4_t* ip =
-      (uint32x4_t*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(uint32x4_t));
+  uint32x4_t* ip       = (uint32x4_t*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(uint32x4_t));
   uint32x4_t const min = *ip;
 
   uint32x4_t const* x0p =

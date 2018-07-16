@@ -3,7 +3,7 @@
 
 static inline void mzd_randomize_ssl(mzd_local_t* val) {
   for (unsigned int i = 0; i < val->nrows; ++i) {
-    RAND_bytes((unsigned char*) ROW(val, i), val->width * sizeof(word));
+    RAND_bytes((unsigned char*)ROW(val, i), val->width * sizeof(word));
   }
 }
 

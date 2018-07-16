@@ -43,12 +43,13 @@ static int test_mzd_local_equal(void) {
 
 typedef void (*mul_fn)(mzd_local_t*, const mzd_local_t*, const mzd_local_t*);
 
-static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, mul_fn f, bool is_addmul) {
+static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, mul_fn f,
+                          bool is_addmul) {
   int ret = 0;
 
-  mzd_t* A    = mzd_init(rows, cols);
-  mzd_t* v    = mzd_init(1, rows);
-  mzd_t* c    = mzd_init(1, cols);
+  mzd_t* A = mzd_init(rows, cols);
+  mzd_t* v = mzd_init(1, rows);
+  mzd_t* c = mzd_init(1, cols);
 
   mzd_randomize(A);
   mzd_randomize(v);
@@ -59,7 +60,7 @@ static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, m
   mzd_local_t* c2 = mzd_convert(c);
 
   for (unsigned int k = 0; k < 3; ++k) {
-    mzd_t* r  = is_addmul ? mzd_addmul_naive(c, v, A) : mzd_mul_naive(c, v, A);
+    mzd_t* r = is_addmul ? mzd_addmul_naive(c, v, A) : mzd_mul_naive(c, v, A);
     f(c2, vl, Al);
 
     mzd_local_t* rc = mzd_convert(r);
@@ -85,24 +86,25 @@ static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, m
   return ret;
 }
 
-static int test_mzd_mul_l_f(const char* n, unsigned int rows, unsigned int cols, mul_fn f, bool is_addmul) {
+static int test_mzd_mul_l_f(const char* n, unsigned int rows, unsigned int cols, mul_fn f,
+                            bool is_addmul) {
   int ret = 0;
 
-  mzd_t* A    = mzd_init(rows, cols);
-  mzd_t* v    = mzd_init(1, rows);
-  mzd_t* c    = mzd_init(1, cols);
+  mzd_t* A = mzd_init(rows, cols);
+  mzd_t* v = mzd_init(1, rows);
+  mzd_t* c = mzd_init(1, cols);
 
   mzd_randomize(A);
   mzd_randomize(v);
   mzd_randomize(c);
 
-  mzd_local_t* Al = mzd_convert(A);
+  mzd_local_t* Al  = mzd_convert(A);
   mzd_local_t* All = mzd_precompute_matrix_lookup(Al);
-  mzd_local_t* vl = mzd_convert(v);
-  mzd_local_t* c2 = mzd_convert(c);
+  mzd_local_t* vl  = mzd_convert(v);
+  mzd_local_t* c2  = mzd_convert(c);
 
   for (unsigned int k = 0; k < 3; ++k) {
-    mzd_t* r  = is_addmul ? mzd_addmul_naive(c, v, A) : mzd_mul_naive(c, v, A);
+    mzd_t* r = is_addmul ? mzd_addmul_naive(c, v, A) : mzd_mul_naive(c, v, A);
     f(c2, vl, All);
 
     mzd_local_t* rc = mzd_convert(r);

@@ -4,8 +4,8 @@
 
 #include "../bitstream.h"
 
-#include <stdio.h>
 #include <inttypes.h>
+#include <stdio.h>
 
 static int simple_test(void) {
   int ret = 0;
@@ -14,13 +14,13 @@ static int simple_test(void) {
     const uint64_t v                 = UINT64_C(1) << (i - 1);
 
     bitstream_t bsw;
-    bsw.buffer = buffer;
+    bsw.buffer   = buffer;
     bsw.position = 0;
     bitstream_put_bits(&bsw, v, i);
 
     bitstream_t bsr;
-    bsr.cbuffer = buffer;
-    bsr.position = 0;
+    bsr.cbuffer      = buffer;
+    bsr.position     = 0;
     const uint64_t r = bitstream_get_bits(&bsr, i);
     if (r != v) {
       printf("simple_test: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
@@ -47,31 +47,31 @@ static int test_30(void) {
   uint8_t buffer2[sizeof(uint64_t)] = {0};
 
   bitstream_t bsw;
-  bsw.buffer = buffer;
+  bsw.buffer   = buffer;
   bsw.position = 0;
   bitstream_put_bits(&bsw, v, 30);
 
   bitstream_t bsw2;
-  bsw2.buffer = buffer2;
+  bsw2.buffer   = buffer2;
   bsw2.position = 0;
   for (unsigned int i = 0; i < 30; ++i) {
     bitstream_put_bits(&bsw2, v >> (30 - i - 1), 1);
   }
 
   bitstream_t bsr;
-  bsr.cbuffer = buffer;
+  bsr.cbuffer  = buffer;
   bsr.position = 0;
-  uint64_t r = bitstream_get_bits(&bsr, 30);
+  uint64_t r   = bitstream_get_bits(&bsr, 30);
   if (r != v) {
     printf("test_30: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
     ret = -1;
   }
 
   bitstream_t bsr2;
-  bsr2.cbuffer = buffer2;
+  bsr2.cbuffer  = buffer2;
   bsr2.position = 0;
   for (unsigned int i = 0; i < 30; ++i) {
-    r = bitstream_get_bits(&bsr2, 1);
+    r                = bitstream_get_bits(&bsr2, 1);
     const uint64_t e = (v >> (30 - i - 1)) & 0x1;
     if (e != r) {
       printf("test_30: expected2 %016" PRIx64 ", got %016" PRIx64 "\n", e, r);
@@ -81,15 +81,16 @@ static int test_30(void) {
 
   if (buffer[0] != 0b11011000 || buffer[1] != 0b01101100 || buffer[2] != 0b10100101 ||
       buffer[3] != 0b00101000) {
-    printf("test_30: expected buffer %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
-           buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
+    printf("test_30: expected buffer %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n",
+           v << 34, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6],
+           buffer[7]);
     ret = -1;
   }
   if (buffer2[0] != 0b11011000 || buffer2[1] != 0b01101100 || buffer2[2] != 0b10100101 ||
       buffer2[3] != 0b00101000) {
-    printf("test_30: expected buffer2 %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
-           buffer2[0], buffer2[1], buffer2[2], buffer2[3], buffer2[4], buffer2[5], buffer2[6],
-           buffer2[7]);
+    printf("test_30: expected buffer2 %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n",
+           v << 34, buffer2[0], buffer2[1], buffer2[2], buffer2[3], buffer2[4], buffer2[5],
+           buffer2[6], buffer2[7]);
     ret = -1;
   }
 
@@ -103,15 +104,15 @@ static int test_multiple_30(void) {
   const uint64_t v2 = (~v) & ((1 << 30) - 1);
 
   bitstream_t bsw;
-  bsw.buffer = buffer;
+  bsw.buffer   = buffer;
   bsw.position = 0;
   bitstream_put_bits(&bsw, v, 30);
   bitstream_put_bits(&bsw, v2, 30);
 
   bitstream_t bsr;
-  bsr.cbuffer = buffer;
+  bsr.cbuffer  = buffer;
   bsr.position = 0;
-  uint64_t r = bitstream_get_bits(&bsr, 30);
+  uint64_t r   = bitstream_get_bits(&bsr, 30);
   if (r != v) {
     printf("test_multiple_30: expected %016" PRIx64 ", got %016" PRIx64 "\n", v, r);
     ret = -1;
@@ -124,8 +125,9 @@ static int test_multiple_30(void) {
 
   if (buffer[0] != 0b11011000 || buffer[1] != 0b01101100 || buffer[2] != 0b10100101 ||
       buffer[3] != 0b00101000) {
-    printf("test_30: expected buffer %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n", v << 34,
-           buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
+    printf("test_30: expected buffer %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n",
+           v << 34, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6],
+           buffer[7]);
     ret = -1;
   }
   return ret;

@@ -58,8 +58,8 @@ void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second
     tmp2             = r[m] ^ r[j];
     res[m] = tmp1 = tmp1 ^ tmp2;
     if (viewshift) {
-      tmp1          = tmp1 >> viewshift;
-      view->t[m]    = view->t[m] ^ tmp1;
+      tmp1       = tmp1 >> viewshift;
+      view->t[m] = view->t[m] ^ tmp1;
     } else {
       // on first call (viewshift == 0), view->t[0..2] == 0
       view->t[m] = tmp1;
@@ -215,15 +215,15 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
     tmp2             = r[m] ^ r[j];
     res[m] = tmp1 = tmp1 ^ tmp2;
     if (viewshift || m) {
-      tmp1          = tmp1 >> viewshift;
-      view->t[m]    = view->t[m] ^ tmp1;
+      tmp1       = tmp1 >> viewshift;
+      view->t[m] = view->t[m] ^ tmp1;
     } else {
       // on first call (viewshift == 0), view->t[0] == 0
       view->t[m] = tmp1;
     }
   }
 
-  const uint64_t rsc       = view->t[SC_VERIFY - 1] << viewshift;
+  const uint64_t rsc = view->t[SC_VERIFY - 1] << viewshift;
   res[SC_VERIFY - 1] = rsc & mask;
 }
 
