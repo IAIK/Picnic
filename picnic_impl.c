@@ -62,6 +62,7 @@ static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
+    // flip challenge bits according to spec
     bitstream_put_bits(&bs, (challenge[i] >> 1) | ((challenge[i] & 1) << 1), 2);
   }
 }
@@ -80,6 +81,7 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
     if (ch == 3) {
       return false;
     }
+    // flip challenge bits according to spec
     challenge[i] = (ch & 1) << 1 | (ch >> 1);
   }
 
@@ -367,7 +369,9 @@ static void mzd_unshare(mzd_local_t* dst, mzd_local_t* shared_value[SC_PROOF]) {
   mzd_xor(dst, dst, shared_value[2]);
 }
 
-// commitment
+/**
+ * Compute commitment to a view.
+ */
 void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx) {
   const size_t hashlen = pp->digest_size;
 
@@ -396,7 +400,9 @@ void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsi
   hash_squeeze(&ctx, prf_round->commitments[vidx], hashlen);
 }
 
-// challenge - outputs {1,2 or 3}^t
+/**
+ * Compute challenge from transform dependent hash - outputs {1,2 or 3}^t
+ */
 static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) {
   const size_t digest_size      = pp->digest_size;
   const size_t digest_size_bits = digest_size << 3;
@@ -423,7 +429,10 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
   }
 }
 
-static void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
+/**
+ * Re-compute challenge for verification
+ */
+static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
                          const uint8_t* circuit_output, const uint8_t* circuit_input,
                          const uint8_t* m, size_t m_len, uint8_t* ch) {
   const size_t digest_size = pp->digest_size;
@@ -526,7 +535,10 @@ static void fs_H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
   H3_compute(pp, hash, ch);
 }
 
-static void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
+/**
+ * Compute challenge
+ */
+static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
                   const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
   const size_t num_rounds = pp->num_rounds;
 
@@ -556,6 +568,9 @@ static void fs_H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* 
   H3_compute(pp, hash, prf->challenge);
 }
 
+/*
+ * G permutation for Unruh transform
+ */
 static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx,
                     bool include_is) {
   hash_context ctx;
@@ -566,7 +581,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   const size_t digest_size = pp->digest_size;
   const size_t seedlen     = pp->seed_size;
 
-  /* Hash the seed with H_5, store digest in output */
+  // Hash the seed with H_5, store digest in output
   hash_init(&ctx, pp);
   hash_update(&ctx, &HASH_PREFIX_5, sizeof(HASH_PREFIX_5));
   hash_update(&ctx, prf_round->seeds[vidx], seedlen);
@@ -575,7 +590,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   uint8_t tmp[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, tmp, digest_size);
 
-  /* Hash H_5(seed), the view, and the length */
+  // Hash H_5(seed), the view, and the length
   hash_init(&ctx, pp);
   hash_update(&ctx, tmp, digest_size);
   if (include_is) {
@@ -868,7 +883,7 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   END_TIMING(timing_and_size->sign.lowmc_enc);
   START_TIMING;
 #endif
-  fs_H3(pp, prf, public_key, plaintext, m, m_len);
+  H3(pp, prf, public_key, plaintext, m, m_len);
 
   const bool ret = sig_proof_to_char_array(pp, prf, sig, siglen);
 
@@ -1001,7 +1016,7 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
   }
 
   unsigned char challenge[MAX_NUM_ROUNDS] = {0};
-  fs_H3_verify(pp, prf, ciphertext, plaintext, m, m_len, challenge);
+  H3_verify(pp, prf, ciphertext, plaintext, m, m_len, challenge);
   const int success_status = memcmp(challenge, prf->challenge, pp->num_rounds);
 #if defined(WITH_DETAILED_TIMING)
   END_TIMING(timing_and_size->verify.verify);
