@@ -275,7 +275,7 @@ static mzd_local_t* lowmc_reduced_linear_layer(lowmc_t const* lowmc, lowmc_key_t
   mzd_local_t* y       = mzd_local_init_ex(1, lowmc->n, false);
   mzd_local_t* nl_part = mzd_local_init_ex(1, lowmc->r * 32, false);
 
-  mzd_local_copy(x, p);
+  mzd_xor(x, p, lowmc->precomputed_constant_linear);
 #if defined(MUL_M4RI)
   mzd_addmul_vl(x, lowmc_key, lowmc->k0_lookup);
   mzd_mul_vl(nl_part, lowmc_key, lowmc->precomputed_non_linear_part_lookup);
@@ -283,6 +283,7 @@ static mzd_local_t* lowmc_reduced_linear_layer(lowmc_t const* lowmc, lowmc_key_t
   mzd_addmul_v(x, lowmc_key, lowmc->k0_matrix);
   mzd_mul_v(nl_part, lowmc_key, lowmc->precomputed_non_linear_part_matrix);
 #endif
+  mzd_xor(nl_part, nl_part, lowmc->precomputed_constant_non_linear);
 
   lowmc_round_t const* round = lowmc->rounds;
   for (unsigned i = 0; i < lowmc->r; ++i, ++round) {
@@ -298,7 +299,11 @@ static mzd_local_t* lowmc_reduced_linear_layer(lowmc_t const* lowmc, lowmc_key_t
 #else
     mzd_mul_v(y, x, round->l_matrix);
 #endif
-    mzd_xor(x, y, round->constant);
+
+    // swap x and y
+    mzd_local_t* t = x;
+    x              = y;
+    y              = t;
   }
 
   mzd_local_free(y);

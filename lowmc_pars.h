@@ -54,7 +54,9 @@ typedef struct {
   const mzd_local_t* k_matrix;
 #endif
   const mzd_local_t* l_matrix;
+#if !defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* constant;
+#endif
 
 #if !defined(REDUCED_LINEAR_LAYER)
   mzd_local_t* k_lookup;
@@ -79,8 +81,13 @@ typedef struct {
   mzd_local_t* k0_lookup;
   lowmc_round_t* rounds;
 
+#if defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* precomputed_non_linear_part_matrix;
   mzd_local_t* precomputed_non_linear_part_lookup;
+
+  const mzd_local_t* precomputed_constant_linear;
+  const mzd_local_t* precomputed_constant_non_linear;
+#endif
 
   bool needs_free;
 } lowmc_t;

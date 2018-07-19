@@ -79,18 +79,22 @@ bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, 
 #define LOAD_OPT(N, K, R)                                                                          \
   lowmc->precomputed_non_linear_part_matrix =                                                      \
       lowmc_##N##_##K##_##R##_get_precomputed_round_key_matrix_non_linear_part();                  \
-  lowmc->k0_matrix = lowmc_##N##_##K##_##R##_get_precomputed_round_key_matrix_linear_part()
+  lowmc->k0_matrix = lowmc_##N##_##K##_##R##_get_precomputed_round_key_matrix_linear_part();       \
+  lowmc->precomputed_constant_linear =                                                             \
+      lowmc_##N##_##K##_##R##_get_precomputed_constant_linear_part();                              \
+  lowmc->precomputed_constant_non_linear =                                                         \
+      lowmc_##N##_##K##_##R##_get_precomputed_constant_non_linear_part()
 
 #define LOAD(N, K, R)                                                                              \
   lowmc->k0_matrix = lowmc_##N##_##K##_##R##_get_round_key(0);                                     \
   for (unsigned int i = 0; i < (R); ++i) {                                                         \
     lowmc->rounds[i].k_matrix = lowmc_##N##_##K##_##R##_get_round_key(i + 1);                      \
+    lowmc->rounds[i].constant = lowmc_##N##_##K##_##R##_get_round_const(i);                        \
   }
 
 #define LOAD_FROM_FIXED_IMPL(N, K, R, PREC)                                                        \
   for (unsigned int i = 0; i < (R); ++i) {                                                         \
     lowmc->rounds[i].l_matrix = lowmc_##N##_##K##_##R##_get_linear_layer(i);                       \
-    lowmc->rounds[i].constant = lowmc_##N##_##K##_##R##_get_round_const(i);                        \
   }                                                                                                \
   LOAD##PREC(N, K, R);
 
@@ -204,10 +208,14 @@ bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned in
       lowmc->rounds[i].k_matrix = readMZD_TStructFromFile(file);
 #endif
       lowmc->rounds[i].l_matrix = readMZD_TStructFromFile(file);
+#if !defineD(REDUCED_LINEAR_LAYER)
       lowmc->rounds[i].constant = readMZD_TStructFromFile(file);
+#endif
     }
-#ifdef REDUCED_LINEAR_LAYER
+#if defined(REDUCED_LINEAR_LAYER)
     lowmc->precomputed_non_linear_part_matrix = readMZD_TStructFromFile(file);
+    lowmc->precomputed_constant_linear        = readMZD_TStructFromFile(file);
+    lowmc->precomputed_constant_non_linear    = readMZD_TStructFromFile(file);
 #endif
 
     fclose(file);
@@ -226,15 +234,19 @@ void lowmc_clear(lowmc_t* lowmc) {
     mzd_local_free(lowmc->rounds[i].l_lookup);
 #endif
     if (lowmc->needs_free) {
+#if !defined(REDUCED_LINEAR_LAYER)
       mzd_local_free((mzd_local_t*)lowmc->rounds[i].constant);
+#endif
+      mzd_local_free((mzd_local_t*)lowmc->rounds[i].l_matrix);
 #if !defined(REDUCED_LINEAR_LAYER)
       mzd_local_free((mzd_local_t*)lowmc->rounds[i].k_matrix);
 #endif
-      mzd_local_free((mzd_local_t*)lowmc->rounds[i].l_matrix);
     }
   }
 #if defined(REDUCED_LINEAR_LAYER)
   if (lowmc->needs_free) {
+    mzd_local_free((mzd_local_t*)lowmc->precomputed_constant_non_linear);
+    mzd_local_free((mzd_local_t*)lowmc->precomputed_constant_linear);
     mzd_local_free((mzd_local_t*)lowmc->precomputed_non_linear_part_matrix);
   }
 #endif
