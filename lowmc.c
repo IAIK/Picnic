@@ -288,10 +288,10 @@ static mzd_local_t* lowmc_reduced_linear_layer(lowmc_t const* lowmc, lowmc_key_t
   for (unsigned i = 0; i < lowmc->r; ++i, ++round) {
     sbox_layer_uint64(x, NULL);
 
-    const word mask          = (i & 1) ? WORD_C(0xFFFFFFFF00000000) : WORD_C(0x00000000FFFFFFFF);
-    const unsigned int shift = (i & 1) ? 2 : 34;
+    const word mask = (i & 1) ? WORD_C(0xFFFFFFFF00000000) : WORD_C(0x00000000FFFFFFFF);
+    const word nl   = (CONST_FIRST_ROW(nl_part)[i >> 1] & mask);
 
-    FIRST_ROW(x)[x->width - 1] ^= (CONST_FIRST_ROW(nl_part)[i >> 1] & mask) << shift;
+    FIRST_ROW(x)[x->width - 1] ^= (i & 1) ? nl : (nl << 32);
 
 #if defined(MUL_M4RI)
     mzd_mul_vl(y, x, round->l_lookup);
