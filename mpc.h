@@ -81,6 +81,7 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
 
 #ifdef WITH_OPT
 #include "simd.h"
+
 #if defined(WITH_SSE2)
 void mpc_and_sse(__m128i* res, __m128i const* first, __m128i const* second, __m128i const* r,
                  view_t* view, unsigned viewshift) ATTR_NONNULL;

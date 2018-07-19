@@ -20,8 +20,8 @@ typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 
 typedef struct {
   lowmc_t lowmc;
-  lowmc_implementation_f lowmc_impl;
-  lowmc_verify_implementation_f lowmc_verify_impl;
+  zkbpp_lowmc_implementation_f zkbpp_lowmc_impl;
+  zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify_impl;
 
   uint32_t security_level; /* bits */
   uint32_t digest_size;    /* bytes */

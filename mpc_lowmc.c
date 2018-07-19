@@ -44,9 +44,34 @@ typedef struct {
   mzd_local_t** storage;
 } sbox_vars_t;
 
-static sbox_vars_t* sbox_vars_init(sbox_vars_t* vars, uint32_t n, unsigned sc);
-static void sbox_vars_clear(sbox_vars_t* vars);
-#endif
+static void sbox_vars_clear(sbox_vars_t* vars) {
+  if (vars->storage) {
+    mzd_local_free_multiple(vars->storage);
+    free(vars->storage);
+    memset(vars, 0, sizeof(*vars));
+  }
+}
+
+static sbox_vars_t* sbox_vars_init(sbox_vars_t* vars, uint32_t n, unsigned sc) {
+  vars->storage = calloc(11 * sc, sizeof(mzd_local_t*));
+  mzd_local_init_multiple_ex(vars->storage, 11 * sc, 1, n, false);
+
+  for (unsigned int i = 0; i < sc; ++i) {
+    vars->x0m[i] = vars->storage[11 * i + 0];
+    vars->x1m[i] = vars->storage[11 * i + 1];
+    vars->x2m[i] = vars->storage[11 * i + 2];
+    vars->r0m[i] = vars->storage[11 * i + 3];
+    vars->r1m[i] = vars->storage[11 * i + 4];
+    vars->r2m[i] = vars->storage[11 * i + 5];
+    vars->x0s[i] = vars->storage[11 * i + 6];
+    vars->x1s[i] = vars->storage[11 * i + 7];
+    vars->r0s[i] = vars->storage[11 * i + 8];
+    vars->r1s[i] = vars->storage[11 * i + 9];
+    vars->v[i]   = vars->storage[11 * i + 10];
+  }
+
+  return vars;
+}
 
 #define bitsliced_step_1(sc)                                                                       \
   mpc_and_const(out, in, mask->mask, sc);                                                          \
@@ -82,7 +107,6 @@ static void sbox_vars_clear(sbox_vars_t* vars);
   mpc_xor(out, out, vars->x0s, sc);                                                                \
   mpc_xor(out, out, vars->x1s, sc)
 
-#if defined(WITH_CUSTOM_INSTANCES)
 static void _mpc_sbox_layer_bitsliced(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
                                       mzd_local_t* const* rvec, mask_t const* mask,
                                       sbox_vars_t const* vars) {
@@ -980,44 +1004,13 @@ mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_512_neon, mpc_lowmc_call_v
 #endif
 #endif
 
-#if defined(WITH_CUSTOM_INSTANCES)
-static void sbox_vars_clear(sbox_vars_t* vars) {
-  if (vars->storage) {
-    mzd_local_free_multiple(vars->storage);
-    free(vars->storage);
-    memset(vars, 0, sizeof(*vars));
-  }
-}
-
-static sbox_vars_t* sbox_vars_init(sbox_vars_t* vars, uint32_t n, unsigned sc) {
-  vars->storage = calloc(11 * sc, sizeof(mzd_local_t*));
-  mzd_local_init_multiple_ex(vars->storage, 11 * sc, 1, n, false);
-
-  for (unsigned int i = 0; i < sc; ++i) {
-    vars->x0m[i] = vars->storage[11 * i + 0];
-    vars->x1m[i] = vars->storage[11 * i + 1];
-    vars->x2m[i] = vars->storage[11 * i + 2];
-    vars->r0m[i] = vars->storage[11 * i + 3];
-    vars->r1m[i] = vars->storage[11 * i + 4];
-    vars->r2m[i] = vars->storage[11 * i + 5];
-    vars->x0s[i] = vars->storage[11 * i + 6];
-    vars->x1s[i] = vars->storage[11 * i + 7];
-    vars->r0s[i] = vars->storage[11 * i + 8];
-    vars->r1s[i] = vars->storage[11 * i + 9];
-    vars->v[i]   = vars->storage[11 * i + 10];
-  }
-
-  return vars;
-}
-#endif
-
 #ifdef WITH_CUSTOM_INSTANCES
 #define general_or_10(l, f) (l)->m == 10 ? f##_10 : (f)
 #else
 #define general_or_10(l, f) f##_10
 #endif
 
-lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
+zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {
 #ifdef WITH_OPT
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2)
@@ -1076,7 +1069,7 @@ lowmc_implementation_f get_lowmc_implementation(const lowmc_t* lowmc) {
   return general_or_10(lowmc, mpc_lowmc_call);
 }
 
-lowmc_verify_implementation_f get_lowmc_verify_implementation(const lowmc_t* lowmc) {
+zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc) {
 #ifdef WITH_OPT
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2)

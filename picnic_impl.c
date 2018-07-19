@@ -421,7 +421,7 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
       bit_idx = 0;
     }
 
-    uint8_t twobits = (hash[bit_idx >> 3] >> ((6 - (bit_idx & 0x7)))) & 0x3;
+    const uint8_t twobits = (hash[bit_idx >> 3] >> ((6 - (bit_idx & 0x7)))) & 0x3;
     if (twobits != 0x3) {
       *ch++ = twobits;
     }
@@ -432,9 +432,8 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
 /**
  * Re-compute challenge for verification
  */
-static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
-                         const uint8_t* circuit_output, const uint8_t* circuit_input,
-                         const uint8_t* m, size_t m_len, uint8_t* ch) {
+static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
+                      const uint8_t* circuit_input, const uint8_t* m, size_t m_len, uint8_t* ch) {
   const size_t digest_size = pp->digest_size;
   const size_t num_rounds  = pp->num_rounds;
   const size_t output_size = pp->output_size;
@@ -539,7 +538,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
  * Compute challenge
  */
 static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
-                  const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
+               const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
   const size_t num_rounds = pp->num_rounds;
 
   hash_context ctx;
@@ -760,18 +759,18 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 #if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
 #endif
-  const lowmc_t* lowmc                    = &pp->lowmc;
-  const lowmc_implementation_f lowmc_impl = pp->lowmc_impl;
-  const size_t seed_size                  = pp->seed_size;
-  const size_t num_rounds                 = pp->num_rounds;
-  const transform_t transform             = pp->transform;
-  const size_t input_size                 = pp->input_size;
-  const size_t output_size                = pp->output_size;
-  const size_t view_count                 = lowmc->r;
-  const size_t lowmc_k                    = lowmc->k;
-  const size_t lowmc_n                    = lowmc->n;
-  const size_t lowmc_r                    = lowmc->r;
-  const size_t view_size                  = pp->view_size;
+  const lowmc_t* lowmc                          = &pp->lowmc;
+  const zkbpp_lowmc_implementation_f lowmc_impl = pp->zkbpp_lowmc_impl;
+  const size_t seed_size                        = pp->seed_size;
+  const size_t num_rounds                       = pp->num_rounds;
+  const transform_t transform                   = pp->transform;
+  const size_t input_size                       = pp->input_size;
+  const size_t output_size                      = pp->output_size;
+  const size_t view_count                       = lowmc->r;
+  const size_t lowmc_k                          = lowmc->k;
+  const size_t lowmc_n                          = lowmc->n;
+  const size_t lowmc_r                          = lowmc->r;
+  const size_t view_size                        = pp->view_size;
 
   sig_proof_t* prf = proof_new(pp);
   view_t* views    = calloc(sizeof(view_t), view_count);
@@ -918,17 +917,17 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
 #if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
 #endif
-  const size_t num_rounds                         = pp->num_rounds;
-  const lowmc_t* lowmc                            = &pp->lowmc;
-  const transform_t transform                     = pp->transform;
-  lowmc_verify_implementation_f lowmc_verify_impl = pp->lowmc_verify_impl;
-  const size_t input_size                         = pp->input_size;
-  const size_t output_size                        = pp->output_size;
-  const size_t view_count                         = lowmc->r;
-  const size_t lowmc_k                            = lowmc->k;
-  const size_t lowmc_n                            = lowmc->n;
-  const size_t lowmc_r                            = lowmc->r;
-  const size_t view_size                          = pp->view_size;
+  const size_t num_rounds                               = pp->num_rounds;
+  const lowmc_t* lowmc                                  = &pp->lowmc;
+  const transform_t transform                           = pp->transform;
+  zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->zkbpp_lowmc_verify_impl;
+  const size_t input_size                               = pp->input_size;
+  const size_t output_size                              = pp->output_size;
+  const size_t view_count                               = lowmc->r;
+  const size_t lowmc_k                                  = lowmc->k;
+  const size_t lowmc_n                                  = lowmc->n;
+  const size_t lowmc_r                                  = lowmc->r;
+  const size_t view_size                                = pp->view_size;
 
   sig_proof_t* prf = sig_proof_from_char_array(pp, sig, siglen);
   if (!prf) {
@@ -1238,14 +1237,14 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
     return false;
   }
 
-  pp->lowmc_impl        = get_lowmc_implementation(&pp->lowmc);
-  pp->lowmc_verify_impl = get_lowmc_verify_implementation(&pp->lowmc);
-  pp->params            = param;
-  pp->transform         = param_to_transform(param);
-  pp->security_level    = pq_security_level;
-  pp->digest_size       = digest_size;
-  pp->seed_size         = seed_size;
-  pp->num_rounds        = num_rounds;
+  pp->zkbpp_lowmc_impl        = get_zkbpp_lowmc_implementation(&pp->lowmc);
+  pp->zkbpp_lowmc_verify_impl = get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
+  pp->params                  = param;
+  pp->transform               = param_to_transform(param);
+  pp->security_level          = pq_security_level;
+  pp->digest_size             = digest_size;
+  pp->seed_size               = seed_size;
+  pp->num_rounds              = num_rounds;
 
   // bytes required to store one input share
   pp->input_size = (pp->lowmc.k + 7) >> 3;
