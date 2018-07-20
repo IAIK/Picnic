@@ -68,11 +68,13 @@ bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, 
     return false;
   }
 
-  lowmc->m          = m;
-  lowmc->n          = n;
-  lowmc->r          = r;
-  lowmc->k          = k;
+  lowmc->m = m;
+  lowmc->n = n;
+  lowmc->r = r;
+  lowmc->k = k;
+#if defined(WITH_CUSTOM_INSTANCES)
   lowmc->needs_free = false;
+#endif
 
   lowmc->rounds = calloc(sizeof(lowmc_round_t), r);
 
@@ -233,6 +235,7 @@ void lowmc_clear(lowmc_t* lowmc) {
 #endif
     mzd_local_free(lowmc->rounds[i].l_lookup);
 #endif
+#if defined(WITH_CUSTOM_INSTANCES)
     if (lowmc->needs_free) {
 #if !defined(REDUCED_LINEAR_LAYER)
       mzd_local_free((mzd_local_t*)lowmc->rounds[i].constant);
@@ -242,8 +245,9 @@ void lowmc_clear(lowmc_t* lowmc) {
       mzd_local_free((mzd_local_t*)lowmc->rounds[i].k_matrix);
 #endif
     }
+#endif
   }
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_LINEAR_LAYER) && defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->needs_free) {
     mzd_local_free((mzd_local_t*)lowmc->precomputed_constant_non_linear);
     mzd_local_free((mzd_local_t*)lowmc->precomputed_constant_linear);
@@ -256,9 +260,11 @@ void lowmc_clear(lowmc_t* lowmc) {
   mzd_local_free(lowmc->precomputed_non_linear_part_lookup);
 #endif
 #endif
+#if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->needs_free) {
     mzd_local_free((mzd_local_t*)lowmc->k0_matrix);
   }
+#endif
   free(lowmc->rounds);
 
 #if defined(WITH_CUSTOM_INSTANCES)

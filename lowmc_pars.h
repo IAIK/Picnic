@@ -61,7 +61,9 @@ typedef struct {
 #if !defined(REDUCED_LINEAR_LAYER)
   mzd_local_t* k_lookup;
 #endif
+#if defined(MUL_M4RI)
   mzd_local_t* l_lookup;
+#endif
 } lowmc_round_t;
 
 /**
@@ -78,18 +80,24 @@ typedef struct {
 #endif
 
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
+#if defined(MUL_M4RI)
   mzd_local_t* k0_lookup;
+#endif
   lowmc_round_t* rounds;
 
 #if defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* precomputed_non_linear_part_matrix;
+#if defined(MUL_M4RI)
   mzd_local_t* precomputed_non_linear_part_lookup;
+#endif
 
   const mzd_local_t* precomputed_constant_linear;
   const mzd_local_t* precomputed_constant_non_linear;
 #endif
 
+#if defined(WITH_CUSTOM_INSTANCES)
   bool needs_free;
+#endif
 } lowmc_t;
 
 /**
