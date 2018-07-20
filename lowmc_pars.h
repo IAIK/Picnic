@@ -58,10 +58,10 @@ typedef struct {
   const mzd_local_t* constant;
 #endif
 
+#if defined(MUL_M4RI)
 #if !defined(REDUCED_LINEAR_LAYER)
   mzd_local_t* k_lookup;
 #endif
-#if defined(MUL_M4RI)
   mzd_local_t* l_lookup;
 #endif
 } lowmc_round_t;
