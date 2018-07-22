@@ -25,9 +25,6 @@
 #if defined(WITH_LOWMC_256_256_38)
 #include "lowmc_256_256_38.h"
 #endif
-#if defined(WITH_LOWMC_512_512_38)
-#include "lowmc_512_512_38.h"
-#endif
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -121,12 +118,6 @@ bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, 
 #if defined(WITH_LOWMC_256_256_38)
   if (n == 256 && k == 256 && r == 38) {
     LOAD_FROM_FIXED(256, 256, 38);
-    goto precomp;
-  }
-#endif
-#if defined(WITH_LOWMC_512_512_38)
-  if (n == 512 && k == 512 && r == 38) {
-    LOAD_FROM_FIXED(512, 512, 38);
     goto precomp;
   }
 #endif
