@@ -32,7 +32,7 @@
 #include <string.h>
 
 #if defined(WITH_CUSTOM_INSTANCES)
-static mask_t* prepare_masks(mask_t* mask, unsigned int n, unsigned int m) {
+static void prepare_masks(mask_t* mask, unsigned int n, unsigned int m) {
   mask->x0   = mzd_local_init(1, n);
   mask->x1   = mzd_local_init_ex(1, n, false);
   mask->x2   = mzd_local_init_ex(1, n, false);
@@ -51,8 +51,6 @@ static mask_t* prepare_masks(mask_t* mask, unsigned int n, unsigned int m) {
   mzd_shift_left(mask->x1, mask->x0, 1);
   // 1s for c
   mzd_shift_left(mask->x2, mask->x0, 2);
-
-  return mask;
 }
 #endif
 
@@ -126,15 +124,12 @@ bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, 
   return false;
 
 precomp:
-
 #if defined(MUL_M4RI)
   lowmc->k0_lookup = mzd_precompute_matrix_lookup(lowmc->k0_matrix);
 #if defined(REDUCED_LINEAR_LAYER)
   lowmc->precomputed_non_linear_part_lookup =
       mzd_precompute_matrix_lookup(lowmc->precomputed_non_linear_part_matrix);
 #endif
-#endif
-#if defined(MUL_M4RI)
   for (unsigned int i = 0; i < r; ++i) {
     lowmc->rounds[i].l_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].l_matrix);
 #if !defined(REDUCED_LINEAR_LAYER)
@@ -144,12 +139,8 @@ precomp:
 #endif
 
 #if defined(WITH_CUSTOM_INSTANCES)
-  if (!prepare_masks(&lowmc->mask, n, m)) {
-    lowmc_clear(lowmc);
-    return false;
-  }
+  prepare_masks(&lowmc->mask, n, m);
 #endif
-
   return true;
 }
 
