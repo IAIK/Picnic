@@ -16,17 +16,18 @@ static int lowmc_enc_str(const picnic_params_t param, const char* key, const cha
   if (!pp) {
     return -1;
   }
+  const lowmc_t* lowmc = pp->lowmc;
 
-  mzd_t* sk = mzd_from_str(1, pp->lowmc.k, key);
-  mzd_t* pt = mzd_from_str(1, pp->lowmc.n, plaintext);
-  mzd_t* ct = mzd_from_str(1, pp->lowmc.n, expected);
+  mzd_t* sk = mzd_from_str(1, lowmc->k, key);
+  mzd_t* pt = mzd_from_str(1, lowmc->n, plaintext);
+  mzd_t* ct = mzd_from_str(1, lowmc->n, expected);
 
   mzd_local_t* skl = mzd_convert(sk);
   mzd_local_t* ptl = mzd_convert(pt);
   mzd_local_t* ctl = mzd_convert(ct);
 
   int ret          = 0;
-  mzd_local_t* ctr = lowmc_call(&pp->lowmc, skl, ptl);
+  mzd_local_t* ctr = lowmc_call(lowmc, skl, ptl);
   if (!ctr) {
     ret = 1;
     goto end;

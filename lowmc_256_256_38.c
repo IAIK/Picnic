@@ -21209,9 +21209,9 @@ static const lowmc_round_t rounds[38] = {
 };
 
 #if defined(MUL_M4RI)
-static lowmc_t instance = {
+lowmc_t lowmc_256_256_38 = {
 #else
-static const lowmc_t instance = {
+const lowmc_t lowmc_256_256_38 = {
 #endif
   10, 256, 38, 256,
 #if defined(WITH_CUSTOM_INSTANCES)
@@ -21238,12 +21238,3 @@ static const lowmc_t instance = {
   false
 #endif
 };
-
-#if !defined(MUL_M4RI)
-const lowmc_t* get_lowmc_256_256_38(void)
-#else
-lowmc_t* get_lowmc_256_256_38(void)
-#endif
-{
-  return &instance;
-}

@@ -4,9 +4,9 @@
 #include "lowmc_pars.h"
 
 #if !defined(MUL_M4RI)
-const lowmc_t* get_lowmc_128_128_20(void);
+extern const lowmc_t lowmc_128_128_20;
 #else
-lowmc_t* get_lowmc_128_128_20(void);
+extern lowmc_t lowmc_128_128_20;
 #endif
 
 #endif

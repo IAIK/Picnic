@@ -16,16 +16,6 @@
 #include "macros.h"
 #include "mzd_additional.h"
 
-#if defined(WITH_LOWMC_128_128_20)
-#include "lowmc_128_128_20.h"
-#endif
-#if defined(WITH_LOWMC_192_192_30)
-#include "lowmc_192_192_30.h"
-#endif
-#if defined(WITH_LOWMC_256_256_38)
-#include "lowmc_256_256_38.h"
-#endif
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,56 +44,31 @@ static void prepare_masks(mask_t* mask, unsigned int n, unsigned int m) {
 }
 #endif
 
-bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, unsigned int k) {
+#if defined(MUL_M4RI)
+bool lowmc_init(lowmc_t* lowmc) {
   if (!lowmc) {
     return false;
   }
 
-  if (n - 3 * m < 2 || n != k) {
+  if (lowmc->n - 3 * lowmc->m < 2 || lowmc->n != lowmc->k) {
     return false;
   }
 
-#if defined(WITH_LOWMC_128_128_20)
-  if (n == 128 && k == 128 && r == 20) {
-    memcpy(lowmc, get_lowmc_128_128_20(), sizeof(lowmc_t));
-    goto precomp;
-  }
-#endif
-#if defined(WITH_LOWMC_192_192_30)
-  if (n == 192 && k == 192 && r == 30) {
-    memcpy(lowmc, get_lowmc_192_192_30(), sizeof(lowmc_t));
-    goto precomp;
-  }
-#endif
-#if defined(WITH_LOWMC_256_256_38)
-  if (n == 256 && k == 256 && r == 38) {
-    memcpy(lowmc, get_lowmc_256_256_38(), sizeof(lowmc_t));
-    goto precomp;
-  }
-#endif
-
-  return false;
-
-precomp:
-#if defined(MUL_M4RI)
   lowmc->k0_lookup = mzd_precompute_matrix_lookup(lowmc->k0_matrix);
 #if defined(REDUCED_LINEAR_LAYER)
   lowmc->precomputed_non_linear_part_lookup =
       mzd_precompute_matrix_lookup(lowmc->precomputed_non_linear_part_matrix);
 #endif
-  for (unsigned int i = 0; i < r; ++i) {
+  for (unsigned int i = 0; i < lowmc->r; ++i) {
     lowmc->rounds[i].l_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].l_matrix);
 #if !defined(REDUCED_LINEAR_LAYER)
     lowmc->rounds[i].k_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].k_matrix);
 #endif
   }
-#endif
 
-#if defined(WITH_CUSTOM_INSTANCES)
-  prepare_masks(&lowmc->mask, n, m);
-#endif
   return true;
 }
+#endif
 
 #if defined(WITH_CUSTOM_INSTANCES)
 static mzd_local_t* readMZD_TStructFromFile(FILE* file) {
@@ -165,6 +130,8 @@ bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned in
 
     fclose(file);
   }
+
+  prepare_masks(&lowmc->masks, n, m);
 
   return true;
 }

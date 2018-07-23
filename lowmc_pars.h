@@ -88,7 +88,6 @@ typedef struct {
 #if defined(MUL_M4RI)
   mzd_local_t* precomputed_non_linear_part_lookup;
 #endif
-
   const mzd_local_t* precomputed_constant_linear;
   const mzd_local_t* precomputed_constant_non_linear;
 #endif
@@ -99,17 +98,14 @@ typedef struct {
 #endif
 } lowmc_t;
 
+#if defined(MUL_M4RI)
 /**
- * Generates a new LowMC instance
- *
- * \param m the number of sboxes
- * \param n the blocksize
- * \param r the number of rounds
- * \param k the keysize
+ * Initiaizes lookup tables of a LowMC instance
  *
  * \return parameters defining a LowMC instance
  */
-bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, unsigned int k);
+bool lowmc_init(lowmc_t* lowmc);
+#endif
 
 /**
  * Clears the allocated LowMC parameters

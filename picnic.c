@@ -104,20 +104,21 @@ int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
 
   const size_t input_size  = instance->input_size;
   const size_t output_size = instance->output_size;
+  const lowmc_t* lowmc     = instance->lowmc;
 
   const uint8_t* sk_sk = &sk->data[1];
   uint8_t* pk_c        = &pk->data[1 + output_size];
   uint8_t* pk_pt       = &pk->data[1];
   const uint8_t* sk_pt = &sk->data[1 + input_size];
 
-  mzd_local_t* plaintext = mzd_local_init_ex(1, instance->lowmc.n, false);
-  mzd_local_t* privkey   = mzd_local_init_ex(1, instance->lowmc.k, false);
+  mzd_local_t* plaintext = mzd_local_init_ex(1, lowmc->n, false);
+  mzd_local_t* privkey   = mzd_local_init_ex(1, lowmc->k, false);
 
   mzd_from_char_array(plaintext, sk_pt, output_size);
   mzd_from_char_array(privkey, sk_sk, input_size);
 
   // compute public key
-  mzd_local_t* ciphertext = lowmc_call(&instance->lowmc, privkey, plaintext);
+  mzd_local_t* ciphertext = lowmc_call(lowmc, privkey, plaintext);
 
   pk->data[0] = param;
   memcpy(pk_pt, sk_pt, output_size);
@@ -144,6 +145,7 @@ int PICNIC_CALLING_CONVENTION picnic_validate_keypair(const picnic_privatekey_t*
 
   const size_t input_size  = instance->input_size;
   const size_t output_size = instance->output_size;
+  const lowmc_t* lowmc     = instance->lowmc;
   const uint8_t* sk_sk     = &sk->data[1];
   const uint8_t* sk_pt     = &sk->data[1 + input_size];
   const uint8_t* sk_c      = &sk->data[1 + input_size + output_size];
@@ -156,14 +158,14 @@ int PICNIC_CALLING_CONVENTION picnic_validate_keypair(const picnic_privatekey_t*
     return -1;
   }
 
-  mzd_local_t* plaintext = mzd_local_init_ex(1, instance->lowmc.n, false);
-  mzd_local_t* privkey   = mzd_local_init_ex(1, instance->lowmc.k, false);
+  mzd_local_t* plaintext = mzd_local_init_ex(1, lowmc->n, false);
+  mzd_local_t* privkey   = mzd_local_init_ex(1, lowmc->k, false);
 
   mzd_from_char_array(plaintext, sk_pt, instance->output_size);
   mzd_from_char_array(privkey, sk_sk, instance->input_size);
 
   // compute public key
-  mzd_local_t* ciphertext = lowmc_call(&instance->lowmc, privkey, plaintext);
+  mzd_local_t* ciphertext = lowmc_call(lowmc, privkey, plaintext);
 
   uint8_t buffer[MAX_LOWMC_BLOCK_SIZE];
   mzd_to_char_array(buffer, ciphertext, output_size);

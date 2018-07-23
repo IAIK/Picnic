@@ -289,7 +289,7 @@ static uint64_t uint64_from_bitstream(bitstream_t* bs) {
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
                           unsigned int idx) {
-  const size_t num_views = pp->lowmc.r;
+  const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
   bs.buffer   = dst;
@@ -297,7 +297,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
 
   const view_t* v = &views[0];
 #if defined(WITH_CUSTOM_INSTANCES)
-  if (pp->lowmc.m != 10) {
+  if (pp->lowmc->m != 10) {
     const size_t view_round_size = pp->view_round_size;
     for (size_t i = 0; i < num_views; ++i, ++v) {
       mzd_to_bitstream(&bs, v->s[idx], view_round_size);
@@ -313,7 +313,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
 
 static void decompress_view(view_t* views, const picnic_instance_t* pp, const uint8_t* src,
                             unsigned int idx) {
-  const size_t num_views = pp->lowmc.r;
+  const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
   bs.buffer   = (uint8_t*)src;
@@ -321,7 +321,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
 
   view_t* v = &views[0];
 #if defined(WITH_CUSTOM_INSTANCES)
-  if (pp->lowmc.m != 10) {
+  if (pp->lowmc->m != 10) {
     const size_t view_round_size = pp->view_round_size;
     for (size_t i = 0; i < num_views; ++i, ++v) {
       mzd_from_bitstream(&bs, v->s[idx], view_round_size);
@@ -337,7 +337,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
 
 static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, const uint8_t* src,
                                    unsigned int idx) {
-  const size_t num_views = pp->lowmc.r;
+  const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
   bs.buffer   = (uint8_t*)src;
@@ -345,7 +345,7 @@ static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, co
 
   rvec_t* rv = &rvec[0];
 #if defined(WITH_CUSTOM_INSTANCES)
-  if (pp->lowmc.m != 10) {
+  if (pp->lowmc->m != 10) {
     const size_t view_round_size = pp->view_round_size;
     for (size_t i = 0; i < num_views; ++i, ++rv) {
       mzd_from_bitstream(&bs, rv->s[idx], view_round_size);
@@ -759,7 +759,7 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 #if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
 #endif
-  const lowmc_t* lowmc                          = &pp->lowmc;
+  const lowmc_t* lowmc                          = pp->lowmc;
   const zkbpp_lowmc_implementation_f lowmc_impl = pp->zkbpp_lowmc_impl;
   const size_t seed_size                        = pp->seed_size;
   const size_t num_rounds                       = pp->num_rounds;
@@ -918,7 +918,7 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
   TIME_FUNCTION;
 #endif
   const size_t num_rounds                               = pp->num_rounds;
-  const lowmc_t* lowmc                                  = &pp->lowmc;
+  const lowmc_t* lowmc                                  = pp->lowmc;
   const transform_t transform                           = pp->transform;
   zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->zkbpp_lowmc_verify_impl;
   const size_t input_size                               = pp->input_size;
@@ -1046,8 +1046,8 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
 bool impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
                const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
                size_t* siglen) {
-  mzd_local_t* m_plaintext  = mzd_local_init_ex(1, pp->lowmc.n, false);
-  mzd_local_t* m_privatekey = mzd_local_init_ex(1, pp->lowmc.k, false);
+  mzd_local_t* m_plaintext  = mzd_local_init_ex(1, pp->lowmc->n, false);
+  mzd_local_t* m_privatekey = mzd_local_init_ex(1, pp->lowmc->k, false);
 
   mzd_from_char_array(m_plaintext, plaintext, pp->output_size);
   mzd_from_char_array(m_privatekey, private_key, pp->input_size);
@@ -1063,8 +1063,8 @@ bool impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint
 
 bool impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
                  const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
-  mzd_local_t* m_plaintext = mzd_local_init_ex(1, pp->lowmc.n, false);
-  mzd_local_t* m_publickey = mzd_local_init_ex(1, pp->lowmc.n, false);
+  mzd_local_t* m_plaintext = mzd_local_init_ex(1, pp->lowmc->n, false);
+  mzd_local_t* m_publickey = mzd_local_init_ex(1, pp->lowmc->n, false);
 
   mzd_from_char_array(m_plaintext, plaintext, pp->output_size);
   mzd_from_char_array(m_publickey, public_key, pp->output_size);
@@ -1154,32 +1154,68 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 // instance handling
 
 // L1, L3, and L5 lowmc instances
-static lowmc_t lowmc_instances[3];
+#if defined(WITH_LOWMC_128_128_20)
+#include "lowmc_128_128_20.h"
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+#include "lowmc_192_192_30.h"
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+#include "lowmc_256_256_38.h"
+#endif
+
+#if defined(MUL_M4RI)
+static lowmc_t* const lowmc_instances[3] = {
+#else
+static const lowmc_t* const lowmc_instances[3] = {
+#endif
+#if defined(WITH_LOWMC_128_128_20)
+    &lowmc_128_128_20,
+#else
+    NULL,
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+    &lowmc_192_192_30,
+#else
+    NULL,
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+    &lowmc_256_256_38,
+#else
+    NULL,
+#endif
+};
 static bool lowmc_instances_initialized[3];
 
-static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX];
+static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
+    {0},
+    {NULL, NULL, NULL, 64, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
+     PICNIC_SIGNATURE_SIZE_Picnic_L1_FS, Picnic_L1_FS, TRANSFORM_FS},
+    {NULL, NULL, NULL, 64, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
+     PICNIC_SIGNATURE_SIZE_Picnic_L1_UR, Picnic_L1_UR, TRANSFORM_UR},
+    {NULL, NULL, NULL, 96, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0,
+     PICNIC_SIGNATURE_SIZE_Picnic_L3_FS, Picnic_L3_FS, TRANSFORM_FS},
+    {NULL, NULL, NULL, 96, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
+     PICNIC_SIGNATURE_SIZE_Picnic_L3_UR, Picnic_L3_UR, TRANSFORM_UR},
+    {NULL, NULL, NULL, 128, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0,
+     PICNIC_SIGNATURE_SIZE_Picnic_L5_FS, Picnic_L5_FS, TRANSFORM_FS},
+    {NULL, NULL, NULL, 128, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
+     PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR}};
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
-static transform_t param_to_transform(picnic_params_t param) {
-  switch (param) {
-  case Picnic_L1_UR:
-  case Picnic_L3_UR:
-  case Picnic_L5_UR:
-    return TRANSFORM_UR;
-
-  default:
-    return TRANSFORM_FS;
-  }
-}
-
-static lowmc_t* get_lowmc_instance(unsigned int idx, uint32_t m, uint32_t n, uint32_t r, uint32_t k) {
+static const lowmc_t* lowmc_get_instance(unsigned int idx) {
   if (!lowmc_instances_initialized[idx]) {
-    if (lowmc_init(&lowmc_instances[idx], m, n, r, k)) {
+#if defined(MUL_M4RI)
+    if (lowmc_init(lowmc_instances[idx])) {
       lowmc_instances_initialized[idx] = true;
-      return &lowmc_instances[idx];
+      return lowmc_instances[idx];
     }
+#else
+    lowmc_instances_initialized[idx] = true;
+    return lowmc_instances[idx];
+#endif
   } else {
-    return &lowmc_instances[idx];
+    return lowmc_instances[idx];
   }
 
   return NULL;
@@ -1187,56 +1223,57 @@ static lowmc_t* get_lowmc_instance(unsigned int idx, uint32_t m, uint32_t n, uin
 
 static void clear_lowmc_instance(unsigned int idx) {
   if (lowmc_instances_initialized[idx]) {
-    lowmc_clear(&lowmc_instances[idx]);
+#if defined(MUL_M4RI)
+    lowmc_clear(lowmc_instances[idx]);
+#endif
     lowmc_instances_initialized[idx] = false;
   }
 }
 
-static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32_t m, uint32_t n,
-                            uint32_t r, uint32_t k) {
+/**
+ * For trying other LowMC instances, call this function with
+ * PARAMETER_SET_INVALID and a custom LowMC instance and the transform as last arguments.
+ */
+#if defined(WITH_CUSTOM_INSTANCES)
+static bool create_instance(picnic_instance_t* pp, picnic_params_t param, const lowmc_t* lowmc,
+                            transform_t transform) {
+#else
+static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
+#endif
 #if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
   START_TIMING;
 #endif
 
-  lowmc_t* lowmc_instance = NULL;
+  const lowmc_t* lowmc_instance = NULL;
 
+#if defined(WITH_CUSTOM_INSTANCES)
   uint32_t pq_security_level, num_rounds;
+#endif
   switch (param) {
   case Picnic_L1_FS:
   case Picnic_L1_UR:
-    n = k             = LOWMC_L1_N;
-    m                 = LOWMC_L1_M;
-    r                 = LOWMC_L1_R;
-    pq_security_level = 64;
-    num_rounds        = 219;
-    lowmc_instance    = get_lowmc_instance(0, m, n, r, k);
+    lowmc_instance = lowmc_get_instance(0);
     break;
 
   case Picnic_L3_FS:
   case Picnic_L3_UR:
-    n = k             = LOWMC_L3_N;
-    m                 = LOWMC_L3_M;
-    r                 = LOWMC_L3_R;
-    pq_security_level = 96;
-    num_rounds        = 329;
-    lowmc_instance    = get_lowmc_instance(1, m, n, r, k);
+    lowmc_instance = lowmc_get_instance(1);
     break;
 
   case Picnic_L5_FS:
   case Picnic_L5_UR:
-    n = k             = LOWMC_L5_N;
-    m                 = LOWMC_L5_M;
-    r                 = LOWMC_L5_R;
-    pq_security_level = 128;
-    num_rounds        = 438;
-    lowmc_instance    = get_lowmc_instance(2, m, n, r, k);
+    lowmc_instance = lowmc_get_instance(2);
     break;
 
 #if defined(WITH_CUSTOM_INSTANCES)
   case PARAMETER_SET_INVALID:
-    pq_security_level = n / 2;
-    num_rounds        = ceil(n / 0.5849625007211562);
+    if (!lowmc) {
+      return false;
+    }
+
+    pq_security_level = lowmc->n / 2;
+    num_rounds        = ceil(lowmc->n / 0.5849625007211562);
     break;
 #endif
 
@@ -1245,52 +1282,56 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
   }
 
   if (lowmc_instance) {
-    memcpy(&pp->lowmc, lowmc_instance, sizeof(lowmc_t));
+    pp->lowmc = lowmc_instance;
   } else {
 #if defined(WITH_CUSTOM_INSTANCES)
-    if (!lowmc_read_file(&pp->lowmc, m, n, r, k)) {
-      return false;
-    }
+    pp->lowmc = lowmc;
 #else
     return false;
 #endif
   }
 
-  const uint32_t digest_size = MAX(32, (4 * pq_security_level + 7) / 8);
-  const uint32_t seed_size   = (2 * pq_security_level + 7) / 8;
+  pp->zkbpp_lowmc_impl        = get_zkbpp_lowmc_implementation(pp->lowmc);
+  pp->zkbpp_lowmc_verify_impl = get_zkbpp_lowmc_verify_implementation(pp->lowmc);
+#if defined(WITH_CUSTOM_INSTANCES)
+  if (!lowmc_instance) {
+    pp->params         = param;
+    pp->transform      = transform;
+    pp->security_level = pq_security_level;
 
-  pp->zkbpp_lowmc_impl        = get_zkbpp_lowmc_implementation(&pp->lowmc);
-  pp->zkbpp_lowmc_verify_impl = get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
-  pp->params                  = param;
-  pp->transform               = param_to_transform(param);
-  pp->security_level          = pq_security_level;
-  pp->digest_size             = digest_size;
-  pp->seed_size               = seed_size;
-  pp->num_rounds              = num_rounds;
+    const uint32_t digest_size = MAX(32, (4 * pp->security_level + 7) / 8);
+    const uint32_t seed_size   = (2 * pp->security_level + 7) / 8;
+    pp->digest_size            = digest_size;
+    pp->seed_size              = seed_size;
+    pp->num_rounds             = num_rounds;
 
-  // bytes required to store one input share
-  pp->input_size = (pp->lowmc.k + 7) >> 3;
-  // bytes required to store one output share
-  pp->output_size = (pp->lowmc.n + 7) >> 3;
-  // number of bits per view per LowMC round
-  pp->view_round_size = (pp->lowmc.m * 3);
-  // bytes required to store communicated bits (i.e. views) of one round
-  pp->view_size = (pp->view_round_size * pp->lowmc.r + 7) >> 3;
-  // bytes required to store collapsed challenge
-  pp->collapsed_challenge_size = (num_rounds + 3) >> 2;
+    // bytes required to store one input share
+    pp->input_size = (pp->lowmc->k + 7) >> 3;
+    // bytes required to store one output share
+    pp->output_size = (pp->lowmc->n + 7) >> 3;
+    // number of bits per view per LowMC round
+    pp->view_round_size = (pp->lowmc->m * 3);
+    // bytes required to store communicated bits (i.e. views) of one round
+    pp->view_size = (pp->view_round_size * pp->lowmc->r + 7) >> 3;
 
-  if (pp->transform == TRANSFORM_UR) {
-    pp->unruh_without_input_bytes_size = pp->seed_size + pp->view_size;
-    pp->unruh_with_input_bytes_size    = pp->unruh_without_input_bytes_size + pp->input_size;
-  } else {
-    pp->unruh_without_input_bytes_size = pp->unruh_with_input_bytes_size = 0;
+    // bytes required to store collapsed challenge
+    pp->collapsed_challenge_size = (pp->num_rounds + 3) >> 2;
+
+    if (pp->transform == TRANSFORM_UR) {
+      pp->unruh_without_input_bytes_size = pp->seed_size + pp->view_size;
+      pp->unruh_with_input_bytes_size    = pp->unruh_without_input_bytes_size + pp->input_size;
+    } else {
+      pp->unruh_without_input_bytes_size = pp->unruh_with_input_bytes_size = 0;
+    }
+
+    // we can use unruh_without_input_bytes_size here. In call cases where we need
+    // to write more, we do not need to write the input share
+    const size_t per_round_size = pp->input_size + pp->view_size + pp->digest_size +
+                                  2 * pp->seed_size + pp->unruh_without_input_bytes_size;
+    pp->max_signature_size = pp->collapsed_challenge_size + pp->num_rounds * per_round_size;
   }
+#endif
 
-  // we can use unruh_without_input_bytes_size here. In call cases where we need
-  // to write more, we do not need to write the input share
-  const size_t per_round_size = pp->input_size + pp->view_size + pp->digest_size +
-                                2 * pp->seed_size + pp->unruh_without_input_bytes_size;
-  pp->max_signature_size = pp->collapsed_challenge_size + num_rounds * per_round_size;
 #if defined(WITH_DETAILED_TIMING)
   END_TIMING(timing_and_size->gen.lowmc_init);
 #endif
@@ -1303,8 +1344,11 @@ picnic_instance_t* get_instance(picnic_params_t param) {
   }
 
   if (!instance_initialized[param]) {
-    if (!create_instance(&instances[param], param, LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG,
-                         LOWMC_UNSPECFIED_ARG, LOWMC_UNSPECFIED_ARG)) {
+#if defined(WITH_CUSTOM_INSTANCES)
+    if (!create_instance(&instances[param], param, NULL, TRANSFORM_FS)) {
+#else
+    if (!create_instance(&instances[param], param)) {
+#endif
       return NULL;
     }
     instance_initialized[param] = true;
@@ -1320,7 +1364,8 @@ ATTR_DTOR static void clear_instances(void) {
     }
   }
 
-  for (unsigned int i = 0; i < sizeof(lowmc_instances_initialized) / sizeof(lowmc_instances_initialized[0]); ++i) {
+  for (unsigned int i = 0;
+       i < sizeof(lowmc_instances_initialized) / sizeof(lowmc_instances_initialized[0]); ++i) {
     clear_lowmc_instance(i);
   }
 }
