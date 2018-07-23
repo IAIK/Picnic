@@ -1153,6 +1153,10 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 
 // instance handling
 
+// L1, L3, and L5 lowmc instances
+static lowmc_t lowmc_instances[3];
+static bool lowmc_instances_initialized[3];
+
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX];
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
@@ -1168,16 +1172,35 @@ static transform_t param_to_transform(picnic_params_t param) {
   }
 }
 
+static lowmc_t* get_lowmc_instance(unsigned int idx, uint32_t m, uint32_t n, uint32_t r, uint32_t k) {
+  if (!lowmc_instances_initialized[idx]) {
+    if (lowmc_init(&lowmc_instances[idx], m, n, r, k)) {
+      lowmc_instances_initialized[idx] = true;
+      return &lowmc_instances[idx];
+    }
+  } else {
+    return &lowmc_instances[idx];
+  }
+
+  return NULL;
+}
+
+static void clear_lowmc_instance(unsigned int idx) {
+  if (lowmc_instances_initialized[idx]) {
+    lowmc_clear(&lowmc_instances[idx]);
+    lowmc_instances_initialized[idx] = false;
+  }
+}
+
 static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32_t m, uint32_t n,
                             uint32_t r, uint32_t k) {
 #if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
 #endif
-#if defined(WITH_CUSTOM_INSTANCES)
-  bool known_instance = true;
-#endif
 
-  uint32_t pq_security_level, num_rounds, digest_size, seed_size;
+  lowmc_t* lowmc_instance = NULL;
+
+  uint32_t pq_security_level, num_rounds;
   switch (param) {
   case Picnic_L1_FS:
   case Picnic_L1_UR:
@@ -1186,6 +1209,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
     r                 = LOWMC_L1_R;
     pq_security_level = 64;
     num_rounds        = 219;
+    lowmc_instance    = get_lowmc_instance(0, m, n, r, k);
     break;
 
   case Picnic_L3_FS:
@@ -1195,6 +1219,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
     r                 = LOWMC_L3_R;
     pq_security_level = 96;
     num_rounds        = 329;
+    lowmc_instance    = get_lowmc_instance(1, m, n, r, k);
     break;
 
   case Picnic_L5_FS:
@@ -1204,11 +1229,11 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
     r                 = LOWMC_L5_R;
     pq_security_level = 128;
     num_rounds        = 438;
+    lowmc_instance    = get_lowmc_instance(2, m, n, r, k);
     break;
 
 #if defined(WITH_CUSTOM_INSTANCES)
   case PARAMETER_SET_INVALID:
-    known_instance    = false;
     pq_security_level = n / 2;
     num_rounds        = ceil(n / 0.5849625007211562);
     break;
@@ -1218,24 +1243,24 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
     return false;
   }
 
-  digest_size = MAX(32, (4 * pq_security_level + 7) / 8);
-  seed_size   = (2 * pq_security_level + 7) / 8;
-
 #if defined(WITH_DETAILED_TIMING)
   START_TIMING;
 #endif
-  bool have_instance = false;
+
+  if (lowmc_instance) {
+    memcpy(&pp->lowmc, lowmc_instance, sizeof(lowmc_t));
+  } else {
 #if defined(WITH_CUSTOM_INSTANCES)
-  if (!known_instance) {
-    have_instance = lowmc_read_file(&pp->lowmc, m, n, r, k);
-  }
-#endif
-  if (!have_instance) {
-    have_instance = lowmc_init(&pp->lowmc, m, n, r, k);
-  }
-  if (!have_instance) {
+    if (!lowmc_read_file(&pp->lowmc, m, n, r, k)) {
+      return false;
+    }
+#else
     return false;
+#endif
   }
+
+  const uint32_t digest_size = MAX(32, (4 * pq_security_level + 7) / 8);
+  const uint32_t seed_size   = (2 * pq_security_level + 7) / 8;
 
   pp->zkbpp_lowmc_impl        = get_zkbpp_lowmc_implementation(&pp->lowmc);
   pp->zkbpp_lowmc_verify_impl = get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
@@ -1275,10 +1300,6 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
   return true;
 }
 
-static void destroy_instance(picnic_instance_t* pp) {
-  lowmc_clear(&pp->lowmc);
-}
-
 picnic_instance_t* get_instance(picnic_params_t param) {
   if (param <= PARAMETER_SET_INVALID || param >= PARAMETER_SET_MAX_INDEX) {
     return NULL;
@@ -1298,8 +1319,11 @@ picnic_instance_t* get_instance(picnic_params_t param) {
 ATTR_DTOR static void clear_instances(void) {
   for (unsigned int p = PARAMETER_SET_INVALID + 1; p < PARAMETER_SET_MAX_INDEX; ++p) {
     if (instance_initialized[p]) {
-      destroy_instance(&instances[p]);
       instance_initialized[p] = false;
     }
+  }
+
+  for (unsigned int i = 0; i < sizeof(lowmc_instances_initialized) / sizeof(lowmc_instances_initialized[0]); ++i) {
+    clear_lowmc_instance(i);
   }
 }

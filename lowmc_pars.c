@@ -59,7 +59,7 @@ bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, 
     return false;
   }
 
-  if (n - 3 * m < 2) {
+  if (n - 3 * m < 2 || n != k) {
     return false;
   }
 
