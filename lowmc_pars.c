@@ -118,7 +118,7 @@ bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned in
       lowmc->rounds[i].k_matrix = readMZD_TStructFromFile(file);
 #endif
       lowmc->rounds[i].l_matrix = readMZD_TStructFromFile(file);
-#if !defineD(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_LINEAR_LAYER)
       lowmc->rounds[i].constant = readMZD_TStructFromFile(file);
 #endif
     }
@@ -131,8 +131,7 @@ bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned in
     fclose(file);
   }
 
-  prepare_masks(&lowmc->masks, n, m);
-
+  prepare_masks(&lowmc->mask, n, m);
   return true;
 }
 #endif

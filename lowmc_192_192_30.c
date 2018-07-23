@@ -12886,9 +12886,6 @@ lowmc_t lowmc_192_192_30 = {
 const lowmc_t lowmc_192_192_30 = {
 #endif
   10, 192, 30, 192,
-#if defined(WITH_CUSTOM_INSTANCES)
-  { 0 },
-#endif
 #if defined(REDUCED_LINEAR_LAYER)
   &precomputed_round_key_matrix_linear_part,
 #else
@@ -12907,6 +12904,7 @@ const lowmc_t lowmc_192_192_30 = {
   &precomputed_constant_non_linear_part,
 #endif
 #if defined(WITH_CUSTOM_INSTANCES)
+  { NULL, NULL, NULL, NULL },
   false
 #endif
 };

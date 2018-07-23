@@ -78,6 +78,8 @@ typedef struct {
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
 #if defined(MUL_M4RI)
   mzd_local_t* k0_lookup;
+#endif
+#if defined(MUL_M4RI) || defined(WITH_CUSTOM_INSTANCES)
   lowmc_round_t* rounds;
 #else
   const lowmc_round_t* rounds;
