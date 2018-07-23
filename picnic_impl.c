@@ -1196,6 +1196,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
                             uint32_t r, uint32_t k) {
 #if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
+  START_TIMING;
 #endif
 
   lowmc_t* lowmc_instance = NULL;
@@ -1242,10 +1243,6 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param, uint32
   default:
     return false;
   }
-
-#if defined(WITH_DETAILED_TIMING)
-  START_TIMING;
-#endif
 
   if (lowmc_instance) {
     memcpy(&pp->lowmc, lowmc_instance, sizeof(lowmc_t));
