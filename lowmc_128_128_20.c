@@ -5738,142 +5738,302 @@ static const lowmc_round_t rounds[20] = {
 
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_1, &L_0, &C_0, NULL, NULL
+#else
     &K_1, &L_0, &C_0
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_0, NULL
 #else
     &L_0
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_2, &L_1, &C_1, NULL, NULL
+#else
     &K_2, &L_1, &C_1
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_1, NULL
 #else
     &L_1
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_3, &L_2, &C_2, NULL, NULL
+#else
     &K_3, &L_2, &C_2
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_2, NULL
 #else
     &L_2
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_4, &L_3, &C_3, NULL, NULL
+#else
     &K_4, &L_3, &C_3
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_3, NULL
 #else
     &L_3
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_5, &L_4, &C_4, NULL, NULL
+#else
     &K_5, &L_4, &C_4
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_4, NULL
 #else
     &L_4
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_6, &L_5, &C_5, NULL, NULL
+#else
     &K_6, &L_5, &C_5
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_5, NULL
 #else
     &L_5
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_7, &L_6, &C_6, NULL, NULL
+#else
     &K_7, &L_6, &C_6
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_6, NULL
 #else
     &L_6
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_8, &L_7, &C_7, NULL, NULL
+#else
     &K_8, &L_7, &C_7
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_7, NULL
 #else
     &L_7
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_9, &L_8, &C_8, NULL, NULL
+#else
     &K_9, &L_8, &C_8
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_8, NULL
 #else
     &L_8
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_10, &L_9, &C_9, NULL, NULL
+#else
     &K_10, &L_9, &C_9
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_9, NULL
 #else
     &L_9
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_11, &L_10, &C_10, NULL, NULL
+#else
     &K_11, &L_10, &C_10
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_10, NULL
 #else
     &L_10
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_12, &L_11, &C_11, NULL, NULL
+#else
     &K_12, &L_11, &C_11
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_11, NULL
 #else
     &L_11
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_13, &L_12, &C_12, NULL, NULL
+#else
     &K_13, &L_12, &C_12
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_12, NULL
 #else
     &L_12
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_14, &L_13, &C_13, NULL, NULL
+#else
     &K_14, &L_13, &C_13
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_13, NULL
 #else
     &L_13
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_15, &L_14, &C_14, NULL, NULL
+#else
     &K_15, &L_14, &C_14
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_14, NULL
 #else
     &L_14
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_16, &L_15, &C_15, NULL, NULL
+#else
     &K_16, &L_15, &C_15
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_15, NULL
 #else
     &L_15
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_17, &L_16, &C_16, NULL, NULL
+#else
     &K_17, &L_16, &C_16
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_16, NULL
 #else
     &L_16
 #endif
+#endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_18, &L_17, &C_17, NULL, NULL
+#else
     &K_18, &L_17, &C_17
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_17, NULL
 #else
     &L_17
 #endif
-  },
-  {
-#if !defined(REDUCED_LINEAR_LAYER)
-    &K_19, &L_18, &C_18
-#else
-    &L_18
 #endif
   },
   {
 #if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_19, &L_18, &C_18, NULL, NULL
+#else
+    &K_19, &L_18, &C_18
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_18, NULL
+#else
+    &L_18
+#endif
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+#if defined(MUL_M4RI)
+    &K_20, &L_19, &C_19, NULL, NULL
+#else
     &K_20, &L_19, &C_19
+#endif
+#else
+#if defined(MUL_M4RI)
+    &L_19, NULL
 #else
     &L_19
+#endif
 #endif
   },
 };
