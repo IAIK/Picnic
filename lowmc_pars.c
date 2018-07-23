@@ -63,64 +63,25 @@ bool lowmc_init(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r, 
     return false;
   }
 
-  lowmc->m = m;
-  lowmc->n = n;
-  lowmc->r = r;
-  lowmc->k = k;
-#if defined(WITH_CUSTOM_INSTANCES)
-  lowmc->needs_free = false;
-#endif
-
-  lowmc->rounds = calloc(sizeof(lowmc_round_t), r);
-
-#define LOAD_OPT(N, K, R)                                                                          \
-  lowmc->precomputed_non_linear_part_matrix =                                                      \
-      lowmc_##N##_##K##_##R##_get_precomputed_round_key_matrix_non_linear_part();                  \
-  lowmc->k0_matrix = lowmc_##N##_##K##_##R##_get_precomputed_round_key_matrix_linear_part();       \
-  lowmc->precomputed_constant_linear =                                                             \
-      lowmc_##N##_##K##_##R##_get_precomputed_constant_linear_part();                              \
-  lowmc->precomputed_constant_non_linear =                                                         \
-      lowmc_##N##_##K##_##R##_get_precomputed_constant_non_linear_part()
-
-#define LOAD(N, K, R)                                                                              \
-  lowmc->k0_matrix = lowmc_##N##_##K##_##R##_get_round_key(0);                                     \
-  for (unsigned int i = 0; i < (R); ++i) {                                                         \
-    lowmc->rounds[i].k_matrix = lowmc_##N##_##K##_##R##_get_round_key(i + 1);                      \
-    lowmc->rounds[i].constant = lowmc_##N##_##K##_##R##_get_round_const(i);                        \
-  }
-
-#define LOAD_FROM_FIXED_IMPL(N, K, R, PREC)                                                        \
-  for (unsigned int i = 0; i < (R); ++i) {                                                         \
-    lowmc->rounds[i].l_matrix = lowmc_##N##_##K##_##R##_get_linear_layer(i);                       \
-  }                                                                                                \
-  LOAD##PREC(N, K, R);
-
-#if defined(REDUCED_LINEAR_LAYER)
-#define LOAD_FROM_FIXED(N, K, R) LOAD_FROM_FIXED_IMPL(N, K, R, _OPT)
-#else
-#define LOAD_FROM_FIXED(N, K, R) LOAD_FROM_FIXED_IMPL(N, K, R, )
-#endif
-
 #if defined(WITH_LOWMC_128_128_20)
   if (n == 128 && k == 128 && r == 20) {
-    LOAD_FROM_FIXED(128, 128, 20);
+    memcpy(lowmc, get_lowmc_128_128_20(), sizeof(lowmc_t));
     goto precomp;
   }
 #endif
 #if defined(WITH_LOWMC_192_192_30)
   if (n == 192 && k == 192 && r == 30) {
-    LOAD_FROM_FIXED(192, 192, 30);
+    memcpy(lowmc, get_lowmc_192_192_30(), sizeof(lowmc_t));
     goto precomp;
   }
 #endif
 #if defined(WITH_LOWMC_256_256_38)
   if (n == 256 && k == 256 && r == 38) {
-    LOAD_FROM_FIXED(256, 256, 38);
+    memcpy(lowmc, get_lowmc_256_256_38(), sizeof(lowmc_t));
     goto precomp;
   }
 #endif
 
-  lowmc_clear(lowmc);
   return false;
 
 precomp:
@@ -247,7 +208,6 @@ void lowmc_clear(lowmc_t* lowmc) {
     mzd_local_free((mzd_local_t*)lowmc->k0_matrix);
   }
 #endif
-  free(lowmc->rounds);
 
 #if defined(WITH_CUSTOM_INSTANCES)
   mzd_local_free(lowmc->mask.x0);

@@ -5730,101 +5730,190 @@ static const mzd_local_t precomputed_constant_non_linear_part = { 1, 640, 10, 12
 }};
 #endif
 
-static const mzd_local_t* lowmc_linear_layer[] = {
-  &L_0,
-  &L_1,
-  &L_2,
-  &L_3,
-  &L_4,
-  &L_5,
-  &L_6,
-  &L_7,
-  &L_8,
-  &L_9,
-  &L_10,
-  &L_11,
-  &L_12,
-  &L_13,
-  &L_14,
-  &L_15,
-  &L_16,
-  &L_17,
-  &L_18,
-  &L_19,
-};
-#if !defined(REDUCED_LINEAR_LAYER)
-static const mzd_local_t* lowmc_round_key[] = {
-  &K_0,
-  &K_1,
-  &K_2,
-  &K_3,
-  &K_4,
-  &K_5,
-  &K_6,
-  &K_7,
-  &K_8,
-  &K_9,
-  &K_10,
-  &K_11,
-  &K_12,
-  &K_13,
-  &K_14,
-  &K_15,
-  &K_16,
-  &K_17,
-  &K_18,
-  &K_19,
-  &K_20,
-};
-static const mzd_local_t* lowmc_round_const[] = {
-  &C_0,
-  &C_1,
-  &C_2,
-  &C_3,
-  &C_4,
-  &C_5,
-  &C_6,
-  &C_7,
-  &C_8,
-  &C_9,
-  &C_10,
-  &C_11,
-  &C_12,
-  &C_13,
-  &C_14,
-  &C_15,
-  &C_16,
-  &C_17,
-  &C_18,
-  &C_19,
-};
-#endif
-const mzd_local_t* lowmc_128_128_20_get_linear_layer(uint32_t r) {
-  return lowmc_linear_layer[r];
-}
-
-#if defined(REDUCED_LINEAR_LAYER)
-const mzd_local_t* lowmc_128_128_20_get_precomputed_round_key_matrix_non_linear_part(void) {
-  return &precomputed_round_key_matrix_non_linear_part;
-}
-
-const mzd_local_t* lowmc_128_128_20_get_precomputed_round_key_matrix_linear_part(void) {
-  return &precomputed_round_key_matrix_linear_part;
-}
-
-const mzd_local_t* lowmc_128_128_20_get_precomputed_constant_non_linear_part(void) {
-  return &precomputed_constant_non_linear_part;
-}
-
-const mzd_local_t* lowmc_128_128_20_get_precomputed_constant_linear_part(void) {
-  return &precomputed_constant_linear_part;
-}
+#if defined(MUL_M4RI)
+static lowmc_round_t rounds[20] = {
 #else
-const mzd_local_t* lowmc_128_128_20_get_round_const(uint32_t r) {
-  return lowmc_round_const[r];
-}
-
-const mzd_local_t* lowmc_128_128_20_get_round_key(uint32_t r) {
-    return lowmc_round_key[r];
-}
+static const lowmc_round_t rounds[20] = {
 #endif
+
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_1, &L_0, &C_0
+#else
+    &L_0
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_2, &L_1, &C_1
+#else
+    &L_1
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_3, &L_2, &C_2
+#else
+    &L_2
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_4, &L_3, &C_3
+#else
+    &L_3
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_5, &L_4, &C_4
+#else
+    &L_4
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_6, &L_5, &C_5
+#else
+    &L_5
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_7, &L_6, &C_6
+#else
+    &L_6
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_8, &L_7, &C_7
+#else
+    &L_7
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_9, &L_8, &C_8
+#else
+    &L_8
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_10, &L_9, &C_9
+#else
+    &L_9
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_11, &L_10, &C_10
+#else
+    &L_10
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_12, &L_11, &C_11
+#else
+    &L_11
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_13, &L_12, &C_12
+#else
+    &L_12
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_14, &L_13, &C_13
+#else
+    &L_13
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_15, &L_14, &C_14
+#else
+    &L_14
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_16, &L_15, &C_15
+#else
+    &L_15
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_17, &L_16, &C_16
+#else
+    &L_16
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_18, &L_17, &C_17
+#else
+    &L_17
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_19, &L_18, &C_18
+#else
+    &L_18
+#endif
+  },
+  {
+#if !defined(REDUCED_LINEAR_LAYER)
+    &K_20, &L_19, &C_19
+#else
+    &L_19
+#endif
+  },
+};
+
+#if defined(MUL_M4RI)
+static lowmc_t instance = {
+#else
+static const lowmc_t instance = {
+#endif
+  10, 128, 20, 128,
+#if defined(WITH_CUSTOM_INSTANCES)
+  { 0 },
+#endif
+#if defined(REDUCED_LINEAR_LAYER)
+  &precomputed_round_key_matrix_linear_part,
+#else
+  &K_0,
+#endif
+#if defined(MUL_M4RI)
+  NULL,
+#endif
+  rounds,
+#if defined(REDUCED_LINEAR_LAYER)
+  &precomputed_round_key_matrix_non_linear_part,
+#if defined(MUL_M4RI)
+  NULL,
+#endif
+  &precomputed_constant_linear_part,
+  &precomputed_constant_non_linear_part,
+#endif
+#if defined(WITH_CUSTOM_INSTANCES)
+  false
+#endif
+};
+
+#if !defined(MUL_M4RI)
+const lowmc_t* get_lowmc_128_128_20(void)
+#else
+lowmc_t* get_lowmc_128_128_20(void)
+#endif
+{
+  return &instance;
+}

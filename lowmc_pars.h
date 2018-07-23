@@ -75,15 +75,13 @@ typedef struct {
   unsigned int r;
   unsigned int k;
 
-#if defined(WITH_CUSTOM_INSTANCES)
-  mask_t mask;
-#endif
-
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
 #if defined(MUL_M4RI)
   mzd_local_t* k0_lookup;
-#endif
   lowmc_round_t* rounds;
+#else
+  const lowmc_round_t* rounds;
+#endif
 
 #if defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* precomputed_non_linear_part_matrix;
@@ -96,6 +94,7 @@ typedef struct {
 #endif
 
 #if defined(WITH_CUSTOM_INSTANCES)
+  mask_t mask;
   bool needs_free;
 #endif
 } lowmc_t;
