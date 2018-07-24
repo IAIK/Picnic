@@ -42,7 +42,7 @@ typedef struct {
   transform_t transform;
 } picnic_instance_t;
 
-picnic_instance_t* get_instance(picnic_params_t param);
+const picnic_instance_t* get_instance(picnic_params_t param);
 const picnic_instance_t* picnic_instance_get(picnic_params_t param);
 
 bool impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,

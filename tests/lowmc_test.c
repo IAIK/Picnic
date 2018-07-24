@@ -10,7 +10,7 @@
 
 static int lowmc_enc(const picnic_params_t param, const uint8_t* key, const uint8_t* plaintext,
                      const uint8_t* expected) {
-  picnic_instance_t* pp = get_instance(param);
+  const picnic_instance_t* pp = get_instance(param);
   if (!pp) {
     return -1;
   }
