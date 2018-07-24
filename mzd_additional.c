@@ -583,7 +583,8 @@ void mzd_addmul_v_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
 
-  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_castsi128_si256(*mcptr), _mm256_setzero_si256()};
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_castsi128_si256(*mcptr),
+                                                    _mm256_setzero_si256()};
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int i = sizeof(word) * 8; i; i -= 8, idx >>= 8, mAptr += 4) {
@@ -1011,15 +1012,17 @@ void mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  __m128i mc ATTR_ALIGNED(alignof(__m128i)) = *mcptr;
+  __m128i cval[2] ATTR_ALIGNED(alignof(__m128i)) = {*mcptr, _mm_setzero_si128()};
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
-    for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
-      const word comb = idx & 0xff;
-      mc              = _mm_xor_si128(mc, mAptr[comb]);
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mm128_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
+      mAptr += moff2;
+      mm128_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
+      mAptr += moff2;
     }
   }
-  *mcptr = mc;
+  *mcptr = _mm_xor_si128(cval[0], cval[1]);
 }
 
 ATTR_TARGET("sse2")
@@ -1030,15 +1033,17 @@ void mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  __m128i mc ATTR_ALIGNED(alignof(__m128i)) = _mm_setzero_si128();
+  __m128i cval[2] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128()};
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
-    for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
-      const word comb = idx & 0xff;
-      mc              = _mm_xor_si128(mc, mAptr[comb]);
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mm128_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
+      mAptr += moff2;
+      mm128_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
+      mAptr += moff2;
     }
   }
-  *mcptr = mc;
+  *mcptr = _mm_xor_si128(cval[0], cval[1]);
 }
 
 ATTR_TARGET("sse2")
@@ -1049,16 +1054,19 @@ void mzd_addmul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  __m128i cval[2] ATTR_ALIGNED(alignof(__m128i)) = {mcptr[0], mcptr[1]};
+  __m128i cval[4] ATTR_ALIGNED(alignof(__m128i)) = {mcptr[0], mcptr[1], _mm_setzero_si128(),
+                                                    _mm_setzero_si128()};
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
-    for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
-      const word comb = idx & 0xff;
-      mm128_xor_region(cval, mAptr + 2 * comb, 2);
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mm128_xor_region(&cval[0], mAptr + 2 * ((idx >> 0) & 0xff), 2);
+      mAptr += moff2;
+      mm128_xor_region(&cval[2], mAptr + 2 * ((idx >> 8) & 0xff), 2);
+      mAptr += moff2;
     }
   }
-  mcptr[0] = cval[0];
-  mcptr[1] = cval[1];
+  mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
+  mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
 }
 
 ATTR_TARGET("sse2")
@@ -1069,16 +1077,19 @@ void mzd_mul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  __m128i cval[2] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128()};
+  __m128i cval[4] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128(),
+                                                    _mm_setzero_si128(), _mm_setzero_si128()};
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
-    for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
-      const word comb = idx & 0xff;
-      mm128_xor_region(cval, mAptr + 2 * comb, 2);
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mm128_xor_region(&cval[0], mAptr + 2 * ((idx >> 0) & 0xff), 2);
+      mAptr += moff2;
+      mm128_xor_region(&cval[2], mAptr + 2 * ((idx >> 8) & 0xff), 2);
+      mAptr += moff2;
     }
   }
-  mcptr[0] = cval[0];
-  mcptr[1] = cval[1];
+  mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
+  mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
 }
 
 ATTR_TARGET("sse2")
@@ -1089,16 +1100,19 @@ void mzd_addmul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  __m128i cval[2] ATTR_ALIGNED(alignof(__m128i)) = {mcptr[0], mcptr[1]};
+  __m128i cval[4] ATTR_ALIGNED(alignof(__m128i)) = {mcptr[0], mcptr[1], _mm_setzero_si128(),
+                                                    _mm_setzero_si128()};
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
-    for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
-      const word comb = idx & 0xff;
-      mm128_xor_region(cval, mAptr + 2 * comb, 2);
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mm128_xor_region(&cval[0], mAptr + 2 * ((idx >> 0) & 0xff), 2);
+      mAptr += moff2;
+      mm128_xor_region(&cval[2], mAptr + 2 * ((idx >> 8) & 0xff), 2);
+      mAptr += moff2;
     }
   }
-  mcptr[0] = cval[0];
-  mcptr[1] = cval[1];
+  mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
+  mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
 }
 
 ATTR_TARGET("sse2")
@@ -1109,16 +1123,19 @@ void mzd_mul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  __m128i cval[2] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128()};
+  __m128i cval[4] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128(),
+                                                    _mm_setzero_si128(), _mm_setzero_si128()};
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
-    for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
-      const word comb = idx & 0xff;
-      mm128_xor_region(cval, mAptr + 2 * comb, 2);
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mm128_xor_region(&cval[0], mAptr + 2 * ((idx >> 0) & 0xff), 2);
+      mAptr += moff2;
+      mm128_xor_region(&cval[2], mAptr + 2 * ((idx >> 8) & 0xff), 2);
+      mAptr += moff2;
     }
   }
-  mcptr[0] = cval[0];
-  mcptr[1] = cval[1];
+  mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
+  mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
 }
 #endif
 
@@ -1135,8 +1152,10 @@ void mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm256_xor_region(&cval[0], mAptr + ((idx >>  0) & 0xff), 1); mAptr += moff2;
-      mm256_xor_region(&cval[1], mAptr + ((idx >>  8) & 0xff), 1); mAptr += moff2;
+      mm256_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
+      mAptr += moff2;
+      mm256_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
+      mAptr += moff2;
     }
   }
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
@@ -1154,8 +1173,10 @@ void mzd_addmul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm256_xor_region(&cval[0], mAptr + ((idx >>  0) & 0xff), 1); mAptr += moff2;
-      mm256_xor_region(&cval[1], mAptr + ((idx >>  8) & 0xff), 1); mAptr += moff2;
+      mm256_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
+      mAptr += moff2;
+      mm256_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
+      mAptr += moff2;
     }
   }
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
@@ -1173,8 +1194,10 @@ void mzd_mul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm256_xor_region(&cval[0], mAptr + ((idx >>  0) & 0xff), 1); mAptr += moff2;
-      mm256_xor_region(&cval[1], mAptr + ((idx >>  8) & 0xff), 1); mAptr += moff2;
+      mm256_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
+      mAptr += moff2;
+      mm256_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
+      mAptr += moff2;
     }
   }
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
@@ -1192,8 +1215,10 @@ void mzd_addmul_vl_avx_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm256_xor_region(&cval[0], mAptr + ((idx >>  0) & 0xff), 1); mAptr += moff2;
-      mm256_xor_region(&cval[1], mAptr + ((idx >>  8) & 0xff), 1); mAptr += moff2;
+      mm256_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
+      mAptr += moff2;
+      mm256_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
+      mAptr += moff2;
     }
   }
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
@@ -1211,11 +1236,15 @@ void mzd_mul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 4, idx >>= 32) {
-      const __m256i t1 = _mm256_set_m128i(mAptr[(idx >>  0) & 0xff], mAptr[((idx >>  8) & 0xff) + moff2]);
-      mm256_xor_region(&cval[0], &t1, 1); mAptr += 2 * moff2;
+      const __m256i t1 =
+          _mm256_set_m128i(mAptr[(idx >> 0) & 0xff], mAptr[((idx >> 8) & 0xff) + moff2]);
+      mm256_xor_region(&cval[0], &t1, 1);
+      mAptr += 2 * moff2;
 
-      const __m256i t2 = _mm256_set_m128i(mAptr[(idx >> 16) & 0xff], mAptr[((idx >> 24) & 0xff) + moff2]);
-      mm256_xor_region(&cval[1], &t2, 1); mAptr += 2 * moff2;
+      const __m256i t2 =
+          _mm256_set_m128i(mAptr[(idx >> 16) & 0xff], mAptr[((idx >> 24) & 0xff) + moff2]);
+      mm256_xor_region(&cval[1], &t2, 1);
+      mAptr += 2 * moff2;
     }
   }
   cval[0] = _mm256_xor_si256(cval[0], cval[1]);
@@ -1231,15 +1260,20 @@ void mzd_addmul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
   __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
 
-  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_castsi128_si256(*mcptr), _mm256_setzero_si256()};
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_castsi128_si256(*mcptr),
+                                                    _mm256_setzero_si256()};
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 4, idx >>= 32) {
-      const __m256i t1 = _mm256_set_m128i(mAptr[(idx >>  0) & 0xff], mAptr[((idx >>  8) & 0xff) + moff2]);
-      mm256_xor_region(&cval[0], &t1, 1); mAptr += 2 * moff2;
+      const __m256i t1 =
+          _mm256_set_m128i(mAptr[(idx >> 0) & 0xff], mAptr[((idx >> 8) & 0xff) + moff2]);
+      mm256_xor_region(&cval[0], &t1, 1);
+      mAptr += 2 * moff2;
 
-      const __m256i t2 = _mm256_set_m128i(mAptr[(idx >> 16) & 0xff], mAptr[((idx >> 24) & 0xff) + moff2]);
-      mm256_xor_region(&cval[1], &t2, 1); mAptr += 2 * moff2;
+      const __m256i t2 =
+          _mm256_set_m128i(mAptr[(idx >> 16) & 0xff], mAptr[((idx >> 24) & 0xff) + moff2]);
+      mm256_xor_region(&cval[1], &t2, 1);
+      mAptr += 2 * moff2;
     }
   }
   cval[0] = _mm256_xor_si256(cval[0], cval[1]);
