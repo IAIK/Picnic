@@ -104,6 +104,11 @@
   }
 
 #if defined(WITH_AVX2)
+#if defined(__GNUC__) || defined(__clang__)
+#define _mm256_set_m128i(v0, v1)  _mm256_insertf128_si256(_mm256_castsi128_si256(v1), (v0), 1)
+#define _mm256_setr_m128i(v0, v1) _mm256_set_m128i((v1), (v0))
+#endif
+
 #if defined(WITH_CUSTOM_INSTANCES)
 /**
  * \brief Perform a left shift on a 256 bit value.
