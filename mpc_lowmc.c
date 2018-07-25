@@ -634,9 +634,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define matrix_postfix matrix
 #endif
 
-#define SBOX(X, sbox, sbox_selector, y, x, views, r, lowmcmask, vars, n, shares)                   \
-  SBOX_##sbox_selector(X, sbox, y, x, views, r, lowmcmask, vars, n, shares)
-
 #define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, vars, n, shares)                              \
   SBOX_mzd_##X(sbox, y, x, views, r, lowmcmask, vars, n)
 
@@ -656,8 +653,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
       FIRST_ROW(y[count])[(n) / (sizeof(word) * 8) - 1] = in[count];                               \
     }                                                                                              \
   } while (0)
-
-#define R(selector) R_##selector
 
 #define R_mzd mzd_local_t** r = rvec[i].s
 #define R_uint64 const uint64_t* r = rvec[i].t
