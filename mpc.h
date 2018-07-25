@@ -79,7 +79,7 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
                            uint64_t const* r, view_t* view, uint64_t const mask,
                            unsigned viewshift) ATTR_NONNULL;
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT)
 #include "simd.h"
 
 #if defined(WITH_SSE2)
@@ -130,7 +130,7 @@ void mpc_and_verify_512_avx(__m256i res[SC_VERIFY][2], __m256i const first[SC_VE
                             view_t* view, __m256i const* mask, unsigned viewshift) ATTR_NONNULL;
 #endif
 
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
 void mpc_and_neon(uint32x4_t* res, uint32x4_t const* first, uint32x4_t const* second,
                   uint32x4_t const* r, view_t* view, unsigned viewshift);
 

@@ -29,7 +29,7 @@
 #define BUILTIN_CPU_SUPPORTED
 #endif
 
-#ifdef WITH_SSE2
+#if defined(WITH_SSE2)
 /* backwards compatibility macros for GCC 4.8 and 4.9
  *
  * bs{l,r}i was introduced in GCC 5 and in clang as macros sometime in 2015.

@@ -16,7 +16,7 @@
 #if !defined(_MSC_VER)
 #include <stdalign.h>
 #endif
-#ifdef WITH_OPT
+#if defined(WITH_OPT)
 #include "simd.h"
 #endif
 
@@ -67,7 +67,7 @@ void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second
   }
 }
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT) && defined(WITH_CUSTOM_INSTANCES)
 #define mpc_and_def(type, and, xor, shift_right)                                                   \
   for (unsigned m = 0; m < SC_PROOF; ++m) {                                                        \
     const unsigned j = (m + 1) % SC_PROOF;                                                         \
@@ -98,8 +98,7 @@ void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second
     (xor)(sm, tmp1, sm);                                                                           \
   }
 
-#ifdef WITH_SSE2
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_SSE2)
 ATTR_TARGET("sse2")
 void mpc_and_sse(__m128i* res, __m128i const* first, __m128i const* second, __m128i const* r,
                  view_t* view, unsigned viewshift) {
@@ -127,10 +126,8 @@ void mpc_and_512_sse(__m128i res[SC_PROOF][4], __m128i const first[SC_PROOF][4],
   mpc_and_def_multiple(__m128i, mm512_and_sse, mm512_xor_sse, mm512_shift_right_sse, 4);
 }
 #endif
-#endif
 
-#ifdef WITH_AVX2
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_AVX2)
 ATTR_TARGET("avx2")
 void mpc_and_avx(__m256i* res, __m256i const* first, __m256i const* second, __m256i const* r,
                  view_t* view, unsigned viewshift) {
@@ -144,10 +141,8 @@ void mpc_and_512_avx(__m256i res[SC_VERIFY][2], __m256i const first[SC_VERIFY][2
   mpc_and_def_multiple(__m256i, mm512_and_avx, mm512_xor_avx, mm512_shift_right_avx, 2);
 }
 #endif
-#endif
 
-#ifdef WITH_NEON
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_NEON)
 void mpc_and_neon(uint32x4_t* res, uint32x4_t const* first, uint32x4_t const* second,
                   uint32x4_t const* r, view_t* view, unsigned viewshift) {
   mpc_and_def(uint32x4_t, vandq_u32, veorq_u32, mm128_shift_right);
@@ -170,7 +165,6 @@ void mpc_and_512_neon(uint32x4_t res[SC_PROOF][4], uint32x4_t const first[SC_PRO
                       view_t* view, unsigned viewshift) {
   mpc_and_def_multiple(uint32x4_t, mm512_and, mm512_xor, mm512_shift_right, 4);
 }
-#endif
 #endif
 #endif
 
@@ -227,7 +221,7 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
   res[SC_VERIFY - 1] = rsc & mask;
 }
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT) && defined(WITH_CUSTOM_INSTANCES)
 #define mpc_and_verify_def(type, and, xor, shift_right, shift_left)                                \
   for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {                                                 \
     const unsigned j = (m + 1);                                                                    \
@@ -269,8 +263,7 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
   (shift_left)(rsc, s1, viewshift);                                                                \
   (and)(res[SC_VERIFY - 1], rsc, mask);
 
-#ifdef WITH_SSE2
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_SSE2)
 ATTR_TARGET("sse2")
 void mpc_and_verify_sse(__m128i* res, __m128i const* first, __m128i const* second, __m128i const* r,
                         view_t* view, __m128i const mask, unsigned viewshift) {
@@ -301,10 +294,8 @@ void mpc_and_verify_512_sse(__m128i res[SC_VERIFY][4], __m128i const first[SC_VE
                               mm512_shift_left_sse, 4);
 }
 #endif
-#endif
 
-#ifdef WITH_AVX2
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_AVX2)
 ATTR_TARGET("avx2")
 void mpc_and_verify_avx(__m256i* res, __m256i const* first, __m256i const* second, __m256i const* r,
                         view_t* view, __m256i const mask, unsigned viewshift) {
@@ -320,10 +311,8 @@ void mpc_and_verify_512_avx(__m256i res[SC_VERIFY][2], __m256i const first[SC_VE
                               mm512_shift_left_avx, 2);
 }
 #endif
-#endif
 
-#ifdef WITH_NEON
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_NEON)
 void mpc_and_verify_neon(uint32x4_t* res, uint32x4_t const* first, uint32x4_t const* second,
                          uint32x4_t const* r, view_t* view, uint32x4_t const mask,
                          unsigned viewshift) {
@@ -353,7 +342,6 @@ void mpc_and_verify_512_neon(uint32x4_t res[SC_VERIFY][4], uint32x4_t const firs
   mpc_and_verify_def_multiple(uint32x4_t, mm512_and, mm512_xor, mm512_shift_right, mm512_shift_left,
                               4);
 }
-#endif
 #endif
 #endif
 

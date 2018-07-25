@@ -28,7 +28,7 @@
 static const size_t mzd_local_t_size = (sizeof(mzd_local_t) + 0x1f) & ~0x1f;
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT)
 #include "simd.h"
 
 #if defined(WITH_SSE2) || defined(WITH_AVX2) || defined(WITH_NEON)
@@ -180,8 +180,8 @@ void mzd_shift_left(mzd_local_t* res, mzd_local_t const* val, unsigned count) {
   *resptr = *valptr << count;
 }
 
-#ifdef WITH_OPT
-#ifdef WITH_SSE2
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2)
 ATTR_TARGET("sse2")
 static inline void mzd_and_sse(mzd_local_t* res, mzd_local_t const* first,
                                mzd_local_t const* second) {
@@ -197,7 +197,7 @@ static inline void mzd_and_sse(mzd_local_t* res, mzd_local_t const* first,
 }
 #endif
 
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
 ATTR_TARGET("avx2")
 static inline void mzd_and_avx(mzd_local_t* res, mzd_local_t const* first,
                                mzd_local_t const* second) {
@@ -213,7 +213,7 @@ static inline void mzd_and_avx(mzd_local_t* res, mzd_local_t const* first,
 }
 #endif
 
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
 static inline void mzd_and_neon(mzd_local_t* res, mzd_local_t const* first,
                                 mzd_local_t const* second) {
   unsigned int width           = first->rowstride;
@@ -230,20 +230,20 @@ static inline void mzd_and_neon(mzd_local_t* res, mzd_local_t const* first,
 #endif
 
 void mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-#ifdef WITH_OPT
-#ifdef WITH_AVX2
+#if defined(WITH_OPT)
+#if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2 && first->ncols >= 256 && ((first->ncols & (word_size_bits - 1)) == 0)) {
     mzd_and_avx(res, first, second);
     return;
   }
 #endif
-#ifdef WITH_SSE2
+#if defined(WITH_SSE2)
   if (CPU_SUPPORTS_SSE2 && ((first->ncols & (word_size_bits - 1)) == 0)) {
     mzd_and_sse(res, first, second);
     return;
   }
 #endif
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
   if (CPU_SUPPORTS_NEON && first->ncols % ((first->ncols & (word_size_bits - 1)) == 0)) {
     mzd_and_neon(res, first, second);
     return;
@@ -261,8 +261,8 @@ void mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* seco
   }
 }
 
-#ifdef WITH_OPT
-#ifdef WITH_SSE2
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2)
 ATTR_TARGET("sse2")
 void mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width        = first->rowstride;
@@ -296,7 +296,7 @@ void mzd_xor_sse_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t con
 }
 #endif
 
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
 ATTR_TARGET("avx2")
 void mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width        = first->rowstride;
@@ -320,7 +320,7 @@ void mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t con
 }
 #endif
 
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
 void mzd_xor_neon(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width           = first->rowstride;
   uint32x4_t* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(uint32x4_t));
@@ -353,20 +353,20 @@ void mzd_xor_neon_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 #endif
 
 void mzd_xor(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-#ifdef WITH_OPT
-#ifdef WITH_AVX2
+#if defined(WITH_OPT)
+#if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2 && first->ncols >= 256 && ((first->ncols & (word_size_bits - 1)) == 0)) {
     mzd_xor_avx(res, first, second);
     return;
   }
 #endif
-#ifdef WITH_SSE2
+#if defined(WITH_SSE2)
   if (CPU_SUPPORTS_SSE2 && ((first->ncols & (word_size_bits - 1)) == 0)) {
     mzd_xor_sse(res, first, second);
     return;
   }
 #endif
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
   if (CPU_SUPPORTS_NEON && ((first->ncols & (word_size_bits - 1)) == 0)) {
     mzd_xor_neon(res, first, second);
     return;
@@ -407,8 +407,8 @@ void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
   mzd_addmul_v_uint64(c, v, At);
 }
 
-#ifdef WITH_OPT
-#ifdef WITH_SSE2
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2)
 ATTR_TARGET("sse2")
 void mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -550,7 +550,7 @@ void mzd_addmul_v_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
 }
 #endif
 
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
 ATTR_TARGET("avx2")
 void mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
@@ -714,7 +714,7 @@ void mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
 
 #endif
 
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
 void mzd_mul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   mzd_addmul_v_neon(c, v, A);
@@ -872,21 +872,21 @@ void mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
     return;
   }
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT)
   if (A->nrows % (sizeof(word) * 8) == 0) {
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
     if (CPU_SUPPORTS_AVX2 && (A->ncols & 0xff) == 0) {
       mzd_addmul_v_avx(c, v, A);
       return;
     }
 #endif
-#ifdef WITH_SSE2
+#if defined(WITH_SSE2)
     if (CPU_SUPPORTS_SSE2 && (A->ncols & 0x7f) == 0) {
       mzd_addmul_v_sse(c, v, A);
       return;
     }
 #endif
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
     if (CPU_SUPPORTS_NEON && (A->ncols & 0x7f) == 0) {
       mzd_addmul_v_neon(c, v, A);
       return;
@@ -975,8 +975,8 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
   return B;
 }
 
-#ifdef WITH_OPT
-#ifdef WITH_SSE2
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2)
 ATTR_TARGET("sse2")
 void mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
@@ -1139,7 +1139,7 @@ void mzd_mul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
 }
 #endif
 
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
 ATTR_TARGET("avx2")
 void mzd_mul_vl_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -1309,7 +1309,7 @@ void mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
 }
 #endif
 
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
 void mzd_mul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   static const unsigned int moff2 = 256;
 
@@ -1380,9 +1380,9 @@ void mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
     return;
   }
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT)
   if (A->nrows % (sizeof(word) * 8) == 0) {
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
     if (CPU_SUPPORTS_AVX2) {
       if (A->ncols == 256 && v->ncols == 256) {
         mzd_mul_vl_avx_256(c, v, A);
@@ -1390,7 +1390,7 @@ void mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
       }
     }
 #endif
-#ifdef WITH_SSE2
+#if defined(WITH_SSE2)
     if (CPU_SUPPORTS_SSE2) {
       if (A->ncols == 128 && v->ncols == 128) {
         mzd_mul_vl_sse_128(c, v, A);
@@ -1398,7 +1398,7 @@ void mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
       }
     }
 #endif
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
     if (CPU_SUPPORTS_NEON) {
       if (A->ncols == 128 && v->ncols == 128) {
         mzd_mul_vl_neon_128(c, v, A);
@@ -1423,9 +1423,9 @@ void mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
     return;
   }
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT)
   if (A->nrows % (sizeof(word) * 8) == 0) {
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
     if (CPU_SUPPORTS_AVX2) {
       if (A->ncols == 256 && v->ncols == 256) {
         mzd_addmul_vl_avx_256(c, v, A);
@@ -1437,7 +1437,7 @@ void mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
       }
     }
 #endif
-#ifdef WITH_SSE2
+#if defined(WITH_SSE2)
     if (CPU_SUPPORTS_SSE2) {
       if (A->ncols == 128 && v->ncols == 128) {
         mzd_addmul_vl_sse_128(c, v, A);
@@ -1449,7 +1449,7 @@ void mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
       }
     }
 #endif
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
     if (CPU_SUPPORTS_NEON) {
       if (A->ncols == 128 && v->ncols == 128) {
         mzd_addmul_vl_neon_128(c, v, A);

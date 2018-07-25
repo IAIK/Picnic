@@ -15,7 +15,7 @@
 #include "lowmc_pars.h"
 #include "mzd_additional.h"
 
-#ifdef WITH_OPT
+#if defined(WITH_OPT)
 #include "simd.h"
 #endif
 
@@ -50,7 +50,7 @@ static void sbox_layer_uint64(mzd_local_t* x, mask_t const* mask) {
   *d          = sbox_layer_bitsliced_uint64(*d);
 }
 
-#ifdef WITH_CUSTOM_INSTANCES
+#if defined(WITH_CUSTOM_INSTANCES)
 static void sbox_layer_bitsliced(mzd_local_t* in, mask_t const* mask) {
   mzd_local_t* buffer[6] = {NULL};
   mzd_local_init_multiple_ex(buffer, 6, 1, in->ncols, false);
@@ -102,8 +102,8 @@ static void sbox_layer_bitsliced(mzd_local_t* in, mask_t const* mask) {
   mzd_local_free_multiple(buffer);
 }
 
-#ifdef WITH_OPT
-#ifdef WITH_SSE2
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2)
 ATTR_TARGET("sse") static void sbox_layer_sse(mzd_local_t* in, mask_t const* mask) {
   __m128i* ip       = (__m128i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m128i));
   __m128i const min = *ip;
@@ -145,7 +145,7 @@ ATTR_TARGET("sse") static void sbox_layer_sse(mzd_local_t* in, mask_t const* mas
 }
 #endif
 
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
 /**
  * AVX2 version of LowMC. It assumes that mzd_local_t's row[0] is always 32 byte
  * aligned.
@@ -191,7 +191,7 @@ ATTR_TARGET("avx2") static void sbox_layer_avx(mzd_local_t* in, mask_t const* ma
 }
 #endif
 
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
 static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
   uint32x4_t* ip       = (uint32x4_t*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(uint32x4_t));
   uint32x4_t const min = *ip;
@@ -244,19 +244,19 @@ static sbox_layer_impl get_sbox_layer(const lowmc_t* lowmc) {
   if (lowmc->m == 10) {
     return sbox_layer_uint64;
   }
-#ifdef WITH_CUSTOM_INSTANCES
-#ifdef WITH_OPT
-#ifdef WITH_SSE2
+#if defined(WITH_CUSTOM_INSTANCES)
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2)
   if (CPU_SUPPORTS_SSE2 && lowmc->n == 128) {
     return sbox_layer_sse;
   }
 #endif
-#ifdef WITH_AVX2
+#if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2 && lowmc->n == 256) {
     return sbox_layer_avx;
   }
 #endif
-#ifdef WITH_NEON
+#if defined(WITH_NEON)
   if (CPU_SUPPORTS_NEON && lowmc->n == 128) {
     return sbox_layer_neon;
   }
