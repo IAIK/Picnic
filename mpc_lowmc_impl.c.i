@@ -14,10 +14,19 @@
 #define SBOX SBOX_mzd
 #endif
 
-static inline void N_SIGN(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key, mzd_local_t const* p,
+#if defined(LOWMC_INSTANCE)
+#define lowmc LOWMC_INSTANCE
+#else
+#define lowmc lowmc_instance
+#endif
+
+static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mzd_local_t const* p,
                           view_t* views, in_out_shares_t* in_out_shares, rvec_t* rvec) {
+  (void) lowmc_instance;
+
   mpc_copy(in_out_shares->s, lowmc_key, SC_PROOF);
   ++in_out_shares;
+
   CONCAT(VARS, SBOX_ARGS)(SC_PROOF, LOWMC_N);
   mzd_local_t** x = in_out_shares->s;
   mzd_local_t* y[SC_PROOF];
@@ -38,8 +47,9 @@ static inline void N_SIGN(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key, mzd_
   CONCAT(VARS_FREE, SBOX_ARGS);
 }
 
-static inline void N_VERIFY(lowmc_t const* lowmc, mzd_local_t const* p, view_t* views,
+static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t* views,
                             in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {
+  (void) lowmc_instance;
 
   mzd_local_t* const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;
@@ -76,5 +86,6 @@ static inline void N_VERIFY(lowmc_t const* lowmc, mzd_local_t const* p, view_t* 
 #undef N_VERIFY
 #undef RANDTAPE
 #undef SBOX
+#undef lowmc
 
 // vim: ft=c

@@ -693,6 +693,16 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #include "mpc_lowmc.c.i"
 
 #if defined(WITH_OPT)
+#if defined(WITH_LOWMC_128_128_20)
+#include "lowmc_128_128_20.h"
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+#include "lowmc_192_192_30.h"
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+#include "lowmc_256_256_38.h"
+#endif
+
 #undef SBOX_NUM_ARGS
 #define SBOX_NUM_ARGS 5
 
@@ -710,8 +720,12 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_sse_128, mzd_mul_vl_sse_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
+#if defined(WITH_LOWMC_128_128_20)
+#define LOWMC_INSTANCE (&lowmc_128_128_20)
+#endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R LOWMC_L1_R
 
@@ -732,8 +746,12 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_sse_192, mzd_mul_vl_sse_192)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_192, mzd_addmul_vl_sse_192)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
+#if defined(WITH_LOWMC_192_192_30)
+#define LOWMC_INSTANCE (&lowmc_192_192_30)
+#endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R LOWMC_L3_R
 
@@ -752,8 +770,12 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_sse_256, mzd_mul_vl_sse_256)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_256, mzd_addmul_vl_sse_256)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
+#if defined(WITH_LOWMC_256_256_38)
+#define LOWMC_INSTANCE (&lowmc_256_256_38)
+#endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R LOWMC_L5_R
 
@@ -769,6 +791,7 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse, mzd_addmul_vl_sse)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
 #define LOWMC_N lowmc->n
@@ -810,8 +833,12 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_avx_128, mzd_mul_vl_avx_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
+#if defined(WITH_LOWMC_128_128_20)
+#define LOWMC_INSTANCE (&lowmc_128_128_20)
+#endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R LOWMC_L1_R
 
@@ -832,8 +859,12 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_avx_192, mzd_mul_vl_avx_192)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
+#if defined(WITH_LOWMC_192_192_30)
+#define LOWMC_INSTANCE (&lowmc_192_192_30)
+#endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R LOWMC_L3_R
 
@@ -852,8 +883,12 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_avx_256, mzd_mul_vl_avx_256)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
+#if defined(WITH_LOWMC_256_256_38)
+#define LOWMC_INSTANCE (&lowmc_256_256_38)
+#endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R LOWMC_L5_R
 
@@ -869,6 +904,7 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx, mzd_addmul_vl_avx)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
 #define LOWMC_N lowmc->n
@@ -969,6 +1005,7 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_neon, mzd_mul_vl_neon)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_neon, mzd_addmul_vl_neon)
 
+#undef LOWMC_INSTANCE
 #undef LOWMC_N
 #undef LOWMC_R
 #define LOWMC_N lowmc->n
