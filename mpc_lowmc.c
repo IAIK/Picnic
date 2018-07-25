@@ -662,40 +662,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define R_mzd mzd_local_t** r = rvec[i].s
 #define R_uint64 const uint64_t* r = rvec[i].t
 
-#define CONCAT2(a, b) a##_##b
-#define CONCAT(a, b) CONCAT2(a, b)
-
-#define loop_optimize(sbox_args, sbox, sbox_selector, MUL, XOR, XOR_MC, MUL_MC, ADDMUL, ch,        \
-                      shares, lowmc_n, lowmc_r)                                                    \
-  MPC_LOOP_CONST_C(XOR, x, x, lowmc->precomputed_constant_linear, shares, ch);                     \
-  mzd_local_t* nl_part[shares];                                                                    \
-  mzd_local_init_multiple_ex(nl_part, shares, 1, (lowmc_r)*32, false);                             \
-  MPC_LOOP_CONST(MUL_MC, nl_part, lowmc_key,                                                       \
-                 CONCAT(lowmc->precomputed_non_linear_part, matrix_postfix), shares);              \
-  MPC_LOOP_CONST_C(XOR_MC, nl_part, nl_part, lowmc->precomputed_constant_non_linear, shares, ch);  \
-  for (unsigned i = 0; i < (lowmc_r); ++i, ++views, ++round) {                                     \
-    R(sbox_selector);                                                                              \
-    SBOX(sbox_args, sbox, sbox_selector, y, x, views, r, &lowmc->mask, &vars, lowmc_n, shares);    \
-    for (unsigned int k = 0; k < shares; ++k) {                                                    \
-      const word nl = CONST_FIRST_ROW(nl_part[k])[i >> 1];                                         \
-      FIRST_ROW(y[k])                                                                              \
-      [(lowmc_n) / (sizeof(word) * 8) - 1] ^=                                                      \
-          (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);                                \
-    }                                                                                              \
-    MPC_LOOP_CONST(MUL, x, y, CONCAT(round->l, matrix_postfix), shares);                           \
-  }                                                                                                \
-  mzd_local_free_multiple(nl_part);
-
-#define loop(sbox_args, sbox, sbox_selector, MUL, XOR, XOR_MC, MUL_MC, ADDMUL, ch, shares,         \
-             lowmc_n, lowmc_r)                                                                     \
-  for (unsigned i = 0; i < (lowmc_r); ++i, ++views, ++round) {                                     \
-    R(sbox_selector);                                                                              \
-    SBOX(sbox_args, sbox, sbox_selector, y, x, views, r, &lowmc->mask, &vars, lowmc_n, shares);    \
-    MPC_LOOP_CONST(MUL, x, y, CONCAT(round->l, matrix_postfix), shares);                           \
-    MPC_LOOP_CONST_C(XOR, x, x, round->constant, shares, ch);                                      \
-    MPC_LOOP_CONST(ADDMUL, x, lowmc_key, CONCAT(round->k, matrix_postfix), shares);                \
-  }
-
 #define VARS_5(shares, n)
 #define VARS_6(shares, n)                                                                          \
   sbox_vars_t vars;                                                                                \
@@ -704,100 +670,8 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define VARS_FREE_5
 #define VARS_FREE_6 sbox_vars_clear(&vars)
 
-#define _mpc_lowmc_call_bitsliced(sbox_args, sbox, sbox_selector, optimize, MUL, XOR, XOR_MC,      \
-                                  MUL_MC, ADDMUL, lowmc_n, lowmc_r)                                \
-  mpc_copy(in_out_shares->s, lowmc_key, SC_PROOF);                                                 \
-  ++in_out_shares;                                                                                 \
-  VARS_##sbox_args(SC_PROOF, lowmc_n);                                                             \
-  mzd_local_t** x = in_out_shares->s;                                                              \
-  mzd_local_t* y[SC_PROOF];                                                                        \
-  mzd_local_init_multiple_ex(y, SC_PROOF, 1, lowmc_n, false);                                      \
-                                                                                                   \
-  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix), SC_PROOF);                  \
-  MPC_LOOP_CONST_C(XOR, x, x, p, SC_PROOF, 0);                                                     \
-                                                                                                   \
-  lowmc_round_t const* round = lowmc->rounds;                                                      \
-  loop##optimize(sbox_args, sbox, sbox_selector, MUL, XOR, XOR_MC, MUL_MC, ADDMUL, 0, SC_PROOF,    \
-                 lowmc_n, lowmc_r) VARS_FREE_##sbox_args;                                          \
-  mzd_local_free_multiple(y);
-
-#define _mpc_lowmc_call_bitsliced_verify(ch, sbox_args, sbox, sbox_selector, optimize, MUL, XOR,   \
-                                         XOR_MC, MUL_MC, ADDMUL, lowmc_n, lowmc_r)                 \
-  mzd_local_t* const* lowmc_key = &in_out_shares->s[0];                                            \
-                                                                                                   \
-  ++in_out_shares;                                                                                 \
-  VARS_##sbox_args(SC_VERIFY, lowmc_n);                                                            \
-  mzd_local_t* x[2 * SC_VERIFY];                                                                   \
-  mzd_local_t** y = &x[SC_VERIFY];                                                                 \
-  mzd_local_init_multiple_ex(x, 2 * SC_VERIFY, 1, lowmc_n, false);                                 \
-                                                                                                   \
-  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix), SC_VERIFY);                 \
-  MPC_LOOP_CONST_C(XOR, x, x, p, SC_VERIFY, ch);                                                   \
-                                                                                                   \
-  lowmc_round_t const* round = lowmc->rounds;                                                      \
-  loop##optimize(sbox_args, sbox, sbox_selector, MUL, XOR, XOR_MC, MUL_MC, ADDMUL, ch, SC_VERIFY,  \
-                 lowmc_n, lowmc_r);                                                                \
-  mpc_copy(in_out_shares->s, x, SC_VERIFY);                                                        \
-  mzd_local_free_multiple(x);                                                                      \
-  VARS_FREE_##sbox_args;
-
-#if defined(REDUCED_LINEAR_LAYER)
-#define mpc_lowmc_call_def_gen(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, XOR, XOR_MC,   \
-                               MUL_MC, ADDMUL, ARGS)                                               \
-  static inline void N_SIGN(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key,                      \
-                            mzd_local_t const* p, view_t* views, in_out_shares_t* in_out_shares,   \
-                            rvec_t* rvec) {                                                        \
-    _mpc_lowmc_call_bitsliced(ARGS, SBOX_SIGN, mzd, _optimize, MUL, XOR, XOR_MC, MUL_MC, ADDMUL,   \
-                              N, R);                                                               \
-  }                                                                                                \
-  static inline void N_VERIFY(lowmc_t const* lowmc, mzd_local_t const* p, view_t* views,           \
-                              in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {     \
-    _mpc_lowmc_call_bitsliced_verify(ch, ARGS, SBOX_VERIFY, mzd, _optimize, MUL, XOR, XOR_MC,      \
-                                     MUL_MC, ADDMUL, N, R);                                        \
-  }
-
-#define mpc_lowmc_call_def_10(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, XOR, XOR_MC,    \
-                              MUL_MC, ADDMUL)                                                      \
-  static inline void N_SIGN##_10(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key,                 \
-                                 mzd_local_t const* p, view_t* views,                              \
-                                 in_out_shares_t* in_out_shares, rvec_t* rvec) {                   \
-    _mpc_lowmc_call_bitsliced(5, mpc_sbox_layer_bitsliced_uint64, uint64, _optimize, MUL, XOR,     \
-                              XOR_MC, MUL_MC, ADDMUL, N, R);                                       \
-  }                                                                                                \
-  static inline void N_VERIFY##_10(lowmc_t const* lowmc, mzd_local_t const* p, view_t* views,      \
-                                   in_out_shares_t* in_out_shares, rvec_t* rvec,                   \
-                                   unsigned int ch) {                                              \
-    _mpc_lowmc_call_bitsliced_verify(ch, 5, mpc_sbox_layer_bitsliced_verify_uint64, uint64,        \
-                                     _optimize, MUL, XOR, XOR_MC, MUL_MC, ADDMUL, N, R);           \
-  }
-#else
-#define mpc_lowmc_call_def_gen(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, XOR, XOR_MC,   \
-                               MUL_MC, ADDMUL, ARGS)                                               \
-  static inline void N_SIGN(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key,                      \
-                            mzd_local_t const* p, view_t* views, in_out_shares_t* in_out_shares,   \
-                            rvec_t* rvec) {                                                        \
-    _mpc_lowmc_call_bitsliced(ARGS, SBOX_SIGN, mzd, , MUL, XOR, XOR_MC, MUL_MC, ADDMUL, N, R);     \
-  }                                                                                                \
-  static inline void N_VERIFY(lowmc_t const* lowmc, mzd_local_t const* p, view_t* views,           \
-                              in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {     \
-    _mpc_lowmc_call_bitsliced_verify(ch, ARGS, SBOX_VERIFY, mzd, , MUL, XOR, XOR_MC, MUL_MC,       \
-                                     ADDMUL, N, R);                                                \
-  }
-#define mpc_lowmc_call_def_10(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, XOR, XOR_MC,    \
-                              MUL_MC, ADDMUL)                                                      \
-  static inline void N_SIGN##_10(lowmc_t const* lowmc, mpc_lowmc_key_t* lowmc_key,                 \
-                                 mzd_local_t const* p, view_t* views,                              \
-                                 in_out_shares_t* in_out_shares, rvec_t* rvec) {                   \
-    _mpc_lowmc_call_bitsliced(5, mpc_sbox_layer_bitsliced_uint64, uint64, , MUL, XOR, XOR_MC,      \
-                              MUL_MC, ADDMUL, N, R);                                               \
-  }                                                                                                \
-  static inline void N_VERIFY##_10(lowmc_t const* lowmc, mzd_local_t const* p, view_t* views,      \
-                                   in_out_shares_t* in_out_shares, rvec_t* rvec,                   \
-                                   unsigned int ch) {                                              \
-    _mpc_lowmc_call_bitsliced_verify(ch, 5, mpc_sbox_layer_bitsliced_verify_uint64, uint64, , MUL, \
-                                     XOR, XOR_MC, MUL_MC, ADDMUL, N, R);                           \
-  }
-#endif
+#define CONCAT2(a, b) a##_##b
+#define CONCAT(a, b) CONCAT2(a, b)
 
 #if defined(MUL_M4RI)
 #define SELECT_V_VL(v, vl) vl
@@ -805,104 +679,325 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define SELECT_V_VL(v, vl) v
 #endif
 
-#if defined(WITH_CUSTOM_INSTANCES)
-#define mpc_lowmc_call_def_args(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, MUL_L, XOR,   \
-                                XOR_MC, MUL_MC, MUL_MC_L, ADDMUL, ADDMUL_L, ARGS)                  \
-  mpc_lowmc_call_def_gen(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, SELECT_V_VL(MUL, MUL_L),  \
-                         XOR, XOR_MC, SELECT_V_VL(MUL_MC, MUL_MC_L),                               \
-                         SELECT_V_VL(ADDMUL, ADDMUL_L), ARGS);                                     \
-  mpc_lowmc_call_def_10(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, SELECT_V_VL(MUL, MUL_L),   \
-                        XOR, XOR_MC, SELECT_V_VL(MUL_MC, MUL_MC_L),                                \
-                        SELECT_V_VL(ADDMUL, ADDMUL_L));
-#else
-#define mpc_lowmc_call_def_args(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, MUL_L, XOR,   \
-                                XOR_MC, MUL_MC, MUL_MC_L, ADDMUL, ADDMUL_L, ARGS)                  \
-  mpc_lowmc_call_def_10(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, SELECT_V_VL(MUL, MUL_L),   \
-                        XOR, XOR_MC, SELECT_V_VL(MUL_MC, MUL_MC_L),                                \
-                        SELECT_V_VL(ADDMUL, ADDMUL_L));
-#endif
+// uint64 based implementation
+#define XOR mzd_xor_uint64
+#define MUL SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_uint64, mzd_addmul_vl_uint64)
+#define XOR_MC mzd_xor_uint64
+#define MUL_MC SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
 
-mpc_lowmc_call_def_args(lowmc->n, lowmc->r, mpc_lowmc_call, mpc_lowmc_call_verify,
-                        mpc_sbox_layer_bitsliced, mpc_sbox_layer_bitsliced_verify, mzd_mul_v_uint64,
-                        mzd_mul_vl_uint64, mzd_xor_uint64, mzd_xor_uint64, mzd_mul_v_uint64,
-                        mzd_mul_vl_uint64, mzd_addmul_v_uint64, mzd_addmul_vl_uint64, 6);
+#define LOWMC_N lowmc->n
+#define LOWMC_R lowmc->r
+
+#define SIGN_SBOX mpc_sbox_layer_bitsliced
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify
+#define SBOX_NUM_ARGS 6
+
+#define SIGN mpc_lowmc_call
+#define VERIFY mpc_lowmc_call_verify
+#include "mpc_lowmc.c.i"
 
 #if defined(WITH_OPT)
-#define mpc_lowmc_call_def(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, MUL_L, XOR,        \
-                           XOR_MC, MUL_MC, MUL_MC_L, ADDMUL, ADDMUL_L)                             \
-  mpc_lowmc_call_def_args(N, R, N_SIGN, N_VERIFY, SBOX_SIGN, SBOX_VERIFY, MUL, MUL_L, XOR, XOR_MC, \
-                          MUL_MC, MUL_MC_L, ADDMUL, ADDMUL_L, 5);
+#undef SBOX_NUM_ARGS
+#define SBOX_NUM_ARGS 5
 
 #if defined(WITH_SSE2)
-mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_sse, mpc_lowmc_call_verify_128_sse,
-                   mpc_sbox_layer_bitsliced_128_sse, mpc_sbox_layer_bitsliced_verify_128_sse,
-                   mzd_mul_v_sse_128, mzd_mul_vl_sse_128, mzd_xor_sse_128, mzd_xor_sse,
-                   mzd_mul_v_sse, mzd_mul_vl_sse, mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128);
-mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_sse, mpc_lowmc_call_verify_192_sse,
-                   mpc_sbox_layer_bitsliced_256_sse, mpc_sbox_layer_bitsliced_verify_256_sse,
-                   mzd_mul_v_sse_192, mzd_mul_vl_sse_192, mzd_xor_sse_256, mzd_xor_sse,
-                   mzd_mul_v_sse, mzd_mul_vl_sse, mzd_addmul_v_sse_192, mzd_addmul_vl_sse_192);
-mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_sse, mpc_lowmc_call_verify_256_sse,
-                   mpc_sbox_layer_bitsliced_256_sse, mpc_sbox_layer_bitsliced_verify_256_sse,
-                   mzd_mul_v_sse_256, mzd_mul_vl_sse_256, mzd_xor_sse_256, mzd_xor_sse,
-                   mzd_mul_v_sse, mzd_mul_vl_sse, mzd_addmul_v_sse_256, mzd_addmul_vl_sse_256);
+#undef XOR_MC
+#undef MUL_MC
+#define XOR_MC mzd_xor_sse
+#define MUL_MC SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
+
+// L1 using SSE2
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_sse_128
+#define MUL SELECT_V_VL(mzd_mul_v_sse_128, mzd_mul_vl_sse_128)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L1_N
+#define LOWMC_R LOWMC_L1_R
+
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_128_sse
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_128_sse
+
+#define SIGN mpc_lowmc_call_128_sse
+#define VERIFY mpc_lowmc_call_verify_128_sse
+#include "mpc_lowmc.c.i"
+
+// L3 using SSE2
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_sse_256
+#define MUL SELECT_V_VL(mzd_mul_v_sse_192, mzd_mul_vl_sse_192)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_192, mzd_addmul_vl_sse_192)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L3_N
+#define LOWMC_R LOWMC_L3_R
+
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_256_sse
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_256_sse
+
+#define SIGN mpc_lowmc_call_192_sse
+#define VERIFY mpc_lowmc_call_verify_192_sse
+#include "mpc_lowmc.c.i"
+
+// L5 using SSE2
+#undef MUL
+#undef ADDMUL
+#define MUL SELECT_V_VL(mzd_mul_v_sse_256, mzd_mul_vl_sse_256)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_256, mzd_addmul_vl_sse_256)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L5_N
+#define LOWMC_R LOWMC_L5_R
+
+#define SIGN mpc_lowmc_call_256_sse
+#define VERIFY mpc_lowmc_call_verify_256_sse
+#include "mpc_lowmc.c.i"
+
 #if defined(WITH_CUSTOM_INSTANCES)
-mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_384_sse, mpc_lowmc_call_verify_384_sse,
-                   mpc_sbox_layer_bitsliced_384_sse, mpc_sbox_layer_bitsliced_verify_384_sse,
-                   mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse, mzd_xor_sse, mzd_mul_v_sse,
-                   mzd_mul_vl_sse, mzd_addmul_v_sse, mzd_addmul_vl_sse);
-mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_512_sse, mpc_lowmc_call_verify_512_sse,
-                   mpc_sbox_layer_bitsliced_512_sse, mpc_sbox_layer_bitsliced_verify_512_sse,
-                   mzd_mul_v_sse, mzd_mul_vl_sse, mzd_xor_sse, mzd_xor_sse, mzd_mul_v_sse,
-                   mzd_mul_vl_sse, mzd_addmul_v_sse, mzd_addmul_vl_sse);
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_sse
+#define MUL SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse, mzd_addmul_vl_sse)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N lowmc->n
+#define LOWMC_R lowmc->r
+
+// 384 bit using SSE2
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_384_sse
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_384_sse
+
+#define SIGN mpc_lowmc_call_384_sse
+#define VERIFY mpc_lowmc_call_verify_384_sse
+#include "mpc_lowmc.c.i"
+
+// 512 bit using SSE2
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_512_sse
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_512_sse
+
+#define SIGN mpc_lowmc_call_512_sse
+#define VERIFY mpc_lowmc_call_verify_512_sse
+#include "mpc_lowmc.c.i"
 #endif
 #endif
+
 #if defined(WITH_AVX2)
-mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_avx, mpc_lowmc_call_verify_128_avx,
-                   mpc_sbox_layer_bitsliced_128_sse, mpc_sbox_layer_bitsliced_verify_128_sse,
-                   mzd_mul_v_avx_128, mzd_mul_vl_avx_128, mzd_xor_sse_128, mzd_xor_avx,
-                   mzd_mul_v_avx, mzd_mul_vl_avx, mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128);
-mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_avx, mpc_lowmc_call_verify_192_avx,
-                   mpc_sbox_layer_bitsliced_256_avx, mpc_sbox_layer_bitsliced_verify_256_avx,
-                   mzd_mul_v_avx_192, mzd_mul_vl_avx_192, mzd_xor_avx_256, mzd_xor_avx,
-                   mzd_mul_v_avx, mzd_mul_vl_avx, mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192);
-mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_avx, mpc_lowmc_call_verify_256_avx,
-                   mpc_sbox_layer_bitsliced_256_avx, mpc_sbox_layer_bitsliced_verify_256_avx,
-                   mzd_mul_v_avx_256, mzd_mul_vl_avx_256, mzd_xor_avx_256, mzd_xor_avx,
-                   mzd_mul_v_avx, mzd_mul_vl_avx, mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256);
+#undef XOR_MC
+#undef MUL_MC
+#define XOR_MC mzd_xor_avx
+#define MUL_MC SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
+
+// L1 using AVX2
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_sse_128
+#define MUL SELECT_V_VL(mzd_mul_v_avx_128, mzd_mul_vl_avx_128)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L1_N
+#define LOWMC_R LOWMC_L1_R
+
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_128_sse
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_128_sse
+
+#define SIGN mpc_lowmc_call_128_avx
+#define VERIFY mpc_lowmc_call_verify_128_avx
+#include "mpc_lowmc.c.i"
+
+// L3 using AVX2
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_avx_256
+#define MUL SELECT_V_VL(mzd_mul_v_avx_192, mzd_mul_vl_avx_192)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L3_N
+#define LOWMC_R LOWMC_L3_R
+
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_256_avx
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_256_avx
+
+#define SIGN mpc_lowmc_call_192_avx
+#define VERIFY mpc_lowmc_call_verify_192_avx
+#include "mpc_lowmc.c.i"
+
+// L5 using AVX2
+#undef MUL
+#undef ADDMUL
+#define MUL SELECT_V_VL(mzd_mul_v_avx_256, mzd_mul_vl_avx_256)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L5_N
+#define LOWMC_R LOWMC_L5_R
+
+#define SIGN mpc_lowmc_call_256_avx
+#define VERIFY mpc_lowmc_call_verify_256_avx
+#include "mpc_lowmc.c.i"
+
 #if defined(WITH_CUSTOM_INSTANCES)
-mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_384_avx, mpc_lowmc_call_verify_384_avx,
-                   mpc_sbox_layer_bitsliced_512_avx, mpc_sbox_layer_bitsliced_verify_512_avx,
-                   mzd_mul_v_avx, mzd_mul_vl_avx, mzd_xor_avx, mzd_xor_avx, mzd_mul_v_avx,
-                   mzd_mul_vl_avx, mzd_addmul_v_avx, mzd_addmul_vl_avx);
-mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_512_avx, mpc_lowmc_call_verify_512_avx,
-                   mpc_sbox_layer_bitsliced_512_avx, mpc_sbox_layer_bitsliced_verify_512_avx,
-                   mzd_mul_v_avx, mzd_mul_vl_avx, mzd_xor_avx, mzd_xor_avx, mzd_mul_v_avx,
-                   mzd_mul_vl_avx, mzd_addmul_v_avx, mzd_addmul_vl_avx);
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_avx
+#define MUL SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx, mzd_addmul_vl_avx)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N lowmc->n
+#define LOWMC_R lowmc->r
+
+// 384 bit using AVX2
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_512_avx
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_512_avx
+
+#define SIGN mpc_lowmc_call_384_avx
+#define VERIFY mpc_lowmc_call_verify_384_avx
+#include "mpc_lowmc.c.i"
+
+// 512 bit using AVX2
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_512_avx
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_512_avx
+
+#define SIGN mpc_lowmc_call_512_avx
+#define VERIFY mpc_lowmc_call_verify_512_avx
+#include "mpc_lowmc.c.i"
 #endif
 #endif
+
 #if defined(WITH_NEON)
-mpc_lowmc_call_def(LOWMC_L1_N, LOWMC_L1_R, mpc_lowmc_call_128_neon, mpc_lowmc_call_verify_128_neon,
-                   mpc_sbox_layer_bitsliced_128_neon, mpc_sbox_layer_bitsliced_verify_128_neon,
-                   mzd_mul_v_neon_128, mzd_mul_vl_neon_128, mzd_xor_neon_128, mzd_xor_neon,
-                   mzd_mul_v_neon, mzd_mul_vl_neon, mzd_addmul_v_neon_128, mzd_addmul_vl_neon_128);
-mpc_lowmc_call_def(LOWMC_L3_N, LOWMC_L3_R, mpc_lowmc_call_192_neon, mpc_lowmc_call_verify_192_neon,
-                   mpc_sbox_layer_bitsliced_256_neon, mpc_sbox_layer_bitsliced_verify_256_neon,
-                   mzd_mul_v_neon_192, mzd_mul_vl_neon, mzd_xor_neon_256, mzd_xor_neon,
-                   mzd_mul_v_neon, mzd_mul_vl_neon, mzd_addmul_v_neon_192, mzd_addmul_vl_neon_192);
-mpc_lowmc_call_def(LOWMC_L5_N, LOWMC_L5_R, mpc_lowmc_call_256_neon, mpc_lowmc_call_verify_256_neon,
-                   mpc_sbox_layer_bitsliced_256_neon, mpc_sbox_layer_bitsliced_verify_256_neon,
-                   mzd_mul_v_neon_256, mzd_mul_vl_neon, mzd_xor_neon_256, mzd_xor_neon,
-                   mzd_mul_v_neon, mzd_mul_vl_neon, mzd_addmul_v_neon_256, mzd_addmul_vl_neon_256);
+#undef XOR_MC
+#undef MUL_MC
+#define XOR_MC mzd_xor_neon
+#define MUL_MC SELECT_V_VL(mzd_mul_v_neon, mzd_mul_vl_neon)
+
+// L1 using NEON
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_neon_128
+#define MUL SELECT_V_VL(mzd_mul_v_neon_128, mzd_mul_vl_neon_128)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_128, mzd_addmul_vl_neon_128)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L1_N
+#define LOWMC_R LOWMC_L1_R
+
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_128_neon
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_128_neon
+
+#define SIGN mpc_lowmc_call_128_neon
+#define VERIFY mpc_lowmc_call_verify_128_neon
+#include "mpc_lowmc.c.i"
+
+// L3 using NEON
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_neon_256
+#define MUL SELECT_V_VL(mzd_mul_v_neon_192, mzd_mul_vl_neon_192)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_192, mzd_addmul_vl_neon_192)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L3_N
+#define LOWMC_R LOWMC_L3_R
+
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_256_neon
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_256_neon
+
+#define SIGN mpc_lowmc_call_192_neon
+#define VERIFY mpc_lowmc_call_verify_192_neon
+#include "mpc_lowmc.c.i"
+
+// L5 using NEON
+#undef MUL
+#undef ADDMUL
+#define MUL SELECT_V_VL(mzd_mul_v_neon_256, mzd_mul_vl_neon_256)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_256, mzd_addmul_vl_neon_256)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N LOWMC_L5_N
+#define LOWMC_R LOWMC_L5_R
+
+#define SIGN mpc_lowmc_call_256_neon
+#define VERIFY mpc_lowmc_call_verify_256_neon
+#include "mpc_lowmc.c.i"
+
 #if defined(WITH_CUSTOM_INSTANCES)
-mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_384_neon, mpc_lowmc_call_verify_384_neon,
-                   mpc_sbox_layer_bitsliced_384_neon, mpc_sbox_layer_bitsliced_verify_384_neon,
-                   mzd_mul_v_neon, mzd_mul_vl_neon, mzd_xor_neon, mzd_xor_neon, mzd_mul_v_neon,
-                   mzd_mul_vl_neon, mzd_addmul_v_neon, mzd_addmul_vl_neon);
-mpc_lowmc_call_def(lowmc->n, lowmc->r, mpc_lowmc_call_512_neon, mpc_lowmc_call_verify_512_neon,
-                   mpc_sbox_layer_bitsliced_512_neon, mpc_sbox_layer_bitsliced_verify_512_neon,
-                   mzd_mul_v_neon, mzd_mul_vl_neon, mzd_xor_neon, mzd_xor_neon, mzd_mul_v_neon,
-                   mzd_mul_vl_neon, mzd_addmul_v_neon, mzd_addmul_vl_neon);
+#undef XOR
+#undef MUL
+#undef ADDMUL
+#define XOR mzd_xor_neon
+#define MUL SELECT_V_VL(mzd_mul_v_neon, mzd_mul_vl_neon)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon, mzd_addmul_vl_neon)
+
+#undef LOWMC_N
+#undef LOWMC_R
+#define LOWMC_N lowmc->n
+#define LOWMC_R lowmc->r
+
+// 384 bit using NEON
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_384_neon
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_384_neon
+
+#define SIGN mpc_lowmc_call_384_neon
+#define VERIFY mpc_lowmc_call_verify_384_neon
+#include "mpc_lowmc.c.i"
+
+// 512 bit using NEON
+#undef SIGN_SBOX
+#undef VERIFY_SBOX
+#define SIGN_SBOX mpc_sbox_layer_bitsliced_512_neon
+#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_512_neon
+
+#define SIGN mpc_lowmc_call_512_neon
+#define VERIFY mpc_lowmc_call_verify_512_neon
+#include "mpc_lowmc.c.i"
 #endif
 #endif
 #endif
