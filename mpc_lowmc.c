@@ -635,7 +635,7 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #endif
 
 #define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, vars, n, shares)                              \
-  SBOX_mzd_##X(sbox, y, x, views, r, lowmcmask, vars, n)
+  CONCAT(SBOX_mzd, X)(sbox, y, x, views, r, lowmcmask, vars, n)
 
 #define SBOX_mzd_5(sbox, y, x, views, r, lowmcmask, vars, n) sbox(y, x, views, r, lowmcmask)
 #define SBOX_mzd_6(sbox, y, x, views, r, lowmcmask, vars, n) sbox(y, x, views, r, lowmcmask, vars)
