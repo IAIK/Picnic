@@ -1,6 +1,6 @@
-#if defined(REDUCED_LINEAR_LAYER)
   lowmc_round_t const* round = lowmc->rounds;
 
+#if defined(REDUCED_LINEAR_LAYER)
   MPC_LOOP_CONST_C(XOR, x, x, lowmc->precomputed_constant_linear, shares, ch);
   mzd_local_t* nl_part[shares];
   mzd_local_init_multiple_ex(nl_part, shares, 1, (LOWMC_R)*32, false);
@@ -20,8 +20,6 @@
   }
   mzd_local_free_multiple(nl_part);
 #else
-  lowmc_round_t const* round = lowmc->rounds;
-
   for (unsigned i = 0; i < (LOWMC_R); ++i, ++views, ++round) {
     RANDTAPE;
     SBOX(SBOX_ARGS, sbox, y, x, views, r, &lowmc->mask, &vars, LOWMC_N, shares);

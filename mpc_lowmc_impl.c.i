@@ -22,8 +22,9 @@
 
 static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mzd_local_t const* p,
                           view_t* views, in_out_shares_t* in_out_shares, rvec_t* rvec) {
+#if defined(LOWMC_INSTANCE)
   (void) lowmc_instance;
-
+#endif
   mpc_copy(in_out_shares->s, lowmc_key, SC_PROOF);
   ++in_out_shares;
 
@@ -49,8 +50,9 @@ static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mz
 
 static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t* views,
                             in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {
+#if defined(LOWMC_INSTANCE)
   (void) lowmc_instance;
-
+#endif
   mzd_local_t* const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;
 
