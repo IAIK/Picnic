@@ -10,6 +10,7 @@
 #ifndef PICNIC_IMPL_H
 #define PICNIC_IMPL_H
 
+#include "lowmc.h"
 #include "mpc_lowmc.h"
 #include "picnic.h"
 
@@ -20,6 +21,7 @@ typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 
 typedef struct {
   const lowmc_t* lowmc;
+  lowmc_implementation_f lowmc_impl;
   zkbpp_lowmc_implementation_f zkbpp_lowmc_impl;
   zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify_impl;
 

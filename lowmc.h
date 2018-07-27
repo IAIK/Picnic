@@ -12,6 +12,9 @@
 
 #include "lowmc_pars.h"
 
+typedef mzd_local_t* (*lowmc_implementation_f)(lowmc_t const*, lowmc_key_t const*, mzd_local_t const*);
+
+lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc);
 /**
  * Implements LowMC encryption
  *

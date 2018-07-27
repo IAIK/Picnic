@@ -118,7 +118,7 @@ int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
   mzd_from_char_array(privkey, sk_sk, input_size);
 
   // compute public key
-  mzd_local_t* ciphertext = lowmc_call(lowmc, privkey, plaintext);
+  mzd_local_t* ciphertext = instance->lowmc_impl(lowmc, privkey, plaintext);
 
   pk->data[0] = param;
   memcpy(pk_pt, sk_pt, output_size);

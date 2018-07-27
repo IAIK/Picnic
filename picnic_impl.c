@@ -1184,17 +1184,17 @@ static bool lowmc_instances_initialized[3];
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
     {0},
-    {LOWMC_L1_OR_NULL, NULL, NULL, 64, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
+    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, 64, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_FS, Picnic_L1_FS, TRANSFORM_FS},
-    {LOWMC_L1_OR_NULL, NULL, NULL, 64, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
+    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, 64, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_UR, Picnic_L1_UR, TRANSFORM_UR},
-    {LOWMC_L3_OR_NULL, NULL, NULL, 96, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0,
+    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, 96, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_FS, Picnic_L3_FS, TRANSFORM_FS},
-    {LOWMC_L3_OR_NULL, NULL, NULL, 96, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
+    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, 96, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_UR, Picnic_L3_UR, TRANSFORM_UR},
-    {LOWMC_L5_OR_NULL, NULL, NULL, 128, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0,
+    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, 128, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_FS, Picnic_L5_FS, TRANSFORM_FS},
-    {LOWMC_L5_OR_NULL, NULL, NULL, 128, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
+    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, 128, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR}};
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
@@ -1284,6 +1284,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
 #endif
   }
 
+  pp->lowmc_impl              = lowmc_get_implementation(pp->lowmc);
   pp->zkbpp_lowmc_impl        = get_zkbpp_lowmc_implementation(pp->lowmc);
   pp->zkbpp_lowmc_verify_impl = get_zkbpp_lowmc_verify_implementation(pp->lowmc);
 #if defined(WITH_CUSTOM_INSTANCES)
