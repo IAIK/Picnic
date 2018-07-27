@@ -1,5 +1,13 @@
-  lowmc_round_t const* round = lowmc->rounds;
+ /*
+ *  This file is part of the optimized implementation of the Picnic signature scheme.
+ *  See the accompanying documentation for complete details.
+ *
+ *  The code is provided under the MIT license, see LICENSE for
+ *  more details.
+ *  SPDX-License-Identifier: MIT
+ */
 
+  lowmc_round_t const* round = lowmc->rounds;
 #if defined(REDUCED_LINEAR_LAYER)
   MPC_LOOP_CONST_C(XOR, x, x, lowmc->precomputed_constant_linear, shares, ch);
   mzd_local_t* nl_part[shares];
