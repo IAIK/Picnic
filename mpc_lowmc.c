@@ -628,12 +628,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #endif
 #endif
 
-#if defined(MUL_M4RI)
-#define matrix_postfix lookup
-#else
-#define matrix_postfix matrix
-#endif
-
 #define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, vars, n, shares)                              \
   CONCAT(SBOX_mzd, X)(sbox, y, x, views, r, lowmcmask, vars, n)
 
@@ -664,15 +658,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 
 #define VARS_FREE_5
 #define VARS_FREE_6 sbox_vars_clear(&vars)
-
-#define CONCAT2(a, b) a##_##b
-#define CONCAT(a, b) CONCAT2(a, b)
-
-#if defined(MUL_M4RI)
-#define SELECT_V_VL(v, vl) vl
-#else
-#define SELECT_V_VL(v, vl) v
-#endif
 
 // uint64 based implementation
 #define XOR mzd_xor_uint64
@@ -1032,12 +1017,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #include "mpc_lowmc.c.i"
 #endif
 #endif
-#endif
-
-#if defined(WITH_CUSTOM_INSTANCES)
-#define general_or_10(l, f) (l)->m == 10 ? f##_10 : (f)
-#else
-#define general_or_10(l, f) f##_10
 #endif
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {

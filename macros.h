@@ -115,4 +115,28 @@
 #define FN_ATTRIBUTES_SSE2 FN_ATTRIBUTES_SSE2_NP ATTR_PURE
 #define FN_ATTRIBUTES_NEON FN_ATTRIBUTES_NEON_NP ATTR_PURE
 
+/* concatenation */
+#define CONCAT2(a, b) a##_##b
+#define CONCAT(a, b) CONCAT2(a, b)
+
+/* helper macros to select matrices and multiplicatiion functions */
+#if defined(MUL_M4RI)
+#define matrix_postfix lookup
+#else
+#define matrix_postfix matrix
+#endif
+
+#if defined(MUL_M4RI)
+#define SELECT_V_VL(v, vl) vl
+#else
+#define SELECT_V_VL(v, vl) v
+#endif
+
+/* helper to select lowmc implementations */
+#if defined(WITH_CUSTOM_INSTANCES)
+#define general_or_10(l, f) (l)->m == 10 ? f##_10 : (f)
+#else
+#define general_or_10(l, f) f##_10
+#endif
+
 #endif
