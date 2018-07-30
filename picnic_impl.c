@@ -681,14 +681,13 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const uint8_t* tmp   = data;
 
   // read and process challenge
-  if (remaining_len < challenge_size) {
+  if (sub_overflow_size_t(remaining_len, challenge_size, &remaining_len)) {
     goto err;
   }
   if (!expand_challenge(proof->challenge, pp, tmp)) {
     goto err;
   }
   tmp += challenge_size;
-  remaining_len -= challenge_size;
 
   const size_t base_size = digest_size + view_size + 2 * seed_size;
   proof_round_t* round   = proof->round;
@@ -696,10 +695,9 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
     const unsigned char ch      = proof->challenge[i];
     const size_t unruh_g_len    = ch ? without_input_bytes_size : with_input_bytes_size;
     const size_t requested_size = base_size + unruh_g_len + (ch ? input_size : 0);
-    if (remaining_len < requested_size) {
+    if (sub_overflow_size_t(remaining_len, requested_size, &remaining_len)) {
       goto err;
     }
-    remaining_len -= requested_size;
 
     // read commitments
     round->commitments[2] = (uint8_t*)tmp;
