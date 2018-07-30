@@ -690,13 +690,12 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   tmp += challenge_size;
   remaining_len -= challenge_size;
 
-  proof_round_t* round = proof->round;
+  const size_t base_size = digest_size + view_size + 2 * seed_size;
+  proof_round_t* round   = proof->round;
   for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
-    const unsigned char ch   = proof->challenge[i];
-    const size_t unruh_g_len = ch ? without_input_bytes_size : with_input_bytes_size;
-
-    const size_t requested_size =
-        digest_size + unruh_g_len + view_size + 2 * seed_size + (ch ? input_size : 0);
+    const unsigned char ch      = proof->challenge[i];
+    const size_t unruh_g_len    = ch ? without_input_bytes_size : with_input_bytes_size;
+    const size_t requested_size = base_size + unruh_g_len + (ch ? input_size : 0);
     if (remaining_len < requested_size) {
       goto err;
     }
@@ -723,17 +722,20 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
     tmp += seed_size;
 
     // read input shares
-    if (ch == 0) {
+    switch (ch) {
+    case 0:
       round->input_shares[0] = slab;
       slab += input_size;
       round->input_shares[1] = slab;
       slab += input_size;
-    } else if (ch == 1) {
+      break;
+    case 1:
       round->input_shares[0] = slab;
       slab += input_size;
       round->input_shares[1] = (uint8_t*)tmp;
       tmp += input_size;
-    } else {
+      break;
+    default:
       round->input_shares[0] = (uint8_t*)tmp;
       tmp += input_size;
       round->input_shares[1] = slab;
