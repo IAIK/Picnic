@@ -31,7 +31,6 @@ include(CheckFunctionExists)
 include(CheckCCompilerFlag)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
-include(TestBigEndian)
 
 # required libraries
 find_package(OpenSSL)
@@ -69,21 +68,12 @@ check_simd(SSE2 CC_SUPPORTS_SSE2)
 check_simd(AVX2 CC_SUPPORTS_AVX2)
 check_simd(NEON CC_SUPPORTS_NEON)
 
-# test endianess
-test_big_endian(IS_BIG_ENDIAN)
-
 # user-settable options
 if(APPLE AND ${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
   # workaround for broken -march=native support on some versions of GCC on OS X.
   set(DEFAULT_WITH_MARCH_NATIVE OFF)
 else()
   set(DEFAULT_WITH_MARCH_NATIVE ON)
-endif()
-
-if(IS_BIG_ENDIAN)
-  set(DEFAULT_SHA3_IMPL "ref")
-else()
-  set(DEFAULT_SHA3_IMPL "opt64")
 endif()
 
 set(WITH_SIMD_OPT ON CACHE BOOL "Enable optimizations via SIMD.")
@@ -93,7 +83,7 @@ set(WITH_NEON ON CACHE BOOL "Use NEON if available.")
 set(WITH_MARCH_NATIVE ${DEFAULT_WITH_MARCH_NATIVE} CACHE BOOL "Build with -march=native -mtune=native (if supported).")
 set(WITH_LTO ON CACHE BOOL "Enable link-time optimization (if supported).")
 set(WITH_MUL_M4RI OFF CACHE BOOL "Use method of four russians for matrix multiplication.")
-set(SHA3_IMPL ${DEFAULT_SHA3_IMPL} CACHE STRING "Select SHA3 implementation.")
+set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
 set(ENABLE_VERBOSE_OUTPUT OFF CACHE BOOL "Enable verbose output.")
 set(ENABLE_DETAILED_TIMINGS OFF CACHE BOOL "Enable detail timings.")
 set(WITH_REDUCED_LINEAR_LAYER ON CACHE BOOL "Enable precomputation of round key.")
