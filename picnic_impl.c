@@ -1171,7 +1171,6 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 #define LOWMC_L5_OR_NULL &lowmc_256_256_38
 #else
 #define LOWMC_L5_OR_NULL NULL
-
 #endif
 
 #if defined(MUL_M4RI)
