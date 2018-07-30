@@ -60,7 +60,7 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 
     MUL(y, x, CONCAT(round->l, matrix_postfix));
     XOR(x, y, round->constant);
-    ADDMUL(x, lowmc_key, CONCAT(round->k, matrix_postix));
+    ADDMUL(x, lowmc_key, CONCAT(round->k, matrix_postfix));
   }
 
   mzd_local_free(y);
