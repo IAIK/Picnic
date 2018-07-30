@@ -114,13 +114,14 @@
       defined( __VMS )     || defined( _M_X64 )
 #  define PLATFORM_BYTE_ORDER IS_LITTLE_ENDIAN
 
-#elif defined( AMIGA )   || defined( applec )    || defined( __AS400__ )  || \
-      defined( _CRAY )   || defined( __hppa )    || defined( __hp9000 )   || \
-      defined( ibm370 )  || defined( mc68000 )   || defined( m68k )       || \
-      defined( __MRC__ ) || defined( __MVS__ )   || defined( __MWERKS__ ) || \
-      defined( sparc )   || defined( __sparc)    || defined( SYMANTEC_C ) || \
-      defined( __VOS__ ) || defined( __TIGCC__ ) || defined( __TANDEM )   || \
-      defined( THINK_C ) || defined( __VMCMS__ ) || defined( _AIX )
+#elif defined( AMIGA )    || defined( applec )    || defined( __AS400__ )  || \
+      defined( _CRAY )    || defined( __hppa )    || defined( __hp9000 )   || \
+      defined( ibm370 )   || defined( mc68000 )   || defined( m68k )       || \
+      defined( __MRC__ )  || defined( __MVS__ )   || defined( __MWERKS__ ) || \
+      defined( sparc )    || defined( __sparc)    || defined( SYMANTEC_C ) || \
+      defined( __VOS__ )  || defined( __TIGCC__ ) || defined( __TANDEM )   || \
+      defined( THINK_C )  || defined( __VMCMS__ ) || defined( _AIX )       || \
+      defined( __s390__ ) || defined( __s390x__ ) || defined( __zarch__ )
 #  define PLATFORM_BYTE_ORDER IS_BIG_ENDIAN
 
 #elif defined(__arm__)
@@ -137,6 +138,20 @@
 #  error Please edit lines 132 or 134 in brg_endian.h to set the platform byte order
 #endif
 
+#endif
+
+#if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
+#define HTOLE64(x) (x)
+#else
+#define HTOLE64(x) (\
+  ((x & 0xff00000000000000ull) >> 56) | \
+  ((x & 0x00ff000000000000ull) >> 40) | \
+  ((x & 0x0000ff0000000000ull) >> 24) | \
+  ((x & 0x000000ff00000000ull) >> 8)  | \
+  ((x & 0x00000000ff000000ull) << 8)  | \
+  ((x & 0x0000000000ff0000ull) << 24) | \
+  ((x & 0x000000000000ff00ull) << 40) | \
+  ((x & 0x00000000000000ffull) << 56))
 #endif
 
 #endif
