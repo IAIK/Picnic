@@ -50,7 +50,6 @@ mzd_local_t* mzd_local_copy(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNU
 void mzd_local_clear(mzd_local_t* c) ATTR_NONNULL;
 
 void mzd_shift_right(mzd_local_t* res, mzd_local_t const* val, unsigned count) ATTR_NONNULL;
-
 void mzd_shift_left(mzd_local_t* res, mzd_local_t const* val, unsigned count) ATTR_NONNULL;
 
 void mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;

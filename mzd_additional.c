@@ -229,6 +229,17 @@ static inline void mzd_and_neon(mzd_local_t* res, mzd_local_t const* first,
 #endif
 #endif
 
+static inline void mzd_and_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  unsigned int width    = first->width;
+  word* resptr          = ASSUME_ALIGNED(FIRST_ROW(res), 32);
+  word const* firstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), 32);
+  word const* secondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), 32);
+
+  while (width--) {
+    *resptr++ = *firstptr++ & *secondptr++;
+  }
+}
+
 void mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -250,15 +261,7 @@ void mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* seco
   }
 #endif
 #endif
-
-  unsigned int width    = first->width;
-  word* resptr          = ASSUME_ALIGNED(FIRST_ROW(res), 32);
-  word const* firstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), 32);
-  word const* secondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), 32);
-
-  while (width--) {
-    *resptr++ = *firstptr++ & *secondptr++;
-  }
+  mzd_and_uint64(res, first, second);
 }
 
 #if defined(WITH_OPT)
