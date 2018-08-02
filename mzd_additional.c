@@ -391,21 +391,11 @@ void mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t cons
 }
 
 void mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-  if (At->nrows != v->ncols) {
-    // number of columns does not match
-    return;
-  }
-
   mzd_local_clear(c);
   mzd_addmul_v(c, v, At);
 }
 
 void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-  if (At->nrows != v->ncols) {
-    // number of columns does not match
-    return;
-  }
-
   mzd_local_clear(c);
   mzd_addmul_v_uint64(c, v, At);
 }
@@ -870,11 +860,6 @@ void mzd_addmul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 #endif
 
 void mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  if (A->ncols != c->ncols || A->nrows != v->ncols) {
-    // number of columns does not match
-    return;
-  }
-
 #if defined(WITH_OPT)
   if (A->nrows % (sizeof(word) * 8) == 0) {
 #if defined(WITH_AVX2)
@@ -964,7 +949,6 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
   mzd_local_t* B = mzd_local_init_ex(32 * A->nrows, A->ncols, true);
 
   const unsigned int len = A->width;
-
   for (unsigned int r = 0; r < B->nrows; ++r) {
     const unsigned int comb     = r & 0xff;
     const unsigned int r_offset = (r >> 8) << 3;
@@ -1378,11 +1362,6 @@ void mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
 #endif
 
 void mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  if (A->nrows != 32 * v->ncols) {
-    // number of columns does not match
-    return;
-  }
-
 #if defined(WITH_OPT)
   if (A->nrows % (sizeof(word) * 8) == 0) {
 #if defined(WITH_AVX2)
@@ -1421,11 +1400,6 @@ void mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
 }
 
 void mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  if (A->ncols != c->ncols || A->nrows != 32 * v->ncols) {
-    // number of columns does not match
-    return;
-  }
-
 #if defined(WITH_OPT)
   if (A->nrows % (sizeof(word) * 8) == 0) {
 #if defined(WITH_AVX2)
