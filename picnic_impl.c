@@ -364,9 +364,9 @@ static void mzd_share(mzd_local_t* shared_value[SC_PROOF], const mzd_local_t* va
   mzd_xor(shared_value[2], shared_value[1], shared_value[2]);
 }
 
-static void mzd_unshare(mzd_local_t* dst, mzd_local_t* shared_value[SC_PROOF]) {
-  mzd_xor(dst, shared_value[0], shared_value[1]);
-  mzd_xor(dst, dst, shared_value[2]);
+static void mzd_unshare(mzd_local_t* shared_value[SC_PROOF], const mzd_local_t* value) {
+  mzd_xor(shared_value[2], shared_value[0], shared_value[1]);
+  mzd_xor(shared_value[2], shared_value[2], value);
 }
 
 /**
@@ -994,12 +994,7 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
     lowmc_verify_impl(lowmc, p, views, in_out_shares, rvec, a_i);
     compress_view(round->communicated_bits[0], pp, views, 0);
 
-    mzd_local_t* ys[3];
-    ys[0] = in_out_shares[1].s[0];
-    ys[1] = in_out_shares[1].s[1];
-    ys[2] = (mzd_local_t*)c;
-    mzd_unshare(in_out_shares[1].s[2], ys);
-
+    mzd_unshare(in_out_shares[1].s, c);
     for (unsigned int j = 0; j < SC_VERIFY; ++j) {
       mzd_to_char_array(round->output_shares[j], in_out_shares[1].s[j], output_size);
       hash_commitment(pp, round, j);
