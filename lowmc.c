@@ -26,16 +26,16 @@
 
 static uint64_t sbox_layer_bitsliced_uint64(uint64_t in) {
   // a, b, c
-  const uint64_t x0m = (in & MASK_X0I) << 2;
-  const uint64_t x1m = (in & MASK_X1I) << 1;
+  const uint64_t x0s = (in & MASK_X0I) << 2;
+  const uint64_t x1s = (in & MASK_X1I) << 1;
   const uint64_t x2m = in & MASK_X2I;
 
   // (b & c) ^ a
-  const uint64_t t0 = (x1m & x2m) ^ x0m;
+  const uint64_t t0 = (x1s & x2m) ^ x0s;
   // (c & a) ^ a ^ b
-  const uint64_t t1 = (x0m & x2m) ^ x0m ^ x1m;
+  const uint64_t t1 = (x0s & x2m) ^ x0s ^ x1s;
   // (a & b) ^ a ^ b ^c
-  const uint64_t t2 = (x0m & x1m) ^ x0m ^ x1m ^ x2m;
+  const uint64_t t2 = (x0s & x1s) ^ x0s ^ x1s ^ x2m;
 
   return (in & MASK_MASK) ^ (t0 >> 2) ^ (t1 >> 1) ^ t2;
 }
