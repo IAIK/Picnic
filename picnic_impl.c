@@ -359,8 +359,8 @@ static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, co
   }
 }
 
-static void mzd_share(mzd_local_t* shared_value[SC_PROOF]) {
-  mzd_xor(shared_value[2], shared_value[0], shared_value[2]);
+static void mzd_share(mzd_local_t* shared_value[SC_PROOF], const mzd_local_t* value) {
+  mzd_xor(shared_value[2], shared_value[0], value);
   mzd_xor(shared_value[2], shared_value[1], shared_value[2]);
 }
 
@@ -847,8 +847,7 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       kdf_shake_get_randomness(&kdfs[j], round->input_shares[j], input_size);
       mzd_from_char_array(shared_key[j], round->input_shares[j], input_size);
     }
-    mzd_local_copy(shared_key[SC_PROOF - 1], lowmc_key);
-    mzd_share(shared_key);
+    mzd_share(shared_key, lowmc_key);
     mzd_to_char_array(round->input_shares[SC_PROOF - 1], shared_key[SC_PROOF - 1], input_size);
 
     // compute random tapes
