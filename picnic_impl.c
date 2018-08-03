@@ -372,7 +372,7 @@ static void mzd_unshare(mzd_local_t* shared_value[SC_PROOF], const mzd_local_t* 
 /**
  * Compute commitment to a view.
  */
-void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx) {
+static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx) {
   const size_t hashlen = pp->digest_size;
 
   uint8_t tmp[MAX_DIGEST_SIZE];
