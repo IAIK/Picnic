@@ -372,7 +372,8 @@ static void mzd_unshare(mzd_local_t* shared_value[SC_PROOF], const mzd_local_t* 
 /**
  * Compute commitment to a view.
  */
-static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx) {
+static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round,
+                            unsigned int vidx) {
   const size_t hashlen = pp->digest_size;
 
   uint8_t tmp[MAX_DIGEST_SIZE];
@@ -570,7 +571,7 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* cir
 /*
  * G permutation for Unruh transform
  */
-static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned vidx,
+static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned int vidx,
                     bool include_is) {
   hash_context ctx;
 
@@ -889,10 +890,10 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   free(tape_bytes);
 #if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
-    for (unsigned n = 0; n < view_count; ++n) {
+    for (unsigned int n = 0; n < view_count; ++n) {
       mzd_local_free_multiple(rvec[n].s);
     }
-    for (unsigned n = 0; n < view_count; ++n) {
+    for (unsigned int n = 0; n < view_count; ++n) {
       mzd_local_free_multiple(views[n].s);
     }
   }
@@ -912,7 +913,7 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
 static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mzd_local_t const* p,
                         const uint8_t* ciphertext, mzd_local_t const* c, const uint8_t* m,
-                        unsigned m_len, const uint8_t* sig, size_t siglen) {
+                        size_t m_len, const uint8_t* sig, size_t siglen) {
 #if defined(WITH_DETAILED_TIMING)
   TIME_FUNCTION;
 #endif
@@ -1019,10 +1020,10 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
   free(tape_bytes);
 #if defined(WITH_CUSTOM_INSTANCES)
   if (lowmc->m != 10) {
-    for (unsigned n = 0; n < view_count; ++n) {
+    for (unsigned int n = 0; n < view_count; ++n) {
       mzd_local_free_multiple(rvec[n].s);
     }
-    for (unsigned n = 0; n < view_count; ++n) {
+    for (unsigned int n = 0; n < view_count; ++n) {
       mzd_local_free_multiple(views[n].s);
     }
   }
