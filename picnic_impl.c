@@ -85,7 +85,7 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
     challenge[i] = (ch & 1) << 1 | (ch >> 1);
   }
 
-  size_t remaining_bits = (pp->collapsed_challenge_size << 3) - bs.position;
+  const size_t remaining_bits = (pp->collapsed_challenge_size << 3) - bs.position;
   if (remaining_bits && bitstream_get_bits(&bs, remaining_bits)) {
     return false;
   }
