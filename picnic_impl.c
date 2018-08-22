@@ -93,6 +93,8 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
   return true;
 }
 
+#define ALIGNINT(s) (((s) + sizeof(int) - 1) & ~(sizeof(int) - 1))
+
 static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   const size_t digest_size                    = pp->digest_size;
   const size_t seed_size                      = pp->seed_size;
@@ -106,7 +108,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   sig_proof_t* prf = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
 
   size_t per_round_mem =
-      SC_PROOF * (seed_size + digest_size + input_size + output_size + view_size);
+      SC_PROOF * (seed_size + digest_size + input_size + output_size + ALIGNINT(view_size));
   if (pp->transform == TRANSFORM_UR) {
     per_round_mem += (SC_PROOF - 1) * unruh_without_input_bytes_size + unruh_with_input_bytes_size;
   }
@@ -118,9 +120,11 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   // - input shares
   // - communicated bits
   // - output shares
-  uint8_t* slab  = calloc(num_rounds, per_round_mem + 1);
+  // - Gs
+  uint8_t* slab  = calloc(1, num_rounds * per_round_mem + ALIGNINT(num_rounds));
   prf->challenge = slab;
-  slab += num_rounds;
+  slab += ALIGNINT(num_rounds);
+  // printf("challenge: %p slab: %p nr: %zu\n", prf->challenge, slab, (num_rounds + 7) & ~0x7);
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_PROOF; ++i) {
@@ -146,7 +150,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].communicated_bits[i] = slab;
-      slab += view_size;
+      slab += ALIGNINT(view_size);
     }
   }
 
@@ -186,11 +190,11 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
     // we don't know what we actually need, so allocate more than needed
     per_round_mem += SC_VERIFY * pp->unruh_with_input_bytes_size;
   }
-  per_round_mem += SC_VERIFY * input_size + SC_PROOF * output_size + view_size;
+  per_round_mem += SC_VERIFY * input_size + SC_PROOF * output_size + ALIGNINT(view_size);
 
-  uint8_t* slab    = calloc(num_rounds, per_round_mem + 1);
+  uint8_t* slab    = calloc(1, num_rounds * per_round_mem + ALIGNINT(num_rounds));
   proof->challenge = slab;
-  slab += num_rounds;
+  slab += ALIGNINT(num_rounds);
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_VERIFY; ++i) {
@@ -201,7 +205,7 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     proof->round[r].communicated_bits[0] = slab;
-    slab += view_size;
+    slab += ALIGNINT(view_size);
   }
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
@@ -1281,8 +1285,8 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
   pp->zkbpp_lowmc_verify_impl = get_zkbpp_lowmc_verify_implementation(pp->lowmc);
 #if defined(WITH_CUSTOM_INSTANCES)
   if (!lowmc_instance) {
-    pp->params         = param;
-    pp->transform      = transform;
+    pp->params    = param;
+    pp->transform = transform;
 
     const uint32_t digest_size = MAX(32, (4 * pq_security_level + 7) / 8);
     const uint32_t seed_size   = (2 * pq_security_level + 7) / 8;
@@ -1311,8 +1315,8 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
 
     // we can use unruh_without_input_bytes_size here. In call cases where we need
     // to write more, we do not need to write the input share
-    const size_t per_round_size = pp->input_size + pp->view_size + pp->digest_size +
-                                  2 * pp->seed_size + pp->unruh_without_input_bytes_size;
+    const uint32_t per_round_size = pp->input_size + pp->view_size + pp->digest_size +
+                                    2 * pp->seed_size + pp->unruh_without_input_bytes_size;
     pp->max_signature_size = pp->collapsed_challenge_size + pp->num_rounds * per_round_size;
   }
 #endif
