@@ -249,8 +249,8 @@ static void timing_close(timing_context_t* ctx) {
 static void print_timings(timing_and_size_t* timings, unsigned int iter) {
   const unsigned int numt = sizeof(*timings) / sizeof(timings->data[0]);
 
-  for (unsigned i = 0; i < iter; i++) {
-    for (unsigned j = 0; j < numt; j++) {
+  for (unsigned int i = 0; i < iter; i++) {
+    for (unsigned int j = 0; j < numt; j++) {
       printf("%" PRIu64, timings[i].data[j]);
       if (j < numt - 1)
         printf(",");

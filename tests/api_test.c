@@ -3,6 +3,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(__WIN32__)
+#define SIZET_FMT "%Iu"
+#define LL_FMT "%I64u"
+#else
+#define SIZET_FMT "%zu"
+#define LL_FMT "%llu"
+#endif
+
 int main() {
   unsigned char pk[CRYPTO_PUBLICKEYBYTES]          = {0};
   unsigned char sk[CRYPTO_SECRETKEYBYTES]          = {0};
@@ -16,23 +24,23 @@ int main() {
     return -1;
   }
 
-  long long unsigned int smlen = sizeof(sm);
-  ret                          = crypto_sign(sm, &smlen, message, sizeof(message), sk);
+  unsigned long long smlen = sizeof(sm);
+  ret                      = crypto_sign(sm, &smlen, message, sizeof(message), sk);
   if (ret != 0) {
     printf("Failed to sign\n");
     return -1;
   }
 
-  long long unsigned int mlen = sizeof(omessage);
-  ret                         = crypto_sign_open(omessage, &mlen, sm, smlen, pk);
+  unsigned long long mlen = sizeof(omessage);
+  ret                     = crypto_sign_open(omessage, &mlen, sm, smlen, pk);
   if (ret != 0) {
     printf("Failed to verify (ret = %d)\n", ret);
     return -1;
   }
 
   if (mlen != sizeof(message)) {
-    printf("length of message after verify incorrect, got %llu, expected %zu\n", mlen,
-           sizeof(message));
+    printf("length of message after verify incorrect, got " LL_FMT ", expected " SIZET_FMT "\n",
+           mlen, sizeof(message));
     return -1;
   }
   if (memcmp(message, omessage, sizeof(message)) != 0) {
@@ -58,8 +66,8 @@ int main() {
   }
 
   if (mlen != sizeof(message)) {
-    printf("length of message after verify incorrect, got %llu, expected %zu\n", mlen,
-           sizeof(message));
+    printf("length of message after verify incorrect, got " LL_FMT ", expected " SIZET_FMT "\n",
+           mlen, sizeof(message));
     return -1;
   }
   if (memcmp(message, sm, sizeof(message)) != 0) {
