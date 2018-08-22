@@ -36,7 +36,7 @@
 typedef Keccak_HashInstance hash_context;
 
 static inline void hash_init(hash_context* ctx, const picnic_instance_t* pp) {
-  if (pp->security_level == 64) {
+  if (pp->digest_size == 32) {
     Keccak_HashInitialize_SHAKE128(ctx);
   } else {
     Keccak_HashInitialize_SHAKE256(ctx);

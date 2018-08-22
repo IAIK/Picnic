@@ -25,7 +25,6 @@ typedef struct {
   zkbpp_lowmc_implementation_f zkbpp_lowmc_impl;
   zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify_impl;
 
-  uint32_t security_level; /* bits */
   uint32_t digest_size;    /* bytes */
   uint32_t seed_size;      /* bytes */
   uint32_t num_rounds;

@@ -1178,17 +1178,17 @@ static bool lowmc_instances_initialized[3];
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
     {0},
-    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, 64, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
+    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_FS, Picnic_L1_FS, TRANSFORM_FS},
-    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, 64, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
+    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_UR, Picnic_L1_UR, TRANSFORM_UR},
-    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, 96, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0,
+    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_FS, Picnic_L3_FS, TRANSFORM_FS},
-    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, 96, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
+    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_UR, Picnic_L3_UR, TRANSFORM_UR},
-    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, 128, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0,
+    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_FS, Picnic_L5_FS, TRANSFORM_FS},
-    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, 128, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
+    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR}};
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
@@ -1285,10 +1285,9 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
   if (!lowmc_instance) {
     pp->params         = param;
     pp->transform      = transform;
-    pp->security_level = pq_security_level;
 
-    const uint32_t digest_size = MAX(32, (4 * pp->security_level + 7) / 8);
-    const uint32_t seed_size   = (2 * pp->security_level + 7) / 8;
+    const uint32_t digest_size = MAX(32, (4 * pq_security_level + 7) / 8);
+    const uint32_t seed_size   = (2 * pq_security_level + 7) / 8;
     pp->digest_size            = digest_size;
     pp->seed_size              = seed_size;
     pp->num_rounds             = num_rounds;
@@ -1298,7 +1297,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
     // bytes required to store one output share
     pp->output_size = (pp->lowmc->n + 7) >> 3;
     // number of bits per view per LowMC round
-    pp->view_round_size = (pp->lowmc->m * 3);
+    pp->view_round_size = pp->lowmc->m * 3;
     // bytes required to store communicated bits (i.e. views) of one round
     pp->view_size = (pp->view_round_size * pp->lowmc->r + 7) >> 3;
 
