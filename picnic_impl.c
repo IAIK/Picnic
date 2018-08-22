@@ -115,11 +115,9 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   // - challenge
   // - seeds
   // - commitments
-  // - Gs
   // - input shares
   // - communicated bits
   // - output shares
-  // - views
   uint8_t* slab  = calloc(num_rounds, per_round_mem + 1);
   prf->challenge = slab;
   slab += num_rounds;
@@ -135,17 +133,6 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
     for (uint32_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].commitments[i] = slab;
       slab += digest_size;
-    }
-  }
-
-  if (pp->transform == TRANSFORM_UR) {
-    for (uint32_t r = 0; r < num_rounds; ++r) {
-      for (uint32_t i = 0; i < SC_PROOF - 1; ++i) {
-        prf->round[r].gs[i] = slab;
-        slab += unruh_without_input_bytes_size;
-      }
-      prf->round[r].gs[SC_PROOF - 1] = slab;
-      slab += unruh_with_input_bytes_size;
     }
   }
 
@@ -167,6 +154,17 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
     for (uint32_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].output_shares[i] = slab;
       slab += output_size;
+    }
+  }
+
+  if (pp->transform == TRANSFORM_UR) {
+    for (uint32_t r = 0; r < num_rounds; ++r) {
+      for (uint32_t i = 0; i < SC_PROOF - 1; ++i) {
+        prf->round[r].gs[i] = slab;
+        slab += unruh_without_input_bytes_size;
+      }
+      prf->round[r].gs[SC_PROOF - 1] = slab;
+      slab += unruh_with_input_bytes_size;
     }
   }
 
@@ -201,15 +199,6 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
     }
   }
 
-  if (pp->transform == TRANSFORM_UR) {
-    for (uint32_t r = 0; r < num_rounds; ++r) {
-      for (uint32_t i = 0; i < SC_VERIFY; ++i) {
-        proof->round[r].gs[i] = slab;
-        slab += unruh_with_input_bytes_size;
-      }
-    }
-  }
-
   for (uint32_t r = 0; r < num_rounds; ++r) {
     proof->round[r].communicated_bits[0] = slab;
     slab += view_size;
@@ -222,6 +211,15 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
     slab += output_size;
     proof->round[r].output_shares[2] = slab;
     slab += output_size;
+  }
+
+  if (pp->transform == TRANSFORM_UR) {
+    for (uint32_t r = 0; r < num_rounds; ++r) {
+      for (uint32_t i = 0; i < SC_VERIFY; ++i) {
+        proof->round[r].gs[i] = slab;
+        slab += unruh_with_input_bytes_size;
+      }
+    }
   }
 
   *rslab = slab;
