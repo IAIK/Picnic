@@ -233,15 +233,14 @@ static void proof_free(sig_proof_t* prf) {
 }
 
 static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const picnic_instance_t* pp) {
-  kdf_shake_t ctx;
-  kdf_shake_init(&ctx, pp);
-  kdf_shake_update_key(&ctx, &HASH_PREFIX_2, sizeof(HASH_PREFIX_2));
-  kdf_shake_update_key(&ctx, seed, pp->seed_size);
-  kdf_shake_finalize_key(&ctx);
+  kdf_shake_init(kdf, pp);
+  kdf_shake_update_key(kdf, &HASH_PREFIX_2, sizeof(HASH_PREFIX_2));
+  kdf_shake_update_key(kdf, seed, pp->seed_size);
+  kdf_shake_finalize_key(kdf);
 
   uint8_t tmp[MAX_DIGEST_SIZE];
-  kdf_shake_get_randomness(&ctx, tmp, pp->digest_size);
-  kdf_shake_clear(&ctx);
+  kdf_shake_get_randomness(kdf, tmp, pp->digest_size);
+  kdf_shake_clear(kdf);
 
   kdf_shake_init(kdf, pp);
   kdf_shake_update_key(kdf, tmp, pp->digest_size);
