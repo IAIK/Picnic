@@ -304,9 +304,13 @@ if(MSVC)
   endif()
 endif()
 
-# bench executable
-add_executable(bench tools/bench.c tools/bench_timing.c)
-target_link_libraries(bench picnic)
+# bench utils library
+add_library(bench_utils STATIC tools/bench_utils.c tools/bench_timing.c)
+apply_base_options(bench_utils)
+
+# bench exectuable
+add_executable(bench tools/bench.c)
+target_link_libraries(bench picnic bench_utils)
 apply_base_options(bench)
 if(ENABLE_DETAILED_TIMINGS)
   target_compile_definitions(bench PRIVATE WITH_DETAILED_TIMING)
