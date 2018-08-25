@@ -319,6 +319,11 @@ if(ENABLE_VERBOSE_OUTPUT)
   target_compile_definitions(bench PRIVATE VERBOSE)
 endif()
 
+# bench lowmc exectuable
+add_executable(bench_lowmc tools/bench_lowmc.c)
+target_link_libraries(bench_lowmc picnic_static bench_utils)
+apply_base_options(bench_lowmc)
+
 # example executable
 add_executable(example tools/example.c)
 target_link_libraries(example picnic)
