@@ -305,7 +305,7 @@ if(MSVC)
 endif()
 
 # bench executable
-add_executable(bench tools/bench.c)
+add_executable(bench tools/bench.c tools/bench_timing.c)
 target_link_libraries(bench picnic)
 apply_base_options(bench)
 if(ENABLE_DETAILED_TIMINGS)
