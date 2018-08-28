@@ -66,13 +66,16 @@ bool parse_args(bench_options_t* options, int argc, char** argv) {
 #if !defined(_MSC_VER)
   static const struct option long_options[] = {
     {"iter", required_argument, NULL, 'i'},
+#if defined(WITH_CUSTOM_INSTANCES)
+    {"lowmc", required_argument, NULL, 'l'},
+#endif
     {0, 0, 0, 0}
   };
 
   int c            = -1;
   int option_index = 0;
 
-  while ((c = getopt_long(argc, argv, "i:l", long_options, &option_index)) != -1) {
+  while ((c = getopt_long(argc, argv, "i:l:", long_options, &option_index)) != -1) {
     switch (c) {
     case 'i':
       if (!parse_uint32_t(&options->iter, optarg)) {
@@ -81,9 +84,19 @@ bool parse_args(bench_options_t* options, int argc, char** argv) {
       }
       break;
 
+#if defined(WITH_CUSTOM_INSTANCES)
+    case 'l':
+      options->lowmc_file = optarg;
+      break;
+#endif
+
     case '?':
     default:
-      printf("usage: %s [-i iter] [-l] param\n", argv[0]);
+#if defined(WITH_CUSTOM_INSTANCES)
+      printf("usage: %s [-i iter] [-l lowmc] param\n", argv[0]);
+#else
+      printf("usage: %s [-i iter] param\n", argv[0]);
+#endif
       return false;
     }
   }

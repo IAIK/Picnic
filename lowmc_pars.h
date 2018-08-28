@@ -70,10 +70,10 @@ typedef struct {
  * LowMC definition
  */
 typedef struct {
-  unsigned int m;
-  unsigned int n;
-  unsigned int r;
-  unsigned int k;
+  uint32_t m;
+  uint32_t n;
+  uint32_t r;
+  uint32_t k;
 
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
 #if defined(MUL_M4RI)

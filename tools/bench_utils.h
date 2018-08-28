@@ -17,6 +17,7 @@
 
 typedef struct {
   picnic_params_t params;
+  const char* lowmc_file;
   uint32_t iter;
   bool lowmc;
 } bench_options_t;

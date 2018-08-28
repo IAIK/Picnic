@@ -38,22 +38,38 @@ static void bench_lowmc(const bench_options_t* options) {
     return;
   }
 
-  const picnic_instance_t* pp = get_instance(options->params);
-  if (!pp) {
+  lowmc_t custom_lowmc = { 0 };
+  lowmc_implementation_f custom_impl = NULL;
+#if defined(WITH_CUSTOM_INSTANCES)
+  if (options->lowmc_file) {
+    if (!lowmc_read_file(&custom_lowmc, options->lowmc_file)) {
+      printf("Failed to read LowMC instance.\n");
+      return;
+    }
+
+    custom_impl = lowmc_get_implementation(&custom_lowmc);
+  }
+#endif
+
+  const picnic_instance_t* pp = !custom_impl ? get_instance(options->params) : NULL;
+  if (!custom_impl && !pp) {
     printf("Failed to initialize LowMC instance.\n");
     return;
   }
 
-  const lowmc_t* lowmc                    = pp->lowmc;
-  const lowmc_implementation_f lowmc_impl = pp->lowmc_impl;
+  const lowmc_t* lowmc                    = pp ? pp->lowmc : &custom_lowmc;
+  const lowmc_implementation_f lowmc_impl = pp ? pp->lowmc_impl : custom_impl;
 
   mzd_local_t* sk = mzd_local_init(1, lowmc->k);
   mzd_local_t* pt = mzd_local_init(1, lowmc->n);
 
-  uint8_t* rand = malloc(pp->input_size + pp->output_size);
-  rand_bytes(rand, pp->input_size + pp->output_size);
-  mzd_from_char_array(sk, rand, pp->input_size);
-  mzd_from_char_array(pt, rand + pp->input_size, pp->output_size);
+  const size_t input_size = (lowmc->k + 7) >> 3;
+  const size_t output_size = (lowmc->n + 7) >> 3;
+
+  uint8_t* rand = malloc(input_size + output_size);
+  rand_bytes(rand, input_size + output_size);
+  mzd_from_char_array(sk, rand, input_size);
+  mzd_from_char_array(pt, rand + input_size, output_size);
   free(rand);
 
   for (unsigned int i = 0; i != options->iter; ++i) {
@@ -72,6 +88,12 @@ static void bench_lowmc(const bench_options_t* options) {
 
   timing_close(&ctx);
   print_timings(timings, options->iter);
+
+#if defined(WITH_CUSTOM_INSTANCES)
+  if (custom_impl) {
+    lowmc_clear(&custom_lowmc);
+  }
+#endif
 
   free(timings);
 }

@@ -22,10 +22,10 @@ typedef struct {
  * with the difference that key in a separate struct
  */
 typedef struct {
-  size_t m;
-  size_t n;
-  size_t r;
-  size_t k;
+  uint32_t m;
+  uint32_t n;
+  uint32_t r;
+  uint32_t k;
 
   mzd_t* k0_matrix;
   lowmc_round_t* rounds;

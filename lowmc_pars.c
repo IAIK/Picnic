@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #if defined(WITH_CUSTOM_INSTANCES)
 static bool prepare_masks(mask_t* mask, unsigned int n, unsigned int m) {
@@ -122,15 +123,18 @@ bool lowmc_read_file(lowmc_t* lowmc, const char* file_name) {
   uint32_t instance_type = 0;
   size_t ret = fread(&instance_type, sizeof(instance_type), 1, file);
   if (ret != 1 || instance_type != supported_instance_type) {
+    printf("Unsupported lowmc instance: %" PRIu32 " vs %" PRIu32 "\n", instance_type, supported_instance_type);
     fclose(file);
     return false;
   }
+  ret = 0;
 
   ret += fread(&lowmc->n, sizeof(lowmc->n), 1, file);
   ret += fread(&lowmc->k, sizeof(lowmc->k), 1, file);
   ret += fread(&lowmc->m, sizeof(lowmc->m), 1, file);
   ret += fread(&lowmc->r, sizeof(lowmc->r), 1, file);
   if (ret != 4 || lowmc->n != lowmc->k || lowmc->n < 3 * lowmc->m) {
+    printf("Failed to read LowMC instance: n=%" PRIu32 " k=%" PRIu32 " m=%" PRIu32 " r=%" PRIu32 "\n", lowmc->n, lowmc->k, lowmc->m, lowmc->r);
     fclose(file);
     return false;
   }
