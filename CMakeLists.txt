@@ -84,8 +84,6 @@ set(WITH_MARCH_NATIVE ${DEFAULT_WITH_MARCH_NATIVE} CACHE BOOL "Build with -march
 set(WITH_LTO ON CACHE BOOL "Enable link-time optimization (if supported).")
 set(WITH_MUL_M4RI OFF CACHE BOOL "Use method of four russians for matrix multiplication.")
 set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
-set(ENABLE_VERBOSE_OUTPUT OFF CACHE BOOL "Enable verbose output.")
-set(ENABLE_DETAILED_TIMINGS OFF CACHE BOOL "Enable detail timings.")
 set(WITH_REDUCED_LINEAR_LAYER ON CACHE BOOL "Enable precomputation of round key.")
 set(WITH_CUSTOM_INSTANCES OFF CACHE BOOL "Enable large and custom LowMC instances.")
 set(WITH_EXTRA_RANDOMNESS OFF CACHE BOOL "Feed extra random bytes to KDF (fault attack counter measure).")
@@ -193,10 +191,6 @@ list(APPEND PICNIC_SOURCES
     randomness.c)
 list(APPEND PICNIC_HEADERS picnic.h)
 
-if(ENABLED_DETAILED_TIMINGS)
-  list(APPEND PICNIC_SOURCES timing.c)
-endif()
-
 # shared library
 add_library(picnic SHARED ${PICNIC_SOURCES} ${SHA3_SOURCES})
 set_target_properties(picnic PROPERTIES VERSION ${PICNIC_VERSION} SOVERSION ${PICNIC_MAJOR_VERSION})
@@ -234,9 +228,6 @@ function(apply_picnic_options lib)
                              WITH_LOWMC_128_128_20
                              WITH_LOWMC_192_192_30
                              WITH_LOWMC_256_256_38)
-  if(ENABLE_DETAILED_TIMINGS)
-    target_compile_definitions(${lib} PRIVATE WITH_DETAILED_TIMING)
-  endif()
   if(WITH_SIMD_OPT)
     target_compile_definitions(${lib} PRIVATE WITH_OPT)
     if(CC_SUPPORTS_SSE2 AND WITH_SSE2)
@@ -312,12 +303,6 @@ apply_base_options(bench_utils)
 add_executable(bench tools/bench.c)
 target_link_libraries(bench picnic bench_utils)
 apply_base_options(bench)
-if(ENABLE_DETAILED_TIMINGS)
-  target_compile_definitions(bench PRIVATE WITH_DETAILED_TIMING)
-endif()
-if(ENABLE_VERBOSE_OUTPUT)
-  target_compile_definitions(bench PRIVATE VERBOSE)
-endif()
 
 # bench lowmc exectuable
 add_executable(bench_lowmc tools/bench_lowmc.c)
