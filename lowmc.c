@@ -241,6 +241,7 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 
 #define LOWMC_N lowmc->n
 #define LOWMC_R lowmc->r
+#define LOWMC_M lowmc->m
 
 #define SBOX_IMPL sbox_layer_bitsliced
 #define LOWMC lowmc_uint64

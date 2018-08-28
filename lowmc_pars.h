@@ -53,7 +53,13 @@ typedef struct {
 #if !defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* k_matrix;
 #endif
+#if !defined(REDUCED_LINEAR_LAYER_NEXT)
   const mzd_local_t* l_matrix;
+#else
+  const mzd_local_t* z_matrix;
+  const mzd_local_t* a_matrix;
+  const mzd_local_t* aT_matrix;
+#endif
 #if !defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* constant;
 #endif
@@ -76,6 +82,9 @@ typedef struct {
   uint32_t k;
 
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
+#if defined(REDUCED_LINEAR_LAYER_NEXT)
+  const mzd_local_t* z0_matrix; // combined linear layers
+#endif
 #if defined(MUL_M4RI)
   mzd_local_t* k0_lookup;
 #endif

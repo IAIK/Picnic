@@ -25,6 +25,7 @@ static int lowmc_enc(const picnic_params_t param, const uint8_t* key, const uint
     return -1;
   }
   const lowmc_t* lowmc = pp->lowmc;
+  uint8_t a[pp->output_size];
 
   mzd_local_t* sk = mzd_local_init(1, lowmc->k);
   mzd_local_t* pt = mzd_local_init(1, lowmc->n);
@@ -40,6 +41,11 @@ static int lowmc_enc(const picnic_params_t param, const uint8_t* key, const uint
     ret = 1;
     goto end;
   }
+  mzd_to_char_array(a, ctr, pp->output_size);
+  for(int i = 0; i < pp->output_size; i++) {
+    printf("0x%02X, ", a[i]);
+  }
+  printf("\n");
 
   if (!mzd_local_equal(ctr, ct)) {
     ret = 2;
@@ -52,6 +58,32 @@ end:
   mzd_local_free(sk);
 
   return ret;
+}
+
+static int LowMC_test_vectorL1_1_new(void) {
+  const uint8_t key[16] = {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  const uint8_t plaintext[16] = {0xAB, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  const uint8_t ciphertext_expected[16] = {0x65, 0xE6, 0x30, 0x45, 0x71, 0xC3, 0x10, 0x89,
+                                           0xB3, 0x5F, 0xD2, 0xEE, 0x13, 0xB7, 0xFB, 0x90,};
+
+  return lowmc_enc(Picnic_L1_FS, key, plaintext, ciphertext_expected);
+}
+
+static int LowMC_test_vectorL5_1_new(void) {
+  const uint8_t key[32] = {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  const uint8_t plaintext[32] = {0xAB, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  const uint8_t ciphertext_expected[32] = {0x72, 0xA3, 0x35, 0xAF, 0xB5, 0xBB, 0x3B, 0x3D,
+                                           0x24, 0x43, 0xF1, 0x99, 0xBC, 0x97, 0xD9, 0xAC,
+                                           0xC9, 0xB1, 0x6F, 0x6D, 0x15, 0xCA, 0x35, 0x60,
+                                           0x41, 0x9A, 0xD0, 0x21, 0xA2, 0x19, 0x4A, 0xFD,};
+
+  return lowmc_enc(Picnic_L5_FS, key, plaintext, ciphertext_expected);
 }
 
 static int LowMC_test_vectorL1_1(void) {
@@ -174,9 +206,10 @@ static int LowMC_test_vectorL5_3(void) {
 typedef int (*test_fn_t)(void);
 
 static const test_fn_t tests[] = {
-    LowMC_test_vectorL1_1, LowMC_test_vectorL1_2, LowMC_test_vectorL1_3,
-    LowMC_test_vectorL3_1, LowMC_test_vectorL3_2, LowMC_test_vectorL3_3,
-    LowMC_test_vectorL5_1, LowMC_test_vectorL5_2, LowMC_test_vectorL5_3};
+//    LowMC_test_vectorL1_1, LowMC_test_vectorL1_2, LowMC_test_vectorL1_3,
+//    LowMC_test_vectorL3_1, LowMC_test_vectorL3_2, LowMC_test_vectorL3_3,
+//    LowMC_test_vectorL5_1, LowMC_test_vectorL5_2, LowMC_test_vectorL5_3};
+    LowMC_test_vectorL1_1_new, LowMC_test_vectorL5_1_new};
 
 static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 

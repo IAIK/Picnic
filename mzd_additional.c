@@ -28,6 +28,9 @@
 static const size_t mzd_local_t_size = (sizeof(mzd_local_t) + 0x1f) & ~0x1f;
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
+//TODO: put behind appropriate ifdefs
+#include <x86intrin.h>
+
 #if defined(WITH_OPT)
 #include "simd.h"
 
@@ -399,6 +402,33 @@ void mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
 void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   mzd_local_clear(c);
   mzd_addmul_v_uint64(c, v, At);
+}
+
+void mzd_mul_v_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+//    if (At->ncols != v->ncols) {
+//        // number of columns does not match
+//        // since we use popcnt we want cols to be equal, A is transposed
+//        exit(1);
+//        return;
+//    }
+
+  mzd_local_clear(c);
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  const unsigned int width     = v->width;
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  assert(c->width == 1); // only use for 32 bit or less
+  for(unsigned i = c->ncols; i; --i) {
+    word popcnt = 0;
+    for (unsigned int w = 0; w < width; ++w) {
+      word idx = vptr[w] & Aptr[w+(i-1)*rowstride];
+      popcnt += __builtin_popcountll(idx);
+    }
+    *cptr <<= 1;
+    *cptr |= (popcnt & WORD_C(0x1));
+  }
 }
 
 #if defined(WITH_OPT)
@@ -856,6 +886,8 @@ void mzd_addmul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 #endif
 #endif
 
+
+
 void mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
 #if defined(WITH_OPT)
   if (A->nrows % (sizeof(word) * 8) == 0) {
@@ -894,7 +926,8 @@ void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   for (unsigned int w = width; w; --w, ++vptr) {
     word idx = *vptr;
 
-    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, Aptr += rowstride) {
+//    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, Aptr += rowstride) {
+    for (unsigned int i = MIN(v->ncols - w * sizeof(word) * 8, sizeof(word)*8); i; --i, idx >>= 1, Aptr += rowstride) {
       const uint64_t mask = -(idx & 1);
       for (unsigned int j = 0; j < len; ++j) {
         cptr[j] ^= (Aptr[j] & mask);
@@ -902,6 +935,26 @@ void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
     }
   }
 }
+
+void mzd_addmul_v_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  const unsigned int rowstride = A->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  const unsigned int width     = v->width;
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
+
+  assert(c->width == 1); //only use for 32 bit or less
+  for(unsigned i = c->ncols; i; --i) {
+    word popcnt = 0;
+    for (unsigned int w = 0; w < width; ++w, ++vptr) {
+      word idx = vptr[w] & Aptr[w*rowstride];
+      popcnt += __builtin_popcountll(idx);
+    }
+    *cptr |= (popcnt & WORD_C(0x1));
+    *cptr <<= 1;
+  }
+}
+
 
 bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second) {
   if (first == second) {

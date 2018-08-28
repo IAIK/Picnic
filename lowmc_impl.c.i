@@ -24,6 +24,53 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
   (void)lowmc_instance;
 #endif
 #if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_LINEAR_LAYER_NEXT)
+  mzd_local_t* x       = mzd_local_init_ex(1, LOWMC_N, false);
+  mzd_local_t* y       = mzd_local_init_ex(1, LOWMC_N, false);
+  mzd_local_t* x_nl    = mzd_local_init_ex(1, 3*LOWMC_M, false);
+//  mzd_local_t* x_l     = mzd_local_init_ex(1, LOWMC_N-3*LOWMC_M, false);
+  mzd_local_t* nl_part = mzd_local_init_ex(1, LOWMC_R * 32, false);
+
+  XOR(y, p, lowmc->precomputed_constant_linear);
+  ADDMUL(y, lowmc_key, CONCAT(lowmc->k0, matrix_postfix));
+  MUL_MC(nl_part, lowmc_key, CONCAT(lowmc->precomputed_non_linear_part, matrix_postfix));
+  XOR_MC(nl_part, nl_part, lowmc->precomputed_constant_non_linear);
+
+  //multiply non-linear part of state with Z0 matrix
+  MUL(x, y, CONCAT(lowmc->z0, matrix_postfix));
+
+  lowmc_round_t const* round = lowmc->rounds;
+  for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
+    SBOX(x, &lowmc->mask);
+
+    const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
+    FIRST_ROW(x)
+    [(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+        (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
+
+    //hardcoded masks for 10-sbox case
+    const word nl_mask = WORD_C(0xFFFFFFFC00000000);
+    const word inv_nl_mask = WORD_C(0x00000003FFFFFFFF);
+    FIRST_ROW(x_nl)[x_nl->width - 1] = (FIRST_ROW(x)[x->width - 1] & nl_mask) >> (sizeof(word)*8-3*LOWMC_M);
+    MUL(y, x_nl, CONCAT(round->z, matrix_postfix));
+
+    //copy x to x_l
+    FIRST_ROW(x)[x->width-1] &= inv_nl_mask;
+//    for(unsigned j = 0; j < x_l->width; j++)
+//        FIRST_ROW(x_l)[j] = FIRST_ROW(x)[j];
+
+//    MUL(x_nl, x_l, CONCAT(round->a, matrix_postfix));
+    mzd_mul_v_popcnt(x_nl, x, CONCAT(round->aT, matrix_postfix));
+    FIRST_ROW(y)[y->width - 1] ^= (FIRST_ROW(x_nl)[x_nl->width - 1] << (sizeof(word)*8-3*LOWMC_M)) & nl_mask;
+    XOR(x, x, y);
+  }
+
+  mzd_local_free(y);
+//  mzd_local_free(x_l);
+  mzd_local_free(x_nl);
+  mzd_local_free(nl_part);
+  return x;
+#else
   mzd_local_t* x       = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* y       = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* nl_part = mzd_local_init_ex(1, LOWMC_R * 32, false);
