@@ -88,7 +88,7 @@
   static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      type const mask, unsigned int count) {                        \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
-      *dst = (xor)(*dst, (and)(mask, *src));                                                       \
+      *dst = (xor)(*dst, (and)(*src, mask));                                                       \
     }                                                                                              \
   }
 
