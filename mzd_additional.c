@@ -737,6 +737,58 @@ void mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
 }
 
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+    word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+    __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
+    __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
+
+    __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+    word idx = vptr[3] >> 34;
+    // do 7x4 and then 2 extra to get 30
+    for (unsigned int i = 28; i; i -= 4, idx >>= 4, mAptr += 4) {
+        mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+        mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+        mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
+        mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set1_epi64x(-((idx >> 3) & 1)), 1);
+    }
+    mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+    mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+    *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+}
+
+void mzd_mul_v_avx_226_226_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  __m256i const* vptr          = ASSUME_ALIGNED(CONST_FIRST_ROW(v), alignof(__m256i));
+  __m256i const* mAptr         = ASSUME_ALIGNED(CONST_FIRST_ROW(At), alignof(__m256i));
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+
+  for(unsigned i = 30; i; --i, mAptr++) {
+    __m256i cnt = _mm256_and_si256(*vptr, *mAptr);
+    word popcnt = __builtin_popcountll(_mm256_extract_epi64(cnt, 0)) +
+                  __builtin_popcountll(_mm256_extract_epi64(cnt, 1)) +
+                  __builtin_popcountll(_mm256_extract_epi64(cnt, 2)) +
+                  __builtin_popcountll(_mm256_extract_epi64(cnt, 3));
+    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+void mzd_mul_v_226_226_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  const unsigned int width     = v->width;
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+  for(unsigned i = 30; i; --i) {
+    word popcnt = 0;
+    for (unsigned int w = 0; w < width; ++w) {
+      word idx = vptr[w] & Aptr[w*rowstride];
+      popcnt += __builtin_popcountll(idx);
+    }
+    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
 #endif
 
 #if defined(WITH_NEON)
@@ -946,12 +998,12 @@ void mzd_addmul_v_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   assert(c->width == 1); //only use for 32 bit or less
   for(unsigned i = c->ncols; i; --i) {
     word popcnt = 0;
-    for (unsigned int w = 0; w < width; ++w, ++vptr) {
+    for (unsigned int w = 0; w < width; ++w) {
       word idx = vptr[w] & Aptr[w*rowstride];
       popcnt += __builtin_popcountll(idx);
     }
-    *cptr |= (popcnt & WORD_C(0x1));
     *cptr <<= 1;
+    *cptr |= (popcnt & WORD_C(0x1));
   }
 }
 
