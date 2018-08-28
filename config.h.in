@@ -3,15 +3,18 @@
 
 /* from cmake checks */
 
+/* available headers */
 #cmakedefine HAVE_SYS_AUXV_H
 #cmakedefine HAVE_ASM_HWCAP_H
 #cmakedefine HAVE_SYS_RANDOM_H
 
+/* available functions */
 #cmakedefine HAVE_ALIGNED_ALLOC
 #cmakedefine HAVE_POSIX_MEMALIGN
 #cmakedefine HAVE_MEMALIGN
 #cmakedefine HAVE_GETRANDOM
 
+/* available OS X frameworks */
 #cmakedefine HAVE_SECURITY_FRAMEWORK
 
 #endif
