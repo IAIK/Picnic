@@ -2,9 +2,6 @@
 #include <config.h>
 #endif
 
-// for asprintf
-#define _GNU_SOURCE
-
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -13,13 +10,6 @@
 
 #include <m4ri/m4ri.h>
 #include <openssl/rand.h>
-
-typedef struct {
-  mzd_t* x0;
-  mzd_t* x1;
-  mzd_t* x2;
-  mzd_t* mask;
-} mask_t;
 
 typedef struct {
   mzd_t* k_matrix;
@@ -41,7 +31,8 @@ typedef struct {
   lowmc_round_t* rounds;
 
   mzd_t* precomputed_non_linear_part_matrix;
-  mzd_t* precomputed_linear_part_matrix;
+  mzd_t* precomputed_constant_linear;
+  mzd_t* precomputed_constant_non_linear;
 } lowmc_t;
 
 static void mzd_randomize_ssl(mzd_t* val) {
@@ -86,91 +77,131 @@ static mzd_t* mzd_sample_kmatrix(uint32_t n, uint32_t k) {
   return mzd_sample_matrix_word(n, k, MIN(n, k), true);
 }
 
-#ifdef REDUCED_LINEAR_LAYER
+#if defined(REDUCED_LINEAR_LAYER)
 static bool precompute_values_for_lowmc(lowmc_t* lowmc) {
-
   mzd_t* L_inverse[lowmc->r];
   mzd_t* Li_K[lowmc->r];
+  mzd_t* Li_C[lowmc->r];
 
   mzd_t* identity = mzd_init(lowmc->n, lowmc->k);
   mzd_set_ui(identity, 1);
 
+  lowmc->precomputed_constant_non_linear = mzd_init(1, (3 * lowmc->m + 2) * lowmc->r);
+  lowmc->precomputed_non_linear_part_matrix = mzd_init(lowmc->n, (3 * lowmc->m + 2) * lowmc->r);
+  const unsigned int bound = lowmc->n - 3 * lowmc->m;
+
   for (unsigned round_i = 0; round_i < lowmc->r; ++round_i) {
     L_inverse[round_i] = mzd_invert_naive(NULL, lowmc->rounds[round_i].l_matrix, identity);
     Li_K[round_i]      = mzd_mul_naive(NULL, lowmc->rounds[round_i].k_matrix, L_inverse[round_i]);
+    Li_C[round_i]      = mzd_mul_naive(NULL, lowmc->rounds[round_i].constant, L_inverse[round_i]);
 
-    for (unsigned int row = lowmc->n - 3 * lowmc->m; row < lowmc->n; row++) {
+    for (unsigned int row = bound; row < lowmc->n; row++) {
       mzd_row_clear_offset(L_inverse[round_i], row, 0);
     }
   }
 
-  lowmc_round_t* round = lowmc->rounds;
+  mzd_free(identity);
 
-  for (unsigned int round_i = 0; round_i < lowmc->r; ++round_i, ++round) {
+  for (unsigned int round_i = 0; round_i < lowmc->r; ++round_i) {
+    mzd_t* tmp = mzd_copy(NULL, Li_K[round_i]);
+    mzd_t* tmpC = mzd_copy(NULL, Li_C[round_i]);
+    for (unsigned int i = round_i + 1; i < lowmc->r; ++i) {
+      mzd_t* x = mzd_copy(NULL, Li_K[i]);
+      mzd_t* c = mzd_copy(NULL, Li_C[i]);
 
-    // TODO: check if (n and k) or (n and n) are correct
-    // round->precomputed_non_linear_part_matrix = mzd_local_init_ex(lowmc->n, lowmc->k, false);
+      for (unsigned int j = i; j > round_i; --j) {
+        mzd_t* t = mzd_mul_naive(NULL, x, L_inverse[j - 1]);
+        mzd_free(x);
+        x = t;
 
-    mzd_t* tmp = mzd_init(lowmc->n, lowmc->k);
-    mzd_copy(tmp, Li_K[round_i]);
-    for (unsigned int inner_round_i = round_i + 1; inner_round_i < lowmc->r; ++inner_round_i) {
-
-      mzd_t* x = mzd_init(lowmc->n, lowmc->k);
-      mzd_t* y = mzd_init(lowmc->n, lowmc->k);
-
-      mzd_copy(x, Li_K[inner_round_i]);
-      for (unsigned int inner_inner_round_i = inner_round_i - 1; inner_inner_round_i >= round_i;
-           --inner_inner_round_i) {
-        mzd_mul_naive(y, x, L_inverse[inner_inner_round_i]);
-        mzd_copy(x, y);
+        t = mzd_mul_naive(NULL, c, L_inverse[j - 1]);
+        mzd_free(c);
+        c = t;
       }
       mzd_add(tmp, tmp, x);
+      mzd_add(tmpC, tmpC, c);
+
+      mzd_free(x);
+      mzd_free(c);
     }
+
+    const unsigned int idx = round_i * (3 * lowmc->m + 2);
+    for (unsigned int c = 0; c < 3 * lowmc->m; ++c) {
+      mzd_write_bit(lowmc->precomputed_constant_non_linear, 0, idx + 2 + c, mzd_read_bit(tmpC, 0, bound + c));
+      for (unsigned int row = 0; row < lowmc->n; ++row) {
+        mzd_write_bit(lowmc->precomputed_non_linear_part_matrix, row, idx + 2 + c, mzd_read_bit(tmp, row, bound + c));
+      }
+    }
+
+    if (!round_i) {
+      for (unsigned int row = 0; row < lowmc->n; ++row) {
+        mzd_row_clear_offset(tmp, row, bound);
+      }
+      mzd_add(lowmc->k0_matrix, lowmc->k0_matrix, tmp);
+
+      mzd_row_clear_offset(tmpC, 0, bound);
+      lowmc->precomputed_constant_linear = tmpC;
+    } else {
+      mzd_free(tmpC);
+    }
+    mzd_free(tmp);
+
     // mzd_local_copy(round->precomputed_non_linear_part_matrix, tmp);
   }
+
+  for (unsigned round_i = 0; round_i < lowmc->r; ++round_i) {
+    mzd_free(L_inverse[round_i]);
+    mzd_free(Li_K[round_i]);
+    mzd_free(Li_C[round_i]);
+  }
+
+
   return true;
 }
 #endif
 
 static void writeMZD_TStructToFile(mzd_t* matrix, FILE* file) {
-  fwrite(&(matrix->nrows), sizeof(uint32_t), 1, file);
-  fwrite(&(matrix->ncols), sizeof(uint32_t), 1, file);
+  fwrite(&matrix->nrows, sizeof(uint32_t), 1, file);
+  fwrite(&matrix->ncols, sizeof(uint32_t), 1, file);
 
   for (int i = 0; i < matrix->nrows; i++) {
-    fwrite((matrix->rows[i]), matrix->rowstride * sizeof(word), 1, file);
+    fwrite(matrix->rows[i], matrix->rowstride * sizeof(word), 1, file);
   }
 }
 
-static bool lowmc_write_file(lowmc_t* lowmc) {
-  char* file_name = NULL;
-  if (asprintf(&file_name, "%zu-%zu-%zu-%zu", lowmc->m, lowmc->n, lowmc->r, lowmc->k) == -1) {
+static bool lowmc_write_file(lowmc_t* lowmc, const char* file_name) {
+  FILE* file = fopen(file_name, "w");
+  if (!file) {
     return false;
   }
 
-  FILE* file = fopen(file_name, "w");
-  free(file_name);
-  if (file) {
-    fwrite(&lowmc->m, sizeof(lowmc->m), 1, file);
-    fwrite(&lowmc->n, sizeof(lowmc->n), 1, file);
-    fwrite(&lowmc->r, sizeof(lowmc->r), 1, file);
-    fwrite(&lowmc->k, sizeof(lowmc->k), 1, file);
-
-    writeMZD_TStructToFile(lowmc->k0_matrix, file);
-
-    for (size_t i = 0; i < lowmc->r; ++i) {
-      writeMZD_TStructToFile(lowmc->rounds[i].k_matrix, file);
-      writeMZD_TStructToFile(lowmc->rounds[i].l_matrix, file);
-      writeMZD_TStructToFile(lowmc->rounds[i].constant, file);
-    }
-#ifdef REDUCED_LINEAR_LAYER
-    writeMZD_TStructToFile(lowmc->precomputed_linear_part_matrix, file);
-    writeMZD_TStructToFile(lowmc->precomputed_non_linear_part_matrix, file);
+  uint32_t supported_type = 0;
+#if defined(REDUCED_LINEAR_LAYER)
+  supported_type = 0x01;
 #endif
-    fclose(file);
-    return true;
-  }
 
-  return false;
+  fwrite(&supported_type, sizeof(supported_type), 1, file);
+  fwrite(&lowmc->n, sizeof(lowmc->n), 1, file);
+  fwrite(&lowmc->k, sizeof(lowmc->k), 1, file);
+  fwrite(&lowmc->m, sizeof(lowmc->m), 1, file);
+  fwrite(&lowmc->r, sizeof(lowmc->r), 1, file);
+
+  writeMZD_TStructToFile(lowmc->k0_matrix, file);
+  for (size_t i = 0; i < lowmc->r; ++i) {
+    writeMZD_TStructToFile(lowmc->rounds[i].l_matrix, file);
+#if !defined(REDUCED_LINEAR_LAYER)
+    writeMZD_TStructToFile(lowmc->rounds[i].k_matrix, file);
+    writeMZD_TStructToFile(lowmc->rounds[i].constant, file);
+#endif
+  }
+#if defined(REDUCED_LINEAR_LAYER)
+  writeMZD_TStructToFile(lowmc->precomputed_non_linear_part_matrix, file);
+  writeMZD_TStructToFile(lowmc->precomputed_constant_linear, file);
+  writeMZD_TStructToFile(lowmc->precomputed_constant_non_linear, file);
+#endif
+
+  fclose(file);
+  return true;
 }
 
 static bool lowmc_generate(lowmc_t* lowmc, size_t m, size_t n, size_t r, size_t k) {
@@ -208,10 +239,10 @@ static void lowmc_clear(lowmc_t* lowmc) {
     mzd_free(lowmc->rounds[i].k_matrix);
     mzd_free(lowmc->rounds[i].l_matrix);
   }
-#ifdef REDUCED_LINEAR_LAYER
   mzd_free(lowmc->precomputed_non_linear_part_matrix);
-  mzd_free(lowmc->precomputed_linear_part_matrix);
-#endif
+  mzd_free(lowmc->precomputed_constant_linear);
+  mzd_free(lowmc->precomputed_constant_non_linear);
+
   mzd_free(lowmc->k0_matrix);
   free(lowmc->rounds);
 }
@@ -229,8 +260,8 @@ static bool parse_arg(long* value, const char* arg) {
 }
 
 static int parse_args(long params[4], int argc, char** argv) {
-  if (argc != 5) {
-    printf("usage: %s [Number of SBoxes] [Blocksize] [Rounds] [Keysize]\n", argv[0]);
+  if (argc != 6) {
+    printf("usage: %s [Number of SBoxes] [Blocksize] [Rounds] [Keysize] [File]\n", argv[0]);
     return -1;
   }
 
@@ -264,7 +295,7 @@ int main(int argc, char** argv) {
       printf("Failed to generate LowMC instance.\n");
       ret = 1;
     } else {
-      if (!lowmc_write_file(&lowmc)) {
+      if (!lowmc_write_file(&lowmc, argv[5])) {
         printf("Failed to write LowMC instance.\n");
         ret = 1;
       }

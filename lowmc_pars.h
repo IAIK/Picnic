@@ -116,7 +116,27 @@ bool lowmc_init(lowmc_t* lowmc);
  */
 void lowmc_clear(lowmc_t* lowmc);
 
-bool lowmc_read_file(lowmc_t* lowmc, unsigned int m, unsigned int n, unsigned int r,
-                     unsigned int k);
+#if defined(WITH_CUSTOM_INSTANCES)
+/**
+ * Reads a LowMC instance from a file.
+ *
+ * Layout of the file:
+ * - flag (uint32_t)
+ * - n, k, m, r (uint32_t)
+ * - K_0 matrix
+ * - for each round:
+ *   - L_i
+ *   - K_i (if not REDUCED_LINEAR_LAYER)
+ *   - C_i (if not REDUCED_LINEAR_LAYER)
+ * - if REDUCED_LINEAR_LAYER
+ *   - P_N
+ *   - C_L
+ *   - C_N
+ **/
+bool lowmc_read_file(lowmc_t* lowmc, const char* file);
+#endif
+
+#define LOWMC_INSTANCE_RLL 0x01
+extern const uint32_t supported_instance_type;
 
 #endif
