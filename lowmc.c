@@ -257,6 +257,15 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #if defined(WITH_LOWMC_256_256_38)
 #include "lowmc_256_256_38.h"
 #endif
+#if defined(WITH_LOWMC_128_128_20)
+#include "lowmc_128_128_20.h"
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+#include "lowmc_192_192_30.h"
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+#include "lowmc_256_256_38.h"
+#endif
 
 #if defined(WITH_SSE2)
 #undef XOR_MC

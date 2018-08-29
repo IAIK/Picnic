@@ -57,6 +57,13 @@ extern "C" {
 #define PICNIC_SIGNATURE_SIZE_Picnic_L3_UR 121837
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_FS 132856
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_UR 209506
+    //TODO: new signature sizes for 1 sbox variants
+#define PICNIC_SIGNATURE_SIZE_Picnic_L1_1_FS 34016
+#define PICNIC_SIGNATURE_SIZE_Picnic_L1_1_UR 53945
+#define PICNIC_SIGNATURE_SIZE_Picnic_L3_1_FS 76724
+#define PICNIC_SIGNATURE_SIZE_Picnic_L3_1_UR 121837
+#define PICNIC_SIGNATURE_SIZE_Picnic_L5_1_FS 132856
+#define PICNIC_SIGNATURE_SIZE_Picnic_L5_1_UR 209506
 
 #define PICNIC_SIGNATURE_SIZE(p) PICNIC_CONCAT(PICNIC_SIGNATURE_SIZE, p)
 
@@ -74,6 +81,12 @@ typedef enum {
   Picnic_L3_UR, // 4
   Picnic_L5_FS, // 5
   Picnic_L5_UR, // 6
+  Picnic_L1_1_FS, // 7
+  Picnic_L1_1_UR, // 8
+  Picnic_L3_1_FS, // 9
+  Picnic_L3_1_UR, // 10
+  Picnic_L5_1_FS, // 11
+  Picnic_L5_1_UR, // 12
   PARAMETER_SET_MAX_INDEX
 } picnic_params_t;
 
