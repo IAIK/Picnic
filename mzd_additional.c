@@ -1508,55 +1508,15 @@ void mzd_mul_v_uint64_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
     const unsigned int width     = v->width;
 
     word idx = vptr[width-1] >> 34;
-    for (unsigned int i = 30; i; --i, idx >>= 1, Aptr += rowstride) {
-        const uint64_t mask = -(idx & 1);
-        for(unsigned int j = 0; j < width; j++) {
-            cptr[j] ^= (Aptr[j] & mask);
-        }
+    for(unsigned int j = 0; j < width; j++) {
+      cptr[j] = 0;
     }
-}
-
-void mzd_mul_v_uint64_30_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int rowstride = A->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
-
-  word idx = vptr[1] >> 34;
-  for (unsigned int i = 30; i; --i, idx >>= 1, Aptr += rowstride) {
-    const uint64_t mask = -(idx & 1);
-    cptr[0] ^= (Aptr[0] & mask);
-    cptr[1] ^= (Aptr[1] & mask);
-  }
-}
-void mzd_mul_v_uint64_30_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int rowstride = A->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
-
-  word idx = vptr[2] >> 34;
-  for (unsigned int i = 30; i; --i, idx >>= 1, Aptr += rowstride) {
-    const uint64_t mask = -(idx & 1);
-    cptr[0] ^= (Aptr[0] & mask);
-    cptr[1] ^= (Aptr[1] & mask);
-    cptr[2] ^= (Aptr[2] & mask);
-  }
-}
-void mzd_mul_v_uint64_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int rowstride = A->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
-
-  word idx = vptr[3] >> 34;
-  for (unsigned int i = 30; i; --i, idx >>= 1, Aptr += rowstride) {
-    const uint64_t mask = -(idx & 1);
-    cptr[0] ^= (Aptr[0] & mask);
-    cptr[1] ^= (Aptr[1] & mask);
-    cptr[2] ^= (Aptr[2] & mask);
-    cptr[3] ^= (Aptr[3] & mask);
-  }
+    for (unsigned int i = 30; i; --i, idx >>= 1, Aptr += rowstride) {
+      const uint64_t mask = -(idx & 1);
+      for(unsigned int j = 0; j < width; j++) {
+        cptr[j] ^= (Aptr[j] & mask);
+      }
+    }
 }
 
 void mzd_mul_v_uint64_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -1567,54 +1527,14 @@ void mzd_mul_v_uint64_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   const unsigned int width     = v->width;
 
   word idx = vptr[width-1] >> 34;
+  for(unsigned int j = 0; j < width; j++) {
+    cptr[j] = 0;
+  }
   for (unsigned int i = 3; i; --i, idx >>= 1, Aptr += rowstride) {
     const uint64_t mask = -(idx & 1);
     for(unsigned int j = 0; j < width; j++) {
       cptr[j] ^= (Aptr[j] & mask);
     }
-  }
-}
-
-void mzd_mul_v_uint64_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int rowstride = A->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
-
-  word idx = vptr[1] >> 61;
-  for (unsigned int i = 3; i; --i, idx >>= 1, Aptr += rowstride) {
-    const uint64_t mask = -(idx & 1);
-    cptr[0] ^= (Aptr[0] & mask);
-    cptr[1] ^= (Aptr[1] & mask);
-  }
-}
-void mzd_mul_v_uint64_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int rowstride = A->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
-
-  word idx = vptr[2] >> 61;
-  for (unsigned int i = 3; i; --i, idx >>= 1, Aptr += rowstride) {
-    const uint64_t mask = -(idx & 1);
-    cptr[0] ^= (Aptr[0] & mask);
-    cptr[1] ^= (Aptr[1] & mask);
-    cptr[2] ^= (Aptr[2] & mask);
-  }
-}
-void mzd_mul_v_uint64_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int rowstride = A->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
-
-  word idx = vptr[3] >> 61;
-  for (unsigned int i = 3; i; --i, idx >>= 1, Aptr += rowstride) {
-    const uint64_t mask = -(idx & 1);
-    cptr[0] ^= (Aptr[0] & mask);
-    cptr[1] ^= (Aptr[1] & mask);
-    cptr[2] ^= (Aptr[2] & mask);
-    cptr[3] ^= (Aptr[3] & mask);
   }
 }
 
@@ -1633,7 +1553,7 @@ void mzd_mul_v_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
     for(unsigned int j = 0; j < width; j++) {
       popcnt += __builtin_popcountll(vptr[j] & A[j]);
     }
-    cptr[1] |= (popcnt & WORD_C(0x1)) << (64-i);
+    cptr[width-1] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
 
@@ -1697,7 +1617,7 @@ void mzd_mul_v_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
     for(unsigned int j = 0; j < width; j++) {
       popcnt += __builtin_popcountll(vptr[j] & A[j]);
     }
-    cptr[1] |= (popcnt & WORD_C(0x1)) << (64-i);
+    cptr[width-1] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
 

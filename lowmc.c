@@ -270,7 +270,7 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL_Z_1  mzd_mul_v_uint64_3
 #define MUL_Z_10 mzd_mul_v_uint64_30
 #define MUL_A_1  mzd_mul_v_3_popcnt
-#define MUL_A_10 mzd_mul_v_3_popcnt
+#define MUL_A_10 mzd_mul_v_30_popcnt
 
 #define LOWMC_N lowmc->n
 #define LOWMC_R lowmc->r

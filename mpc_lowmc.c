@@ -680,7 +680,7 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL_Z_1  mzd_mul_v_uint64_3
 #define MUL_Z_10 mzd_mul_v_uint64_30
 #define MUL_A_1  mzd_mul_v_3_popcnt
-#define MUL_A_10 mzd_mul_v_3_popcnt
+#define MUL_A_10 mzd_mul_v_30_popcnt
 
 #define SIGN mpc_lowmc_call
 #define VERIFY mpc_lowmc_call_verify
