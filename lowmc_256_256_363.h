@@ -4,9 +4,9 @@
 #include "lowmc_pars.h"
 
 #if !defined(MUL_M4RI)
-const lowmc_t* get_lowmc_256_256_363(void);
+extern const lowmc_t lowmc_256_256_363;
 #else
-lowmc_t* get_lowmc_256_256_363(void);
+extern lowmc_t lowmc_256_256_363;
 #endif
 
 #endif

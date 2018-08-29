@@ -185,6 +185,9 @@ list(APPEND PICNIC_SOURCES
     lowmc_128_128_20.c
     lowmc_192_192_30.c
     lowmc_256_256_38.c
+    lowmc_128_128_182.c
+    lowmc_192_192_284.c
+    lowmc_256_256_363.c
     mpc.c
     mpc_lowmc.c
     mzd_additional.c
@@ -232,7 +235,10 @@ function(apply_picnic_options lib)
   target_compile_definitions(${lib} PRIVATE
                              WITH_LOWMC_128_128_20
                              WITH_LOWMC_192_192_30
-                             WITH_LOWMC_256_256_38)
+                             WITH_LOWMC_256_256_38
+                             WITH_LOWMC_128_128_182
+                             WITH_LOWMC_192_192_284
+                             WITH_LOWMC_256_256_363)
   if(WITH_SIMD_OPT)
     target_compile_definitions(${lib} PRIVATE WITH_OPT)
     if(CC_SUPPORTS_SSE2 AND WITH_SSE2)
