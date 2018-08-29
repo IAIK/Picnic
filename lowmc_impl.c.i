@@ -61,8 +61,8 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 //        FIRST_ROW(x_l)[j] = FIRST_ROW(x)[j];
 
 //    MUL(x_nl, x_l, CONCAT(round->a, matrix_postfix));
-//    mzd_mul_v_popcnt(x_nl, x, CONCAT(round->aT, matrix_postfix));
-    mzd_mul_v_226_226_popcnt(x,x,CONCAT(round->aT, matrix_postfix));
+//    mzd_mul_v_avx_226_30_popcnt(x, x, CONCAT(round->aT, matrix_postfix));
+    mzd_mul_v_226_30_popcnt(x, x, CONCAT(round->aT, matrix_postfix));
 //    FIRST_ROW(y)[y->width - 1] ^= (FIRST_ROW(x_nl)[x_nl->width - 1] << (sizeof(word)*8-3*LOWMC_M)) & nl_mask;
     XOR(x, x, y);
   }

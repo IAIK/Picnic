@@ -50,7 +50,7 @@ lowmc_round_t const* round = lowmc->rounds;
 //        }
 //    }
 //    MPC_LOOP_CONST(MUL, x_nl, x_l, CONCAT(round->a, matrix_postfix), shares);
-    MPC_LOOP_CONST(mzd_mul_v_226_226_popcnt, y, y, CONCAT(round->aT, matrix_postfix), reduced_shares);
+    MPC_LOOP_CONST(mzd_mul_v_226_30_popcnt, y, y, CONCAT(round->aT, matrix_postfix), reduced_shares);
 //    for (unsigned int k = 0; k < shares; ++k) {
 //        FIRST_ROW(x[k])[x[k]->width - 1] ^= (FIRST_ROW(x_nl[k])[x_nl[k]->width - 1] << (sizeof(word)*8-3*TODO_LOWMC_M)) & nl_mask;
 //    }
