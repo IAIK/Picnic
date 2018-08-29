@@ -737,126 +737,6 @@ void mzd_mul_v_avx_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
 }
 
-ATTR_TARGET("avx2")
-void mzd_mul_v_avx_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-    word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-    __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
-    __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
-
-    __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
-    word idx = vptr[3] >> 34;
-    // do 7x4 and then 2 extra to get 30
-    for (unsigned int i = 28; i; i -= 4, idx >>= 4, mAptr += 4) {
-        mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
-        mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
-        mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
-        mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set1_epi64x(-((idx >> 3) & 1)), 1);
-    }
-    mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
-    mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
-    *mcptr = _mm256_xor_si256(cval[0], cval[1]);
-}
-
-ATTR_TARGET("avx2")
-void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
-  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
-
-  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
-  word idx = vptr[3] >> 61;
-  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
-  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
-  mm256_xor_mask_region(&cval[0], mAptr + 3, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
-  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
-}
-
-// Standard multiplication using AVX, slower than 226_30_popcnt without AVX
-//ATTR_TARGET("avx2")
-//void mzd_mul_v_avx_226_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-//  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-//  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-//  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
-//
-//  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
-//  // do 3x2x4x8 and then 30 extra to get 226
-//  for (unsigned int w = 3; w; --w, ++vptr) {
-//    word idx = *vptr;
-//    for (unsigned int i = sizeof(word)*8; i; i -= 32, idx >>= 32, mAptr += 4) {
-//      mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi32(-((idx >>  0) & 1), -((idx >>  1) & 1), -((idx >>  2) & 1), -((idx >>  3) & 1), -((idx >>  4) & 1), -((idx >>  5) & 1), -((idx >>  6) & 1), -((idx >>  7) & 1)), 1);
-//      mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi32(-((idx >>  8) & 1), -((idx >>  9) & 1), -((idx >> 10) & 1), -((idx >> 11) & 1), -((idx >> 12) & 1), -((idx >> 13) & 1), -((idx >> 14) & 1), -((idx >> 15) & 1)), 1);
-//      mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi32(-((idx >> 16) & 1), -((idx >> 17) & 1), -((idx >> 18) & 1), -((idx >> 19) & 1), -((idx >> 20) & 1), -((idx >> 21) & 1), -((idx >> 22) & 1), -((idx >> 23) & 1)), 1);
-//      mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set_epi32(-((idx >> 24) & 1), -((idx >> 25) & 1), -((idx >> 26) & 1), -((idx >> 27) & 1), -((idx >> 28) & 1), -((idx >> 29) & 1), -((idx >> 30) & 1), -((idx >> 31) & 1)), 1);
-//    }
-//  }
-//  word idx = vptr[3];
-//  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi32(-((idx >>  0) & 1), -((idx >>  1) & 1), -((idx >>  2) & 1), -((idx >>  3) & 1), -((idx >>  4) & 1), -((idx >>  5) & 1), -((idx >>  6) & 1), -((idx >>  7) & 1)), 1);
-//  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi32(-((idx >>  8) & 1), -((idx >>  9) & 1), -((idx >> 10) & 1), -((idx >> 11) & 1), -((idx >> 12) & 1), -((idx >> 13) & 1), -((idx >> 14) & 1), -((idx >> 15) & 1)), 1);
-//  mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi32(-((idx >> 16) & 1), -((idx >> 17) & 1), -((idx >> 18) & 1), -((idx >> 19) & 1), -((idx >> 20) & 1), -((idx >> 21) & 1), -((idx >> 22) & 1), -((idx >> 23) & 1)), 1);
-//  mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set_epi32(-((idx >> 24) & 1), -((idx >> 25) & 1), -((idx >> 26) & 1), -((idx >> 27) & 1), -((idx >> 28) & 1), -((idx >> 29) & 1), 0, 0), 1);
-//  cval[0] = _mm256_xor_si256(cval[0], cval[1]);
-//  word result =   _mm256_extract_epi32(cval[0], 0) ^ _mm256_extract_epi32(cval[0], 1) ^
-//                  _mm256_extract_epi32(cval[0], 2) ^ _mm256_extract_epi32(cval[0], 3) ^
-//                  _mm256_extract_epi32(cval[0], 4) ^ _mm256_extract_epi32(cval[0], 5) ^
-//                  _mm256_extract_epi32(cval[0], 6) ^ _mm256_extract_epi32(cval[0], 7);
-////  printf("0x%016lX\n", result);
-//  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
-//  cptr[3] |= result << 32;
-//}
-
-// Multiplication using AVX & popcnt, slower than 226_30_popcnt without AVX
-ATTR_TARGET("avx2")
-void mzd_mul_v_avx_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-  __m256i const* vptr          = ASSUME_ALIGNED(CONST_FIRST_ROW(v), alignof(__m256i));
-  __m256i const* mAptr         = ASSUME_ALIGNED(CONST_FIRST_ROW(At), alignof(__m256i));
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
-
-  for(unsigned i = 30; i; --i, mAptr++) {
-    __m256i cnt = _mm256_and_si256(*vptr, *mAptr);
-    word popcnt = __builtin_popcountll(_mm256_extract_epi64(cnt, 0)) +
-                  __builtin_popcountll(_mm256_extract_epi64(cnt, 1)) +
-                  __builtin_popcountll(_mm256_extract_epi64(cnt, 2)) +
-                  __builtin_popcountll(_mm256_extract_epi64(cnt, 3));
-    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
-  }
-}
-
-void mzd_mul_v_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-  const unsigned int rowstride = At->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  const unsigned int width     = v->width;
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
-
-  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
-  for(unsigned i = 30; i; --i) {
-    word popcnt = 0;
-    for (unsigned int w = 0; w < width; ++w) {
-      word idx = vptr[w] & Aptr[w+(30-i)*rowstride];
-      popcnt += __builtin_popcountll(idx);
-    }
-    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
-  }
-}
-
-void mzd_mul_v_253_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-  const unsigned int rowstride = At->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  const unsigned int width     = v->width;
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
-
-  cptr[3] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
-  for(unsigned i = 3; i; --i) {
-    word popcnt = 0;
-    for (unsigned int w = 0; w < width; ++w) {
-      word idx = vptr[w] & Aptr[w+(3-i)*rowstride];
-      popcnt += __builtin_popcountll(idx);
-    }
-    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
-  }
-}
 #endif
 
 #if defined(WITH_NEON)
@@ -1616,3 +1496,456 @@ void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
     }
   }
 }
+
+// specific instances
+#if defined(REDUCED_LINEAR_LAYER_NEXT)
+//no simd
+void mzd_mul_v_uint64_30_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  const unsigned int rowstride = A->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
+
+  word idx = vptr[1] >> 34;
+  for (unsigned int i = 30; i; --i, idx >>= 1, Aptr += rowstride) {
+    const uint64_t mask = -(idx & 1);
+    cptr[0] ^= (Aptr[0] & mask);
+    cptr[1] ^= (Aptr[1] & mask);
+  }
+}
+void mzd_mul_v_uint64_30_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  const unsigned int rowstride = A->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
+
+  word idx = vptr[2] >> 34;
+  for (unsigned int i = 30; i; --i, idx >>= 1, Aptr += rowstride) {
+    const uint64_t mask = -(idx & 1);
+    cptr[0] ^= (Aptr[0] & mask);
+    cptr[1] ^= (Aptr[1] & mask);
+    cptr[2] ^= (Aptr[2] & mask);
+  }
+}
+void mzd_mul_v_uint64_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  const unsigned int rowstride = A->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
+
+  word idx = vptr[3] >> 34;
+  for (unsigned int i = 30; i; --i, idx >>= 1, Aptr += rowstride) {
+    const uint64_t mask = -(idx & 1);
+    cptr[0] ^= (Aptr[0] & mask);
+    cptr[1] ^= (Aptr[1] & mask);
+    cptr[2] ^= (Aptr[2] & mask);
+    cptr[3] ^= (Aptr[3] & mask);
+  }
+}
+
+void mzd_mul_v_uint64_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  const unsigned int rowstride = A->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
+
+  word idx = vptr[1] >> 61;
+  for (unsigned int i = 3; i; --i, idx >>= 1, Aptr += rowstride) {
+    const uint64_t mask = -(idx & 1);
+    cptr[0] ^= (Aptr[0] & mask);
+    cptr[1] ^= (Aptr[1] & mask);
+  }
+}
+void mzd_mul_v_uint64_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  const unsigned int rowstride = A->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
+
+  word idx = vptr[2] >> 61;
+  for (unsigned int i = 3; i; --i, idx >>= 1, Aptr += rowstride) {
+    const uint64_t mask = -(idx & 1);
+    cptr[0] ^= (Aptr[0] & mask);
+    cptr[1] ^= (Aptr[1] & mask);
+    cptr[2] ^= (Aptr[2] & mask);
+  }
+}
+void mzd_mul_v_uint64_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  const unsigned int rowstride = A->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
+
+  word idx = vptr[3] >> 61;
+  for (unsigned int i = 3; i; --i, idx >>= 1, Aptr += rowstride) {
+    const uint64_t mask = -(idx & 1);
+    cptr[0] ^= (Aptr[0] & mask);
+    cptr[1] ^= (Aptr[1] & mask);
+    cptr[2] ^= (Aptr[2] & mask);
+    cptr[3] ^= (Aptr[3] & mask);
+  }
+}
+
+//popcnt
+void mzd_mul_v_98_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  cptr[1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+  for(unsigned i = 30; i; --i) {
+    word const* A = Aptr + (30-i)*rowstride;
+    word popcnt = __builtin_popcountll(vptr[0] & A[0])
+                + __builtin_popcountll(vptr[1] & A[1]);
+    cptr[1] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+void mzd_mul_v_162_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  cptr[2] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+  for(unsigned i = 30; i; --i) {
+    word const* A = Aptr + (30-i)*rowstride;
+    word popcnt = __builtin_popcountll(vptr[0] & A[0])
+                + __builtin_popcountll(vptr[1] & A[1])
+                + __builtin_popcountll(vptr[2] & A[2]);
+    cptr[2] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+void mzd_mul_v_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+  for(unsigned i = 30; i; --i) {
+    word const* A = Aptr + (30-i)*rowstride;
+    word popcnt = __builtin_popcountll(vptr[0] & A[0])
+                + __builtin_popcountll(vptr[1] & A[1])
+                + __builtin_popcountll(vptr[2] & A[2])
+                + __builtin_popcountll(vptr[3] & A[3]);
+    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+
+void mzd_mul_v_125_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  cptr[1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
+  for(unsigned i = 3; i; --i) {
+    word const* A = Aptr + (3-i)*rowstride;
+    word popcnt = __builtin_popcountll(vptr[0] & A[0])
+                  + __builtin_popcountll(vptr[1] & A[1]);
+   cptr[1] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+
+void mzd_mul_v_189_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  cptr[2] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
+  for(unsigned i = 3; i; --i) {
+    word const* A = Aptr + (3-i)*rowstride;
+    word popcnt = __builtin_popcountll(vptr[0] & A[0])
+                  + __builtin_popcountll(vptr[1] & A[1])
+                  + __builtin_popcountll(vptr[2] & A[2]);
+    cptr[2] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+
+void mzd_mul_v_253_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  cptr[3] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
+  for(unsigned i = 3; i; --i) {
+    word const* A = Aptr + (3-i)*rowstride;
+    word popcnt = __builtin_popcountll(vptr[0] & A[0])
+                  + __builtin_popcountll(vptr[1] & A[1])
+                  + __builtin_popcountll(vptr[2] & A[2])
+                  + __builtin_popcountll(vptr[3] & A[3]);
+    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+
+#if defined(WITH_SSE2)
+ATTR_TARGET("sse2")
+void mzd_mul_v_sse_30_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+
+  __m128i cval[2] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128()};
+  word idx = vptr[1] << 34;
+  for (unsigned int i = 28; i; i -= 4, idx >>= 4, mAptr += 4) {
+    mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 1);
+    mm128_xor_mask_region(&cval[1], mAptr + 1, _mm_set1_epi64x(-((idx >> 1) & 1)), 1);
+    mm128_xor_mask_region(&cval[0], mAptr + 2, _mm_set1_epi64x(-((idx >> 2) & 1)), 1);
+    mm128_xor_mask_region(&cval[1], mAptr + 3, _mm_set1_epi64x(-((idx >> 3) & 1)), 1);
+  }
+  mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 1);
+  mm128_xor_mask_region(&cval[1], mAptr + 1, _mm_set1_epi64x(-((idx >> 1) & 1)), 1);
+  *mcptr = _mm_xor_si128(cval[0], cval[1]);
+}
+
+ATTR_TARGET("sse2")
+void mzd_mul_v_sse_30_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+
+  __m128i cval[4] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128(),
+                                                    _mm_setzero_si128(), _mm_setzero_si128()};
+  word idx = vptr[2] << 34;
+  for (unsigned int i = 30; i; i -= 2, idx >>= 2, mAptr += 4) {
+    mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 2);
+    mm128_xor_mask_region(&cval[2], mAptr + 2, _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
+  }
+  mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
+  mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
+}
+
+ATTR_TARGET("sse2")
+void mzd_mul_v_sse_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+
+  __m128i cval[4] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128(),
+                                                    _mm_setzero_si128(), _mm_setzero_si128()};
+  word idx = vptr[3] << 34;
+  for (unsigned int i = 30; i; i -= 2, idx >>= 2, mAptr += 4) {
+    mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 2);
+    mm128_xor_mask_region(&cval[2], mAptr + 2, _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
+  }
+  mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
+  mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
+}
+
+ATTR_TARGET("sse2")
+void mzd_mul_v_sse_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+
+  __m128i cval[3] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128()};
+  word idx = vptr[1] << 61;
+  mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 1);
+  mm128_xor_mask_region(&cval[1], mAptr + 1, _mm_set1_epi64x(-((idx >> 1) & 1)), 1);
+  mm128_xor_mask_region(&cval[0], mAptr + 2, _mm_set1_epi64x(-((idx >> 2) & 1)), 1);
+  *mcptr = _mm_xor_si128(cval[0], cval[1]);
+}
+
+ATTR_TARGET("sse2")
+void mzd_mul_v_sse_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+
+  __m128i cval[4] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128(),
+                                                    _mm_setzero_si128(), _mm_setzero_si128()};
+  word idx = vptr[2] << 61;
+  mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 2);
+  mm128_xor_mask_region(&cval[2], mAptr + 2, _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
+  mm128_xor_mask_region(&cval[0], mAptr + 4, _mm_set1_epi64x(-((idx >> 2) & 1)), 2);
+  mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
+  mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
+}
+
+ATTR_TARGET("sse2")
+void mzd_mul_v_sse_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  __m128i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m128i));
+
+  __m128i cval[4] ATTR_ALIGNED(alignof(__m128i)) = {_mm_setzero_si128(), _mm_setzero_si128(),
+                                                    _mm_setzero_si128(), _mm_setzero_si128()};
+  word idx = vptr[3] << 61;
+  mm128_xor_mask_region(&cval[0], mAptr + 0, _mm_set1_epi64x(-(idx & 1)), 2);
+  mm128_xor_mask_region(&cval[2], mAptr + 2, _mm_set1_epi64x(-((idx >> 1) & 1)), 2);
+  mm128_xor_mask_region(&cval[0], mAptr + 4, _mm_set1_epi64x(-((idx >> 2) & 1)), 2);
+
+  mcptr[0] = _mm_xor_si128(cval[0], cval[2]);
+  mcptr[1] = _mm_xor_si128(cval[1], cval[3]);
+}
+#endif
+
+#if defined(WITH_AVX2)
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_30_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m128i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m128i));
+  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
+
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word idx = vptr[1] >> 34;
+  for (unsigned int i = 24; i; i -= 8, idx >>= 8, mAptr += 4) {
+    const int64_t m1 = -(idx & 1);
+    const int64_t m2 = -((idx >> 1) & 1);
+    mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi64x(m2, m2, m1, m1), 1);
+    const int64_t m3 = -((idx >> 2) & 1);
+    const int64_t m4 = -((idx >> 3) & 1);
+    mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi64x(m4, m4, m3, m3), 1);
+    const int64_t m5 = -((idx >> 4) & 1);
+    const int64_t m6 = -((idx >> 5) & 1);
+    mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi64x(m6, m6, m5, m5), 1);
+    const int64_t m7 = -((idx >> 6) & 1);
+    const int64_t m8 = -((idx >> 7) & 1);
+    mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set_epi64x(m8, m8, m7, m7), 1);
+  }
+  const int64_t m1 = -(idx & 1);
+  const int64_t m2 = -((idx >> 1) & 1);
+  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi64x(m2, m2, m1, m1), 1);
+  const int64_t m3 = -((idx >> 2) & 1);
+  const int64_t m4 = -((idx >> 3) & 1);
+  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi64x(m4, m4, m3, m3), 1);
+  const int64_t m5 = -((idx >> 4) & 1);
+  const int64_t m6 = -((idx >> 5) & 1);
+  mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi64x(m6, m6, m5, m5), 1);
+
+  cval[0] = _mm256_xor_si256(cval[0], cval[1]);
+  *mcptr =
+          _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
+}
+
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_30_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
+  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
+
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word idx = vptr[2] >> 34;
+  // do 7x4 and then 2 extra to get 30
+  for (unsigned int i = 28; i; i -= 4, idx >>= 4, mAptr += 4) {
+    mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+    mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+    mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
+    mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set1_epi64x(-((idx >> 3) & 1)), 1);
+  }
+  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+}
+
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
+  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
+
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word idx = vptr[3] >> 34;
+  // do 7x4 and then 2 extra to get 30
+  for (unsigned int i = 28; i; i -= 4, idx >>= 4, mAptr += 4) {
+    mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+    mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+    mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
+    mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set1_epi64x(-((idx >> 3) & 1)), 1);
+  }
+  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+}
+
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+    (void)c, (void)v, (void)A;
+    assert(false && "3_128 not faster for AVX, use sse_3_128");
+    exit(-1);
+}
+
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
+  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
+
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word idx = vptr[2] >> 61;
+  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+  mm256_xor_mask_region(&cval[0], mAptr + 3, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
+  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+}
+
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
+  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
+
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word idx = vptr[3] >> 61;
+  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+  mm256_xor_mask_region(&cval[0], mAptr + 3, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
+  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+}
+
+// Standard multiplication using AVX, slower than 226_30_popcnt without AVX
+//ATTR_TARGET("avx2")
+//void mzd_mul_v_avx_226_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+//  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+//  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+//  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
+//
+//  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+//  // do 3x2x4x8 and then 30 extra to get 226
+//  for (unsigned int w = 3; w; --w, ++vptr) {
+//    word idx = *vptr;
+//    for (unsigned int i = sizeof(word)*8; i; i -= 32, idx >>= 32, mAptr += 4) {
+//      mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi32(-((idx >>  0) & 1), -((idx >>  1) & 1), -((idx >>  2) & 1), -((idx >>  3) & 1), -((idx >>  4) & 1), -((idx >>  5) & 1), -((idx >>  6) & 1), -((idx >>  7) & 1)), 1);
+//      mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi32(-((idx >>  8) & 1), -((idx >>  9) & 1), -((idx >> 10) & 1), -((idx >> 11) & 1), -((idx >> 12) & 1), -((idx >> 13) & 1), -((idx >> 14) & 1), -((idx >> 15) & 1)), 1);
+//      mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi32(-((idx >> 16) & 1), -((idx >> 17) & 1), -((idx >> 18) & 1), -((idx >> 19) & 1), -((idx >> 20) & 1), -((idx >> 21) & 1), -((idx >> 22) & 1), -((idx >> 23) & 1)), 1);
+//      mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set_epi32(-((idx >> 24) & 1), -((idx >> 25) & 1), -((idx >> 26) & 1), -((idx >> 27) & 1), -((idx >> 28) & 1), -((idx >> 29) & 1), -((idx >> 30) & 1), -((idx >> 31) & 1)), 1);
+//    }
+//  }
+//  word idx = vptr[3];
+//  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set_epi32(-((idx >>  0) & 1), -((idx >>  1) & 1), -((idx >>  2) & 1), -((idx >>  3) & 1), -((idx >>  4) & 1), -((idx >>  5) & 1), -((idx >>  6) & 1), -((idx >>  7) & 1)), 1);
+//  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set_epi32(-((idx >>  8) & 1), -((idx >>  9) & 1), -((idx >> 10) & 1), -((idx >> 11) & 1), -((idx >> 12) & 1), -((idx >> 13) & 1), -((idx >> 14) & 1), -((idx >> 15) & 1)), 1);
+//  mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set_epi32(-((idx >> 16) & 1), -((idx >> 17) & 1), -((idx >> 18) & 1), -((idx >> 19) & 1), -((idx >> 20) & 1), -((idx >> 21) & 1), -((idx >> 22) & 1), -((idx >> 23) & 1)), 1);
+//  mm256_xor_mask_region(&cval[1], mAptr + 3, _mm256_set_epi32(-((idx >> 24) & 1), -((idx >> 25) & 1), -((idx >> 26) & 1), -((idx >> 27) & 1), -((idx >> 28) & 1), -((idx >> 29) & 1), 0, 0), 1);
+//  cval[0] = _mm256_xor_si256(cval[0], cval[1]);
+//  word result =   _mm256_extract_epi32(cval[0], 0) ^ _mm256_extract_epi32(cval[0], 1) ^
+//                  _mm256_extract_epi32(cval[0], 2) ^ _mm256_extract_epi32(cval[0], 3) ^
+//                  _mm256_extract_epi32(cval[0], 4) ^ _mm256_extract_epi32(cval[0], 5) ^
+//                  _mm256_extract_epi32(cval[0], 6) ^ _mm256_extract_epi32(cval[0], 7);
+////  printf("0x%016lX\n", result);
+//  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+//  cptr[3] |= result << 32;
+//}
+
+// Multiplication using AVX & popcnt, slower than 226_30_popcnt without AVX
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  __m256i const* vptr          = ASSUME_ALIGNED(CONST_FIRST_ROW(v), alignof(__m256i));
+  __m256i const* mAptr         = ASSUME_ALIGNED(CONST_FIRST_ROW(At), alignof(__m256i));
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+
+  for(unsigned i = 30; i; --i, mAptr++) {
+    __m256i cnt = _mm256_and_si256(*vptr, *mAptr);
+    word popcnt = __builtin_popcountll(_mm256_extract_epi64(cnt, 0)) +
+                  __builtin_popcountll(_mm256_extract_epi64(cnt, 1)) +
+                  __builtin_popcountll(_mm256_extract_epi64(cnt, 2)) +
+                  __builtin_popcountll(_mm256_extract_epi64(cnt, 3));
+    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+#endif
+
+#endif
