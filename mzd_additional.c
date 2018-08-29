@@ -757,6 +757,20 @@ void mzd_mul_v_avx_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
     *mcptr = _mm256_xor_si256(cval[0], cval[1]);
 }
 
+ATTR_TARGET("avx2")
+void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
+  __m256i const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(__m256i));
+
+  __m256i cval[2] ATTR_ALIGNED(alignof(__m256i)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word idx = vptr[3] >> 61;
+  mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
+  mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
+  mm256_xor_mask_region(&cval[0], mAptr + 3, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
+  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+}
+
 // Standard multiplication using AVX, slower than 226_30_popcnt without AVX
 //ATTR_TARGET("avx2")
 //void mzd_mul_v_avx_226_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -820,6 +834,24 @@ void mzd_mul_v_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t c
     word popcnt = 0;
     for (unsigned int w = 0; w < width; ++w) {
       word idx = vptr[w] & Aptr[w+(30-i)*rowstride];
+      popcnt += __builtin_popcountll(idx);
+    }
+    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
+  }
+}
+
+void mzd_mul_v_253_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const unsigned int rowstride = At->rowstride;
+  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
+  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  const unsigned int width     = v->width;
+  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
+
+  cptr[3] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
+  for(unsigned i = 3; i; --i) {
+    word popcnt = 0;
+    for (unsigned int w = 0; w < width; ++w) {
+      word idx = vptr[w] & Aptr[w+(3-i)*rowstride];
       popcnt += __builtin_popcountll(idx);
     }
     cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
@@ -1014,8 +1046,7 @@ void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   for (unsigned int w = width; w; --w, ++vptr) {
     word idx = *vptr;
 
-//    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, Aptr += rowstride) {
-    for (unsigned int i = MIN(v->ncols - w * sizeof(word) * 8, sizeof(word)*8); i; --i, idx >>= 1, Aptr += rowstride) {
+    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, Aptr += rowstride) {
       const uint64_t mask = -(idx & 1);
       for (unsigned int j = 0; j < len; ++j) {
         cptr[j] ^= (Aptr[j] & mask);
@@ -1023,26 +1054,6 @@ void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
     }
   }
 }
-
-void mzd_addmul_v_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int rowstride = A->rowstride;
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  const unsigned int width     = v->width;
-  word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
-
-  assert(c->width == 1); //only use for 32 bit or less
-  for(unsigned i = c->ncols; i; --i) {
-    word popcnt = 0;
-    for (unsigned int w = 0; w < width; ++w) {
-      word idx = vptr[w] & Aptr[w+(i-1)*rowstride];
-      popcnt += __builtin_popcountll(idx);
-    }
-    *cptr <<= 1;
-    *cptr |= (popcnt & WORD_C(0x1));
-  }
-}
-
 
 bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second) {
   if (first == second) {
