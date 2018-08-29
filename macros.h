@@ -149,6 +149,7 @@
 #define general_or_10(l, f) (l)->m == 10 ? f##_10 : (f)
 #else
 #define general_or_10(l, f) f##_10
+#define general_or_1(l, f) f##_1
 #endif
 
 /* helper macros/functions for checked integer subtraction */

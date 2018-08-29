@@ -10,8 +10,22 @@
 #define M_FIXED_10
 #define N_SIGN CONCAT(SIGN, 10)
 #define N_VERIFY CONCAT(VERIFY, 10)
+#define MUL_Z MUL_Z_10
+#define MUL_A MUL_A_10
 #include "mpc_lowmc_impl.c.i"
+#undef MUL_Z
+#undef MUL_A
 #undef M_FIXED_10
+
+#define M_FIXED_1
+#define N_SIGN CONCAT(SIGN, 1)
+#define N_VERIFY CONCAT(VERIFY, 1)
+#define MUL_Z MUL_Z_1
+#define MUL_A MUL_A_1
+#include "mpc_lowmc_impl.c.i"
+#undef MUL_Z
+#undef MUL_A
+#undef M_FIXED_1
 
 #if defined(WITH_CUSTOM_INSTANCES)
 #define SBOX_SIGN SIGN_SBOX

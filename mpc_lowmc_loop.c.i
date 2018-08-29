@@ -42,7 +42,7 @@ lowmc_round_t const* round = lowmc->rounds;
 //    for (unsigned int k = 0; k < shares; ++k) {
 //        FIRST_ROW(x_nl[k])[x_nl[k]->width - 1] = (FIRST_ROW(y[k])[y[k]->width - 1] & nl_mask) >> (sizeof(word)*8-3*TODO_LOWMC_M);
 //    }
-    MPC_LOOP_CONST(mzd_mul_v_avx_30_256, x, y, CONCAT(round->z, matrix_postfix), reduced_shares);
+    MPC_LOOP_CONST(MUL_Z, x, y, CONCAT(round->z, matrix_postfix), reduced_shares);
 //    for (unsigned int k = 0; k < shares; ++k) {
 //        FIRST_ROW(y[k])[y[k]->width -1] &= inv_nl_mask;
 //        for(unsigned int j = 0; j < x_l[k]->width; j++) {
@@ -50,7 +50,7 @@ lowmc_round_t const* round = lowmc->rounds;
 //        }
 //    }
 //    MPC_LOOP_CONST(MUL, x_nl, x_l, CONCAT(round->a, matrix_postfix), shares);
-    MPC_LOOP_CONST(mzd_mul_v_226_30_popcnt, y, y, CONCAT(round->aT, matrix_postfix), reduced_shares);
+    MPC_LOOP_CONST(MUL_A, y, y, CONCAT(round->aT, matrix_postfix), reduced_shares);
 //    for (unsigned int k = 0; k < shares; ++k) {
 //        FIRST_ROW(x[k])[x[k]->width - 1] ^= (FIRST_ROW(x_nl[k])[x_nl[k]->width - 1] << (sizeof(word)*8-3*TODO_LOWMC_M)) & nl_mask;
 //    }

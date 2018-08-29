@@ -18,6 +18,18 @@
 
 #define RANDTAPE R_uint64
 #define SBOX SBOX_uint64
+#elif defined(M_FIXED_1)
+//TODO: fix sbox for 1-sbox case
+#undef SBOX_ARGS
+#undef SBOX_SIGN
+#undef SBOX_VERIFY
+
+#define SBOX_ARGS 5
+#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64
+#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64
+
+#define RANDTAPE R_uint64
+#define SBOX SBOX_uint64
 #else
 #define RANDTAPE R_mzd
 #define SBOX SBOX_mzd

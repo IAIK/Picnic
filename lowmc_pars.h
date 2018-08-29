@@ -32,6 +32,14 @@ typedef struct {
 #define MASK_MASK UINT64_C(0x00000003ffffffff)
 
 /**
+ * Masks for 1 S-box.
+ */
+#define MASK_X0I_1 UINT64_C(0x2000000000000000)
+#define MASK_X1I_1 UINT64_C(0x4000000000000000)
+#define MASK_X2I_1 UINT64_C(0x8000000000000000)
+#define MASK_MASK_1 UINT64_C(0x1fffffffffffffff)
+
+/**
  * LowMC instances
  */
 #define LOWMC_L1_N 128
