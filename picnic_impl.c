@@ -300,12 +300,20 @@ static void mzd_from_bitstream(bitstream_t* bs, mzd_local_t* v, const size_t siz
 }
 #endif
 
-static void uint64_to_bitstream(bitstream_t* bs, const uint64_t v) {
+static void uint64_to_bitstream_10(bitstream_t* bs, const uint64_t v) {
   bitstream_put_bits(bs, v >> (64 - 30), 30);
 }
 
-static uint64_t uint64_from_bitstream(bitstream_t* bs) {
+static uint64_t uint64_from_bitstream_10(bitstream_t* bs) {
   return bitstream_get_bits(bs, 30) << (64 - 30);
+}
+
+static void uint64_to_bitstream_1(bitstream_t* bs, const uint64_t v) {
+  bitstream_put_bits(bs, v >> (64 - 3), 3);
+}
+
+static uint64_t uint64_from_bitstream_1(bitstream_t* bs) {
+  return bitstream_get_bits(bs, 3) << (64 - 3);
 }
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
@@ -326,9 +334,17 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
     return;
   }
 #endif
-
-  for (size_t i = 0; i < num_views; ++i, ++v) {
-    uint64_to_bitstream(&bs, v->t[idx]);
+  if (pp->lowmc->m == 10) {
+    for (size_t i = 0; i < num_views; ++i, ++v) {
+      uint64_to_bitstream_10(&bs, v->t[idx]);
+    }
+    return;
+  }
+  if (pp->lowmc->m == 1) {
+    for (size_t i = 0; i < num_views; ++i, ++v) {
+      uint64_to_bitstream_1(&bs, v->t[idx]);
+    }
+    return;
   }
 }
 
@@ -350,9 +366,17 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
     return;
   }
 #endif
-
-  for (size_t i = 0; i < num_views; ++i, ++v) {
-    v->t[idx] = uint64_from_bitstream(&bs);
+  if (pp->lowmc->m == 10) {
+    for (size_t i = 0; i < num_views; ++i, ++v) {
+      v->t[idx] = uint64_from_bitstream_10(&bs);
+    }
+    return;
+  }
+  if (pp->lowmc->m == 1) {
+    for (size_t i = 0; i < num_views; ++i, ++v) {
+      v->t[idx] = uint64_from_bitstream_1(&bs);
+    }
+    return;
   }
 }
 
@@ -375,8 +399,17 @@ static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, co
   }
 #endif
 
-  for (size_t i = 0; i < num_views; ++i, ++rv) {
-    rv->t[idx] = uint64_from_bitstream(&bs);
+  if (pp->lowmc->m == 10) {
+    for (size_t i = 0; i < num_views; ++i, ++rv) {
+      rv->t[idx] = uint64_from_bitstream_10(&bs);
+    }
+    return;
+  }
+  if (pp->lowmc->m == 1) {
+    for (size_t i = 0; i < num_views; ++i, ++rv) {
+      rv->t[idx] = uint64_from_bitstream_1(&bs);
+    }
+    return;
   }
 }
 
