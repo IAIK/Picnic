@@ -273,8 +273,8 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL_A_10 mzd_mul_v_30_popcnt
 
 #define LOWMC_N lowmc->n
-#define LOWMC_R lowmc->r
-#define LOWMC_M lowmc->m
+#define LOWMC_R_10 lowmc->r
+#define LOWMC_R_1 lowmc->r
 
 #define SBOX_IMPL sbox_layer_bitsliced
 #define LOWMC lowmc_uint64
@@ -290,14 +290,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #if defined(WITH_LOWMC_256_256_38)
 #include "lowmc_256_256_38.h"
 #endif
-#if defined(WITH_LOWMC_128_128_20)
-#include "lowmc_128_128_20.h"
+#if defined(WITH_LOWMC_128_128_182)
+#include "lowmc_128_128_182.h"
 #endif
-#if defined(WITH_LOWMC_192_192_30)
-#include "lowmc_192_192_30.h"
+#if defined(WITH_LOWMC_192_192_284)
+#include "lowmc_192_192_284.h"
 #endif
-#if defined(WITH_LOWMC_256_256_38)
-#include "lowmc_256_256_38.h"
+#if defined(WITH_LOWMC_256_256_363)
+#include "lowmc_256_256_363.h"
 #endif
 
 #if defined(WITH_SSE2)
@@ -314,14 +314,20 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_sse_128, mzd_mul_vl_sse_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#endif
+#if defined(WITH_LOWMC_128_128_182)
+#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
 #endif
 #define LOWMC_N LOWMC_L1_N
-#define LOWMC_R LOWMC_L1_R
+#define LOWMC_R_10 LOWMC_L1_R
+#define LOWMC_R_1 LOWMC_L1_1_R
 
 #undef MUL_Z_1
 #undef MUL_Z_10
@@ -346,14 +352,20 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_sse_192, mzd_mul_vl_sse_192)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_192, mzd_addmul_vl_sse_192)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
 #endif
 #define LOWMC_N LOWMC_L3_N
-#define LOWMC_R LOWMC_L3_R
+#define LOWMC_R_10 LOWMC_L3_R
+#define LOWMC_R_1 LOWMC_L3_1_R
 
 #undef MUL_Z_1
 #undef MUL_Z_10
@@ -376,14 +388,20 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_sse_256, mzd_mul_vl_sse_256)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_256, mzd_addmul_vl_sse_256)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
 #endif
 #define LOWMC_N LOWMC_L5_N
-#define LOWMC_R LOWMC_L5_R
+#define LOWMC_R_10 LOWMC_L5_R
+#define LOWMC_R_1 LOWMC_L5_1_R
 
 #undef MUL_Z_1
 #undef MUL_Z_10
@@ -406,11 +424,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse, mzd_addmul_vl_sse)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #define LOWMC_N lowmc->n
-#define LOWMC_R lowmc->r
+#define LOWMC_R_1 lowmc->r
+#define LOWMC_R_10 lowmc->r
 
 // generic using SSE2
 #undef LOWMC
@@ -433,14 +454,20 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_avx_128, mzd_mul_vl_avx_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#endif
+#if defined(WITH_LOWMC_128_128_182)
+#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
 #endif
 #define LOWMC_N LOWMC_L1_N
-#define LOWMC_R LOWMC_L1_R
+#define LOWMC_R_10 LOWMC_L1_R
+#define LOWMC_R_1 LOWMC_L1_1_R
 
 #undef MUL_Z_1
 #undef MUL_Z_10
@@ -465,14 +492,20 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_avx_192, mzd_mul_vl_avx_192)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
 #endif
 #define LOWMC_N LOWMC_L3_N
-#define LOWMC_R LOWMC_L3_R
+#define LOWMC_R_10 LOWMC_L3_R
+#define LOWMC_R_1 LOWMC_L3_1_R
 
 #undef MUL_Z_1
 #undef MUL_Z_10
@@ -495,14 +528,20 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_avx_256, mzd_mul_vl_avx_256)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
 #endif
 #define LOWMC_N LOWMC_L5_N
-#define LOWMC_R LOWMC_L5_R
+#define LOWMC_R_10 LOWMC_L5_R
+#define LOWMC_R_1 LOWMC_L5_1_R
 
 #undef MUL_Z_1
 #undef MUL_Z_10
@@ -525,11 +564,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx, mzd_addmul_vl_avx)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #define LOWMC_N lowmc->n
-#define LOWMC_R lowmc->r
+#define LOWMC_R_1 lowmc->r
+#define LOWMC_R_10 lowmc->r
 
 // generic using AVX2
 #undef SBOX_IMPL

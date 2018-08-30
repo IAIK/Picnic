@@ -24,11 +24,17 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
   (void)lowmc_instance;
 #endif
 #if defined(REDUCED_LINEAR_LAYER)
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
   mzd_local_t* x       = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* y       = mzd_local_init_ex(1, LOWMC_N, false);
+#if defined(M_FIXED_10)
   mzd_local_t* nl_part = mzd_local_init_ex(1, LOWMC_R * 32, false);
+#elif defined(M_FIXED_1)
+  mzd_local_t* nl_part = mzd_local_init_ex(1, ((LOWMC_R + 20) / 21) * 64, false);
+#else
+  #error "RLL only works with 1 or 10 Sboxes atm"
+#endif
 
+#if defined(REDUCED_LINEAR_LAYER_NEXT)
   XOR(y, p, lowmc->precomputed_constant_linear);
   ADDMUL(y, lowmc_key, CONCAT(lowmc->k0, matrix_postfix));
   MUL_MC(nl_part, lowmc_key, CONCAT(lowmc->precomputed_non_linear_part, matrix_postfix));
@@ -41,25 +47,23 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
     SBOX(x, &lowmc->mask);
 
+#if defined(M_FIXED_10)
     const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
     FIRST_ROW(x)
-    [(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
-        (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
+    [(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << (1-(i&1))*32) & WORD_C(0xFFFFFFFF00000000);
+#elif defined(M_FIXED_1)
+    const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
+    FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+#else
+#error "RLL only works with 1 or 10 Sboxes atm"
+#endif
 
     MUL_Z(y, x, CONCAT(round->z, matrix_postfix));
     MUL_A(x, x, CONCAT(round->aT, matrix_postfix));
 
     XOR(x, x, y);
   }
-
-  mzd_local_free(y);
-  mzd_local_free(nl_part);
-  return x;
 #else
-  mzd_local_t* x       = mzd_local_init_ex(1, LOWMC_N, false);
-  mzd_local_t* y       = mzd_local_init_ex(1, LOWMC_N, false);
-  mzd_local_t* nl_part = mzd_local_init_ex(1, LOWMC_R * 32, false);
-
   XOR(x, p, lowmc->precomputed_constant_linear);
   ADDMUL(x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix));
   MUL_MC(nl_part, lowmc_key, CONCAT(lowmc->precomputed_non_linear_part, matrix_postfix));
@@ -72,18 +76,27 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 #endif
     SBOX(x, &lowmc->mask);
 
+#if defined(M_FIXED_10)
     const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
     FIRST_ROW(x)
     [(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
         (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
     MUL(y, x, CONCAT(round->l, matrix_postfix));
+#elif defined(M_FIXED_1)
+    const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
+    FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+    MUL(y, x, CONCAT(round->l, matrix_postfix));
+#else
+#error "RLL only works with 1 or 10 Sboxes atm"
+#endif
 
     // swap x and y
     mzd_local_t* t = x;
     x              = y;
     y              = t;
   }
-
+#endif
+  mzd_local_free(y);
   mzd_local_free(nl_part);
   mzd_local_free(y);
 #if defined(RECORD_STATE)

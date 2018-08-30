@@ -57,6 +57,21 @@ typedef struct {
 #define LOWMC_L5_K LOWMC_L5_N
 #define LOWMC_L5_R 38
 
+#define LOWMC_L1_1_N 128
+#define LOWMC_L1_1_M 1
+#define LOWMC_L1_1_K LOWMC_L1_1_N
+#define LOWMC_L1_1_R 182
+
+#define LOWMC_L3_1_N 192
+#define LOWMC_L3_1_M 1
+#define LOWMC_L3_1_K LOWMC_L3_1_N
+#define LOWMC_L3_1_R 284
+
+#define LOWMC_L5_1_N 256
+#define LOWMC_L5_1_M 1
+#define LOWMC_L5_1_K LOWMC_L5_1_N
+#define LOWMC_L5_1_R 363
+
 typedef struct {
 #if !defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* k_matrix;

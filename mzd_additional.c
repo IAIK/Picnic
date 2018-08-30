@@ -310,7 +310,6 @@ void mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* 
   __m256i* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(__m256i));
   __m256i const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(__m256i));
   __m256i const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(__m256i));
-
   do {
     *mresptr++ = _mm256_xor_si256(*mfirstptr++, *msecondptr++);
     width -= sizeof(__m256i) / sizeof(word);
@@ -1526,7 +1525,7 @@ void mzd_mul_v_uint64_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
   const unsigned int width     = v->width;
 
-  word idx = vptr[width-1] >> 34;
+  word idx = vptr[width-1] >> 61;
   for(unsigned int j = 0; j < width; j++) {
     cptr[j] = 0;
   }
@@ -1866,7 +1865,7 @@ void mzd_mul_v_avx_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   word idx = vptr[2] >> 61;
   mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
   mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
-  mm256_xor_mask_region(&cval[0], mAptr + 3, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
+  mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
 }
 
@@ -1880,7 +1879,7 @@ void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   word idx = vptr[3] >> 61;
   mm256_xor_mask_region(&cval[0], mAptr + 0, _mm256_set1_epi64x(-(idx & 1)), 1);
   mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
-  mm256_xor_mask_region(&cval[0], mAptr + 3, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
+  mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
 }
 

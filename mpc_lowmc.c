@@ -140,7 +140,7 @@ static void mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* cons
 }
 #endif
 
-#define bitsliced_step_1_uint64(sc)                                                                \
+#define bitsliced_step_1_uint64_10(sc)                                                             \
   uint64_t r0m[sc];                                                                                \
   uint64_t r0s[sc];                                                                                \
   uint64_t r1m[sc];                                                                                \
@@ -167,7 +167,7 @@ static void mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* cons
     }                                                                                              \
   } while (0)
 
-#define bitsliced_step_2_uint64(sc)                                                                \
+#define bitsliced_step_2_uint64_10(sc)                                                             \
   do {                                                                                             \
     for (unsigned int m = 0; m < sc; ++m) {                                                        \
       const uint64_t tmp1 = r2m[m] ^ x0s[m];                                                       \
@@ -179,25 +179,85 @@ static void mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* cons
     }                                                                                              \
   } while (0)
 
-static void mpc_sbox_layer_bitsliced_uint64(uint64_t* in, view_t* view, uint64_t const* rvec) {
-  bitsliced_step_1_uint64(SC_PROOF);
+#define bitsliced_step_1_uint64_1(sc)                                                              \
+  uint64_t r0m[sc];                                                                                \
+  uint64_t r0s[sc];                                                                                \
+  uint64_t r1m[sc];                                                                                \
+  uint64_t r1s[sc];                                                                                \
+  uint64_t r2m[sc];                                                                                \
+  uint64_t x0s[sc];                                                                                \
+  uint64_t x1s[sc];                                                                                \
+  uint64_t x2m[sc];                                                                                \
+  do {                                                                                             \
+    for (unsigned int m = 0; m < (sc); ++m) {                                                      \
+      const uint64_t inm   = in[m];                                                                \
+      const uint64_t rvecm = rvec[m];                                                              \
+                                                                                                   \
+      x0s[m] = (inm & MASK_X0I_1) << 2;                                                            \
+      x1s[m] = (inm & MASK_X1I_1) << 1;                                                            \
+      x2m[m] = inm & MASK_X2I_1;                                                                   \
+                                                                                                   \
+      r0m[m] = rvecm & MASK_X0I_1;                                                                 \
+      r1m[m] = rvecm & MASK_X1I_1;                                                                 \
+      r2m[m] = rvecm & MASK_X2I_1;                                                                 \
+                                                                                                   \
+      r0s[m] = r0m[m] << 2;                                                                        \
+      r1s[m] = r1m[m] << 1;                                                                        \
+    }                                                                                              \
+  } while (0)
+
+#define bitsliced_step_2_uint64_1(sc)                                                              \
+  do {                                                                                             \
+    for (unsigned int m = 0; m < sc; ++m) {                                                        \
+      const uint64_t tmp1 = r2m[m] ^ x0s[m];                                                       \
+      const uint64_t tmp2 = x0s[m] ^ x1s[m];                                                       \
+      const uint64_t tmp3 = tmp2 ^ r1m[m];                                                         \
+      const uint64_t tmp4 = tmp2 ^ r0m[m] ^ x2m[m];                                                \
+                                                                                                   \
+      in[m] = (in[m] & MASK_MASK_1) ^ (tmp4) ^ (tmp1 >> 2) ^ (tmp3 >> 1);                          \
+    }                                                                                              \
+  } while (0)
+
+static void mpc_sbox_layer_bitsliced_uint64_10(uint64_t* in, view_t* view, uint64_t const* rvec) {
+  bitsliced_step_1_uint64_10(SC_PROOF);
 
   mpc_and_uint64(r0m, x0s, x1s, r2m, view, 0);
   mpc_and_uint64(r2m, x1s, x2m, r1s, view, 1);
   mpc_and_uint64(r1m, x0s, x2m, r0s, view, 2);
 
-  bitsliced_step_2_uint64(SC_PROOF);
+  bitsliced_step_2_uint64_10(SC_PROOF);
 }
 
-static void mpc_sbox_layer_bitsliced_verify_uint64(uint64_t* in, view_t* view,
-                                                   uint64_t const* rvec) {
-  bitsliced_step_1_uint64(SC_VERIFY);
+static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view,
+                                                      uint64_t const* rvec) {
+  bitsliced_step_1_uint64_10(SC_VERIFY);
 
   mpc_and_verify_uint64(r0m, x0s, x1s, r2m, view, MASK_X2I, 0);
   mpc_and_verify_uint64(r2m, x1s, x2m, r1s, view, MASK_X2I, 1);
   mpc_and_verify_uint64(r1m, x0s, x2m, r0s, view, MASK_X2I, 2);
 
-  bitsliced_step_2_uint64(SC_VERIFY);
+  bitsliced_step_2_uint64_10(SC_VERIFY);
+}
+
+static void mpc_sbox_layer_bitsliced_uint64_1(uint64_t* in, view_t* view, uint64_t const* rvec) {
+  bitsliced_step_1_uint64_1(SC_PROOF);
+
+  mpc_and_uint64(r0m, x0s, x1s, r2m, view, 0);
+  mpc_and_uint64(r2m, x1s, x2m, r1s, view, 1);
+  mpc_and_uint64(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2_uint64_1(SC_PROOF);
+}
+
+static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
+                                                   uint64_t const* rvec) {
+  bitsliced_step_1_uint64_1(SC_VERIFY);
+
+  mpc_and_verify_uint64(r0m, x0s, x1s, r2m, view, MASK_X2I_1, 0);
+  mpc_and_verify_uint64(r2m, x1s, x2m, r1s, view, MASK_X2I_1, 1);
+  mpc_and_verify_uint64(r1m, x0s, x2m, r0s, view, MASK_X2I_1, 2);
+
+  bitsliced_step_2_uint64_1(SC_VERIFY);
 }
 
 #if defined(WITH_OPT) && defined(WITH_CUSTOM_INSTANCES)
@@ -667,7 +727,8 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL_MC SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
 
 #define LOWMC_N lowmc->n
-#define LOWMC_R lowmc->r
+#define LOWMC_R_10 lowmc->r
+#define LOWMC_R_1 lowmc->r
 
 #define SIGN_SBOX mpc_sbox_layer_bitsliced
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify
@@ -723,14 +784,20 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_sse_128, mzd_mul_vl_sse_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#endif
+#if defined(WITH_LOWMC_128_128_182)
+#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
 #endif
 #define LOWMC_N LOWMC_L1_N
-#define LOWMC_R LOWMC_L1_R
+#define LOWMC_R_10 LOWMC_L1_R
+#define LOWMC_R_1 LOWMC_L1_1_R
 
 #undef SIGN_SBOX
 #undef VERIFY_SBOX
@@ -758,14 +825,20 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_sse_192, mzd_mul_vl_sse_192)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_192, mzd_addmul_vl_sse_192)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
 #endif
 #define LOWMC_N LOWMC_L3_N
-#define LOWMC_R LOWMC_L3_R
+#define LOWMC_R_10 LOWMC_L3_R
+#define LOWMC_R_1 LOWMC_L3_1_R
 
 #undef SIGN_SBOX
 #undef VERIFY_SBOX
@@ -791,14 +864,20 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_sse_256, mzd_mul_vl_sse_256)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_256, mzd_addmul_vl_sse_256)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
 #endif
 #define LOWMC_N LOWMC_L5_N
-#define LOWMC_R LOWMC_L5_R
+#define LOWMC_R_10 LOWMC_L5_R
+#define LOWMC_R_1 LOWMC_L5_1_R
 
 #undef MUL_Z_1
 #undef MUL_Z_10
@@ -863,14 +942,20 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_avx_128, mzd_mul_vl_avx_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#endif
+#if defined(WITH_LOWMC_128_128_182)
+#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
 #endif
 #define LOWMC_N LOWMC_L1_N
-#define LOWMC_R LOWMC_L1_R
+#define LOWMC_R_10 LOWMC_L1_R
+#define LOWMC_R_1 LOWMC_L1_1_R
 
 #undef SIGN_SBOX
 #undef VERIFY_SBOX
@@ -898,14 +983,20 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_avx_192, mzd_mul_vl_avx_192)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
 #endif
 #define LOWMC_N LOWMC_L3_N
-#define LOWMC_R LOWMC_L3_R
+#define LOWMC_R_10 LOWMC_L3_R
+#define LOWMC_R_1 LOWMC_L3_1_R
 
 #undef SIGN_SBOX
 #undef VERIFY_SBOX
@@ -931,14 +1022,20 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define MUL SELECT_V_VL(mzd_mul_v_avx_256, mzd_mul_vl_avx_256)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256)
 
-#undef LOWMC_INSTANCE
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
 #endif
 #define LOWMC_N LOWMC_L5_N
-#define LOWMC_R LOWMC_L5_R
+#define LOWMC_R_10 LOWMC_L5_R
+#define LOWMC_R_1 LOWMC_L5_1_R
 
 #undef MUL_Z_1
 #undef MUL_Z_10

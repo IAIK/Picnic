@@ -13,8 +13,8 @@
 #undef SBOX_VERIFY
 
 #define SBOX_ARGS 5
-#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64
-#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64
+#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
+#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
 
 #define RANDTAPE R_uint64
 #define SBOX SBOX_uint64
@@ -25,8 +25,8 @@
 #undef SBOX_VERIFY
 
 #define SBOX_ARGS 5
-#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64
-#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64
+#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_1
+#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_1
 
 #define RANDTAPE R_uint64
 #define SBOX SBOX_uint64
@@ -107,7 +107,7 @@ static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t
   CONCAT(VARS_FREE, SBOX_ARGS);
 }
 
-#if defined(M_FIXED_10)
+#if defined(M_FIXED_10) || defined(M_FIXED_1)
 #undef SBOX_SIGN
 #undef SBOX_VERIFY
 #undef SBOX_ARGS

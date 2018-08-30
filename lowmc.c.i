@@ -12,6 +12,10 @@
 #define N_LOWMC CONCAT(LOWMC, 10)
 #define MUL_Z MUL_Z_10
 #define MUL_A MUL_A_10
+#define LOWMC_R LOWMC_R_10
+#if defined(LOWMC_INSTANCE_10)
+#define LOWMC_INSTANCE LOWMC_INSTANCE_10
+#endif
 #include "lowmc_impl.c.i"
 
 #undef N_LOWMC
@@ -23,6 +27,8 @@
 #undef RECORD_STATE
 #undef MUL_Z
 #undef MUL_A
+#undef LOWMC_R
+#undef LOWMC_INSTANCE
 #undef N_LOWMC
 
 #define M_FIXED_1
@@ -30,6 +36,10 @@
 #define N_LOWMC CONCAT(LOWMC, 1)
 #define MUL_Z MUL_Z_1
 #define MUL_A MUL_A_1
+#define LOWMC_R LOWMC_R_1
+#if defined(LOWMC_INSTANCE_1)
+#define LOWMC_INSTANCE LOWMC_INSTANCE_1
+#endif
 #include "lowmc_impl.c.i"
 
 #undef N_LOWMC
@@ -41,6 +51,8 @@
 #undef SBOX
 #undef MUL_Z
 #undef MUL_A
+#undef LOWMC_R
+#undef LOWMC_INSTANCE
 #undef N_LOWMC
 
 #if defined(WITH_CUSTOM_INSTANCES)
