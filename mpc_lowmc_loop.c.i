@@ -25,10 +25,16 @@ lowmc_round_t const* round = lowmc->rounds;
 #endif
     SBOX(SBOX_ARGS, sbox, y, x, views, r, &lowmc->mask, &vars, LOWMC_N, shares);
     for (unsigned int k = 0; k < reduced_shares; ++k) {
+#if defined(M_FIXED_10)
       const word nl = CONST_FIRST_ROW(nl_part[k])[i >> 1];
-      FIRST_ROW(y[k])
-      [(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
-          (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
+      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+        (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
+#elif defined(M_FIXED_1)
+      const word nl = CONST_FIRST_ROW(nl_part[k])[i / 21];
+      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+#else
+#error "RLL only works with 1 or 10 Sboxes atm"
+#endif
     }
     MPC_LOOP_CONST(MUL_Z, x, y, CONCAT(round->z, matrix_postfix), reduced_shares);
     MPC_LOOP_CONST(MUL_A, y, y, CONCAT(round->aT, matrix_postfix), reduced_shares);
@@ -46,10 +52,16 @@ lowmc_round_t const* round = lowmc->rounds;
 #endif
     SBOX(SBOX_ARGS, sbox, y, x, views, r, &lowmc->mask, &vars, LOWMC_N, shares);
     for (unsigned int k = 0; k < reduced_shares; ++k) {
+#if defined(M_FIXED_10)
       const word nl = CONST_FIRST_ROW(nl_part[k])[i >> 1];
-      FIRST_ROW(y[k])
-      [(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
-          (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
+      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+        (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
+#elif defined(M_FIXED_1)
+      const word nl = CONST_FIRST_ROW(nl_part[k])[i / 21];
+      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+#else
+#error "RLL only works with 1 or 10 Sboxes atm"
+#endif
     }
     MPC_LOOP_CONST(MUL, x, y, CONCAT(round->l, matrix_postfix), reduced_shares);
   }

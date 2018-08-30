@@ -81,15 +81,13 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
     FIRST_ROW(x)
     [(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
         (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
-    MUL(y, x, CONCAT(round->l, matrix_postfix));
 #elif defined(M_FIXED_1)
     const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
     FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
-    MUL(y, x, CONCAT(round->l, matrix_postfix));
 #else
 #error "RLL only works with 1 or 10 Sboxes atm"
 #endif
-
+    MUL(y, x, CONCAT(round->l, matrix_postfix));
     // swap x and y
     mzd_local_t* t = x;
     x              = y;
