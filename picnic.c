@@ -21,13 +21,17 @@
 #include "picnic_impl.h"
 #include "randomness.h"
 
+// Public and private keys are serialized as follows:
+// - public key: instance || C || p
+// - secret key: instance || sk || C || p
+
 #define SK_SK(sk) &(sk)->data[1]
-#define SK_C(sk) &(sk)->data[1 + input_size + output_size]
-#define SK_PT(sk) &(sk)->data[1 + input_size]
+#define SK_C(sk) &(sk)->data[1 + input_size]
+#define SK_PT(sk) &(sk)->data[1 + input_size + output_size]
 
 #define PK_SK(pk) &(pk)->data[1]
-#define PK_C(pk) &(pk)->data[1 + output_size]
-#define PK_PT(pk) &(pk)->data[1]
+#define PK_C(pk) &(pk)->data[1]
+#define PK_PT(pk) &(pk)->data[1 + output_size]
 
 const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
   return get_instance(param);
