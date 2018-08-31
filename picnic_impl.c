@@ -232,7 +232,9 @@ static void proof_free(sig_proof_t* prf) {
   free(prf);
 }
 
-static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const picnic_instance_t* pp) {
+static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const picnic_instance_t* pp,
+                               bool include_input_size) {
+  // Hash the seed with H_2.
   kdf_shake_init(kdf, pp);
   kdf_shake_update_key(kdf, &HASH_PREFIX_2, sizeof(HASH_PREFIX_2));
   kdf_shake_update_key(kdf, seed, pp->seed_size);
@@ -242,8 +244,11 @@ static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const picn
   kdf_shake_get_randomness(kdf, tmp, pp->digest_size);
   kdf_shake_clear(kdf);
 
+  // Initialize KDF with H_2(seed) || output_size.
   kdf_shake_init(kdf, pp);
   kdf_shake_update_key(kdf, tmp, pp->digest_size);
+  const uint16_t size_le = htole16(pp->view_size + (include_input_size ? pp->input_size : 0));
+  kdf_shake_update_key(kdf, (const uint8_t*)&size_le, sizeof(size_le));
   kdf_shake_finalize_key(kdf);
 }
 
@@ -817,12 +822,12 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   }
 #endif
 
-  uint8_t* tape_bytes = malloc(view_size);
+  uint8_t* tape_bytes  = malloc(view_size);
   proof_round_t* round = prf->round;
   for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
     kdf_shake_t kdfs[SC_PROOF];
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
-      kdf_init_from_seed(&kdfs[j], round->seeds[j], pp);
+      kdf_init_from_seed(&kdfs[j], round->seeds[j], pp, j != SC_PROOF - 1);
     }
 
     // compute sharing
@@ -936,7 +941,7 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
 
     kdf_shake_t kdfs[SC_VERIFY];
     for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-      kdf_init_from_seed(&kdfs[j], round->seeds[j], pp);
+      kdf_init_from_seed(&kdfs[j], round->seeds[j], pp, (j == 0 && b_i) || (j == 1 && c_i));
     }
 
     // compute input shares if necessary
