@@ -21,6 +21,14 @@
 #include "picnic_impl.h"
 #include "randomness.h"
 
+#define SK_SK(sk) &(sk)->data[1]
+#define SK_C(sk) &(sk)->data[1 + input_size + output_size]
+#define SK_PT(sk) &(sk)->data[1 + input_size]
+
+#define PK_SK(pk) &(pk)->data[1]
+#define PK_C(pk) &(pk)->data[1 + output_size]
+#define PK_PT(pk) &(pk)->data[1]
+
 const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
   return get_instance(param);
 }
@@ -67,9 +75,9 @@ int PICNIC_CALLING_CONVENTION picnic_keygen(picnic_params_t param, picnic_public
   const size_t input_size  = instance->input_size;
   const size_t output_size = instance->output_size;
 
-  uint8_t* sk_sk = &sk->data[1];
-  uint8_t* pk_pt = &sk->data[1 + input_size];
-  uint8_t* sk_c  = &sk->data[1 + input_size + output_size];
+  uint8_t* sk_sk = SK_SK(sk);
+  uint8_t* sk_pt = SK_PT(sk);
+  uint8_t* sk_c  = SK_C(sk);
 
   // generate private key
   sk->data[0] = param;
@@ -78,7 +86,7 @@ int PICNIC_CALLING_CONVENTION picnic_keygen(picnic_params_t param, picnic_public
     return -1;
   }
   // random plain text
-  if (!rand_bytes(pk_pt, output_size)) {
+  if (!rand_bytes(sk_pt, output_size)) {
     return -1;
   }
   // encrypt plaintext under secret key
@@ -86,7 +94,7 @@ int PICNIC_CALLING_CONVENTION picnic_keygen(picnic_params_t param, picnic_public
     return -1;
   }
   // copy ciphertext to secret key
-  memcpy(sk_c, &pk->data[1 + output_size], output_size);
+  memcpy(sk_c, PK_C(pk), output_size);
   return 0;
 }
 
@@ -106,10 +114,10 @@ int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
   const size_t output_size = instance->output_size;
   const lowmc_t* lowmc     = instance->lowmc;
 
-  const uint8_t* sk_sk = &sk->data[1];
-  uint8_t* pk_c        = &pk->data[1 + output_size];
-  uint8_t* pk_pt       = &pk->data[1];
-  const uint8_t* sk_pt = &sk->data[1 + input_size];
+  const uint8_t* sk_sk = SK_SK(sk);
+  uint8_t* pk_c        = PK_C(pk);
+  uint8_t* pk_pt       = PK_PT(pk);
+  const uint8_t* sk_pt = SK_PT(sk);
 
   mzd_local_t* plaintext = mzd_local_init_ex(1, lowmc->n, false);
   mzd_local_t* privkey   = mzd_local_init_ex(1, lowmc->k, false);
@@ -146,11 +154,11 @@ int PICNIC_CALLING_CONVENTION picnic_validate_keypair(const picnic_privatekey_t*
   const size_t input_size  = instance->input_size;
   const size_t output_size = instance->output_size;
   const lowmc_t* lowmc     = instance->lowmc;
-  const uint8_t* sk_sk     = &sk->data[1];
-  const uint8_t* sk_pt     = &sk->data[1 + input_size];
-  const uint8_t* sk_c      = &sk->data[1 + input_size + output_size];
-  const uint8_t* pk_pt     = &pk->data[1];
-  const uint8_t* pk_c      = &pk->data[1 + output_size];
+  const uint8_t* sk_sk     = SK_SK(sk);
+  const uint8_t* sk_pt     = SK_PT(sk);
+  const uint8_t* sk_c      = SK_C(sk);
+  const uint8_t* pk_pt     = PK_PT(pk);
+  const uint8_t* pk_c      = PK_C(pk);
 
   // check param and plaintext
   if (param != pk->data[0] || memcmp(sk_pt, pk_pt, output_size) != 0 ||
@@ -193,9 +201,9 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
   const size_t output_size = instance->output_size;
   const size_t input_size  = instance->input_size;
 
-  const uint8_t* sk_sk = &sk->data[1];
-  const uint8_t* sk_c  = &sk->data[1 + input_size + output_size];
-  const uint8_t* sk_pt = &sk->data[1 + input_size];
+  const uint8_t* sk_sk = SK_SK(sk);
+  const uint8_t* sk_c  = SK_C(sk);
+  const uint8_t* sk_pt = SK_PT(sk);
 
   return impl_sign(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len)
              ? 0
@@ -217,8 +225,8 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
 
   const size_t output_size = instance->output_size;
 
-  const uint8_t* pk_c  = &pk->data[1 + output_size];
-  const uint8_t* pk_pt = &pk->data[1];
+  const uint8_t* pk_c  = PK_C(pk);
+  const uint8_t* pk_pt = PK_PT(pk);
 
   return impl_verify(instance, pk_pt, pk_c, message, message_len, signature, signature_len) ? 0
                                                                                             : -1;
