@@ -52,7 +52,7 @@ size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picnic_params_t par
     return 0;
   }
 
-  return 1 + instance->input_size + instance->output_size;
+  return picnic_get_public_key_size(param) + instance->input_size;
 }
 
 size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic_params_t param) {
