@@ -13,25 +13,27 @@
 
 #include "io.h"
 
+#include <string.h>
 #include "compat.h"
 
 void mzd_to_char_array(uint8_t* dst, const mzd_local_t* data, unsigned len) {
   const size_t word_count = len / sizeof(uint64_t);
   const uint64_t* rows    = &CONST_FIRST_ROW(data)[word_count - 1];
-  uint64_t* wdst          = (uint64_t*)dst;
 
-  for (size_t i = word_count; i; --i, --rows, ++wdst) {
-    *wdst = htobe64(*rows);
+  for (size_t i = word_count; i; --i, --rows, dst += sizeof(uint64_t)) {
+    const uint64_t tmp = htobe64(*rows);
+    memcpy(dst, &tmp, sizeof(tmp));
   }
 }
 
 void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, unsigned len) {
   const size_t word_count = len / sizeof(uint64_t);
   uint64_t* rows          = &FIRST_ROW(result)[word_count - 1];
-  const uint64_t* wsrc    = (const uint64_t*)data;
 
-  for (size_t i = word_count; i; --i, --rows, ++wsrc) {
-    *rows = be64toh(*wsrc);
+  for (size_t i = word_count; i; --i, --rows, data += sizeof(uint64_t)) {
+    uint64_t tmp;
+    memcpy(&tmp, data, sizeof(tmp));
+    *rows = be64toh(tmp);
   }
 }
 
