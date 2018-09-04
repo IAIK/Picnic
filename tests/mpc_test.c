@@ -55,6 +55,7 @@ static void test_mpc_share(void) {
   mzd_local_free(t1);
   mzd_local_free_multiple(s1);
   mzd_local_free(t1cmb);
+  free(s1);
 }
 
 static void test_mpc_add(void) {
@@ -80,6 +81,9 @@ static void test_mpc_add(void) {
   mzd_local_free_multiple(s2);
   mzd_local_free_multiple(ress);
   mzd_local_free(cmp);
+  free(s1);
+  free(s2);
+  free(ress);
 }
 
 void run_tests(void) {
