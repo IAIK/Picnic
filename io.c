@@ -16,7 +16,7 @@
 #include <string.h>
 #include "compat.h"
 
-void mzd_to_char_array(uint8_t* dst, const mzd_local_t* data, unsigned len) {
+void mzd_to_char_array(uint8_t* dst, const mzd_local_t* data, size_t len) {
   const size_t word_count = len / sizeof(uint64_t);
   const uint64_t* rows    = &CONST_FIRST_ROW(data)[word_count - 1];
 
@@ -26,7 +26,7 @@ void mzd_to_char_array(uint8_t* dst, const mzd_local_t* data, unsigned len) {
   }
 }
 
-void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, unsigned len) {
+void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, size_t len) {
   const size_t word_count = len / sizeof(uint64_t);
   uint64_t* rows          = &FIRST_ROW(result)[word_count - 1];
 
