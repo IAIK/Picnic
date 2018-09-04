@@ -12,6 +12,7 @@
 #undef SBOX_SIGN
 #undef SBOX_VERIFY
 
+#define LOWMC_M 10
 #define SBOX_ARGS 5
 #define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
 #define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
@@ -19,7 +20,7 @@
 #define RANDTAPE R_uint64
 #define SBOX SBOX_uint64
 #elif defined(M_FIXED_1)
-//TODO: fix sbox for 1-sbox case
+#define LOWMC_M 1
 #undef SBOX_ARGS
 #undef SBOX_SIGN
 #undef SBOX_VERIFY
@@ -31,6 +32,7 @@
 #define RANDTAPE R_uint64
 #define SBOX SBOX_uint64
 #else
+#define LOWMC_M (lowmc->m)
 #define RANDTAPE R_mzd
 #define SBOX SBOX_mzd
 #endif
@@ -119,6 +121,7 @@ static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t
 #undef N_VERIFY
 #undef RANDTAPE
 #undef SBOX
+#undef LOWMC_M
 #undef lowmc
 
 // vim: ft=c

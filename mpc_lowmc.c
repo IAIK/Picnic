@@ -734,14 +734,14 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify
 #define SBOX_NUM_ARGS 6
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_uint64_3
-#define MUL_Z_10 mzd_mul_v_uint64_30
-#define MUL_A_1  mzd_mul_v_3_popcnt
-#define MUL_A_10 mzd_mul_v_30_popcnt
+#define MUL_R_1  mzd_mul_v_uint64_3
+#define MUL_R_10 mzd_mul_v_uint64_30
+#define MUL_Z_1  mzd_mul_v_3_popcnt
+#define MUL_Z_10 mzd_mul_v_30_popcnt
 
 #define SIGN mpc_lowmc_call
 #define VERIFY mpc_lowmc_call_verify
@@ -804,14 +804,14 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define SIGN_SBOX mpc_sbox_layer_bitsliced_128_sse
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_128_sse
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_sse_3_128
-#define MUL_Z_10 mzd_mul_v_sse_30_128
-#define MUL_A_1  mzd_mul_v_125_3_popcnt
-#define MUL_A_10 mzd_mul_v_98_30_popcnt
+#define MUL_R_1  mzd_mul_v_sse_3_128
+#define MUL_R_10 mzd_mul_v_sse_30_128
+#define MUL_Z_1  mzd_mul_v_125_3_popcnt
+#define MUL_Z_10 mzd_mul_v_98_30_popcnt
 
 #define SIGN mpc_lowmc_call_128_sse
 #define VERIFY mpc_lowmc_call_verify_128_sse
@@ -845,14 +845,14 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define SIGN_SBOX mpc_sbox_layer_bitsliced_256_sse
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_256_sse
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_sse_3_192
-#define MUL_Z_10 mzd_mul_v_sse_30_192
-#define MUL_A_1  mzd_mul_v_189_3_popcnt
-#define MUL_A_10 mzd_mul_v_162_30_popcnt
+#define MUL_R_1  mzd_mul_v_sse_3_192
+#define MUL_R_10 mzd_mul_v_sse_30_192
+#define MUL_Z_1  mzd_mul_v_189_3_popcnt
+#define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
 #define SIGN mpc_lowmc_call_192_sse
 #define VERIFY mpc_lowmc_call_verify_192_sse
@@ -879,14 +879,14 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define LOWMC_R_10 LOWMC_L5_R
 #define LOWMC_R_1 LOWMC_L5_1_R
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_sse_3_256
-#define MUL_Z_10 mzd_mul_v_sse_30_256
-#define MUL_A_1  mzd_mul_v_253_3_popcnt
-#define MUL_A_10 mzd_mul_v_226_30_popcnt
+#define MUL_R_1  mzd_mul_v_sse_3_256
+#define MUL_R_10 mzd_mul_v_sse_30_256
+#define MUL_Z_1  mzd_mul_v_253_3_popcnt
+#define MUL_Z_10 mzd_mul_v_226_30_popcnt
 
 #define SIGN mpc_lowmc_call_256_sse
 #define VERIFY mpc_lowmc_call_verify_256_sse
@@ -962,14 +962,14 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define SIGN_SBOX mpc_sbox_layer_bitsliced_128_sse
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_128_sse
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_sse_3_128
-#define MUL_Z_10 mzd_mul_v_avx_30_128
-#define MUL_A_1  mzd_mul_v_125_3_popcnt
-#define MUL_A_10 mzd_mul_v_98_30_popcnt
+#define MUL_R_1  mzd_mul_v_sse_3_128
+#define MUL_R_10 mzd_mul_v_avx_30_128
+#define MUL_Z_1  mzd_mul_v_125_3_popcnt
+#define MUL_Z_10 mzd_mul_v_98_30_popcnt
 
 #define SIGN mpc_lowmc_call_128_avx
 #define VERIFY mpc_lowmc_call_verify_128_avx
@@ -1003,14 +1003,14 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define SIGN_SBOX mpc_sbox_layer_bitsliced_256_avx
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_256_avx
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_avx_3_192
-#define MUL_Z_10 mzd_mul_v_avx_30_192
-#define MUL_A_1  mzd_mul_v_189_3_popcnt
-#define MUL_A_10 mzd_mul_v_162_30_popcnt
+#define MUL_R_1  mzd_mul_v_avx_3_192
+#define MUL_R_10 mzd_mul_v_avx_30_192
+#define MUL_Z_1  mzd_mul_v_189_3_popcnt
+#define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
 #define SIGN mpc_lowmc_call_192_avx
 #define VERIFY mpc_lowmc_call_verify_192_avx
@@ -1037,14 +1037,14 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define LOWMC_R_10 LOWMC_L5_R
 #define LOWMC_R_1 LOWMC_L5_1_R
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_avx_3_256
-#define MUL_Z_10 mzd_mul_v_avx_30_256
-#define MUL_A_1  mzd_mul_v_253_3_popcnt
-#define MUL_A_10 mzd_mul_v_226_30_popcnt
+#define MUL_R_1  mzd_mul_v_avx_3_256
+#define MUL_R_10 mzd_mul_v_avx_30_256
+#define MUL_Z_1  mzd_mul_v_253_3_popcnt
+#define MUL_Z_10 mzd_mul_v_226_30_popcnt
 
 #define SIGN mpc_lowmc_call_256_avx
 #define VERIFY mpc_lowmc_call_verify_256_avx

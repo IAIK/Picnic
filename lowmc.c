@@ -11,6 +11,7 @@
 #include <config.h>
 #endif
 
+#include "io.h"
 #include "lowmc.h"
 #include "lowmc_pars.h"
 #include "mzd_additional.h"
@@ -263,14 +264,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define XOR_MC mzd_xor_uint64
 #define MUL_MC SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_uint64_3
-#define MUL_Z_10 mzd_mul_v_uint64_30
-#define MUL_A_1  mzd_mul_v_3_popcnt
-#define MUL_A_10 mzd_mul_v_30_popcnt
+#define MUL_R_1  mzd_mul_v_uint64_3
+#define MUL_R_10 mzd_mul_v_uint64_30
+#define MUL_Z_1  mzd_mul_v_3_popcnt
+#define MUL_Z_10 mzd_mul_v_30_popcnt
 
 #define LOWMC_N lowmc->n
 #define LOWMC_R_10 lowmc->r
@@ -329,14 +330,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC_R_10 LOWMC_L1_R
 #define LOWMC_R_1 LOWMC_L1_1_R
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_sse_3_128
-#define MUL_Z_10 mzd_mul_v_sse_30_128
-#define MUL_A_1  mzd_mul_v_125_3_popcnt
-#define MUL_A_10 mzd_mul_v_98_30_popcnt
+#define MUL_R_1  mzd_mul_v_sse_3_128
+#define MUL_R_10 mzd_mul_v_sse_30_128
+#define MUL_Z_1  mzd_mul_v_125_3_popcnt
+#define MUL_Z_10 mzd_mul_v_98_30_popcnt
 
 #undef SBOX_IMPL
 #undef LOWMC
@@ -367,14 +368,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC_R_10 LOWMC_L3_R
 #define LOWMC_R_1 LOWMC_L3_1_R
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_sse_3_192
-#define MUL_Z_10 mzd_mul_v_sse_30_192
-#define MUL_A_1  mzd_mul_v_189_3_popcnt
-#define MUL_A_10 mzd_mul_v_162_30_popcnt
+#define MUL_R_1  mzd_mul_v_sse_3_192
+#define MUL_R_10 mzd_mul_v_sse_30_192
+#define MUL_Z_1  mzd_mul_v_189_3_popcnt
+#define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
 #undef SBOX_IMPL
 #undef LOWMC
@@ -403,14 +404,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC_R_10 LOWMC_L5_R
 #define LOWMC_R_1 LOWMC_L5_1_R
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_sse_3_256
-#define MUL_Z_10 mzd_mul_v_sse_30_256
-#define MUL_A_1  mzd_mul_v_253_3_popcnt
-#define MUL_A_10 mzd_mul_v_226_30_popcnt
+#define MUL_R_1  mzd_mul_v_sse_3_256
+#define MUL_R_10 mzd_mul_v_sse_30_256
+#define MUL_Z_1  mzd_mul_v_253_3_popcnt
+#define MUL_Z_10 mzd_mul_v_226_30_popcnt
 
 #undef LOWMC
 #define LOWMC lowmc_sse_256
@@ -469,14 +470,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC_R_10 LOWMC_L1_R
 #define LOWMC_R_1 LOWMC_L1_1_R
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_sse_3_128
-#define MUL_Z_10 mzd_mul_v_avx_30_128
-#define MUL_A_1  mzd_mul_v_125_3_popcnt
-#define MUL_A_10 mzd_mul_v_98_30_popcnt
+#define MUL_R_1  mzd_mul_v_sse_3_128
+#define MUL_R_10 mzd_mul_v_avx_30_128
+#define MUL_Z_1  mzd_mul_v_125_3_popcnt
+#define MUL_Z_10 mzd_mul_v_98_30_popcnt
 
 #undef SBOX_IMPL
 #undef LOWMC
@@ -507,14 +508,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC_R_10 LOWMC_L3_R
 #define LOWMC_R_1 LOWMC_L3_1_R
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_avx_3_192
-#define MUL_Z_10 mzd_mul_v_avx_30_192
-#define MUL_A_1  mzd_mul_v_189_3_popcnt
-#define MUL_A_10 mzd_mul_v_162_30_popcnt
+#define MUL_R_1  mzd_mul_v_avx_3_192
+#define MUL_R_10 mzd_mul_v_avx_30_192
+#define MUL_Z_1  mzd_mul_v_189_3_popcnt
+#define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
 #undef SBOX_IMPL
 #undef LOWMC
@@ -543,14 +544,14 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC_R_10 LOWMC_L5_R
 #define LOWMC_R_1 LOWMC_L5_1_R
 
+#undef MUL_R_1
+#undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#undef MUL_A_1
-#undef MUL_A_10
-#define MUL_Z_1  mzd_mul_v_avx_3_256
-#define MUL_Z_10 mzd_mul_v_avx_30_256
-#define MUL_A_1  mzd_mul_v_253_3_popcnt
-#define MUL_A_10 mzd_mul_v_226_30_popcnt
+#define MUL_R_1  mzd_mul_v_avx_3_256
+#define MUL_R_10 mzd_mul_v_avx_30_256
+#define MUL_Z_1  mzd_mul_v_253_3_popcnt
+#define MUL_Z_10 mzd_mul_v_226_30_popcnt
 
 #undef LOWMC
 #define LOWMC lowmc_avx_256
