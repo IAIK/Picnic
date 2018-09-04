@@ -149,9 +149,9 @@ void mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
  */
 mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) ATTR_NONNULL;
 
-#define ROW(v, r) ((word*)(((uint8_t*)(v)) + 32 + (v)->rowstride * (r) * sizeof(word)))
+#define ROW(v, r) ((v)->rows + (v)->rowstride * (r))
 #define CONST_ROW(v, r)                                                                            \
-  ((word const*)(((uint8_t const*)(v)) + 32 + (v)->rowstride * (r) * sizeof(word)))
+  ((word const*)((v)->rows + (v)->rowstride * (r)))
 
 #define FIRST_ROW(v) ROW(v, 0)
 #define CONST_FIRST_ROW(v) CONST_ROW(v, 0)
