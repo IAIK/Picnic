@@ -17,7 +17,7 @@ static mzd_local_t** mpc_init_empty_share_vector(uint32_t n, unsigned sc) {
 
 static mzd_local_t* mpc_reconstruct_from_share(mzd_local_t* dst, mzd_local_t** shared_vec) {
   if (!dst) {
-    dst = mzd_local_init_ex(shared_vec[0]->nrows, shared_vec[0]->ncols, false);
+    dst = mzd_local_init(shared_vec[0]->nrows, shared_vec[0]->ncols);
   }
 
   mzd_xor(dst, shared_vec[0], shared_vec[1]);
@@ -33,7 +33,7 @@ static mzd_local_t* mzd_init_random_vector(rci_t n) {
 
 static mzd_local_t** mpc_init_share_vector(mzd_local_t const* v) {
   mzd_local_t** s = malloc(3 * sizeof(mzd_local_t*));
-  mzd_local_init_multiple_ex(s, 3, 1, v->ncols, false);
+  mzd_local_init_multiple(s, 3, 1, v->ncols);
 
   mzd_randomize_ssl(s[0]);
   mzd_randomize_ssl(s[1]);
