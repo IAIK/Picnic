@@ -41,7 +41,7 @@ foreach(target IN ITEMS ${test_targets})
   add_test(NAME ${target} COMMAND "${target}_test")
 endforeach(target)
 
-if(NOT WITH_EXTRA_RANDOMNESS)
+if(NOT WITH_EXTRA_RANDOMNESS AND HAVE_GETLINE)
   add_executable("kats_test" "kats_test.c")
   target_link_libraries("kats_test" picnic)
   apply_base_options("kats_test")
