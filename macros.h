@@ -100,6 +100,13 @@
 #define ATTR_PURE
 #endif
 
+/* constt attribute */
+#if defined(__GNUC__) || __has_attribute(const)
+#define ATTR_CONST __attribute__((const))
+#else
+#define ATTR_CONST
+#endif
+
 /* target attribute */
 #if defined(__GNUC__) || __has_attribute(target)
 #define ATTR_TARGET(x) __attribute__((target((x))))
