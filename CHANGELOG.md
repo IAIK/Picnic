@@ -1,8 +1,10 @@
 Version X.X -- XXXX-XX-XX
 
-* Implement RLO optimizations for round constants.
+* Implement RRKC optimizations for round constants.
 * Compatibility fixes for Mac OS X.
 * Reduce memory usage when using Fiat-Shamir and Unruh transform in the same process.
+* Fix deviations from specification. The KDF was missing the output length as input and the public
+  key was incorrectly serialized. Note that this change requires an update of the test vectors.
 
 Version 1.1 -- 2018-06-29
 
