@@ -3,7 +3,7 @@
 
 #define CRYPTO_SECRETKEYBYTES (1 + 2 * 24 + 24)
 #define CRYPTO_PUBLICKEYBYTES (1 + 2 * 24)
-#define CRYPTO_BYTES (4 + 121813)
+#define CRYPTO_BYTES (4 + 121837)
 #define CRYPTO_ALGNAME "picnicl3ur"
 
 int crypto_sign_keypair(unsigned char* pk, unsigned char* sk);
