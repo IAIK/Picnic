@@ -597,10 +597,29 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_neon_128, mzd_mul_vl_neon_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_128, mzd_addmul_vl_neon_128)
 
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
+#if defined(WITH_LOWMC_128_128_20)
+#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#endif
+#if defined(WITH_LOWMC_128_128_182)
+#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#endif
 #define LOWMC_N LOWMC_L1_N
-#define LOWMC_R LOWMC_L1_R
+#define LOWMC_R_10 LOWMC_L1_R
+#define LOWMC_R_1 LOWMC_L1_1_R
+
+#undef MUL_R_1
+#undef MUL_R_10
+#undef MUL_Z_1
+#undef MUL_Z_10
+#define MUL_R_1  mzd_mul_v_neon_3_128
+#define MUL_R_10 mzd_mul_v_neon_30_128
+#define MUL_Z_1  mzd_mul_v_125_3_popcnt
+#define MUL_Z_10 mzd_mul_v_98_30_popcnt
 
 #undef SBOX_IMPL
 #undef LOWMC
@@ -616,10 +635,29 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_neon_192, mzd_mul_vl_neon_192)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_192, mzd_addmul_vl_neon_192)
 
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
+#if defined(WITH_LOWMC_192_192_30)
+#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#endif
 #define LOWMC_N LOWMC_L3_N
-#define LOWMC_R LOWMC_L3_R
+#define LOWMC_R_10 LOWMC_L3_R
+#define LOWMC_R_1 LOWMC_L3_1_R
+
+#undef MUL_R_1
+#undef MUL_R_10
+#undef MUL_Z_1
+#undef MUL_Z_10
+#define MUL_R_1  mzd_mul_v_avx_3_192
+#define MUL_R_10 mzd_mul_v_avx_30_192
+#define MUL_Z_1  mzd_mul_v_189_3_popcnt
+#define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
 #undef SBOX_IMPL
 #undef LOWMC
@@ -633,10 +671,29 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define MUL SELECT_V_VL(mzd_mul_v_neon_256, mzd_mul_vl_neon_256)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_256, mzd_addmul_vl_neon_256)
 
+#undef LOWMC_INSTANCE_1
+#undef LOWMC_INSTANCE_10
 #undef LOWMC_N
-#undef LOWMC_R
+#undef LOWMC_R_1
+#undef LOWMC_R_10
+#if defined(WITH_LOWMC_256_256_38)
+#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#endif
 #define LOWMC_N LOWMC_L5_N
-#define LOWMC_R LOWMC_L5_R
+#define LOWMC_R_10 LOWMC_L5_R
+#define LOWMC_R_1 LOWMC_L5_1_R
+
+#undef MUL_R_1
+#undef MUL_R_10
+#undef MUL_Z_1
+#undef MUL_Z_10
+#define MUL_R_1  mzd_mul_v_avx_3_256
+#define MUL_R_10 mzd_mul_v_avx_30_256
+#define MUL_Z_1  mzd_mul_v_253_3_popcnt
+#define MUL_Z_10 mzd_mul_v_226_30_popcnt
 
 #undef SBOX_IMPL
 #undef LOWMC
