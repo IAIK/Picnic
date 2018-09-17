@@ -90,7 +90,9 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
   return true;
 }
 
-#define ALIGNINT(s) (((s) + sizeof(int) - 1) & ~(sizeof(int) - 1))
+#define ALIGNT(s, t) (((s) + sizeof(t) - 1) & ~(sizeof(t) - 1))
+#define ALIGNINT(s) ALIGNT(s, int)
+#define ALIGNU64T(s) ALIGNT(s, uint64_t)
 
 static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   const size_t digest_size                    = pp->digest_size;
@@ -111,17 +113,16 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   }
 
   // in memory:
-  // - challenge
+  // - challenge (aligned to uint64_t)
   // - seeds
   // - commitments
   // - input shares
   // - communicated bits
   // - output shares
   // - Gs
-  uint8_t* slab  = calloc(1, num_rounds * per_round_mem + ALIGNINT(num_rounds));
+  uint8_t* slab  = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds));
   prf->challenge = slab;
-  slab += ALIGNINT(num_rounds);
-  // printf("challenge: %p slab: %p nr: %zu\n", prf->challenge, slab, (num_rounds + 7) & ~0x7);
+  slab += ALIGNU64T(num_rounds);
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_PROOF; ++i) {
@@ -189,9 +190,9 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   }
   per_round_mem += SC_VERIFY * input_size + SC_PROOF * output_size + ALIGNINT(view_size);
 
-  uint8_t* slab    = calloc(1, num_rounds * per_round_mem + ALIGNINT(num_rounds));
+  uint8_t* slab    = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds));
   proof->challenge = slab;
-  slab += ALIGNINT(num_rounds);
+  slab += ALIGNU64T(num_rounds);
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_VERIFY; ++i) {
