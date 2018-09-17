@@ -91,7 +91,6 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
 }
 
 #define ALIGNT(s, t) (((s) + sizeof(t) - 1) & ~(sizeof(t) - 1))
-#define ALIGNINT(s) ALIGNT(s, int)
 #define ALIGNU64T(s) ALIGNT(s, uint64_t)
 
 static sig_proof_t* proof_new(const picnic_instance_t* pp) {
@@ -100,14 +99,14 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   const size_t num_rounds                     = pp->num_rounds;
   const size_t input_size                     = pp->input_size;
   const size_t output_size                    = pp->output_size;
-  const size_t view_size                      = pp->view_size;
+  const size_t view_size                      = ALIGNU64T(pp->view_size);
   const size_t unruh_with_input_bytes_size    = pp->unruh_with_input_bytes_size;
   const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
 
   sig_proof_t* prf = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
 
   size_t per_round_mem =
-      SC_PROOF * (seed_size + digest_size + input_size + output_size + ALIGNINT(view_size));
+      SC_PROOF * (seed_size + digest_size + input_size + output_size + view_size);
   if (pp->transform == TRANSFORM_UR) {
     per_round_mem += (SC_PROOF - 1) * unruh_without_input_bytes_size + unruh_with_input_bytes_size;
   }
@@ -117,9 +116,13 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   // - seeds
   // - commitments
   // - input shares
-  // - communicated bits
+  // - communicated bits (aligned to uint64_t)
   // - output shares
   // - Gs
+  //
+  // Since seeds size, commitment size, input share size and output share size are all divisible by
+  // the alignment of uint64_t, this means, that up to the memory of the Gs, everything is
+  // uint64_t-aligned.
   uint8_t* slab  = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds));
   prf->challenge = slab;
   slab += ALIGNU64T(num_rounds);
@@ -148,7 +151,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].communicated_bits[i] = slab;
-      slab += ALIGNINT(view_size);
+      slab += view_size;
     }
   }
 
@@ -178,7 +181,7 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   const size_t num_rounds                  = pp->num_rounds;
   const size_t input_size                  = pp->input_size;
   const size_t output_size                 = pp->output_size;
-  const size_t view_size                   = pp->view_size;
+  const size_t view_size                   = ALIGNU64T(pp->view_size);
   const size_t unruh_with_input_bytes_size = pp->unruh_with_input_bytes_size;
 
   sig_proof_t* proof = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
@@ -188,7 +191,7 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
     // we don't know what we actually need, so allocate more than needed
     per_round_mem += SC_VERIFY * pp->unruh_with_input_bytes_size;
   }
-  per_round_mem += SC_VERIFY * input_size + SC_PROOF * output_size + ALIGNINT(view_size);
+  per_round_mem += SC_VERIFY * input_size + SC_PROOF * output_size + view_size;
 
   uint8_t* slab    = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds));
   proof->challenge = slab;
@@ -203,7 +206,7 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     proof->round[r].communicated_bits[0] = slab;
-    slab += ALIGNINT(view_size);
+    slab += view_size;
   }
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
