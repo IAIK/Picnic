@@ -28,8 +28,6 @@
 static const size_t mzd_local_t_size = (sizeof(mzd_local_t) + 0x1f) & ~0x1f;
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
-//TODO: put behind appropriate ifdefs
-#include <x86intrin.h>
 
 #if defined(WITH_OPT)
 #include "simd.h"
@@ -1976,8 +1974,8 @@ void mzd_mul_v_sse_neon_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
     mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
     mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
   }
-  mcptr[0] ^= _mm_xor_si128(cval[0], cval[2]);
-  mcptr[1] ^= _mm_xor_si128(cval[1], cval[3]);
+  mcptr[0] ^= veorq_u32(cval[0], cval[2]);
+  mcptr[1] ^= veorq_u32(cval[1], cval[3]);
 }
 
 void mzd_mul_v_neon_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -1992,8 +1990,8 @@ void mzd_mul_v_neon_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
     mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
     mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
   }
-  mcptr[0] ^= _mm_xor_si128(cval[0], cval[2]);
-  mcptr[1] ^= _mm_xor_si128(cval[1], cval[3]);
+  mcptr[0] ^= veorq_u32(cval[0], cval[2]);
+  mcptr[1] ^= veorq_u32(cval[1], cval[3]);
 }
 
 void mzd_mul_v_neon_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -2006,7 +2004,7 @@ void mzd_mul_v_neon_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 1);
   mm128_xor_mask_region(&cval[1], mAptr + 1, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 1);
   mm128_xor_mask_region(&cval[0], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 1);
-  *mcptr ^= _mm_xor_si128(cval[0], cval[1]);
+  *mcptr ^= veorq_u32(cval[0], cval[1]);
 }
 
 void mzd_mul_v_neon_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -2020,8 +2018,8 @@ void mzd_mul_v_neon_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   mm128_xor_mask_region(&cval[0], mAptr + 0, vreinterpretq_u32_u64(vdupq_n_u64(-(idx & 1))), 2);
   mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
   mm128_xor_mask_region(&cval[0], mAptr + 4, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 2);
-  mcptr[0] ^= _mm_xor_si128(cval[0], cval[2]);
-  mcptr[1] ^= _mm_xor_si128(cval[1], cval[3]);
+  mcptr[0] ^= veorq_u32(cval[0], cval[2]);
+  mcptr[1] ^= veorq_u32(cval[1], cval[3]);
 }
 
 void mzd_mul_v_neon_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -2036,8 +2034,8 @@ void mzd_mul_v_neon_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   mm128_xor_mask_region(&cval[2], mAptr + 2, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 1) & 1))), 2);
   mm128_xor_mask_region(&cval[0], mAptr + 4, vreinterpretq_u32_u64(vdupq_n_u64(-((idx >> 2) & 1))), 2);
 
-  mcptr[0] ^= _mm_xor_si128(cval[0], cval[2]);
-  mcptr[1] ^= _mm_xor_si128(cval[1], cval[3]);
+  mcptr[0] ^= veorq_u32(cval[0], cval[2]);
+  mcptr[1] ^= veorq_u32(cval[1], cval[3]);
 }
 #endif
 
