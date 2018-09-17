@@ -460,7 +460,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8
 
   // hash output shares
   proof_round_t* round = prf->round;
-  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
+  for (size_t i = 0; i < num_rounds; ++i, ++round) {
     switch (prf->challenge[i]) {
     case 0: {
       hash_update(&ctx, round->output_shares[0], output_size);
@@ -485,7 +485,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8
 
   // hash commitments
   round = prf->round;
-  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
+  for (size_t i = 0; i < num_rounds; ++i, ++round) {
     switch (prf->challenge[i]) {
     case 0: {
       hash_update(&ctx, round->commitments[0], digest_size);
@@ -509,12 +509,12 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8
   }
 
   if (pp->transform == TRANSFORM_UR) {
-    const uint32_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
-    const uint32_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
+    const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
+    const size_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
 
     // hash commitments
     round = prf->round;
-    for (unsigned i = 0; i < num_rounds; ++i, ++round) {
+    for (size_t i = 0; i < num_rounds; ++i, ++round) {
       switch (prf->challenge[i]) {
       case 0: {
         hash_update(&ctx, round->gs[0], without_input_bytes_size);
