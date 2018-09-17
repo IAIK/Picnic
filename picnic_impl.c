@@ -876,7 +876,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
     kdf_shake_t kdfs[SC_PROOF];
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
-      bool include_input_size = (j != SC_PROOF - 1);
+      const bool include_input_size = (j != SC_PROOF - 1);
       kdf_init_from_seed(&kdfs[j], round->seeds[j], prf->salt, i, j, include_input_size, pp);
     }
 
@@ -994,8 +994,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
     kdf_shake_t kdfs[SC_VERIFY];
     for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-      bool include_input_size = (j == 0 && b_i) || (j == 1 && c_i);
-      unsigned int player_number = (j == 0)? a_i : b_i;
+      const bool include_input_size = (j == 0 && b_i) || (j == 1 && c_i);
+      const unsigned int player_number = (j == 0) ? a_i : b_i;
       kdf_init_from_seed(&kdfs[j], round->seeds[j], prf->salt, i, player_number, include_input_size, pp);
     }
 
