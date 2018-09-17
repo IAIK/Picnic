@@ -814,9 +814,9 @@ static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_k
   kdf_shake_finalize_key(&ctx);
 
   // Generate seeds and salt
-  kdf_shake_get_randomness(&ctx, seeds, seed_size * num_rounds * SC_PROOF + seed_size);
+  kdf_shake_get_randomness(&ctx, seeds, seed_size * num_rounds * SC_PROOF);
+  kdf_shake_get_randomness(&ctx, salt, seed_size);
   kdf_shake_clear(&ctx);
-  memcpy(salt, seeds + seed_size * num_rounds * SC_PROOF, seed_size);
 }
 
 static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
