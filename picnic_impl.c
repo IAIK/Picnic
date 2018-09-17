@@ -1347,7 +1347,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
     // to write more, we do not need to write the input share
     const uint32_t per_round_size = pp->input_size + pp->view_size + pp->digest_size +
                                     2 * pp->seed_size + pp->unruh_without_input_bytes_size;
-    pp->max_signature_size = pp->collapsed_challenge_size + pp->num_rounds * per_round_size;
+    pp->max_signature_size = pp->collapsed_challenge_size + pp->seed_size + pp->num_rounds * per_round_size;
   }
 #endif
 
