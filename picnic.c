@@ -33,10 +33,6 @@
 #define PK_C(pk) &(pk)->data[1]
 #define PK_PT(pk) &(pk)->data[1 + output_size]
 
-const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
-  return get_instance(param);
-}
-
 size_t PICNIC_CALLING_CONVENTION picnic_get_lowmc_block_size(picnic_params_t param) {
   const picnic_instance_t* instance = picnic_instance_get(param);
   if (!instance) {

@@ -51,7 +51,7 @@ static void bench_lowmc(const bench_options_t* options) {
   }
 #endif
 
-  const picnic_instance_t* pp = !custom_impl ? get_instance(options->params) : NULL;
+  const picnic_instance_t* pp = !custom_impl ? picnic_instance_get(options->params) : NULL;
   if (!custom_impl && !pp) {
     printf("Failed to initialize LowMC instance.\n");
     return;

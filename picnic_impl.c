@@ -1297,7 +1297,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
   return true;
 }
 
-const picnic_instance_t* get_instance(picnic_params_t param) {
+const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
   if (param <= PARAMETER_SET_INVALID || param >= PARAMETER_SET_MAX_INDEX) {
     return NULL;
   }
