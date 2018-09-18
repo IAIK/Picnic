@@ -37,6 +37,15 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
   return get_instance(param);
 }
 
+size_t PICNIC_CALLING_CONVENTION picnic_get_lowmc_block_size(picnic_params_t param) {
+  const picnic_instance_t* instance = picnic_instance_get(param);
+  if (!instance) {
+    return 0;
+  }
+
+  return instance->output_size;
+}
+
 size_t PICNIC_CALLING_CONVENTION picnic_signature_size(picnic_params_t param) {
   const picnic_instance_t* instance = picnic_instance_get(param);
   if (!instance) {
