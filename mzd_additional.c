@@ -889,7 +889,7 @@ void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   const unsigned int width     = v->width;
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(A), 32);
 
-  for (unsigned int w = 0; w < width; ++w, ++vptr) {
+  for (unsigned int w = width; w; --w, ++vptr) {
     word idx = *vptr;
 
     for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, Aptr += rowstride) {
