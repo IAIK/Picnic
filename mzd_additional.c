@@ -1962,7 +1962,7 @@ void mzd_mul_v_neon_30_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
   *mcptr ^= veorq_u32(cval[0], cval[1]);
 }
 
-void mzd_mul_v_sse_neon_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_v_neon_30_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   uint32x4_t* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(uint32x4_t));
   uint32x4_t const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(uint32x4_t));

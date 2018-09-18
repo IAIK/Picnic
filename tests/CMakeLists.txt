@@ -1,7 +1,7 @@
 if(M4RI_FOUND AND OPENSSL_FOUND)
   foreach(target IN ITEMS mpc lowmc_str mzd)
     add_executable("${target}_test" "${target}_test.c")
-    target_link_libraries("${target}_test" picnic_static ${M4RI_LIBRARY} OpenSSL::Crypto)
+    target_link_libraries("${target}_test" picnic_static ${M4RI_LIBRARY} m OpenSSL::Crypto)
     apply_base_options("${target}_test")
     target_compile_definitions("${target}_test" PRIVATE PICNIC_STATIC)
     if(WITH_SIMD_OPT)

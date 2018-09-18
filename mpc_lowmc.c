@@ -1320,21 +1320,40 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
   }
 #endif
 #if defined(WITH_NEON)
-  if (CPU_SUPPORTS_NEON)
-    switch (lowmc->n) {
-    case 128:
-      return general_or_10(lowmc, mpc_lowmc_call_128_neon);
-    case 192:
-      return general_or_10(lowmc, mpc_lowmc_call_192_neon);
-    case 256:
-      return general_or_10(lowmc, mpc_lowmc_call_256_neon);
+  if (CPU_SUPPORTS_NEON) {
+    if(lowmc->m == 10) {
+      switch (lowmc->n) {
+      case 128:
+        return general_or_10(lowmc, mpc_lowmc_call_128_neon);
+      case 192:
+        return general_or_10(lowmc, mpc_lowmc_call_192_neon);
+      case 256:
+        return general_or_10(lowmc, mpc_lowmc_call_256_neon);
 #if defined(WITH_CUSTOM_INSTANCES)
-    case 384:
-      return general_or_10(lowmc, mpc_lowmc_call_384_neon);
-    case 512:
-      return general_or_10(lowmc, mpc_lowmc_call_512_neon);
+      case 384:
+        return general_or_10(lowmc, mpc_lowmc_call_384_neon);
+      case 512:
+        return general_or_10(lowmc, mpc_lowmc_call_512_neon);
 #endif
+        }
     }
+    if(lowmc->m == 1) {
+      switch (lowmc->n) {
+      case 128:
+        return general_or_1(lowmc, mpc_lowmc_call_128_neon);
+      case 192:
+        return general_or_1(lowmc, mpc_lowmc_call_192_neon);
+      case 256:
+        return general_or_1(lowmc, mpc_lowmc_call_256_neon);
+#if defined(WITH_CUSTOM_INSTANCES)
+      case 384:
+        return general_or_1(lowmc, mpc_lowmc_call_384_neon);
+      case 512:
+        return general_or_1(lowmc, mpc_lowmc_call_512_neon);
+#endif
+      }
+    }
+  }
 #endif
 #endif
 

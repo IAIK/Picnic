@@ -654,8 +654,8 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_avx_3_192
-#define MUL_R_10 mzd_mul_v_avx_30_192
+#define MUL_R_1  mzd_mul_v_neon_3_192
+#define MUL_R_10 mzd_mul_v_neon_30_192
 #define MUL_Z_1  mzd_mul_v_189_3_popcnt
 #define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
@@ -690,8 +690,8 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_avx_3_256
-#define MUL_R_10 mzd_mul_v_avx_30_256
+#define MUL_R_1  mzd_mul_v_neon_3_256
+#define MUL_R_10 mzd_mul_v_neon_30_256
 #define MUL_Z_1  mzd_mul_v_253_3_popcnt
 #define MUL_Z_10 mzd_mul_v_226_30_popcnt
 
