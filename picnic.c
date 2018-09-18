@@ -271,8 +271,8 @@ void picnic_visualize_keys(FILE* out, const picnic_privatekey_t* sk, const picni
   printf("\n");
 }
 
-void picnic_visualize(FILE* out, const picnic_publickey_t* public_key,
-                      const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
+void picnic_visualize(FILE* out, const picnic_publickey_t* public_key, const uint8_t* msg,
+                      size_t msglen, const uint8_t* sig, size_t siglen) {
   if (!public_key) {
     return;
   }

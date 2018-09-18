@@ -440,8 +440,9 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
 /**
  * Hash public key and message
  */
-static void H3_public_key_message(hash_context* ctx, const picnic_instance_t* pp, const uint8_t* circuit_output,
-                      const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
+static void H3_public_key_message(hash_context* ctx, const picnic_instance_t* pp,
+                                  const uint8_t* circuit_output, const uint8_t* circuit_input,
+                                  const uint8_t* m, size_t m_len) {
   // hash circuit out and input (public key)
   hash_update(ctx, circuit_output, pp->output_size);
   hash_update(ctx, circuit_input, pp->input_size);

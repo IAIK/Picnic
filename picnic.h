@@ -78,10 +78,14 @@ typedef enum {
 } picnic_params_t;
 
 /** Public key */
-typedef struct { uint8_t data[PICNIC_MAX_PUBLICKEY_SIZE]; } picnic_publickey_t;
+typedef struct {
+  uint8_t data[PICNIC_MAX_PUBLICKEY_SIZE];
+} picnic_publickey_t;
 
 /** Private key */
-typedef struct { uint8_t data[1 + 3 * MAX_LOWMC_BLOCK_SIZE]; } picnic_privatekey_t;
+typedef struct {
+  uint8_t data[1 + 3 * MAX_LOWMC_BLOCK_SIZE];
+} picnic_privatekey_t;
 
 /**
  * Get a string representation of the parameter set.
