@@ -2,7 +2,6 @@
 #include <config.h>
 #endif
 
-#include "../io.h"
 #include "../picnic_impl.h"
 
 #include <stdio.h>
@@ -33,16 +32,7 @@ static int test_vector(const picnic_params_t param) {
   if (picnic_validate_keypair(&sk, &pk)) {
     return -1;
   }
-
-  printf("sk: ");
-  print_hex(stdout, &sk.data[1], blocksize);
-  printf("\npk: ");
-  print_hex(stdout, &pk.data[1], 2 * blocksize);
-  printf("\npk_p: ");
-  print_hex(stdout, &pk.data[1], blocksize);
-  printf("\npk_C: ");
-  print_hex(stdout, &pk.data[1 + blocksize], blocksize);
-  printf("\n");
+  picnic_visualize_keys(stdout, &sk, &pk);
 
   const size_t max_signature_size = picnic_signature_size(param);
   if (!max_signature_size) {
@@ -53,7 +43,7 @@ static int test_vector(const picnic_params_t param) {
   size_t siglen = max_signature_size;
   int ret       = 0;
   if (!picnic_sign(&sk, msg, sizeof(msg), sig, &siglen)) {
-    picnic_visualize(stdout, pk.data, 1 + 2 * blocksize, msg, sizeof(msg), sig, siglen);
+    picnic_visualize(stdout, &pk, msg, sizeof(msg), sig, siglen);
 
     if (picnic_verify(&pk, msg, sizeof(msg), sig, siglen)) {
       ret = -1;

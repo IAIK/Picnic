@@ -245,13 +245,43 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
                                                                                             : -1;
 }
 
-void picnic_visualize(FILE* out, const uint8_t* public_key, size_t public_key_size,
-                      const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
-  if (!public_key || !public_key_size) {
+void picnic_visualize_keys(FILE* out, const picnic_privatekey_t* sk, const picnic_publickey_t* pk) {
+  if (!sk || !pk) {
     return;
   }
 
-  const picnic_params_t param       = public_key[0];
+  if (sk->data[0] != pk->data[0]) {
+    return;
+  }
+
+  const picnic_params_t param       = sk->data[0];
+  const picnic_instance_t* instance = picnic_instance_get(param);
+  if (!instance) {
+    return;
+  }
+
+  const size_t output_size = instance->output_size;
+  const size_t input_size  = instance->input_size;
+
+  printf("sk: ");
+  print_hex(out, SK_SK(sk), input_size);
+  printf("\npk: ");
+  print_hex(out, PK_C(pk), output_size);
+  print_hex(out, PK_PT(pk), output_size);
+  printf("\npk_p: ");
+  print_hex(out, PK_PT(pk), output_size);
+  printf("\npk_C: ");
+  print_hex(out, PK_C(pk), output_size);
+  printf("\n");
+}
+
+void picnic_visualize(FILE* out, const picnic_publickey_t* public_key,
+                      const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
+  if (!public_key) {
+    return;
+  }
+
+  const picnic_params_t param       = public_key->data[0];
   const picnic_instance_t* instance = picnic_instance_get(param);
   if (!instance) {
     return;

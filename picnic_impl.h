@@ -61,7 +61,8 @@ PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picni
 PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic_params_t param);
 PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
                                                             picnic_publickey_t* pk);
-void picnic_visualize(FILE* out, const uint8_t* public_key, size_t public_key_size,
+void picnic_visualize_keys(FILE* out, const picnic_privatekey_t* private_key, const picnic_publickey_t* public_key);
+void picnic_visualize(FILE* out, const picnic_publickey_t* public_key,
                       const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen);
 
 #endif
