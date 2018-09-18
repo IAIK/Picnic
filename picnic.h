@@ -32,7 +32,17 @@
 extern "C" {
 #endif
 
-#define LOWMC_BLOCK_SIZE(p) ((((unsigned int)(p) + 3) / 2) * 8)
+#define PICNIC_CONCAT2(a, b) a##_##b
+#define PICNIC_CONCAT(a, b) PICNIC_CONCAT2(a, b)
+
+#define LOWMC_BLOCK_SIZE_Picnic_L1_FS 16
+#define LOWMC_BLOCK_SIZE_Picnic_L1_UR 16
+#define LOWMC_BLOCK_SIZE_Picnic_L3_FS 24
+#define LOWMC_BLOCK_SIZE_Picnic_L3_UR 24
+#define LOWMC_BLOCK_SIZE_Picnic_L5_FS 32
+#define LOWMC_BLOCK_SIZE_Picnic_L5_UR 32
+
+#define LOWMC_BLOCK_SIZE(p) PICNIC_CONCAT(LOWMC_BLOCK_SIZE, p)
 
 #define MAX_LOWMC_ROUNDS 38
 #define MAX_LOWMC_SBOXES 10
@@ -47,9 +57,6 @@ extern "C" {
 #define PICNIC_SIGNATURE_SIZE_Picnic_L3_UR 121813
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_FS 132824
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_UR 209474
-
-#define PICNIC_CONCAT2(a, b) a##_##b
-#define PICNIC_CONCAT(a, b) PICNIC_CONCAT2(a, b)
 
 #define PICNIC_SIGNATURE_SIZE(p) PICNIC_CONCAT(PICNIC_SIGNATURE_SIZE, p)
 
