@@ -22,11 +22,11 @@ static int test_vector(const picnic_params_t param) {
   picnic_privatekey_t sk = {0};
   sk.data[0]             = param;
   memset(&sk.data[1], 0x7f, blocksize);
-  memset(&sk.data[1 + blocksize], 0xf8, blocksize);
+  memset(&sk.data[1 + 2 * blocksize], 0xf8, blocksize);
 
   picnic_publickey_t pk = {{0}};
   picnic_sk_to_pk(&sk, &pk);
-  memcpy(&sk.data[1 + 2 * blocksize], &pk.data[1 + blocksize], blocksize);
+  memcpy(&sk.data[1 + blocksize], &pk.data[1], blocksize);
 
   const uint8_t msg[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
 
