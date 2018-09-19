@@ -1185,11 +1185,11 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #undef LOWMC_N
 #undef LOWMC_R_1
 #undef LOWMC_R_10
-#if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#if defined(WITH_LOWMC_256_256_38)
+#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
 #endif
-#if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#if defined(WITH_LOWMC_256_256_363)
+#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
