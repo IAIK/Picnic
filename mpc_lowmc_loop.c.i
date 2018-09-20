@@ -36,6 +36,17 @@ lowmc_round_t const* round = lowmc->rounds;
     }
     MPC_LOOP_CONST(MUL_Z, x, y, CONCAT(round->z, matrix_postfix), reduced_shares);
 
+#if defined(WITH_AVX2)
+    for(unsigned int k = 0; k < reduced_shares; ++k) {
+#if defined(M_FIXED_10)
+      mzd_shuffle_pext_30(y[k], round->r_mask);
+#elif defined(M_FIXED_1)
+      mzd_shuffle_pext_3(y[k], round->r_mask);
+#else
+#error "RLL only works with 1 or 10 Sboxes atm"
+#endif
+    }
+#else
     //shuffle x correctly (in-place), slow and probably stupid version
     for(unsigned j = round->num_fixes; j; j--) {
       for(unsigned l = round->r_cols[j-1]; l < LOWMC_N - 1 - (3*LOWMC_M-j); l++) {
@@ -49,6 +60,7 @@ lowmc_round_t const* round = lowmc->rounds;
         }
       }
     }
+#endif
 
     MPC_LOOP_CONST(MUL_R, x, y, CONCAT(round->r, matrix_postfix), reduced_shares);
     for(unsigned int k = 0; k < reduced_shares; ++k) {

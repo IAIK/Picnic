@@ -1941,6 +1941,17 @@ void mzd_mul_v_avx_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local
     cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
+
+ATTR_TARGET("bmi2")
+void mzd_shuffle_pext_30(mzd_local_t* x, const word mask)  {
+  word a = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (34);
+  FIRST_ROW(x)[x->width - 1] = a | _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
+}
+ATTR_TARGET("bmi2")
+void mzd_shuffle_pext_3(mzd_local_t* x, const word mask)  {
+  word a = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (61);
+  FIRST_ROW(x)[x->width - 1] = a | _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
+}
 #endif
 
 #if defined(WITH_NEON)

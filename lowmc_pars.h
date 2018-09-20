@@ -83,6 +83,7 @@ typedef struct {
   const mzd_local_t* r_matrix;
   const uint32_t     num_fixes;
   const uint32_t*    r_cols;
+  const word         r_mask;
 #endif
 #if !defined(REDUCED_LINEAR_LAYER)
   const mzd_local_t* constant;

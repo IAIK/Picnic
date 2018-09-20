@@ -62,17 +62,27 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 #endif
 
     MUL_Z(y, x, CONCAT(round->z, matrix_postfix));
+#if defined(WITH_AVX2)
+#if defined(M_FIXED_10)
+    mzd_shuffle_pext_30(x, round->r_mask);
+#elif defined(M_FIXED_1)
+    mzd_shuffle_pext_3(x, round->r_mask);
+#else
+#error "RLL only works with 1 or 10 Sboxes atm"
+#endif
+#else
     //shuffle x correctly (in-place), slow and probably stupid version
     for(unsigned j = round->num_fixes; j; j--) {
         for(unsigned k = round->r_cols[j-1]; k < LOWMC_N - 1 - (3*LOWMC_M-j); k++) {
             //swap bits
-            word a = (FIRST_ROW(x)[k / (sizeof(word) * 8)] >> (k % (sizeof(word) * 8))) & WORD_C(0x1);
-            word b = (FIRST_ROW(x)[(k+1) / (sizeof(word) * 8)] >> ((k+1) % (sizeof(word) * 8))) & WORD_C(0x1);
+            word a = (CONST_FIRST_ROW(x)[k / (sizeof(word) * 8)] >> (k % (sizeof(word) * 8))) & WORD_C(0x1);
+            word b = (CONST_FIRST_ROW(x)[(k+1) / (sizeof(word) * 8)] >> ((k+1) % (sizeof(word) * 8))) & WORD_C(0x1);
             word xx = a ^ b;
             FIRST_ROW(x)[k / (sizeof(word) * 8)] ^=  xx << (k % (sizeof(word) * 8));
             FIRST_ROW(x)[(k+1) / (sizeof(word) * 8)] ^=  xx << ((k+1) % (sizeof(word) * 8));
         }
     }
+#endif
     MUL_R(y, x, CONCAT(round->r, matrix_postfix));
 
 #if defined(M_FIXED_10)

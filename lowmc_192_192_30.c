@@ -14609,7 +14609,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_0, &Ri_0, 4, Ri_cols_0,
+    &Zi_0, &Ri_0, 4, Ri_cols_0, UINT64_C(0xffffffde00000000),
 #else
 #if defined(MUL_M4RI)
     &L_0, NULL
@@ -14628,7 +14628,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_1, &Ri_1, 4, Ri_cols_1,
+    &Zi_1, &Ri_1, 4, Ri_cols_1, UINT64_C(0xffffffde00000000),
 #else
 #if defined(MUL_M4RI)
     &L_1, NULL
@@ -14647,7 +14647,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_2, &Ri_2, 0, Ri_cols_2,
+    &Zi_2, &Ri_2, 0, Ri_cols_2, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_2, NULL
@@ -14666,7 +14666,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_3, &Ri_3, 3, Ri_cols_3,
+    &Zi_3, &Ri_3, 3, Ri_cols_3, UINT64_C(0xffffffed00000000),
 #else
 #if defined(MUL_M4RI)
     &L_3, NULL
@@ -14685,7 +14685,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_4, &Ri_4, 5, Ri_cols_4,
+    &Zi_4, &Ri_4, 5, Ri_cols_4, UINT64_C(0xffffffbd00000000),
 #else
 #if defined(MUL_M4RI)
     &L_4, NULL
@@ -14704,7 +14704,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_5, &Ri_5, 2, Ri_cols_5,
+    &Zi_5, &Ri_5, 2, Ri_cols_5, UINT64_C(0xfffffff210000000),
 #else
 #if defined(MUL_M4RI)
     &L_5, NULL
@@ -14723,7 +14723,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_6, &Ri_6, 3, Ri_cols_6,
+    &Zi_6, &Ri_6, 3, Ri_cols_6, UINT64_C(0xffffffec80000000),
 #else
 #if defined(MUL_M4RI)
     &L_6, NULL
@@ -14742,7 +14742,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_7, &Ri_7, 1, Ri_cols_7,
+    &Zi_7, &Ri_7, 1, Ri_cols_7, UINT64_C(0xfffffff880000000),
 #else
 #if defined(MUL_M4RI)
     &L_7, NULL
@@ -14761,7 +14761,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_8, &Ri_8, 2, Ri_cols_8,
+    &Zi_8, &Ri_8, 2, Ri_cols_8, UINT64_C(0xfffffff500000000),
 #else
 #if defined(MUL_M4RI)
     &L_8, NULL
@@ -14780,7 +14780,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_9, &Ri_9, 4, Ri_cols_9,
+    &Zi_9, &Ri_9, 4, Ri_cols_9, UINT64_C(0xffffffdc20000000),
 #else
 #if defined(MUL_M4RI)
     &L_9, NULL
@@ -14799,7 +14799,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_10, &Ri_10, 1, Ri_cols_10,
+    &Zi_10, &Ri_10, 1, Ri_cols_10, UINT64_C(0xfffffff900000000),
 #else
 #if defined(MUL_M4RI)
     &L_10, NULL
@@ -14818,7 +14818,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_11, &Ri_11, 4, Ri_cols_11,
+    &Zi_11, &Ri_11, 4, Ri_cols_11, UINT64_C(0xffffffde00000000),
 #else
 #if defined(MUL_M4RI)
     &L_11, NULL
@@ -14837,7 +14837,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_12, &Ri_12, 1, Ri_cols_12,
+    &Zi_12, &Ri_12, 1, Ri_cols_12, UINT64_C(0xfffffff900000000),
 #else
 #if defined(MUL_M4RI)
     &L_12, NULL
@@ -14856,7 +14856,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_13, &Ri_13, 2, Ri_cols_13,
+    &Zi_13, &Ri_13, 2, Ri_cols_13, UINT64_C(0xfffffff500000000),
 #else
 #if defined(MUL_M4RI)
     &L_13, NULL
@@ -14875,7 +14875,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_14, &Ri_14, 1, Ri_cols_14,
+    &Zi_14, &Ri_14, 1, Ri_cols_14, UINT64_C(0xfffffff900000000),
 #else
 #if defined(MUL_M4RI)
     &L_14, NULL
@@ -14894,7 +14894,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_15, &Ri_15, 1, Ri_cols_15,
+    &Zi_15, &Ri_15, 1, Ri_cols_15, UINT64_C(0xfffffff808000000),
 #else
 #if defined(MUL_M4RI)
     &L_15, NULL
@@ -14913,7 +14913,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_16, &Ri_16, 5, Ri_cols_16,
+    &Zi_16, &Ri_16, 5, Ri_cols_16, UINT64_C(0xffffffaf00000000),
 #else
 #if defined(MUL_M4RI)
     &L_16, NULL
@@ -14932,7 +14932,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_17, &Ri_17, 3, Ri_cols_17,
+    &Zi_17, &Ri_17, 3, Ri_cols_17, UINT64_C(0xffffffee00000000),
 #else
 #if defined(MUL_M4RI)
     &L_17, NULL
@@ -14951,7 +14951,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_18, &Ri_18, 0, Ri_cols_18,
+    &Zi_18, &Ri_18, 0, Ri_cols_18, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_18, NULL
@@ -14970,7 +14970,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_19, &Ri_19, 1, Ri_cols_19,
+    &Zi_19, &Ri_19, 1, Ri_cols_19, UINT64_C(0xfffffff900000000),
 #else
 #if defined(MUL_M4RI)
     &L_19, NULL
@@ -14989,7 +14989,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_20, &Ri_20, 6, Ri_cols_20,
+    &Zi_20, &Ri_20, 6, Ri_cols_20, UINT64_C(0xffffff7620000000),
 #else
 #if defined(MUL_M4RI)
     &L_20, NULL
@@ -15008,7 +15008,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_21, &Ri_21, 2, Ri_cols_21,
+    &Zi_21, &Ri_21, 2, Ri_cols_21, UINT64_C(0xfffffff280000000),
 #else
 #if defined(MUL_M4RI)
     &L_21, NULL
@@ -15027,7 +15027,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_22, &Ri_22, 3, Ri_cols_22,
+    &Zi_22, &Ri_22, 3, Ri_cols_22, UINT64_C(0xffffffee00000000),
 #else
 #if defined(MUL_M4RI)
     &L_22, NULL
@@ -15046,7 +15046,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_23, &Ri_23, 0, Ri_cols_23,
+    &Zi_23, &Ri_23, 0, Ri_cols_23, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_23, NULL
@@ -15065,7 +15065,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_24, &Ri_24, 2, Ri_cols_24,
+    &Zi_24, &Ri_24, 2, Ri_cols_24, UINT64_C(0xfffffff600000000),
 #else
 #if defined(MUL_M4RI)
     &L_24, NULL
@@ -15084,7 +15084,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_25, &Ri_25, 6, Ri_cols_25,
+    &Zi_25, &Ri_25, 6, Ri_cols_25, UINT64_C(0xffffff7e00000000),
 #else
 #if defined(MUL_M4RI)
     &L_25, NULL
@@ -15103,7 +15103,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_26, &Ri_26, 2, Ri_cols_26,
+    &Zi_26, &Ri_26, 2, Ri_cols_26, UINT64_C(0xfffffff500000000),
 #else
 #if defined(MUL_M4RI)
     &L_26, NULL
@@ -15122,7 +15122,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_27, &Ri_27, 1, Ri_cols_27,
+    &Zi_27, &Ri_27, 1, Ri_cols_27, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
     &L_27, NULL
@@ -15141,7 +15141,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    &Zi_28, &Ri_28, 2, Ri_cols_28,
+    &Zi_28, &Ri_28, 2, Ri_cols_28, UINT64_C(0xfffffff600000000),
 #else
 #if defined(MUL_M4RI)
     &L_28, NULL
@@ -15160,7 +15160,7 @@ static const lowmc_round_t rounds[30] = {
 #endif
 #else
 #if defined(REDUCED_LINEAR_LAYER_NEXT)
-    NULL, NULL, 0, NULL,
+    NULL, NULL, 0, NULL, 0,
 #else
 #if defined(MUL_M4RI)
     &L_29, NULL
