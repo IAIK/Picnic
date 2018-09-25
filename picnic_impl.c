@@ -616,8 +616,8 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
 }
 
 // serilization helper functions
-static bool sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
-                                    uint8_t* result, size_t* siglen) {
+static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
+                                   uint8_t* result, size_t* siglen) {
   const uint32_t num_rounds                   = pp->num_rounds;
   const uint32_t seed_size                    = pp->seed_size;
   const uint32_t challenge_size               = pp->collapsed_challenge_size;
@@ -670,7 +670,7 @@ static bool sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof
   }
 
   *siglen = tmp - result;
-  return true;
+  return 0;
 }
 
 static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const uint8_t* data,
@@ -766,10 +766,10 @@ err:
   return NULL;
 }
 
-static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
-                      const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
-                      const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
-                      size_t* siglen) {
+static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
+                     const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
+                     const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
+                     size_t* siglen) {
   const lowmc_t* lowmc                          = pp->lowmc;
   const zkbpp_lowmc_implementation_f lowmc_impl = pp->zkbpp_lowmc_impl;
   const size_t seed_size                        = pp->seed_size;
@@ -877,7 +877,7 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   }
   H3(pp, prf, public_key, plaintext, m, m_len);
 
-  const bool ret = sig_proof_to_char_array(pp, prf, sig, siglen);
+  const int ret = sig_proof_to_char_array(pp, prf, sig, siglen);
 
   // clean up
   free(tape_bytes);
@@ -901,9 +901,9 @@ static bool sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   return ret;
 }
 
-static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mzd_local_t const* p,
-                        const uint8_t* ciphertext, mzd_local_t const* c, const uint8_t* m,
-                        size_t m_len, const uint8_t* sig, size_t siglen) {
+static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mzd_local_t const* p,
+                       const uint8_t* ciphertext, mzd_local_t const* c, const uint8_t* m,
+                       size_t m_len, const uint8_t* sig, size_t siglen) {
   const size_t num_rounds                               = pp->num_rounds;
   const lowmc_t* lowmc                                  = pp->lowmc;
   const transform_t transform                           = pp->transform;
@@ -918,7 +918,7 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
 
   sig_proof_t* prf = sig_proof_from_char_array(pp, sig, siglen);
   if (!prf) {
-    return false;
+    return -1;
   }
 
   in_out_shares_t in_out_shares[2];
@@ -1016,20 +1016,20 @@ static bool verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, m
 
   proof_free(prf);
 
-  return success_status == 0;
+  return success_status;
 }
 
-bool impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
-               const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
-               size_t* siglen) {
+int impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
+              const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
+              size_t* siglen) {
   mzd_local_t* m_plaintext  = mzd_local_init_ex(1, pp->lowmc->n, false);
   mzd_local_t* m_privatekey = mzd_local_init_ex(1, pp->lowmc->k, false);
 
   mzd_from_char_array(m_plaintext, plaintext, pp->output_size);
   mzd_from_char_array(m_privatekey, private_key, pp->input_size);
 
-  const bool result = sign_impl(pp, private_key, m_privatekey, plaintext, m_plaintext, public_key,
-                                msg, msglen, sig, siglen);
+  const int result = sign_impl(pp, private_key, m_privatekey, plaintext, m_plaintext, public_key,
+                               msg, msglen, sig, siglen);
 
   mzd_local_free(m_privatekey);
   mzd_local_free(m_plaintext);
@@ -1037,15 +1037,15 @@ bool impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint
   return result;
 }
 
-bool impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
-                 const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
+int impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
+                const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, pp->lowmc->n, false);
   mzd_local_t* m_publickey = mzd_local_init_ex(1, pp->lowmc->n, false);
 
   mzd_from_char_array(m_plaintext, plaintext, pp->output_size);
   mzd_from_char_array(m_publickey, public_key, pp->output_size);
 
-  const bool result =
+  const int result =
       verify_impl(pp, plaintext, m_plaintext, public_key, m_publickey, msg, msglen, sig, siglen);
 
   mzd_local_free(m_publickey);
