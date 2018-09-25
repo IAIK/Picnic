@@ -421,7 +421,7 @@ static inline void FN_ATTRIBUTES_NEON_NP mm256_shift_right(uint32x4_t res[2],
 
   for (int i = 0; i < 2; i++) {
     uint32x4_t carry = vmovq_n_u32(0);
-    carry            = vextq_u32((uint32x4_t)data[i], carry, 1);
+    carry            = vextq_u32(data[i], carry, 1);
     switch (count) {
     case 1:
       carry  = vshlq_n_u32(carry, 32 - 1);
@@ -449,7 +449,7 @@ static inline void FN_ATTRIBUTES_NEON_NP mm256_shift_left(uint32x4_t res[2],
   }
 
   uint32x4_t total_carry = vmovq_n_u32(0);
-  total_carry            = vextq_u32((uint32x4_t)data[0], total_carry, 3);
+  total_carry            = vextq_u32(data[0], total_carry, 3);
   switch (count) {
   case 1:
     total_carry = vshrq_n_u32(total_carry, 32 - 1);
@@ -490,7 +490,7 @@ static inline void FN_ATTRIBUTES_NEON_NP mm384_shift_left(uint32x4_t res[3],
   }
 
   uint32x4_t total_carry = vmovq_n_u32(0);
-  total_carry            = vextq_u32((uint32x4_t)data[1], total_carry, 3);
+  total_carry            = vextq_u32(data[1], total_carry, 3);
   switch (count) {
   case 1:
     total_carry = vshrq_n_u32(total_carry, 32 - 1);
@@ -501,7 +501,7 @@ static inline void FN_ATTRIBUTES_NEON_NP mm384_shift_left(uint32x4_t res[3],
     /* default: not supported */
   }
 
-  mm256_shift_left(&(res[0]), &(data[0]), count);
+  mm256_shift_left(&res[0], &data[0], count);
   res[2] = mm128_shift_left(data[2], count);
   res[2] = vorrq_u32(res[2], total_carry);
 }
@@ -527,7 +527,7 @@ static inline void FN_ATTRIBUTES_NEON_NP mm384_shift_right(uint32x4_t res[3],
     /* default: not supported */
   }
 
-  mm256_shift_right(&(res[0]), &(data[0]), count);
+  mm256_shift_right(&res[0], &data[0], count);
   res[2] = mm128_shift_right(data[2], count);
 
   res[1] = vorrq_u32(res[1], total_carry);
@@ -545,7 +545,7 @@ static inline void FN_ATTRIBUTES_NEON_NP mm512_shift_left(uint32x4_t res[4],
   }
 
   uint32x4_t total_carry = vmovq_n_u32(0);
-  total_carry            = vextq_u32((uint32x4_t)data[1], total_carry, 3);
+  total_carry            = vextq_u32(data[1], total_carry, 3);
   switch (count) {
   case 1:
     total_carry = vshrq_n_u32(total_carry, 32 - 1);
@@ -556,8 +556,8 @@ static inline void FN_ATTRIBUTES_NEON_NP mm512_shift_left(uint32x4_t res[4],
     /* default: not supported */
   }
 
-  mm256_shift_left(&(res[0]), &(data[0]), count);
-  mm256_shift_left(&(res[2]), &(data[2]), count);
+  mm256_shift_left(&res[0], &data[0], count);
+  mm256_shift_left(&res[2], &data[2], count);
   res[2] = vorrq_u32(res[2], total_carry);
 }
 
@@ -584,8 +584,8 @@ static inline void FN_ATTRIBUTES_NEON_NP mm512_shift_right(uint32x4_t res[4],
     /* default: not supported */
   }
 
-  mm256_shift_right(&(res[0]), &(data[0]), count);
-  mm256_shift_right(&(res[2]), &(data[2]), count);
+  mm256_shift_right(&res[0], &data[0], count);
+  mm256_shift_right(&res[2], &data[2], count);
 
   res[1] = vorrq_u32(res[1], total_carry);
 }
