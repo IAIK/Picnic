@@ -34,7 +34,7 @@ static inline uint64_t timing_read(timing_context_t* ctx) {
 }
 
 static inline void timing_close(timing_context_t* ctx) {
-  return ctx->close(ctx);
+  ctx->close(ctx);
 }
 
 #endif

@@ -22,6 +22,7 @@ typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 typedef struct {
   const lowmc_t* lowmc;
   lowmc_implementation_f lowmc_impl;
+  lowmc_store_implementation_f lowmc_store_impl;
   zkbpp_lowmc_implementation_f zkbpp_lowmc_impl;
   zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify_impl;
 

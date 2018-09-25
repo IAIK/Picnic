@@ -30,9 +30,10 @@
 #endif
 
 static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mzd_local_t const* p,
-                          view_t* views, in_out_shares_t* in_out_shares, rvec_t* rvec) {
+                   view_t* views, in_out_shares_t* in_out_shares, rvec_t* rvec,
+                   recorded_state_t* recorded_state) {
 #if defined(LOWMC_INSTANCE)
-  (void) lowmc_instance;
+  (void)lowmc_instance;
 #endif
   mpc_copy(in_out_shares->s, lowmc_key, SC_PROOF);
   ++in_out_shares;
@@ -42,13 +43,20 @@ static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mz
   mzd_local_t* y[SC_PROOF];
   mzd_local_init_multiple_ex(y, SC_PROOF, 1, (LOWMC_N), false);
 
-  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix), SC_PROOF);
-  MPC_LOOP_CONST_C(XOR, x, x, p, SC_PROOF, 0);
+#define reduced_shares (SC_PROOF - 1)
 
+  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix), reduced_shares);
+  MPC_LOOP_CONST_C(XOR, x, x, p, reduced_shares, 0);
+
+#define RECOVER_FROM_STATE(x, i)                                                                   \
+  XOR((x)[SC_PROOF - 1], (x)[0], (x)[1]);                                                          \
+  XOR((x)[SC_PROOF - 1], (x)[SC_PROOF - 1], recorded_state->state[i])
 #define ch 0
 #define shares SC_PROOF
 #define sbox SBOX_SIGN
 #include "mpc_lowmc_loop.c.i"
+#undef reduced_shares
+#undef RECOVER_FROM_STATE
 #undef ch
 #undef shares
 #undef sbox
@@ -58,9 +66,9 @@ static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mz
 }
 
 static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t* views,
-                            in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {
+                     in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {
 #if defined(LOWMC_INSTANCE)
-  (void) lowmc_instance;
+  (void)lowmc_instance;
 #endif
   mzd_local_t* const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;
@@ -74,10 +82,12 @@ static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t
   MPC_LOOP_CONST_C(XOR, x, x, p, SC_VERIFY, ch);
 
 #define shares SC_VERIFY
+#define reduced_shares shares
 #define sbox SBOX_VERIFY
 #include "mpc_lowmc_loop.c.i"
-#undef shares
 #undef sbox
+#undef reduced_shares
+#undef shares
 
   mpc_copy(in_out_shares->s, x, SC_VERIFY);
 

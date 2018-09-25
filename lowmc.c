@@ -587,6 +587,65 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
   return general_or_10(lowmc, lowmc_uint64);
 }
 
+lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc) {
+#if defined(WITH_OPT)
+#if defined(WITH_AVX2)
+  if (CPU_SUPPORTS_AVX2) {
+    switch (lowmc->n) {
+    case 128:
+      return general_or_10(lowmc_store, lowmc_avx_128_store);
+    case 192:
+      return general_or_10(lowmc_store, lowmc_avx_192_store);
+    case 256:
+      return general_or_10(lowmc_store, lowmc_avx_256_store);
+    }
+#if defined(WITH_CUSTOM_INSTANCES)
+    if (lowmc->n > 256) {
+      return general_or_10(lowmc_store, lowmc_avx_store);
+    }
+#endif
+  }
+#endif
+#if defined(WITH_SSE2)
+  if (CPU_SUPPORTS_SSE2) {
+    switch (lowmc->n) {
+    case 128:
+      return general_or_10(lowmc_store, lowmc_sse_128_store);
+    case 192:
+      return general_or_10(lowmc_store, lowmc_sse_192_store);
+    case 256:
+      return general_or_10(lowmc_store, lowmc_sse_256_store);
+    }
+#if defined(WITH_CUSTOM_INSTANCES)
+    if (lowmc->n > 256) {
+      return general_or_10(lowmc_store, lowmc_sse_store);
+    }
+#endif
+  }
+#endif
+#if defined(WITH_NEON)
+  if (CPU_SUPPORTS_NEON) {
+    switch (lowmc->n) {
+    case 128:
+      return general_or_10(lowmc_store, lowmc_neon_128_store);
+    case 192:
+      return general_or_10(lowmc_store, lowmc_neon_192_store);
+    case 256:
+      return general_or_10(lowmc_store, lowmc_neon_256_store);
+    }
+#if defined(WITH_CUSTOM_INSTANCES)
+    if (lowmc->n > 256) {
+      return general_or_10(lowmc_store, lowmc_neon_store);
+    }
+#endif
+  }
+#endif
+#endif
+
+  (void)lowmc;
+  return general_or_10(lowmc_store, lowmc_uint64_store);
+}
+
 mzd_local_t* lowmc_call(lowmc_t const* lowmc, lowmc_key_t const* lowmc_key, mzd_local_t const* p) {
   lowmc_implementation_f impl = lowmc_get_implementation(lowmc);
   return impl(lowmc, lowmc_key, p);

@@ -770,18 +770,24 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
                      const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
                      const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
                      size_t* siglen) {
-  const lowmc_t* lowmc                          = pp->lowmc;
-  const zkbpp_lowmc_implementation_f lowmc_impl = pp->zkbpp_lowmc_impl;
-  const size_t seed_size                        = pp->seed_size;
-  const size_t num_rounds                       = pp->num_rounds;
-  const transform_t transform                   = pp->transform;
-  const size_t input_size                       = pp->input_size;
-  const size_t output_size                      = pp->output_size;
-  const size_t view_count                       = lowmc->r;
-  const size_t lowmc_k                          = lowmc->k;
-  const size_t lowmc_n                          = lowmc->n;
-  const size_t lowmc_r                          = lowmc->r;
-  const size_t view_size                        = pp->view_size;
+  const lowmc_t* lowmc                                = pp->lowmc;
+  const zkbpp_lowmc_implementation_f lowmc_impl       = pp->zkbpp_lowmc_impl;
+  const lowmc_store_implementation_f lowmc_store_impl = pp->lowmc_store_impl;
+  const size_t seed_size                              = pp->seed_size;
+  const size_t num_rounds                             = pp->num_rounds;
+  const transform_t transform                         = pp->transform;
+  const size_t input_size                             = pp->input_size;
+  const size_t output_size                            = pp->output_size;
+  const size_t view_count                             = lowmc->r;
+  const size_t lowmc_k                                = lowmc->k;
+  const size_t lowmc_n                                = lowmc->n;
+  const size_t lowmc_r                                = lowmc->r;
+  const size_t view_size                              = pp->view_size;
+
+  recorded_state_t recorded_state;
+  recorded_state.state = calloc(lowmc_r + 1, sizeof(mzd_local_t*));
+  mzd_local_init_multiple_ex(recorded_state.state, lowmc_r + 1, 1, lowmc_n, false);
+  lowmc_store_impl(lowmc, lowmc_key, p, &recorded_state);
 
   sig_proof_t* prf = proof_new(pp);
   view_t* views    = calloc(sizeof(view_t), view_count);
@@ -859,7 +865,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     }
 
     // perform MPC LowMC evaluation
-    lowmc_impl(lowmc, shared_key, p, views, in_out_shares, rvec);
+    lowmc_impl(lowmc, shared_key, p, views, in_out_shares, rvec, &recorded_state);
 
     // commitments
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -897,6 +903,9 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   mzd_local_free_multiple(in_out_shares[1].s);
   mzd_local_free_multiple(in_out_shares[0].s);
   proof_free(prf);
+
+  mzd_local_free_multiple(recorded_state.state);
+  free(recorded_state.state);
 
   return ret;
 }
@@ -1161,17 +1170,17 @@ static bool lowmc_instances_initialized[3];
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
     {0},
-    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
+    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_FS, Picnic_L1_FS, TRANSFORM_FS},
-    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
+    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_UR, Picnic_L1_UR, TRANSFORM_UR},
-    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0,
+    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_FS, Picnic_L3_FS, TRANSFORM_FS},
-    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
+    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_UR, Picnic_L3_UR, TRANSFORM_UR},
-    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0,
+    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_FS, Picnic_L5_FS, TRANSFORM_FS},
-    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
+    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR}};
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
@@ -1257,6 +1266,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
   }
 
   pp->lowmc_impl              = lowmc_get_implementation(pp->lowmc);
+  pp->lowmc_store_impl        = lowmc_store_get_implementation(pp->lowmc);
   pp->zkbpp_lowmc_impl        = get_zkbpp_lowmc_implementation(pp->lowmc);
   pp->zkbpp_lowmc_verify_impl = get_zkbpp_lowmc_verify_implementation(pp->lowmc);
 #if defined(WITH_CUSTOM_INSTANCES)

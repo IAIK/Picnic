@@ -12,6 +12,7 @@
 
 #include <stdbool.h>
 
+#include "lowmc.h"
 #include "lowmc_pars.h"
 #include "mpc.h"
 
@@ -22,7 +23,7 @@ typedef struct {
 } in_out_shares_t;
 
 typedef void (*zkbpp_lowmc_implementation_f)(lowmc_t const*, mpc_lowmc_key_t*, mzd_local_t const*,
-                                             view_t*, in_out_shares_t*, rvec_t*);
+                                             view_t*, in_out_shares_t*, rvec_t*, recorded_state_t*);
 typedef void (*zkbpp_lowmc_verify_implementation_f)(lowmc_t const*, mzd_local_t const*, view_t*,
                                                     in_out_shares_t*, rvec_t*, unsigned int);
 

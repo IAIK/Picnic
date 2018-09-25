@@ -13,8 +13,13 @@
 #define lowmc lowmc_instance
 #endif
 
+#if defined(RECORD_STATE)
+static void N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lowmc_key,
+                            mzd_local_t const* p, recorded_state_t* state) {
+#else
 static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lowmc_key,
                             mzd_local_t const* p) {
+#endif
 #if defined(LOWMC_INSTANCE)
   (void)lowmc_instance;
 #endif
@@ -30,6 +35,9 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 
   lowmc_round_t const* round = lowmc->rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
+#if defined(RECORD_STATE)
+    mzd_local_copy(state->state[i], x);
+#endif
     SBOX(x, &lowmc->mask);
 
     const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
@@ -44,9 +52,14 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
     y              = t;
   }
 
-  mzd_local_free(y);
   mzd_local_free(nl_part);
+  mzd_local_free(y);
+#if defined(RECORD_STATE)
+  mzd_local_copy(state->state[LOWMC_R], x);
+  mzd_local_free(x);
+#else
   return x;
+#endif
 #else
   mzd_local_t* x = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* y = mzd_local_init_ex(1, LOWMC_N, false);
@@ -55,7 +68,10 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
   ADDMUL(x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix));
 
   lowmc_round_t const* round = lowmc->rounds;
-  for (unsigned int i = LOWMC_R; i; --i, ++round) {
+  for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
+#if defined(RECORD_STATE)
+    mzd_local_copy(state->state[i], x);
+#endif
     SBOX(x, &lowmc->mask);
 
     MUL(y, x, CONCAT(round->l, matrix_postfix));
@@ -64,7 +80,12 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
   }
 
   mzd_local_free(y);
+#if defined(RECORD_STATE)
+  mzd_local_copy(state->state[LOWMC_R], x);
+  mzd_local_free(x);
+#else
   return x;
+#endif
 #endif
 }
 
