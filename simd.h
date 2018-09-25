@@ -84,6 +84,11 @@
     }                                                                                              \
   }
 
+#define apply_mask(name, type, xor, and, attributes)                                               \
+  static inline type attributes name(const type lhs, const type rhs, const type mask) {            \
+    return (xor)(lhs, (and)(rhs, mask));                                                           \
+  }
+
 #define apply_mask_region(name, type, xor, and, attributes)                                        \
   static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      type const mask, unsigned int count) {                        \
@@ -177,6 +182,7 @@ static inline void FN_ATTRIBUTES_AVX2 mm512_shift_right_avx(__m256i res[2], __m2
 apply_region(mm256_xor_region, __m256i, _mm256_xor_si256, FN_ATTRIBUTES_AVX2);
 apply_mask_region(mm256_xor_mask_region, __m256i, _mm256_xor_si256, _mm256_and_si256,
                   FN_ATTRIBUTES_AVX2);
+apply_mask(mm256_xor_mask, __m256i, _mm256_xor_si256, _mm256_and_si256, FN_ATTRIBUTES_AVX2_CONST);
 #if defined(WITH_CUSTOM_INSTANCES)
 apply_array(mm512_xor_avx, __m256i, _mm256_xor_si256, 2, FN_ATTRIBUTES_AVX2);
 apply_array(mm512_and_avx, __m256i, _mm256_and_si256, 2, FN_ATTRIBUTES_AVX2);
@@ -332,6 +338,7 @@ static inline void FN_ATTRIBUTES_SSE2 mm512_shift_left_sse(__m128i res[4], __m12
 
 apply_region(mm128_xor_region, __m128i, _mm_xor_si128, FN_ATTRIBUTES_SSE2);
 apply_mask_region(mm128_xor_mask_region, __m128i, _mm_xor_si128, _mm_and_si128, FN_ATTRIBUTES_SSE2);
+apply_mask(mm128_xor_mask, __m128i, _mm_xor_si128, _mm_and_si128, FN_ATTRIBUTES_SSE2_CONST);
 apply_array(mm256_xor_sse, __m128i, _mm_xor_si128, 2, FN_ATTRIBUTES_SSE2);
 apply_array(mm256_and_sse, __m128i, _mm_and_si128, 2, FN_ATTRIBUTES_SSE2);
 #if defined(WITH_CUSTOM_INSTANCES)
@@ -583,6 +590,7 @@ static inline void FN_ATTRIBUTES_NEON mm512_shift_right(uint32x4_t res[4], uint3
 
 apply_region(mm128_xor_region, uint32x4_t, veorq_u32, FN_ATTRIBUTES_NEON);
 apply_mask_region(mm128_xor_mask_region, uint32x4_t, veorq_u32, vandq_u32, FN_ATTRIBUTES_NEON);
+apply_mask(mm128_xor_mask, uint32x4_t, veorq_u32, vandq_u32, FN_ATTRIBUTES_NEON_CONST);
 apply_array(mm256_xor, uint32x4_t, veorq_u32, 2, FN_ATTRIBUTES_NEON);
 apply_array(mm256_and, uint32x4_t, vandq_u32, 2, FN_ATTRIBUTES_NEON);
 #if defined(WITH_CUSTOM_INSTANCES)
