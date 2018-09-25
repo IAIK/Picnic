@@ -58,6 +58,13 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_lowmc_block_size(picnic_params_t param);
 PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picnic_params_t param);
 PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic_params_t param);
+/**
+ * Compute public key from secret key.
+ *
+ * @param[in] sk The secret key
+ * @param[out] pk The public key to be populated
+ * @return Returns 0 on success, or a nonzero value indicating an error.
+ **/
 PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
                                                             picnic_publickey_t* pk);
 void picnic_visualize_keys(FILE* out, const picnic_privatekey_t* private_key,
