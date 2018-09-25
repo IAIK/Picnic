@@ -105,7 +105,7 @@
 
 #if defined(WITH_AVX2)
 #if defined(__GNUC__) || defined(__clang__)
-#define _mm256_set_m128i(v0, v1)  _mm256_insertf128_si256(_mm256_castsi128_si256(v1), (v0), 1)
+#define _mm256_set_m128i(v0, v1) _mm256_insertf128_si256(_mm256_castsi128_si256(v1), (v0), 1)
 #define _mm256_setr_m128i(v0, v1) _mm256_set_m128i((v1), (v0))
 #endif
 
@@ -113,7 +113,7 @@
 /**
  * \brief Perform a left shift on a 256 bit value.
  */
-static inline __m256i FN_ATTRIBUTES_AVX2 mm256_shift_left(__m256i data, unsigned int count) {
+static inline __m256i FN_ATTRIBUTES_AVX2_CONST mm256_shift_left(__m256i data, unsigned int count) {
   if (!count) {
     return data;
   }
@@ -128,7 +128,7 @@ static inline __m256i FN_ATTRIBUTES_AVX2 mm256_shift_left(__m256i data, unsigned
 /**
  * \brief Perform a right shift on a 256 bit value.
  */
-static inline __m256i FN_ATTRIBUTES_AVX2 mm256_shift_right(__m256i data, unsigned int count) {
+static inline __m256i FN_ATTRIBUTES_AVX2_CONST mm256_shift_right(__m256i data, unsigned int count) {
   if (!count) {
     return data;
   }
@@ -140,8 +140,8 @@ static inline __m256i FN_ATTRIBUTES_AVX2 mm256_shift_right(__m256i data, unsigne
   return _mm256_or_si256(data, carry);
 }
 
-static inline void FN_ATTRIBUTES_AVX2_NP mm512_shift_left_avx(__m256i res[2], __m256i const data[2],
-                                                              unsigned int count) {
+static inline void FN_ATTRIBUTES_AVX2 mm512_shift_left_avx(__m256i res[2], __m256i const data[2],
+                                                           unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -157,9 +157,8 @@ static inline void FN_ATTRIBUTES_AVX2_NP mm512_shift_left_avx(__m256i res[2], __
   res[1] = _mm256_or_si256(res[1], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_AVX2_NP mm512_shift_right_avx(__m256i res[2],
-                                                               __m256i const data[2],
-                                                               unsigned int count) {
+static inline void FN_ATTRIBUTES_AVX2 mm512_shift_right_avx(__m256i res[2], __m256i const data[2],
+                                                            unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -175,12 +174,12 @@ static inline void FN_ATTRIBUTES_AVX2_NP mm512_shift_right_avx(__m256i res[2],
 }
 #endif
 
-apply_region(mm256_xor_region, __m256i, _mm256_xor_si256, FN_ATTRIBUTES_AVX2_NP);
+apply_region(mm256_xor_region, __m256i, _mm256_xor_si256, FN_ATTRIBUTES_AVX2);
 apply_mask_region(mm256_xor_mask_region, __m256i, _mm256_xor_si256, _mm256_and_si256,
-                  FN_ATTRIBUTES_AVX2_NP);
+                  FN_ATTRIBUTES_AVX2);
 #if defined(WITH_CUSTOM_INSTANCES)
-apply_array(mm512_xor_avx, __m256i, _mm256_xor_si256, 2, FN_ATTRIBUTES_AVX2_NP);
-apply_array(mm512_and_avx, __m256i, _mm256_and_si256, 2, FN_ATTRIBUTES_AVX2_NP);
+apply_array(mm512_xor_avx, __m256i, _mm256_xor_si256, 2, FN_ATTRIBUTES_AVX2);
+apply_array(mm512_and_avx, __m256i, _mm256_and_si256, 2, FN_ATTRIBUTES_AVX2);
 #endif
 #endif
 
@@ -189,7 +188,7 @@ apply_array(mm512_and_avx, __m256i, _mm256_and_si256, 2, FN_ATTRIBUTES_AVX2_NP);
 /**
  * \brief Perform a left shift on a 128 bit value.
  */
-static inline __m128i FN_ATTRIBUTES_SSE2 mm128_shift_left(__m128i data, unsigned int count) {
+static inline __m128i FN_ATTRIBUTES_SSE2_CONST mm128_shift_left(__m128i data, unsigned int count) {
   if (!count) {
     return data;
   }
@@ -206,7 +205,7 @@ static inline __m128i FN_ATTRIBUTES_SSE2 mm128_shift_left(__m128i data, unsigned
 /**
  * \brief Perform a right shift on a 128 bit value.
  */
-static inline __m128i FN_ATTRIBUTES_SSE2 mm128_shift_right(__m128i data, unsigned int count) {
+static inline __m128i FN_ATTRIBUTES_SSE2_CONST mm128_shift_right(__m128i data, unsigned int count) {
   if (!count) {
     return data;
   }
@@ -220,9 +219,8 @@ static inline __m128i FN_ATTRIBUTES_SSE2 mm128_shift_right(__m128i data, unsigne
   return _mm_or_si128(data, carry);
 }
 
-static inline void FN_ATTRIBUTES_SSE2_NP mm256_shift_right_sse(__m128i res[2],
-                                                               __m128i const data[2],
-                                                               unsigned int count) {
+static inline void FN_ATTRIBUTES_SSE2 mm256_shift_right_sse(__m128i res[2], __m128i const data[2],
+                                                            unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -240,8 +238,8 @@ static inline void FN_ATTRIBUTES_SSE2_NP mm256_shift_right_sse(__m128i res[2],
   res[0] = _mm_or_si128(res[0], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_SSE2_NP mm256_shift_left_sse(__m128i res[2], __m128i const data[2],
-                                                              unsigned int count) {
+static inline void FN_ATTRIBUTES_SSE2 mm256_shift_left_sse(__m128i res[2], __m128i const data[2],
+                                                           unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -261,9 +259,8 @@ static inline void FN_ATTRIBUTES_SSE2_NP mm256_shift_left_sse(__m128i res[2], __
   res[1] = _mm_or_si128(res[1], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_SSE2_NP mm384_shift_right_sse(__m128i res[3],
-                                                               __m128i const data[3],
-                                                               unsigned int count) {
+static inline void FN_ATTRIBUTES_SSE2 mm384_shift_right_sse(__m128i res[3], __m128i const data[3],
+                                                            unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -279,8 +276,8 @@ static inline void FN_ATTRIBUTES_SSE2_NP mm384_shift_right_sse(__m128i res[3],
   res[1] = _mm_or_si128(res[1], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_SSE2_NP mm384_shift_left_sse(__m128i res[3], __m128i const data[3],
-                                                              unsigned int count) {
+static inline void FN_ATTRIBUTES_SSE2 mm384_shift_left_sse(__m128i res[3], __m128i const data[3],
+                                                           unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -297,9 +294,8 @@ static inline void FN_ATTRIBUTES_SSE2_NP mm384_shift_left_sse(__m128i res[3], __
   res[2] = _mm_or_si128(res[2], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_SSE2_NP mm512_shift_right_sse(__m128i res[4],
-                                                               __m128i const data[4],
-                                                               unsigned int count) {
+static inline void FN_ATTRIBUTES_SSE2 mm512_shift_right_sse(__m128i res[4], __m128i const data[4],
+                                                            unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -315,8 +311,8 @@ static inline void FN_ATTRIBUTES_SSE2_NP mm512_shift_right_sse(__m128i res[4],
   res[1] = _mm_or_si128(res[1], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_SSE2_NP mm512_shift_left_sse(__m128i res[4], __m128i const data[4],
-                                                              unsigned int count) {
+static inline void FN_ATTRIBUTES_SSE2 mm512_shift_left_sse(__m128i res[4], __m128i const data[4],
+                                                           unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -328,22 +324,21 @@ static inline void FN_ATTRIBUTES_SSE2_NP mm512_shift_left_sse(__m128i res[4], __
   __m128i total_carry = _mm_bsrli_si128(data[1], 8);
   total_carry         = _mm_srli_epi64(total_carry, 64 - count);
 
-  mm256_shift_left_sse(&(res[0]), &(data[0]), count);
-  mm256_shift_left_sse(&(res[2]), &(data[2]), count);
+  mm256_shift_left_sse(&res[0], &data[0], count);
+  mm256_shift_left_sse(&res[2], &data[2], count);
   res[2] = _mm_or_si128(res[2], total_carry);
 }
 #endif
 
-apply_region(mm128_xor_region, __m128i, _mm_xor_si128, FN_ATTRIBUTES_SSE2_NP);
-apply_mask_region(mm128_xor_mask_region, __m128i, _mm_xor_si128, _mm_and_si128,
-                  FN_ATTRIBUTES_SSE2_NP);
-apply_array(mm256_xor_sse, __m128i, _mm_xor_si128, 2, FN_ATTRIBUTES_SSE2_NP);
-apply_array(mm256_and_sse, __m128i, _mm_and_si128, 2, FN_ATTRIBUTES_SSE2_NP);
+apply_region(mm128_xor_region, __m128i, _mm_xor_si128, FN_ATTRIBUTES_SSE2);
+apply_mask_region(mm128_xor_mask_region, __m128i, _mm_xor_si128, _mm_and_si128, FN_ATTRIBUTES_SSE2);
+apply_array(mm256_xor_sse, __m128i, _mm_xor_si128, 2, FN_ATTRIBUTES_SSE2);
+apply_array(mm256_and_sse, __m128i, _mm_and_si128, 2, FN_ATTRIBUTES_SSE2);
 #if defined(WITH_CUSTOM_INSTANCES)
-apply_array(mm384_xor_sse, __m128i, _mm_xor_si128, 3, FN_ATTRIBUTES_SSE2_NP);
-apply_array(mm384_and_sse, __m128i, _mm_and_si128, 3, FN_ATTRIBUTES_SSE2_NP);
-apply_array(mm512_xor_sse, __m128i, _mm_xor_si128, 4, FN_ATTRIBUTES_SSE2_NP);
-apply_array(mm512_and_sse, __m128i, _mm_and_si128, 4, FN_ATTRIBUTES_SSE2_NP);
+apply_array(mm384_xor_sse, __m128i, _mm_xor_si128, 3, FN_ATTRIBUTES_SSE2);
+apply_array(mm384_and_sse, __m128i, _mm_and_si128, 3, FN_ATTRIBUTES_SSE2);
+apply_array(mm512_xor_sse, __m128i, _mm_xor_si128, 4, FN_ATTRIBUTES_SSE2);
+apply_array(mm512_and_sse, __m128i, _mm_and_si128, 4, FN_ATTRIBUTES_SSE2);
 #endif
 #endif
 
@@ -352,8 +347,8 @@ apply_array(mm512_and_sse, __m128i, _mm_and_si128, 4, FN_ATTRIBUTES_SSE2_NP);
 /**
  * \brief Perform a right shift on a 128 bit value.
  */
-static inline uint32x4_t FN_ATTRIBUTES_NEON mm128_shift_right(uint32x4_t data,
-                                                              const unsigned int count) {
+static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_right(uint32x4_t data,
+                                                                    const unsigned int count) {
   if (!count) {
     return data;
   }
@@ -375,7 +370,8 @@ static inline uint32x4_t FN_ATTRIBUTES_NEON mm128_shift_right(uint32x4_t data,
   return data;
 }
 
-static inline uint32x4_t FN_ATTRIBUTES_NEON mm128_shift_left(uint32x4_t data, unsigned int count) {
+static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_left(uint32x4_t data,
+                                                                   unsigned int count) {
   if (!count) {
     return data;
   }
@@ -397,9 +393,8 @@ static inline uint32x4_t FN_ATTRIBUTES_NEON mm128_shift_left(uint32x4_t data, un
   return data;
 }
 
-static inline void FN_ATTRIBUTES_NEON_NP mm256_shift_right(uint32x4_t res[2],
-                                                           uint32x4_t const data[2],
-                                                           const unsigned int count) {
+static inline void FN_ATTRIBUTES_NEON mm256_shift_right(uint32x4_t res[2], uint32x4_t const data[2],
+                                                        const unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -439,9 +434,8 @@ static inline void FN_ATTRIBUTES_NEON_NP mm256_shift_right(uint32x4_t res[2],
   res[0] = vorrq_u32(res[0], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_NEON_NP mm256_shift_left(uint32x4_t res[2],
-                                                          uint32x4_t const data[2],
-                                                          unsigned int count) {
+static inline void FN_ATTRIBUTES_NEON mm256_shift_left(uint32x4_t res[2], uint32x4_t const data[2],
+                                                       unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -479,9 +473,8 @@ static inline void FN_ATTRIBUTES_NEON_NP mm256_shift_left(uint32x4_t res[2],
   res[1] = vorrq_u32(res[1], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_NEON_NP mm384_shift_left(uint32x4_t res[3],
-                                                          uint32x4_t const data[3],
-                                                          unsigned int count) {
+static inline void FN_ATTRIBUTES_NEON mm384_shift_left(uint32x4_t res[3], uint32x4_t const data[3],
+                                                       unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -506,9 +499,8 @@ static inline void FN_ATTRIBUTES_NEON_NP mm384_shift_left(uint32x4_t res[3],
   res[2] = vorrq_u32(res[2], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_NEON_NP mm384_shift_right(uint32x4_t res[3],
-                                                           uint32x4_t const data[3],
-                                                           const unsigned int count) {
+static inline void FN_ATTRIBUTES_NEON mm384_shift_right(uint32x4_t res[3], uint32x4_t const data[3],
+                                                        const unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -533,9 +525,8 @@ static inline void FN_ATTRIBUTES_NEON_NP mm384_shift_right(uint32x4_t res[3],
   res[1] = vorrq_u32(res[1], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_NEON_NP mm512_shift_left(uint32x4_t res[4],
-                                                          uint32x4_t const data[4],
-                                                          unsigned int count) {
+static inline void FN_ATTRIBUTES_NEON mm512_shift_left(uint32x4_t res[4], uint32x4_t const data[4],
+                                                       unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -561,9 +552,8 @@ static inline void FN_ATTRIBUTES_NEON_NP mm512_shift_left(uint32x4_t res[4],
   res[2] = vorrq_u32(res[2], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_NEON_NP mm512_shift_right(uint32x4_t res[4],
-                                                           uint32x4_t const data[4],
-                                                           const unsigned int count) {
+static inline void FN_ATTRIBUTES_NEON mm512_shift_right(uint32x4_t res[4], uint32x4_t const data[4],
+                                                        const unsigned int count) {
   if (!count) {
     res[0] = data[0];
     res[1] = data[1];
@@ -591,15 +581,15 @@ static inline void FN_ATTRIBUTES_NEON_NP mm512_shift_right(uint32x4_t res[4],
 }
 #endif
 
-apply_region(mm128_xor_region, uint32x4_t, veorq_u32, FN_ATTRIBUTES_NEON_NP);
-apply_mask_region(mm128_xor_mask_region, uint32x4_t, veorq_u32, vandq_u32, FN_ATTRIBUTES_NEON_NP);
-apply_array(mm256_xor, uint32x4_t, veorq_u32, 2, FN_ATTRIBUTES_NEON_NP);
-apply_array(mm256_and, uint32x4_t, vandq_u32, 2, FN_ATTRIBUTES_NEON_NP);
+apply_region(mm128_xor_region, uint32x4_t, veorq_u32, FN_ATTRIBUTES_NEON);
+apply_mask_region(mm128_xor_mask_region, uint32x4_t, veorq_u32, vandq_u32, FN_ATTRIBUTES_NEON);
+apply_array(mm256_xor, uint32x4_t, veorq_u32, 2, FN_ATTRIBUTES_NEON);
+apply_array(mm256_and, uint32x4_t, vandq_u32, 2, FN_ATTRIBUTES_NEON);
 #if defined(WITH_CUSTOM_INSTANCES)
-apply_array(mm384_xor, uint32x4_t, veorq_u32, 3, FN_ATTRIBUTES_NEON_NP);
-apply_array(mm384_and, uint32x4_t, vandq_u32, 3, FN_ATTRIBUTES_NEON_NP);
-apply_array(mm512_xor, uint32x4_t, veorq_u32, 4, FN_ATTRIBUTES_NEON_NP);
-apply_array(mm512_and, uint32x4_t, vandq_u32, 4, FN_ATTRIBUTES_NEON_NP);
+apply_array(mm384_xor, uint32x4_t, veorq_u32, 3, FN_ATTRIBUTES_NEON);
+apply_array(mm384_and, uint32x4_t, vandq_u32, 3, FN_ATTRIBUTES_NEON);
+apply_array(mm512_xor, uint32x4_t, veorq_u32, 4, FN_ATTRIBUTES_NEON);
+apply_array(mm512_and, uint32x4_t, vandq_u32, 4, FN_ATTRIBUTES_NEON);
 #endif
 #endif
 
