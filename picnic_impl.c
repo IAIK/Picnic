@@ -1054,6 +1054,7 @@ int impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uin
   return result;
 }
 
+#if defined(PICNIC_STATIC)
 void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* msg, size_t msglen,
                          const uint8_t* sig, size_t siglen) {
   const size_t digest_size    = pp->digest_size;
@@ -1126,10 +1127,11 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 
   proof_free(proof);
 }
+#endif
 
 // instance handling
 
-// L1, L3, and L5 lowmc instances
+// L1, L3, and L5 LowMC instances
 #if defined(WITH_LOWMC_128_128_20)
 #include "lowmc_128_128_20.h"
 #define LOWMC_L1_OR_NULL &lowmc_128_128_20

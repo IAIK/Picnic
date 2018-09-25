@@ -204,7 +204,7 @@ add_library(picnic_static STATIC ${PICNIC_SOURCES} ${SHA3_SOURCES})
 if(MSVC)
   set_target_properties(picnic_static PROPERTIES OUTPUT_NAME libpicnic_static)
 endif()
-target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC_DEFINE)
+target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC)
 
 function(apply_base_options lib)
   if(WITH_CONFIG_H)
