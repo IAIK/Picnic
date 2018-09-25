@@ -100,7 +100,7 @@
 #define ATTR_PURE
 #endif
 
-/* constt attribute */
+/* const attribute */
 #if defined(__GNUC__) || __has_attribute(const)
 #define ATTR_CONST __attribute__((const))
 #else

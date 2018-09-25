@@ -403,6 +403,7 @@ void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2)
+ATTR_TARGET("sse2") ATTR_CONST
 static inline __m128i mm128_compute_mask(const word idx, const size_t bit) {
   return _mm_set1_epi64x(-((idx >> bit) & 1));
 }
