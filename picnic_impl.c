@@ -784,6 +784,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const size_t lowmc_r                                = lowmc->r;
   const size_t view_size                              = pp->view_size;
 
+  // Perform LowMC evaluation and record state before AND gates
   recorded_state_t recorded_state;
   recorded_state.state = calloc(lowmc_r + 1, sizeof(mzd_local_t*));
   mzd_local_init_multiple_ex(recorded_state.state, lowmc_r + 1, 1, lowmc_n, false);
@@ -864,7 +865,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       kdf_shake_clear(&kdfs[j]);
     }
 
-    // perform MPC LowMC evaluation
+    // perform ZKB++ LowMC evaluation
     lowmc_impl(lowmc, shared_key, p, views, in_out_shares, rvec, &recorded_state);
 
     // commitments
@@ -985,10 +986,12 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
     }
 
     decompress_view(views, pp, round->communicated_bits[1], 1);
+    // perform ZKB++ LowMC evaluation
     lowmc_verify_impl(lowmc, p, views, in_out_shares, rvec, a_i);
     compress_view(round->communicated_bits[0], pp, views, 0);
 
     mzd_unshare(in_out_shares[1].s, c);
+    // recompute commitments
     for (unsigned int j = 0; j < SC_VERIFY; ++j) {
       mzd_to_char_array(round->output_shares[j], in_out_shares[1].s[j], output_size);
       hash_commitment(pp, round, j);
@@ -996,6 +999,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
     mzd_to_char_array(round->output_shares[SC_VERIFY], in_out_shares[1].s[SC_VERIFY], output_size);
 
     if (transform == TRANSFORM_UR) {
+      // apply Unruh G permutation
       for (unsigned int j = 0; j < SC_VERIFY; ++j) {
         unruh_G(pp, round, j, (a_i == 1 && j == 1) || (a_i == 2 && j == 0));
       }
