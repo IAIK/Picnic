@@ -26,8 +26,8 @@ bitstream_value_t bitstream_get_bits(bitstream_t* bs, unsigned int num_bits) {
   }
 
   num_bits -= start_bits;
-  for (; num_bits >= 8; num_bits -= 8) {
-    ret = ret << 8 | *p++;
+  for (; num_bits >= 8; num_bits -= 8, ++p) {
+    ret = ret << 8 | *p;
   }
 
   if (num_bits > 0) {
@@ -37,7 +37,7 @@ bitstream_value_t bitstream_get_bits(bitstream_t* bs, unsigned int num_bits) {
   return ret;
 }
 
-int bitstream_put_bits(bitstream_t* bs, bitstream_value_t value, unsigned int num_bits) {
+void bitstream_put_bits(bitstream_t* bs, bitstream_value_t value, unsigned int num_bits) {
   const unsigned int skip_bits = bs->position % 8;
   uint8_t* p                   = &bs->buffer[bs->position / 8];
 
@@ -51,15 +51,11 @@ int bitstream_put_bits(bitstream_t* bs, bitstream_value_t value, unsigned int nu
     num_bits -= bits;
   }
 
-  while (num_bits > 0) {
-    if (num_bits >= 8) {
-      *p++ = (value >> (num_bits - 8));
-      num_bits -= 8;
-    } else {
-      *p = (value & ((1 << num_bits) - 1)) << (8 - num_bits);
-      return 0;
-    }
+  for (; num_bits >= 8; num_bits -= 8, ++p) {
+    *p = value >> (num_bits - 8);
   }
 
-  return 0;
+  if (num_bits > 0) {
+    *p = (value & ((1 << num_bits) - 1)) << (8 - num_bits);
+  }
 }

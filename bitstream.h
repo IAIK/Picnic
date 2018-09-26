@@ -23,6 +23,6 @@ typedef struct {
 } bitstream_t;
 
 bitstream_value_t bitstream_get_bits(bitstream_t* bs, unsigned int num_bits);
-int bitstream_put_bits(bitstream_t* bs, bitstream_value_t value, unsigned int num_bits);
+void bitstream_put_bits(bitstream_t* bs, bitstream_value_t value, unsigned int num_bits);
 
 #endif
