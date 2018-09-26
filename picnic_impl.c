@@ -239,8 +239,7 @@ static void proof_free(sig_proof_t* prf) {
 static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const picnic_instance_t* pp,
                                bool include_input_size) {
   // Hash the seed with H_2.
-  kdf_shake_init(kdf, pp);
-  kdf_shake_update_key(kdf, &HASH_PREFIX_2, sizeof(HASH_PREFIX_2));
+  kdf_shake_init_prefix(kdf, pp, HASH_PREFIX_2);
   kdf_shake_update_key(kdf, seed, pp->seed_size);
   kdf_shake_finalize_key(kdf);
 
@@ -383,20 +382,16 @@ static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_roun
                             unsigned int vidx) {
   const size_t hashlen = pp->digest_size;
 
-  uint8_t tmp[MAX_DIGEST_SIZE];
-
   hash_context ctx;
-
   // hash the seed
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_4, sizeof(HASH_PREFIX_4));
+  hash_init_prefix(&ctx, pp, HASH_PREFIX_4);
   hash_update(&ctx, prf_round->seeds[vidx], pp->seed_size);
   hash_final(&ctx);
+  uint8_t tmp[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, tmp, hashlen);
 
   // compute H_0(H_4(seed), view)
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_0, sizeof(HASH_PREFIX_0));
+  hash_init_prefix(&ctx, pp, HASH_PREFIX_0);
   hash_update(&ctx, tmp, hashlen);
   // hash input share
   hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
@@ -421,8 +416,7 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
   while (ch < eof) {
     if (bit_idx >= digest_size_bits) {
       hash_context ctx;
-      hash_init(&ctx, pp);
-      hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
+      hash_init_prefix(&ctx, pp, HASH_PREFIX_1);
       hash_update(&ctx, hash, digest_size);
       hash_final(&ctx);
       hash_squeeze(&ctx, hash, digest_size);
@@ -460,8 +454,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8
   const size_t output_size = pp->output_size;
 
   hash_context ctx;
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
+  hash_init_prefix(&ctx, pp, HASH_PREFIX_1);
 
   // hash output shares
   proof_round_t* round = prf->round;
@@ -559,8 +552,7 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* cir
   const size_t num_rounds = pp->num_rounds;
 
   hash_context ctx;
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_1, sizeof(HASH_PREFIX_1));
+  hash_init_prefix(&ctx, pp, HASH_PREFIX_1);
 
   // hash output shares
   hash_update(&ctx, prf->round[0].output_shares[0], pp->output_size * num_rounds * SC_PROOF);
@@ -595,8 +587,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   const size_t seedlen     = pp->seed_size;
 
   // Hash the seed with H_5, store digest in output
-  hash_init(&ctx, pp);
-  hash_update(&ctx, &HASH_PREFIX_5, sizeof(HASH_PREFIX_5));
+  hash_init_prefix(&ctx, pp, HASH_PREFIX_5);
   hash_update(&ctx, prf_round->seeds[vidx], seedlen);
   hash_final(&ctx);
 
@@ -766,6 +757,39 @@ err:
   return NULL;
 }
 
+static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_key,
+                           const uint8_t* plaintext, const uint8_t* public_key, const uint8_t* m,
+                           size_t m_len, uint8_t* seeds) {
+  const lowmc_t* lowmc     = pp->lowmc;
+  const size_t seed_size   = pp->seed_size;
+  const size_t num_rounds  = pp->num_rounds;
+  const size_t input_size  = pp->input_size;
+  const size_t output_size = pp->output_size;
+  const size_t lowmc_n     = lowmc->n;
+
+  kdf_shake_t ctx;
+  kdf_shake_init(&ctx, pp);
+  // sk || m || C || p
+  kdf_shake_update_key(&ctx, private_key, input_size);
+  kdf_shake_update_key(&ctx, m, m_len);
+  kdf_shake_update_key(&ctx, public_key, output_size);
+  kdf_shake_update_key(&ctx, plaintext, output_size);
+  // N as 16 bit LE integer
+  const uint16_t size_le = htole16(lowmc_n);
+  kdf_shake_update_key(&ctx, (const uint8_t*)&size_le, sizeof(size_le));
+#if defined(WITH_EXTRA_RANDOMNESS)
+  // Add extra randomn bytes for fault attack mitigation
+  unsigned char buffer[2 * MAX_DIGEST_SIZE];
+  rand_bytes(buffer, 2 * seed_size);
+  kdf_shake_update_key(&ctx, buffer, 2 * seed_size);
+#endif
+  kdf_shake_finalize_key(&ctx);
+
+  // Generate seeds
+  kdf_shake_get_randomness(&ctx, seeds, seed_size * num_rounds * SC_PROOF);
+  kdf_shake_clear(&ctx);
+}
+
 static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
                      const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
                      const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
@@ -773,7 +797,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const lowmc_t* lowmc                                = pp->lowmc;
   const zkbpp_lowmc_implementation_f lowmc_impl       = pp->zkbpp_lowmc_impl;
   const lowmc_store_implementation_f lowmc_store_impl = pp->lowmc_store_impl;
-  const size_t seed_size                              = pp->seed_size;
   const size_t num_rounds                             = pp->num_rounds;
   const transform_t transform                         = pp->transform;
   const size_t input_size                             = pp->input_size;
@@ -805,27 +828,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
 
   // Generate seeds
-  {
-    kdf_shake_t ctx;
-    kdf_shake_init(&ctx, pp);
-    kdf_shake_update_key(&ctx, private_key, input_size);
-    kdf_shake_update_key(&ctx, m, m_len);
-    kdf_shake_update_key(&ctx, public_key, output_size);
-    kdf_shake_update_key(&ctx, plaintext, output_size);
-
-    const uint16_t size_le = htole16(lowmc_n);
-    kdf_shake_update_key(&ctx, (const uint8_t*)&size_le, sizeof(size_le));
-#if defined(WITH_EXTRA_RANDOMNESS)
-    unsigned char buffer[2 * MAX_DIGEST_SIZE];
-    rand_bytes(buffer, 2 * seed_size);
-    kdf_shake_update_key(&ctx, buffer, 2 * seed_size);
-#endif
-    kdf_shake_finalize_key(&ctx);
-
-    // generate seeds
-    kdf_shake_get_randomness(&ctx, prf->round[0].seeds[0], seed_size * num_rounds * SC_PROOF);
-    kdf_shake_clear(&ctx);
-  }
+  generate_seeds(pp, private_key, plaintext, public_key, m, m_len, prf->round[0].seeds[0]);
 
   mzd_local_t* shared_key[SC_PROOF];
   mzd_local_init_multiple(shared_key, SC_PROOF, 1, lowmc_k);

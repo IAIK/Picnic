@@ -47,6 +47,12 @@ static inline void hash_update(hash_context* ctx, const uint8_t* data, size_t si
   Keccak_HashUpdate(ctx, data, size << 3);
 }
 
+static inline void hash_init_prefix(hash_context* ctx, const picnic_instance_t* pp,
+                                    const uint8_t prefix) {
+  hash_init(ctx, pp);
+  hash_update(ctx, &prefix, sizeof(prefix));
+}
+
 static inline void hash_final(hash_context* ctx) {
   Keccak_HashFinal(ctx, NULL);
 }
@@ -58,6 +64,7 @@ static inline void hash_squeeze(hash_context* ctx, uint8_t* buffer, size_t bufle
 typedef Keccak_HashInstance kdf_shake_t;
 
 #define kdf_shake_init(ctx, pp) hash_init((ctx), (pp))
+#define kdf_shake_init_prefix(ctx, pp, prefix) hash_init_prefix((ctx), (pp), (prefix))
 #define kdf_shake_update_key(ctx, key, keylen) hash_update((ctx), (key), (keylen))
 #define kdf_shake_finalize_key(ctx) hash_final((ctx))
 #define kdf_shake_get_randomness(ctx, dst, count) hash_squeeze((ctx), (dst), (count))
