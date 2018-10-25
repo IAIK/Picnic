@@ -15,7 +15,7 @@ find_path(M4RI_INCLUDE_DIR m4ri.h
           PATH_SUFFIXES m4ri)
 
 find_library(M4RI_LIBRARY NAMES m4ri libm4ri
-             HINTS ${PC_M4RI_LIBDIR} ${PC_M4RI_LIBRARY_DIRS} )
+             HINTS ${PC_M4RI_LIBDIR} ${PC_M4RI_LIBRARY_DIRS})
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set M4RI_FOUND to TRUE
