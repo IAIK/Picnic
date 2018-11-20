@@ -829,13 +829,25 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
-    switch (lowmc->n) {
-    case 128:
-      return general_or_10(lowmc_store, lowmc_avx_128_store);
-    case 192:
-      return general_or_10(lowmc_store, lowmc_avx_192_store);
-    case 256:
-      return general_or_10(lowmc_store, lowmc_avx_256_store);
+    if(lowmc->m == 10) {
+      switch (lowmc->n) {
+        case 128:
+          return general_or_10(lowmc, lowmc_avx_128_store);
+        case 192:
+          return general_or_10(lowmc, lowmc_avx_192_store);
+        case 256:
+          return general_or_10(lowmc, lowmc_avx_256_store);
+      }
+    }
+    if(lowmc->m == 1) {
+      switch (lowmc->n) {
+        case 128:
+          return general_or_1(lowmc, lowmc_avx_128_store);
+        case 192:
+          return general_or_1(lowmc, lowmc_avx_192_store);
+        case 256:
+          return general_or_1(lowmc, lowmc_avx_256_store);
+      }
     }
 #if defined(WITH_CUSTOM_INSTANCES)
     if (lowmc->n > 256) {
@@ -846,13 +858,25 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #endif
 #if defined(WITH_SSE2)
   if (CPU_SUPPORTS_SSE2) {
-    switch (lowmc->n) {
-    case 128:
-      return general_or_10(lowmc_store, lowmc_sse_128_store);
-    case 192:
-      return general_or_10(lowmc_store, lowmc_sse_192_store);
-    case 256:
-      return general_or_10(lowmc_store, lowmc_sse_256_store);
+    if(lowmc->m == 10) {
+      switch (lowmc->n) {
+        case 128:
+          return general_or_10(lowmc_store, lowmc_sse_128_store);
+        case 192:
+          return general_or_10(lowmc_store, lowmc_sse_192_store);
+        case 256:
+          return general_or_10(lowmc_store, lowmc_sse_256_store);
+      }
+    }
+    if(lowmc->m == 1) {
+      switch (lowmc->n) {
+        case 128:
+          return general_or_1(lowmc_store, lowmc_sse_128_store);
+        case 192:
+          return general_or_1(lowmc_store, lowmc_sse_192_store);
+        case 256:
+          return general_or_1(lowmc_store, lowmc_sse_256_store);
+      }
     }
 #if defined(WITH_CUSTOM_INSTANCES)
     if (lowmc->n > 256) {
@@ -863,13 +887,25 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #endif
 #if defined(WITH_NEON)
   if (CPU_SUPPORTS_NEON) {
-    switch (lowmc->n) {
-    case 128:
-      return general_or_10(lowmc_store, lowmc_neon_128_store);
-    case 192:
-      return general_or_10(lowmc_store, lowmc_neon_192_store);
-    case 256:
-      return general_or_10(lowmc_store, lowmc_neon_256_store);
+    if(lowmc->m == 10) {
+      switch (lowmc->n) {
+      case 128:
+        return general_or_10(lowmc_store, lowmc_neon_128_store);
+      case 192:
+        return general_or_10(lowmc_store, lowmc_neon_192_store);
+      case 256:
+        return general_or_10(lowmc_store, lowmc_neon_256_store);
+      }
+    }
+    if(lowmc->m == 1) {
+      switch (lowmc->n) {
+      case 128:
+        return general_or_1(lowmc_store, lowmc_neon_128_store);
+      case 192:
+        return general_or_1(lowmc_store, lowmc_neon_192_store);
+      case 256:
+        return general_or_1(lowmc_store, lowmc_neon_256_store);
+      }
     }
 #if defined(WITH_CUSTOM_INSTANCES)
     if (lowmc->n > 256) {
@@ -881,7 +917,12 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #endif
 
   (void)lowmc;
-  return general_or_10(lowmc_store, lowmc_uint64_store);
+  if(lowmc->m == 10)
+    return general_or_10(lowmc, lowmc_uint64_store);
+  else if (lowmc->m == 1)
+    return general_or_1(lowmc, lowmc_uint64_store);
+  else
+    return NULL;
 }
 
 mzd_local_t* lowmc_call(lowmc_t const* lowmc, lowmc_key_t const* lowmc_key, mzd_local_t const* p) {
