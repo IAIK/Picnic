@@ -113,7 +113,7 @@ typedef struct {
 #if defined(MUL_M4RI)
   mzd_local_t* k0_lookup;
 #endif
-#if defined(MUL_M4RI) || defined(WITH_CUSTOM_INSTANCES)
+#if defined(MUL_M4RI)
   lowmc_round_t* rounds;
 #else
   const lowmc_round_t* rounds;
@@ -128,10 +128,6 @@ typedef struct {
   const mzd_local_t* precomputed_constant_non_linear;
 #endif
 
-#if defined(WITH_CUSTOM_INSTANCES)
-  mask_t mask;
-  bool needs_free;
-#endif
 } lowmc_t;
 
 #if defined(MUL_M4RI)
@@ -150,27 +146,5 @@ bool lowmc_init(lowmc_t* lowmc);
  */
 void lowmc_clear(lowmc_t* lowmc);
 
-#if defined(WITH_CUSTOM_INSTANCES)
-/**
- * Reads a LowMC instance from a file.
- *
- * Layout of the file:
- * - flag (uint32_t)
- * - n, k, m, r (uint32_t)
- * - K_0 matrix
- * - for each round:
- *   - L_i
- *   - K_i (if not REDUCED_LINEAR_LAYER)
- *   - C_i (if not REDUCED_LINEAR_LAYER)
- * - if REDUCED_LINEAR_LAYER
- *   - P_N
- *   - C_L
- *   - C_N
- **/
-bool lowmc_read_file(lowmc_t* lowmc, const char* file);
-#endif
-
-#define LOWMC_INSTANCE_RLL 0x01
-extern const uint32_t supported_instance_type;
 
 #endif

@@ -27,119 +27,6 @@
 #include "simd.h"
 #endif
 
-#if defined(WITH_CUSTOM_INSTANCES)
-typedef struct {
-  mzd_local_t* x0m[SC_PROOF]; // a
-  mzd_local_t* x1m[SC_PROOF]; // b
-  mzd_local_t* x2m[SC_PROOF]; // c
-  mzd_local_t* r0m[SC_PROOF];
-  mzd_local_t* r1m[SC_PROOF];
-  mzd_local_t* r2m[SC_PROOF];
-  mzd_local_t* x0s[SC_PROOF];
-  mzd_local_t* r0s[SC_PROOF];
-  mzd_local_t* x1s[SC_PROOF];
-  mzd_local_t* r1s[SC_PROOF];
-  mzd_local_t* v[SC_PROOF];
-
-  mzd_local_t** storage;
-} sbox_vars_t;
-
-static void sbox_vars_clear(sbox_vars_t* vars) {
-  if (vars->storage) {
-    mzd_local_free_multiple(vars->storage);
-    free(vars->storage);
-    memset(vars, 0, sizeof(*vars));
-  }
-}
-
-static sbox_vars_t* sbox_vars_init(sbox_vars_t* vars, uint32_t n, unsigned sc) {
-  vars->storage = calloc(11 * sc, sizeof(mzd_local_t*));
-  mzd_local_init_multiple_ex(vars->storage, 11 * sc, 1, n, false);
-
-  for (unsigned int i = 0; i < sc; ++i) {
-    vars->x0m[i] = vars->storage[11 * i + 0];
-    vars->x1m[i] = vars->storage[11 * i + 1];
-    vars->x2m[i] = vars->storage[11 * i + 2];
-    vars->r0m[i] = vars->storage[11 * i + 3];
-    vars->r1m[i] = vars->storage[11 * i + 4];
-    vars->r2m[i] = vars->storage[11 * i + 5];
-    vars->x0s[i] = vars->storage[11 * i + 6];
-    vars->x1s[i] = vars->storage[11 * i + 7];
-    vars->r0s[i] = vars->storage[11 * i + 8];
-    vars->r1s[i] = vars->storage[11 * i + 9];
-    vars->v[i]   = vars->storage[11 * i + 10];
-  }
-
-  return vars;
-}
-
-#define bitsliced_step_1(sc)                                                                       \
-  mpc_and_const(out, in, mask->mask, sc);                                                          \
-                                                                                                   \
-  mpc_and_const(vars->x0m, in, mask->x0, sc);                                                      \
-  mpc_and_const(vars->x1m, in, mask->x1, sc);                                                      \
-  mpc_and_const(vars->x2m, in, mask->x2, sc);                                                      \
-  mpc_and_const(vars->r0m, rvec, mask->x0, sc);                                                    \
-  mpc_and_const(vars->r1m, rvec, mask->x1, sc);                                                    \
-  mpc_and_const(vars->r2m, rvec, mask->x2, sc);                                                    \
-                                                                                                   \
-  mpc_shift_left(vars->x0s, vars->x0m, 2, sc);                                                     \
-  mpc_shift_left(vars->r0s, vars->r0m, 2, sc);                                                     \
-                                                                                                   \
-  mpc_shift_left(vars->x1s, vars->x1m, 1, sc);                                                     \
-  mpc_shift_left(vars->r1s, vars->r1m, 1, sc)
-
-#define bitsliced_step_2(sc)                                                                       \
-  /* (b & c) ^ a */                                                                                \
-  mpc_xor(vars->r2m, vars->r2m, vars->x0s, sc);                                                    \
-  /* a ^ b */                                                                                      \
-  mpc_xor(vars->x0s, vars->x0s, vars->x1s, sc);                                                    \
-  /* (c & a) ^ a ^ b */                                                                            \
-  mpc_xor(vars->r1m, vars->r1m, vars->x0s, sc);                                                    \
-  /* (a & b) ^ a ^ b ^ c */                                                                        \
-  mpc_xor(vars->r0m, vars->r0m, vars->x0s, sc);                                                    \
-  mpc_xor(vars->r0m, vars->r0m, vars->x2m, sc);                                                    \
-                                                                                                   \
-  mpc_shift_right(vars->x0s, vars->r2m, 2, sc);                                                    \
-  mpc_shift_right(vars->x1s, vars->r1m, 1, sc);                                                    \
-                                                                                                   \
-  mpc_xor(out, out, vars->r0m, sc);                                                                \
-  mpc_xor(out, out, vars->x0s, sc);                                                                \
-  mpc_xor(out, out, vars->x1s, sc)
-
-static void mpc_sbox_layer_bitsliced(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
-                                     mzd_local_t* const* rvec, mask_t const* mask,
-                                     sbox_vars_t const* vars) {
-  bitsliced_step_1(SC_PROOF);
-
-  mpc_clear(view->s, SC_PROOF);
-  // a & b
-  mpc_and(vars->r0m, vars->x0s, vars->x1s, vars->r2m, view, 0, vars->v);
-  // b & c
-  mpc_and(vars->r2m, vars->x1s, vars->x2m, vars->r1s, view, 1, vars->v);
-  // c & a
-  mpc_and(vars->r1m, vars->x0s, vars->x2m, vars->r0s, view, 2, vars->v);
-
-  bitsliced_step_2(SC_PROOF);
-}
-
-static void mpc_sbox_layer_bitsliced_verify(mzd_local_t** out, mzd_local_t* const* in, view_t* view,
-                                            mzd_local_t* const* rvec, mask_t const* mask,
-                                            sbox_vars_t const* vars) {
-  bitsliced_step_1(SC_VERIFY);
-
-  mzd_local_clear(view->s[0]);
-  // a & b
-  mpc_and_verify(vars->r0m, vars->x0s, vars->x1s, vars->r2m, view, mask->x2, 0, vars->v);
-  // b & c
-  mpc_and_verify(vars->r2m, vars->x1s, vars->x2m, vars->r1s, view, mask->x2, 1, vars->v);
-  // c & a
-  mpc_and_verify(vars->r1m, vars->x0s, vars->x2m, vars->r0s, view, mask->x2, 2, vars->v);
-
-  bitsliced_step_2(SC_VERIFY);
-}
-#endif
-
 #define bitsliced_step_1_uint64_10(sc)                                                             \
   uint64_t r0m[sc];                                                                                \
   uint64_t r0s[sc];                                                                                \
@@ -259,434 +146,6 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 
   bitsliced_step_2_uint64_1(SC_VERIFY);
 }
-
-#if defined(WITH_OPT) && defined(WITH_CUSTOM_INSTANCES)
-#define bitsliced_mm_step_1(sc, type, and, shift_left)                                             \
-  type r0m[sc] ATTR_ALIGNED(alignof(type));                                                        \
-  type r0s[sc] ATTR_ALIGNED(alignof(type));                                                        \
-  type r1m[sc] ATTR_ALIGNED(alignof(type));                                                        \
-  type r1s[sc] ATTR_ALIGNED(alignof(type));                                                        \
-  type r2m[sc] ATTR_ALIGNED(alignof(type));                                                        \
-  type x0s[sc] ATTR_ALIGNED(alignof(type));                                                        \
-  type x1s[sc] ATTR_ALIGNED(alignof(type));                                                        \
-  type x2m[sc] ATTR_ALIGNED(alignof(type));                                                        \
-  const type mx2 ATTR_ALIGNED(alignof(type)) =                                                     \
-      *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(type)));                    \
-  do {                                                                                             \
-    const type mx0 ATTR_ALIGNED(alignof(type)) =                                                   \
-        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(type)));                  \
-    const type mx1 ATTR_ALIGNED(alignof(type)) =                                                   \
-        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(type)));                  \
-                                                                                                   \
-    for (unsigned int m = 0; m < (sc); ++m) {                                                      \
-      const type inm ATTR_ALIGNED(alignof(type)) =                                                 \
-          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                   \
-      const type rvecm ATTR_ALIGNED(alignof(type)) =                                               \
-          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(rvec[m]), alignof(type)));                 \
-                                                                                                   \
-      type tmp1 = (and)(inm, mx0);                                                                 \
-      type tmp2 = (and)(inm, mx1);                                                                 \
-      x2m[m]    = (and)(inm, mx2);                                                                 \
-                                                                                                   \
-      x0s[m] = (shift_left)(tmp1, 2);                                                              \
-      x1s[m] = (shift_left)(tmp2, 1);                                                              \
-                                                                                                   \
-      r0m[m] = tmp1 = (and)(rvecm, mx0);                                                           \
-      r1m[m] = tmp2 = (and)(rvecm, mx1);                                                           \
-      r2m[m]        = (and)(rvecm, mx2);                                                           \
-                                                                                                   \
-      r0s[m] = (shift_left)(tmp1, 2);                                                              \
-      r1s[m] = (shift_left)(tmp2, 1);                                                              \
-    }                                                                                              \
-  } while (0)
-
-#define bitsliced_mm_step_2(sc, type, and, xor, shift_right)                                       \
-  do {                                                                                             \
-    const type maskm ATTR_ALIGNED(alignof(type)) =                                                 \
-        *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(type)));                \
-    for (unsigned int m = 0; m < sc; ++m) {                                                        \
-      const type inm ATTR_ALIGNED(alignof(type)) =                                                 \
-          *((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                   \
-      type* outm = (type*)ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));                  \
-                                                                                                   \
-      type tmp1 = (xor)(r2m[m], x0s[m]);                                                           \
-      type tmp2 = (xor)(x0s[m], x1s[m]);                                                           \
-      type tmp3 = (xor)(tmp2, r1m[m]);                                                             \
-                                                                                                   \
-      type mout = (and)(maskm, inm);                                                               \
-                                                                                                   \
-      type tmp4 = (xor)(tmp2, r0m[m]);                                                             \
-      tmp4      = (xor)(tmp4, x2m[m]);                                                             \
-      mout      = (xor)(mout, tmp4);                                                               \
-                                                                                                   \
-      tmp2 = (shift_right)(tmp1, 2);                                                               \
-      mout = (xor)(mout, tmp2);                                                                    \
-                                                                                                   \
-      tmp1  = (shift_right)(tmp3, 1);                                                              \
-      *outm = (xor)(mout, tmp1);                                                                   \
-    }                                                                                              \
-  } while (0)
-
-#define bitsliced_mm_step_1_multiple_of_128(sc, type, and, shift_left, size)                       \
-  type r0m[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
-  type r0s[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
-  type r1m[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
-  type r1s[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
-  type r2m[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
-  type x0s[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
-  type x1s[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
-  type x2m[sc][size] ATTR_ALIGNED(alignof(type));                                                  \
-  const type* mx2 ATTR_ALIGNED(alignof(type)) =                                                    \
-      ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(type)));                     \
-  do {                                                                                             \
-    const type* mx0 ATTR_ALIGNED(alignof(type)) =                                                  \
-        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(type)));                   \
-    const type* mx1 ATTR_ALIGNED(alignof(type)) =                                                  \
-        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(type)));                   \
-                                                                                                   \
-    for (unsigned int m = 0; m < (sc); ++m) {                                                      \
-      const type* inm ATTR_ALIGNED(alignof(type)) =                                                \
-          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                    \
-      const type* rvecm ATTR_ALIGNED(alignof(type)) =                                              \
-          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(rvec[m]), alignof(type)));                  \
-                                                                                                   \
-      type tmp1[size] ATTR_ALIGNED(alignof(type));                                                 \
-      type tmp2[size] ATTR_ALIGNED(alignof(type));                                                 \
-      (and)(tmp1, inm, mx0);                                                                       \
-      (and)(tmp2, inm, mx1);                                                                       \
-      (and)(x2m[m], inm, mx2);                                                                     \
-                                                                                                   \
-      (shift_left)(x0s[m], tmp1, 2);                                                               \
-      (shift_left)(x1s[m], tmp2, 1);                                                               \
-                                                                                                   \
-      (and)(tmp1, rvecm, mx0);                                                                     \
-      memcpy(r0m[m], tmp1, size * sizeof(type));                                                   \
-                                                                                                   \
-      (and)(tmp2, rvecm, mx1);                                                                     \
-      memcpy(r1m[m], tmp2, size * sizeof(type));                                                   \
-                                                                                                   \
-      (and)(r2m[m], rvecm, mx2);                                                                   \
-                                                                                                   \
-      (shift_left)(r0s[m], tmp1, 2);                                                               \
-      (shift_left)(r1s[m], tmp2, 1);                                                               \
-    }                                                                                              \
-  } while (0)
-
-#define bitsliced_mm_step_2_multiple_of_128(sc, type, and, xor, shift_right, size)                 \
-  do {                                                                                             \
-    const type* maskm ATTR_ALIGNED(alignof(type)) =                                                \
-        ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(type)));                 \
-    for (unsigned int m = 0; m < sc; ++m) {                                                        \
-      const type* inm ATTR_ALIGNED(alignof(type)) =                                                \
-          ((const type*)ASSUME_ALIGNED(CONST_FIRST_ROW(in[m]), alignof(type)));                    \
-      type* outm = (type*)ASSUME_ALIGNED(CONST_FIRST_ROW(out[m]), alignof(type));                  \
-                                                                                                   \
-      type tmp1[size], tmp2[size], tmp3[size];                                                     \
-      (xor)(tmp1, r2m[m], x0s[m]);                                                                 \
-      (xor)(tmp2, x0s[m], x1s[m]);                                                                 \
-      (xor)(tmp3, tmp2, r1m[m]);                                                                   \
-                                                                                                   \
-      type mout[size];                                                                             \
-      (and)(mout, maskm, inm);                                                                     \
-                                                                                                   \
-      type tmp4[size];                                                                             \
-      (xor)(tmp4, tmp2, r0m[m]);                                                                   \
-      (xor)(tmp4, tmp4, x2m[m]);                                                                   \
-      (xor)(mout, mout, tmp4);                                                                     \
-                                                                                                   \
-      (shift_right)(tmp2, tmp1, 2);                                                                \
-      (xor)(mout, mout, tmp2);                                                                     \
-      (shift_right)(tmp1, tmp3, 1);                                                                \
-      (xor)(outm, mout, tmp1);                                                                     \
-    }                                                                                              \
-  } while (0)
-
-#if defined(WITH_SSE2)
-ATTR_TARGET("sse2")
-static void mpc_sbox_layer_bitsliced_128_sse(mzd_local_t** out, mzd_local_t* const* in,
-                                             view_t* view, mzd_local_t** rvec, mask_t const* mask) {
-  bitsliced_mm_step_1(SC_PROOF, __m128i, _mm_and_si128, mm128_shift_left);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_sse(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_sse(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_sse(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2(SC_PROOF, __m128i, _mm_and_si128, _mm_xor_si128, mm128_shift_right);
-}
-
-ATTR_TARGET("sse2")
-static void mpc_sbox_layer_bitsliced_verify_128_sse(mzd_local_t** out, mzd_local_t* const* in,
-                                                    view_t* view, mzd_local_t** rvec,
-                                                    mask_t const* mask) {
-  bitsliced_mm_step_1(SC_VERIFY, __m128i, _mm_and_si128, mm128_shift_left);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_sse(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_sse(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_sse(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2(SC_VERIFY, __m128i, _mm_and_si128, _mm_xor_si128, mm128_shift_right);
-}
-
-ATTR_TARGET("sse2")
-static void mpc_sbox_layer_bitsliced_256_sse(mzd_local_t** out, mzd_local_t* const* in,
-                                             view_t* view, mzd_local_t** rvec, mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_PROOF, __m128i, mm256_and_sse, mm256_shift_left_sse, 2);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_256_sse(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_256_sse(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_256_sse(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_PROOF, __m128i, mm256_and_sse, mm256_xor_sse,
-                                      mm256_shift_right_sse, 2);
-}
-
-ATTR_TARGET("sse2")
-static void mpc_sbox_layer_bitsliced_verify_256_sse(mzd_local_t** out, mzd_local_t* const* in,
-                                                    view_t* view, mzd_local_t** rvec,
-                                                    mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, __m128i, mm256_and_sse, mm256_shift_left_sse, 2);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_256_sse(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_256_sse(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_256_sse(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_VERIFY, __m128i, mm256_and_sse, mm256_xor_sse,
-                                      mm256_shift_right_sse, 2);
-}
-
-ATTR_TARGET("sse2")
-static void mpc_sbox_layer_bitsliced_384_sse(mzd_local_t** out, mzd_local_t* const* in,
-                                             view_t* view, mzd_local_t** rvec, mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_PROOF, __m128i, mm384_and_sse, mm384_shift_left_sse, 3);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_384_sse(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_384_sse(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_384_sse(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_PROOF, __m128i, mm384_and_sse, mm384_xor_sse,
-                                      mm384_shift_right_sse, 3);
-}
-
-ATTR_TARGET("sse2")
-static void mpc_sbox_layer_bitsliced_verify_384_sse(mzd_local_t** out, mzd_local_t* const* in,
-                                                    view_t* view, mzd_local_t** rvec,
-                                                    mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, __m128i, mm384_and_sse, mm384_shift_left_sse, 3);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_384_sse(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_384_sse(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_384_sse(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_VERIFY, __m128i, mm384_and_sse, mm384_xor_sse,
-                                      mm384_shift_right_sse, 3);
-}
-
-ATTR_TARGET("sse2")
-static void mpc_sbox_layer_bitsliced_512_sse(mzd_local_t** out, mzd_local_t* const* in,
-                                             view_t* view, mzd_local_t** rvec, mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_PROOF, __m128i, mm512_and_sse, mm512_shift_left_sse, 4);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_512_sse(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_512_sse(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_512_sse(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_PROOF, __m128i, mm512_and_sse, mm512_xor_sse,
-                                      mm512_shift_right_sse, 4);
-}
-
-ATTR_TARGET("sse2")
-static void mpc_sbox_layer_bitsliced_verify_512_sse(mzd_local_t** out, mzd_local_t* const* in,
-                                                    view_t* view, mzd_local_t** rvec,
-                                                    mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, __m128i, mm512_and_sse, mm512_shift_left_sse, 4);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_512_sse(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_512_sse(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_512_sse(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_VERIFY, __m128i, mm512_and_sse, mm512_xor_sse,
-                                      mm512_shift_right_sse, 4);
-}
-#endif
-
-#if defined(WITH_AVX2)
-ATTR_TARGET("avx2")
-static void mpc_sbox_layer_bitsliced_256_avx(mzd_local_t** out, mzd_local_t* const* in,
-                                             view_t* view, mzd_local_t** rvec, mask_t const* mask) {
-  bitsliced_mm_step_1(SC_PROOF, __m256i, _mm256_and_si256, mm256_shift_left);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_avx(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_avx(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_avx(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2(SC_PROOF, __m256i, _mm256_and_si256, _mm256_xor_si256, mm256_shift_right);
-}
-
-ATTR_TARGET("avx2")
-static void mpc_sbox_layer_bitsliced_verify_256_avx(mzd_local_t** out, mzd_local_t** in,
-                                                    view_t* view, mzd_local_t* const* rvec,
-                                                    mask_t const* mask) {
-  bitsliced_mm_step_1(SC_VERIFY, __m256i, _mm256_and_si256, mm256_shift_left);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_avx(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_avx(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_avx(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2(SC_VERIFY, __m256i, _mm256_and_si256, _mm256_xor_si256, mm256_shift_right);
-}
-
-ATTR_TARGET("avx2")
-static void mpc_sbox_layer_bitsliced_512_avx(mzd_local_t** out, mzd_local_t* const* in,
-                                             view_t* view, mzd_local_t** rvec, mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_PROOF, __m256i, mm512_and_avx, mm512_shift_left_avx, 2);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_512_avx(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_512_avx(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_512_avx(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_PROOF, __m256i, mm512_and_avx, mm512_xor_avx,
-                                      mm512_shift_right_avx, 2);
-}
-
-ATTR_TARGET("avx2")
-static void mpc_sbox_layer_bitsliced_verify_512_avx(mzd_local_t** out, mzd_local_t** in,
-                                                    view_t* view, mzd_local_t* const* rvec,
-                                                    mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, __m256i, mm512_and_avx, mm512_shift_left_avx, 2);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_512_avx(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_512_avx(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_512_avx(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_VERIFY, __m256i, mm512_and_avx, mm512_xor_avx,
-                                      mm512_shift_right_avx, 2);
-}
-#endif
-
-#if defined(WITH_NEON)
-static void mpc_sbox_layer_bitsliced_128_neon(mzd_local_t** out, mzd_local_t* const* in,
-                                              view_t* view, mzd_local_t** rvec,
-                                              mask_t const* mask) {
-  bitsliced_mm_step_1(SC_PROOF, uint32x4_t, vandq_u32, mm128_shift_left);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_neon(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_neon(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_neon(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2(SC_PROOF, uint32x4_t, vandq_u32, veorq_u32, mm128_shift_right);
-}
-
-static void mpc_sbox_layer_bitsliced_verify_128_neon(mzd_local_t** out, mzd_local_t* const* in,
-                                                     view_t* view, mzd_local_t** rvec,
-                                                     mask_t const* mask) {
-  bitsliced_mm_step_1(SC_VERIFY, uint32x4_t, vandq_u32, mm128_shift_left);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_neon(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_neon(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_neon(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2(SC_VERIFY, uint32x4_t, vandq_u32, veorq_u32, mm128_shift_right);
-}
-
-static void mpc_sbox_layer_bitsliced_256_neon(mzd_local_t** out, mzd_local_t* const* in,
-                                              view_t* view, mzd_local_t** rvec,
-                                              mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_PROOF, uint32x4_t, mm256_and, mm256_shift_left, 2);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_256_neon(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_256_neon(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_256_neon(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_PROOF, uint32x4_t, mm256_and, mm256_xor, mm256_shift_right,
-                                      2);
-}
-
-static void mpc_sbox_layer_bitsliced_verify_256_neon(mzd_local_t** out, mzd_local_t* const* in,
-                                                     view_t* view, mzd_local_t** rvec,
-                                                     mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, uint32x4_t, mm256_and, mm256_shift_left, 2);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_256_neon(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_256_neon(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_256_neon(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_VERIFY, uint32x4_t, mm256_and, mm256_xor,
-                                      mm256_shift_right, 2);
-}
-
-static void mpc_sbox_layer_bitsliced_384_neon(mzd_local_t** out, mzd_local_t* const* in,
-                                              view_t* view, mzd_local_t** rvec,
-                                              mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_PROOF, uint32x4_t, mm384_and, mm384_shift_left, 3);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_384_neon(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_384_neon(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_384_neon(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_PROOF, uint32x4_t, mm384_and, mm384_xor, mm384_shift_right,
-                                      3);
-}
-
-static void mpc_sbox_layer_bitsliced_verify_384_neon(mzd_local_t** out, mzd_local_t* const* in,
-                                                     view_t* view, mzd_local_t** rvec,
-                                                     mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, uint32x4_t, mm384_and, mm384_shift_left, 3);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_384_neon(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_384_neon(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_384_neon(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_VERIFY, uint32x4_t, mm384_and, mm384_xor,
-                                      mm384_shift_right, 3);
-}
-
-static void mpc_sbox_layer_bitsliced_512_neon(mzd_local_t** out, mzd_local_t* const* in,
-                                              view_t* view, mzd_local_t** rvec,
-                                              mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_PROOF, uint32x4_t, mm512_and, mm512_shift_left, 4);
-
-  mpc_clear(view->s, SC_PROOF);
-  mpc_and_512_neon(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_512_neon(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_512_neon(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_PROOF, uint32x4_t, mm512_and, mm512_xor, mm512_shift_right,
-                                      4);
-}
-
-static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_local_t* const* in,
-                                                     view_t* view, mzd_local_t** rvec,
-                                                     mask_t const* mask) {
-  bitsliced_mm_step_1_multiple_of_128(SC_VERIFY, uint32x4_t, mm512_and, mm512_shift_left, 4);
-
-  mzd_local_clear(view->s[0]);
-  mpc_and_verify_512_neon(r0m, x0s, x1s, r2m, view, mx2, 0);
-  mpc_and_verify_512_neon(r2m, x1s, x2m, r1s, view, mx2, 1);
-  mpc_and_verify_512_neon(r1m, x0s, x2m, r0s, view, mx2, 2);
-
-  bitsliced_mm_step_2_multiple_of_128(SC_VERIFY, uint32x4_t, mm512_and, mm512_xor,
-                                      mm512_shift_right, 4);
-}
-#endif
-#endif
 
 #define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, vars, n, shares)                              \
   CONCAT(SBOX_mzd, X)(sbox, y, x, views, r, lowmcmask, vars, n)
@@ -892,40 +351,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define VERIFY mpc_lowmc_call_verify_256_sse
 #include "mpc_lowmc.c.i"
 
-#if defined(WITH_CUSTOM_INSTANCES)
-#undef XOR
-#undef MUL
-#undef ADDMUL
-#define XOR mzd_xor_sse
-#define MUL SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse, mzd_addmul_vl_sse)
-
-#undef LOWMC_INSTANCE
-#undef LOWMC_N
-#undef LOWMC_R
-#define LOWMC_N lowmc->n
-#define LOWMC_R lowmc->r
-
-// 384 bit using SSE2
-#undef SIGN_SBOX
-#undef VERIFY_SBOX
-#define SIGN_SBOX mpc_sbox_layer_bitsliced_384_sse
-#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_384_sse
-
-#define SIGN mpc_lowmc_call_384_sse
-#define VERIFY mpc_lowmc_call_verify_384_sse
-#include "mpc_lowmc.c.i"
-
-// 512 bit using SSE2
-#undef SIGN_SBOX
-#undef VERIFY_SBOX
-#define SIGN_SBOX mpc_sbox_layer_bitsliced_512_sse
-#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_512_sse
-
-#define SIGN mpc_lowmc_call_512_sse
-#define VERIFY mpc_lowmc_call_verify_512_sse
-#include "mpc_lowmc.c.i"
-#endif
 #endif
 
 #if defined(WITH_AVX2)
@@ -1050,40 +475,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define VERIFY mpc_lowmc_call_verify_256_avx
 #include "mpc_lowmc.c.i"
 
-#if defined(WITH_CUSTOM_INSTANCES)
-#undef XOR
-#undef MUL
-#undef ADDMUL
-#define XOR mzd_xor_avx
-#define MUL SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx, mzd_addmul_vl_avx)
-
-#undef LOWMC_INSTANCE
-#undef LOWMC_N
-#undef LOWMC_R
-#define LOWMC_N lowmc->n
-#define LOWMC_R lowmc->r
-
-// 384 bit using AVX2
-#undef SIGN_SBOX
-#undef VERIFY_SBOX
-#define SIGN_SBOX mpc_sbox_layer_bitsliced_512_avx
-#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_512_avx
-
-#define SIGN mpc_lowmc_call_384_avx
-#define VERIFY mpc_lowmc_call_verify_384_avx
-#include "mpc_lowmc.c.i"
-
-// 512 bit using AVX2
-#undef SIGN_SBOX
-#undef VERIFY_SBOX
-#define SIGN_SBOX mpc_sbox_layer_bitsliced_512_avx
-#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_512_avx
-
-#define SIGN mpc_lowmc_call_512_avx
-#define VERIFY mpc_lowmc_call_verify_512_avx
-#include "mpc_lowmc.c.i"
-#endif
 #endif
 
 #if defined(WITH_NEON)
@@ -1208,40 +599,6 @@ static void mpc_sbox_layer_bitsliced_verify_512_neon(mzd_local_t** out, mzd_loca
 #define VERIFY mpc_lowmc_call_verify_256_neon
 #include "mpc_lowmc.c.i"
 
-#if defined(WITH_CUSTOM_INSTANCES)
-#undef XOR
-#undef MUL
-#undef ADDMUL
-#define XOR mzd_xor_neon
-#define MUL SELECT_V_VL(mzd_mul_v_neon, mzd_mul_vl_neon)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon, mzd_addmul_vl_neon)
-
-#undef LOWMC_INSTANCE
-#undef LOWMC_N
-#undef LOWMC_R
-#define LOWMC_N lowmc->n
-#define LOWMC_R lowmc->r
-
-// 384 bit using NEON
-#undef SIGN_SBOX
-#undef VERIFY_SBOX
-#define SIGN_SBOX mpc_sbox_layer_bitsliced_384_neon
-#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_384_neon
-
-#define SIGN mpc_lowmc_call_384_neon
-#define VERIFY mpc_lowmc_call_verify_384_neon
-#include "mpc_lowmc.c.i"
-
-// 512 bit using NEON
-#undef SIGN_SBOX
-#undef VERIFY_SBOX
-#define SIGN_SBOX mpc_sbox_layer_bitsliced_512_neon
-#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_512_neon
-
-#define SIGN mpc_lowmc_call_512_neon
-#define VERIFY mpc_lowmc_call_verify_512_neon
-#include "mpc_lowmc.c.i"
-#endif
 #endif
 #endif
 
@@ -1257,12 +614,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
           return general_or_10(lowmc, mpc_lowmc_call_192_avx);
         case 256:
           return general_or_10(lowmc, mpc_lowmc_call_256_avx);
-#if defined(WITH_CUSTOM_INSTANCES)
-        case 384:
-          return general_or_10(lowmc, mpc_lowmc_call_384_avx);
-        case 512:
-          return general_or_10(lowmc, mpc_lowmc_call_512_avx);
-#endif
       }
     }
     if (lowmc->m == 1) {
@@ -1273,12 +624,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
           return general_or_1(lowmc, mpc_lowmc_call_192_avx);
         case 256:
           return general_or_1(lowmc, mpc_lowmc_call_256_avx);
-#if defined(WITH_CUSTOM_INSTANCES)
-        case 384:
-          return general_or_1(lowmc, mpc_lowmc_call_384_avx);
-        case 512:
-          return general_or_1(lowmc, mpc_lowmc_call_512_avx);
-#endif
       }
     }
   }
@@ -1293,12 +638,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
           return general_or_10(lowmc, mpc_lowmc_call_192_sse);
         case 256:
           return general_or_10(lowmc, mpc_lowmc_call_256_sse);
-#if defined(WITH_CUSTOM_INSTANCES)
-        case 384:
-          return general_or_10(lowmc, mpc_lowmc_call_384_sse);
-        case 512:
-          return general_or_10(lowmc, mpc_lowmc_call_512_sse);
-#endif
       }
     }
     if(lowmc->m == 1) {
@@ -1309,12 +648,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
           return general_or_1(lowmc, mpc_lowmc_call_192_sse);
         case 256:
           return general_or_1(lowmc, mpc_lowmc_call_256_sse);
-#if defined(WITH_CUSTOM_INSTANCES)
-        case 384:
-          return general_or_1(lowmc, mpc_lowmc_call_384_sse);
-        case 512:
-          return general_or_1(lowmc, mpc_lowmc_call_512_sse);
-#endif
       }
     }
   }
@@ -1329,13 +662,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
         return general_or_10(lowmc, mpc_lowmc_call_192_neon);
       case 256:
         return general_or_10(lowmc, mpc_lowmc_call_256_neon);
-#if defined(WITH_CUSTOM_INSTANCES)
-      case 384:
-        return general_or_10(lowmc, mpc_lowmc_call_384_neon);
-      case 512:
-        return general_or_10(lowmc, mpc_lowmc_call_512_neon);
-#endif
-        }
+      }
     }
     if(lowmc->m == 1) {
       switch (lowmc->n) {
@@ -1345,12 +672,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
         return general_or_1(lowmc, mpc_lowmc_call_192_neon);
       case 256:
         return general_or_1(lowmc, mpc_lowmc_call_256_neon);
-#if defined(WITH_CUSTOM_INSTANCES)
-      case 384:
-        return general_or_1(lowmc, mpc_lowmc_call_384_neon);
-      case 512:
-        return general_or_1(lowmc, mpc_lowmc_call_512_neon);
-#endif
       }
     }
   }
@@ -1377,12 +698,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
           return general_or_10(lowmc, mpc_lowmc_call_verify_192_avx);
         case 256:
           return general_or_10(lowmc, mpc_lowmc_call_verify_256_avx);
-#if defined(WITH_CUSTOM_INSTANCES)
-        case 384:
-          return general_or_10(lowmc, mpc_lowmc_call_verify_384_avx);
-        case 512:
-          return general_or_10(lowmc, mpc_lowmc_call_verify_512_avx);
-#endif
       }
     }
     if(lowmc->m == 1) {
@@ -1393,12 +708,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
           return general_or_1(lowmc, mpc_lowmc_call_verify_192_avx);
         case 256:
           return general_or_1(lowmc, mpc_lowmc_call_verify_256_avx);
-#if defined(WITH_CUSTOM_INSTANCES)
-        case 384:
-          return general_or_1(lowmc, mpc_lowmc_call_verify_384_avx);
-        case 512:
-          return general_or_1(lowmc, mpc_lowmc_call_verify_512_avx);
-#endif
       }
     }
   }
@@ -1413,12 +722,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
           return general_or_10(lowmc, mpc_lowmc_call_verify_192_sse);
         case 256:
           return general_or_10(lowmc, mpc_lowmc_call_verify_256_sse);
-#if defined(WITH_CUSTOM_INSTANCES)
-        case 384:
-          return general_or_10(lowmc, mpc_lowmc_call_verify_384_sse);
-        case 512:
-          return general_or_10(lowmc, mpc_lowmc_call_verify_512_sse);
-#endif
       }
     }
     if(lowmc->m == 1) {
@@ -1429,12 +732,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
           return general_or_1(lowmc, mpc_lowmc_call_verify_192_sse);
         case 256:
           return general_or_1(lowmc, mpc_lowmc_call_verify_256_sse);
-#if defined(WITH_CUSTOM_INSTANCES)
-        case 384:
-          return general_or_1(lowmc, mpc_lowmc_call_verify_384_sse);
-        case 512:
-          return general_or_1(lowmc, mpc_lowmc_call_verify_512_sse);
-#endif
       }
     }
   }
@@ -1449,12 +746,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
         return general_or_10(lowmc, mpc_lowmc_call_verify_192_neon);
       case 256:
         return general_or_10(lowmc, mpc_lowmc_call_verify_256_neon);
-#if defined(WITH_CUSTOM_INSTANCES)
-      case 384:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_384_neon);
-      case 512:
-        return general_or_10(lowmc, mpc_lowmc_call_verify_512_neon);
-#endif
       }
     }
     if(lowmc->m == 1) {
@@ -1465,12 +756,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
         return general_or_1(lowmc, mpc_lowmc_call_verify_192_neon);
       case 256:
         return general_or_1(lowmc, mpc_lowmc_call_verify_256_neon);
-#if defined(WITH_CUSTOM_INSTANCES)
-      case 384:
-        return general_or_1(lowmc, mpc_lowmc_call_verify_384_neon);
-      case 512:
-        return general_or_1(lowmc, mpc_lowmc_call_verify_512_neon);
-#endif
       }
     }
   }

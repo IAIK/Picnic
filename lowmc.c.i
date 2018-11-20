@@ -59,24 +59,4 @@
 #undef N_LOWMC
 #undef LOWMC_M
 
-#if defined(WITH_CUSTOM_INSTANCES)
-#define SBOX SBOX_IMPL
-#define N_LOWMC LOWMC
-#define MUL_R MUL_R_1
-#define MUL_Z MUL_Z_1
-#define LOWMC_M (lowmc->m)
-#include "lowmc_impl.c.i"
-
-#undef N_LOWMC
-#define N_LOWMC CONCAT(LOWMC, store)
-#define RECORD_STATE
-#include "lowmc_impl.c.i"
-#undef SBOX
-#undef RECORD_STATE
-#undef MUL_R
-#undef MUL_Z
-#undef N_LOWMC
-#undef LOWMC_M
-#endif
-
 // vim: ft=c

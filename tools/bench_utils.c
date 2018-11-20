@@ -66,9 +66,6 @@ bool parse_args(bench_options_t* options, int argc, char** argv) {
 #if !defined(_MSC_VER)
   static const struct option long_options[] = {
     {"iter", required_argument, NULL, 'i'},
-#if defined(WITH_CUSTOM_INSTANCES)
-    {"lowmc", required_argument, NULL, 'l'},
-#endif
     {0, 0, 0, 0}
   };
 
@@ -84,19 +81,9 @@ bool parse_args(bench_options_t* options, int argc, char** argv) {
       }
       break;
 
-#if defined(WITH_CUSTOM_INSTANCES)
-    case 'l':
-      options->lowmc_file = optarg;
-      break;
-#endif
-
     case '?':
     default:
-#if defined(WITH_CUSTOM_INSTANCES)
-      printf("usage: %s [-i iter] [-l lowmc] param\n", argv[0]);
-#else
       printf("usage: %s [-i iter] param\n", argv[0]);
-#endif
       return false;
     }
   }

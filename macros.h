@@ -145,12 +145,8 @@
 #endif
 
 /* helper to select lowmc implementations */
-#if defined(WITH_CUSTOM_INSTANCES)
-#define general_or_10(l, f) (l)->m == 10 ? f##_10 : (f)
-#else
 #define general_or_10(l, f) f##_10
 #define general_or_1(l, f) f##_1
-#endif
 
 /* helper macros/functions for checked integer subtraction */
 #if GNUC_CHECK(5, 0) || __has_builtin(__builtin_add_overflow)

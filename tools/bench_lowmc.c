@@ -38,27 +38,14 @@ static void bench_lowmc(const bench_options_t* options) {
     return;
   }
 
-  lowmc_t custom_lowmc = { 0 };
-  lowmc_implementation_f custom_impl = NULL;
-#if defined(WITH_CUSTOM_INSTANCES)
-  if (options->lowmc_file) {
-    if (!lowmc_read_file(&custom_lowmc, options->lowmc_file)) {
-      printf("Failed to read LowMC instance.\n");
-      return;
-    }
-
-    custom_impl = lowmc_get_implementation(&custom_lowmc);
-  }
-#endif
-
-  const picnic_instance_t* pp = !custom_impl ? picnic_instance_get(options->params) : NULL;
-  if (!custom_impl && !pp) {
+  const picnic_instance_t* pp = picnic_instance_get(options->params);
+  if (!pp) {
     printf("Failed to initialize LowMC instance.\n");
     return;
   }
 
-  const lowmc_t* lowmc                    = pp ? pp->lowmc : &custom_lowmc;
-  const lowmc_implementation_f lowmc_impl = pp ? pp->lowmc_impl : custom_impl;
+  const lowmc_t* lowmc                    = pp->lowmc;
+  const lowmc_implementation_f lowmc_impl = pp->lowmc_impl;
 
   mzd_local_t* sk = mzd_local_init(1, lowmc->k);
   mzd_local_t* pt = mzd_local_init(1, lowmc->n);
@@ -88,12 +75,6 @@ static void bench_lowmc(const bench_options_t* options) {
 
   timing_close(&ctx);
   print_timings(timings, options->iter);
-
-#if defined(WITH_CUSTOM_INSTANCES)
-  if (custom_impl) {
-    lowmc_clear(&custom_lowmc);
-  }
-#endif
 
   free(timings);
 }

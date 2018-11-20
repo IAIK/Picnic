@@ -7572,9 +7572,5 @@ const lowmc_t lowmc_128_128_20 = {
   &precomputed_constant_linear_part,
   &precomputed_constant_non_linear_part,
 #endif
-#if defined(WITH_CUSTOM_INSTANCES)
-  { NULL, NULL, NULL, NULL },
-  false
-#endif
 };
 

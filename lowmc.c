@@ -73,190 +73,6 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
   *d          = sbox_layer_1_bitsliced_uint64(*d);
 }
 
-#if defined(WITH_CUSTOM_INSTANCES)
-static void sbox_layer_bitsliced(mzd_local_t* in, mask_t const* mask) {
-  mzd_local_t* buffer[6] = {NULL};
-  mzd_local_init_multiple_ex(buffer, 6, 1, in->ncols, false);
-
-  mzd_local_t* x0m = buffer[0];
-  mzd_local_t* x1m = buffer[1];
-  mzd_local_t* x2m = buffer[2];
-  mzd_local_t* t0  = buffer[3];
-  mzd_local_t* t1  = buffer[4];
-  mzd_local_t* t2  = buffer[5];
-
-  // a
-  mzd_and(x0m, mask->x0, in);
-  // b
-  mzd_and(x1m, mask->x1, in);
-  // c
-  mzd_and(x2m, mask->x2, in);
-
-  mzd_shift_left(x0m, x0m, 2);
-  mzd_shift_left(x1m, x1m, 1);
-
-  // b & c
-  mzd_and(t0, x1m, x2m);
-  // c & a
-  mzd_and(t1, x0m, x2m);
-  // a & b
-  mzd_and(t2, x0m, x1m);
-
-  // (b & c) ^ a
-  mzd_xor(t0, t0, x0m);
-
-  // (c & a) ^ a ^ b
-  mzd_xor(t1, t1, x0m);
-  mzd_xor(t1, t1, x1m);
-
-  // (a & b) ^ a ^ b ^c
-  mzd_xor(t2, t2, x0m);
-  mzd_xor(t2, t2, x1m);
-  mzd_xor(t2, t2, x2m);
-
-  mzd_shift_right(t0, t0, 2);
-  mzd_shift_right(t1, t1, 1);
-
-  mzd_and(in, in, mask->mask);
-  mzd_xor(in, in, t2);
-  mzd_xor(in, in, t0);
-  mzd_xor(in, in, t1);
-
-  mzd_local_free_multiple(buffer);
-}
-
-#if defined(WITH_OPT)
-#if defined(WITH_SSE2)
-ATTR_TARGET("sse") static void sbox_layer_sse(mzd_local_t* in, mask_t const* mask) {
-  __m128i* ip       = (__m128i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m128i));
-  __m128i const min = *ip;
-
-  __m128i const* x0p = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(__m128i));
-  __m128i const* x1p = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(__m128i));
-  __m128i const* x2p = (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(__m128i));
-
-  __m128i x0m = _mm_and_si128(min, *x0p);
-  __m128i x1m = _mm_and_si128(min, *x1p);
-  __m128i x2m = _mm_and_si128(min, *x2p);
-
-  x0m = mm128_shift_left(x0m, 2);
-  x1m = mm128_shift_left(x1m, 1);
-
-  __m128i t0 = _mm_and_si128(x1m, x2m);
-  __m128i t1 = _mm_and_si128(x0m, x2m);
-  __m128i t2 = _mm_and_si128(x0m, x1m);
-
-  t0 = _mm_xor_si128(t0, x0m);
-
-  x0m = _mm_xor_si128(x0m, x1m);
-  t1  = _mm_xor_si128(t1, x0m);
-
-  t2 = _mm_xor_si128(t2, x0m);
-  t2 = _mm_xor_si128(t2, x2m);
-
-  t0 = mm128_shift_right(t0, 2);
-  t1 = mm128_shift_right(t1, 1);
-
-  __m128i const* xmp =
-      (__m128i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(__m128i));
-
-  __m128i mout = _mm_and_si128(min, *xmp);
-
-  mout = _mm_xor_si128(mout, t2);
-  mout = _mm_xor_si128(mout, t1);
-  *ip  = _mm_xor_si128(mout, t0);
-}
-#endif
-
-#if defined(WITH_AVX2)
-ATTR_TARGET("avx2") static void sbox_layer_avx(mzd_local_t* in, mask_t const* mask) {
-  __m256i* ip       = (__m256i*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(__m256i));
-  __m256i const min = *ip;
-
-  __m256i const* x0p = (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(__m256i));
-  __m256i const* x1p = (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(__m256i));
-  __m256i const* x2p = (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(__m256i));
-
-  __m256i x0m = _mm256_and_si256(min, *x0p);
-  __m256i x1m = _mm256_and_si256(min, *x1p);
-  __m256i x2m = _mm256_and_si256(min, *x2p);
-
-  x0m = mm256_shift_left(x0m, 2);
-  x1m = mm256_shift_left(x1m, 1);
-
-  __m256i t0 = _mm256_and_si256(x1m, x2m);
-  __m256i t1 = _mm256_and_si256(x0m, x2m);
-  __m256i t2 = _mm256_and_si256(x0m, x1m);
-
-  t0 = _mm256_xor_si256(t0, x0m);
-
-  x0m = _mm256_xor_si256(x0m, x1m);
-  t1  = _mm256_xor_si256(t1, x0m);
-
-  t2 = _mm256_xor_si256(t2, x0m);
-  t2 = _mm256_xor_si256(t2, x2m);
-
-  t0 = mm256_shift_right(t0, 2);
-  t1 = mm256_shift_right(t1, 1);
-
-  __m256i const* xmp =
-      (__m256i const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(__m256i));
-
-  __m256i mout = _mm256_and_si256(min, *xmp);
-
-  mout = _mm256_xor_si256(mout, t2);
-  mout = _mm256_xor_si256(mout, t1);
-  *ip  = _mm256_xor_si256(mout, t0);
-}
-#endif
-
-#if defined(WITH_NEON)
-static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
-  uint32x4_t* ip       = (uint32x4_t*)ASSUME_ALIGNED(CONST_FIRST_ROW(in), alignof(uint32x4_t));
-  uint32x4_t const min = *ip;
-
-  uint32x4_t const* x0p =
-      (uint32x4_t const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x0), alignof(uint32x4_t));
-  uint32x4_t const* x1p =
-      (uint32x4_t const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x1), alignof(uint32x4_t));
-  uint32x4_t const* x2p =
-      (uint32x4_t const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->x2), alignof(uint32x4_t));
-
-  uint32x4_t x0m = vandq_u32(min, *x0p);
-  uint32x4_t x1m = vandq_u32(min, *x1p);
-  uint32x4_t x2m = vandq_u32(min, *x2p);
-
-  x0m = mm128_shift_left(x0m, 2);
-  x1m = mm128_shift_left(x1m, 1);
-
-  uint32x4_t t0 = vandq_u32(x1m, x2m);
-  uint32x4_t t1 = vandq_u32(x0m, x2m);
-  uint32x4_t t2 = vandq_u32(x0m, x1m);
-
-  t0 = veorq_u32(t0, x0m);
-
-  x0m = veorq_u32(x0m, x1m);
-  t1  = veorq_u32(t1, x0m);
-
-  t2 = veorq_u32(t2, x0m);
-  t2 = veorq_u32(t2, x2m);
-
-  t0 = mm128_shift_right(t0, 2);
-  t1 = mm128_shift_right(t1, 1);
-
-  uint32x4_t const* xmp =
-      (uint32x4_t const*)ASSUME_ALIGNED(CONST_FIRST_ROW(mask->mask), alignof(uint32x4_t));
-
-  uint32x4_t mout = vandq_u32(min, *xmp);
-
-  mout = veorq_u32(mout, t2);
-  mout = veorq_u32(mout, t1);
-  *ip  = veorq_u32(mout, t0);
-}
-#endif
-#endif
-#endif
-
 // uint64 based implementation
 #define XOR mzd_xor_uint64
 #define MUL SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
@@ -417,28 +233,6 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC lowmc_sse_256
 #include "lowmc.c.i"
 
-#if defined(WITH_CUSTOM_INSTANCES)
-#undef XOR
-#undef MUL
-#undef ADDMUL
-#define XOR mzd_xor_sse
-#define MUL SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse, mzd_addmul_vl_sse)
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#define LOWMC_N lowmc->n
-#define LOWMC_R_1 lowmc->r
-#define LOWMC_R_10 lowmc->r
-
-// generic using SSE2
-#undef LOWMC
-#define LOWMC lowmc_sse
-#include "lowmc.c.i"
-#endif
 #endif
 
 #if defined(WITH_AVX2)
@@ -557,30 +351,6 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC lowmc_avx_256
 #include "lowmc.c.i"
 
-#if defined(WITH_CUSTOM_INSTANCES)
-#undef XOR
-#undef MUL
-#undef ADDMUL
-#define XOR mzd_xor_avx
-#define MUL SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx, mzd_addmul_vl_avx)
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#define LOWMC_N lowmc->n
-#define LOWMC_R_1 lowmc->r
-#define LOWMC_R_10 lowmc->r
-
-// generic using AVX2
-#undef SBOX_IMPL
-#undef LOWMC
-#define SBOX_IMPL sbox_layer_bitsliced
-#define LOWMC lowmc_avx
-#include "lowmc.c.i"
-#endif
 #endif
 
 #if defined(WITH_NEON)
@@ -701,27 +471,6 @@ static void sbox_layer_neon(mzd_local_t* in, mask_t const* mask) {
 #define LOWMC lowmc_neon_256
 #include "lowmc.c.i"
 
-#if defined(WITH_CUSTOM_INSTANCES)
-#undef XOR
-#undef MUL
-#undef ADDMUL
-#define XOR mzd_xor_neon
-#define MUL SELECT_V_VL(mzd_mul_v_neon, mzd_mul_vl_neon)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon, mzd_addmul_vl_neon)
-
-#undef LOWMC_INSTANCE
-#undef LOWMC_N
-#undef LOWMC_R
-#define LOWMC_N lowmc->n
-#define LOWMC_R lowmc->r
-
-// generic using NEON
-#undef SBOX_IMPL
-#undef LOWMC
-#define SBOX_IMPL sbox_layer_bitsliced
-#define LOWMC lowmc_neon
-#include "lowmc.c.i"
-#endif
 #endif
 #endif
 
@@ -749,11 +498,6 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return general_or_1(lowmc, lowmc_avx_256);
       }
     }
-#if defined(WITH_CUSTOM_INSTANCES)
-    if (lowmc->n > 256) {
-      return general_or_10(lowmc, lowmc_avx);
-    }
-#endif
   }
 #endif
 #if defined(WITH_SSE2)
@@ -778,11 +522,6 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return general_or_1(lowmc, lowmc_sse_256);
       }
     }
-#if defined(WITH_CUSTOM_INSTANCES)
-    if (lowmc->n > 256) {
-      return general_or_10(lowmc, lowmc_sse);
-    }
-#endif
   }
 #endif
 #if defined(WITH_NEON)
@@ -807,11 +546,6 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return general_or_1(lowmc, lowmc_neon_256);
       }
     }
-#if defined(WITH_CUSTOM_INSTANCES)
-    if (lowmc->n > 256) {
-      return general_or_10(lowmc, lowmc_neon);
-    }
-#endif
   }
 #endif
 #endif
@@ -849,11 +583,6 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
           return general_or_1(lowmc, lowmc_avx_256_store);
       }
     }
-#if defined(WITH_CUSTOM_INSTANCES)
-    if (lowmc->n > 256) {
-      return general_or_10(lowmc_store, lowmc_avx_store);
-    }
-#endif
   }
 #endif
 #if defined(WITH_SSE2)
@@ -878,11 +607,6 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
           return general_or_1(lowmc_store, lowmc_sse_256_store);
       }
     }
-#if defined(WITH_CUSTOM_INSTANCES)
-    if (lowmc->n > 256) {
-      return general_or_10(lowmc_store, lowmc_sse_store);
-    }
-#endif
   }
 #endif
 #if defined(WITH_NEON)
@@ -907,11 +631,6 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
         return general_or_1(lowmc_store, lowmc_neon_256_store);
       }
     }
-#if defined(WITH_CUSTOM_INSTANCES)
-    if (lowmc->n > 256) {
-      return general_or_10(lowmc_store, lowmc_neon_store);
-    }
-#endif
   }
 #endif
 #endif
