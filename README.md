@@ -34,13 +34,13 @@ The cmake based build system supports the following flags:
  * ``WITH_NEON``: Use NEON if available.
  * ``WITH_MARCH_NATIVE``: Build with -march=native -mtune=native (if supported).
  * ``WITH_LTO``: Enable link-time optimization (if supported).
- * ``WITH_MUL_M4RI``: Use methods of four russians for matrix multiplication.
+ * ``WITH_MUL_M4RI``: Use methods of four Russians for matrix multiplication.
  * ``WITH_REDUCED_LINEAR_LAYER``: Enable partial pre-computation of round key.
 
 Building on Windows
 -------------------
 
-On Windows the code can be built using Visual Studio and cmake's Visual Sutdio
+On Windows the code can be built using Visual Studio and cmake's Visual Studio
 solution generator as follows: Open the "Developer Command Prompt for VS 2017"
 and from the source folder, run:
 ```sh
@@ -57,7 +57,7 @@ the Visual Studio IDE. The code was tested using `cmake' for Windows version
 Cross-compiling to Windows using MinGW
 --------------------------------------
 
-Using MinGW Picnic can be cross-compiled from Linux to Windows. First create a
+Using MinGW, Picnic can be cross-compiled from Linux to Windows. First create a
 `cmake` toolchain file with the following content:
 ```
 SET(CMAKE_SYSTEM_NAME Windows)
