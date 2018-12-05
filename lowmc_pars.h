@@ -16,13 +16,6 @@
 
 typedef mzd_local_t lowmc_key_t;
 
-typedef struct {
-  mzd_local_t* x0;
-  mzd_local_t* x1;
-  mzd_local_t* x2;
-  mzd_local_t* mask;
-} mask_t;
-
 /**
  * Masks for 10 S-boxes.
  */

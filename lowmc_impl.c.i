@@ -48,7 +48,7 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 #if defined(RECORD_STATE)
     mzd_local_copy(state->state[i], x);
 #endif
-    SBOX(x, &lowmc->mask);
+    SBOX(x);
 
 #if defined(M_FIXED_10)
     const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
@@ -101,7 +101,7 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 #if defined(RECORD_STATE)
   mzd_local_copy(state->state[LOWMC_R-1], x);
 #endif
-  SBOX(x, &lowmc->mask);
+  SBOX(x);
 
   unsigned i = (LOWMC_R-1);
 #if defined(M_FIXED_10)
@@ -129,7 +129,7 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 #if defined(RECORD_STATE)
     mzd_local_copy(state->state[i], x);
 #endif
-    SBOX(x, &lowmc->mask);
+    SBOX(x);
 
 #if defined(M_FIXED_10)
     const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
@@ -170,7 +170,7 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 #if defined(RECORD_STATE)
     mzd_local_copy(state->state[i], x);
 #endif
-    SBOX(x, &lowmc->mask);
+    SBOX(x);
 
     MUL(y, x, CONCAT(round->l, matrix_postfix));
     XOR(x, y, round->constant);

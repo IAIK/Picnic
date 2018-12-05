@@ -8,7 +8,7 @@
  */
 
 #define M_FIXED_10
-#define SBOX(x, mask) sbox_layer_10_uint64(x)
+#define SBOX sbox_layer_10_uint64
 #define N_LOWMC CONCAT(LOWMC, 10)
 #define MUL_R MUL_R_10
 #define MUL_Z MUL_Z_10
@@ -34,7 +34,7 @@
 #undef LOWMC_M
 
 #define M_FIXED_1
-#define SBOX(x, mask) sbox_layer_1_uint64(x)
+#define SBOX sbox_layer_1_uint64
 #define N_LOWMC CONCAT(LOWMC, 1)
 #define MUL_R MUL_R_1
 #define MUL_Z MUL_Z_1
