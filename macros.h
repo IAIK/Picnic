@@ -144,10 +144,6 @@
 #define SELECT_V_VL(v, vl) v
 #endif
 
-/* helper to select lowmc implementations */
-#define general_or_10(l, f) f##_10
-#define general_or_1(l, f) f##_1
-
 /* helper macros/functions for checked integer subtraction */
 #if GNUC_CHECK(5, 0) || __has_builtin(__builtin_add_overflow)
 #define sub_overflow_size_t(x, y, diff) __builtin_sub_overflow(x, y, diff)
