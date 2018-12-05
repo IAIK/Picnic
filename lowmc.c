@@ -634,6 +634,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
         return lowmc_neon_256_store_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
       case 128:
@@ -644,6 +645,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
         return lowmc_neon_256_store_1;
       }
     }
+#endif
   }
 #endif
 #endif
