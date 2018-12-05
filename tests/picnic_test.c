@@ -70,7 +70,7 @@ static int picnic_sign_verify(const picnic_params_t param) {
 int main() {
   int ret = 0;
   for (unsigned int param = Picnic_L1_FS; param < PARAMETER_SET_MAX_INDEX; ++param) {
-    printf("testing: %d ... ", param);
+    printf("testing: %s ... ", picnic_get_param_name(param));
     const int r = picnic_sign_verify(param);
     if (r == -2) {
       printf("SKIPPED\n");

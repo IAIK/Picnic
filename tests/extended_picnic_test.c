@@ -19,6 +19,12 @@
 #include <string.h>
 
 static int picnic_test_with_read_write(picnic_params_t parameters) {
+  const size_t max_signature_size = picnic_signature_size(parameters);
+  if (!max_signature_size) {
+    /* not supported */
+    return -2;
+  }
+
   picnic_publickey_t pk;
   picnic_privatekey_t sk;
 
@@ -88,8 +94,15 @@ static int picnic_test_with_read_write(picnic_params_t parameters) {
 int main() {
   int ret = 0;
   for (picnic_params_t params = 1; params < PARAMETER_SET_MAX_INDEX; params++) {
-    if (picnic_test_with_read_write(params)) {
+    printf("testing: %s ... ", picnic_get_param_name(params));
+    const int r = picnic_test_with_read_write(params);
+    if (r == -2) {
+      printf("SKIPPED\n");
+    } else if (r) {
+      printf("FAILED\n");
       ret = -1;
+    } else {
+      printf("OK\n");
     }
   }
   return ret;
