@@ -87,6 +87,7 @@ set(WITH_MUL_M4RI OFF CACHE BOOL "Use method of four russians for matrix multipl
 set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
 set(WITH_LOWMC_OPT "OLLC" CACHE STRING "Enable LowMC optimizations.")
 set_property(CACHE WITH_LOWMC_OPT PROPERTY STRINGS "none" "RRKC" "OLLC")
+set(WITH_LOWMC_M1 ON CACHE BOOL "Enable LowMC instances with 1 Sbox.")
 set(WITH_EXTRA_RANDOMNESS OFF CACHE BOOL "Feed extra random bytes to KDF (fault attack counter measure).")
 set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h.")
 if(MSVC)
@@ -158,8 +159,8 @@ endif()
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} sha3 "sha3/${SHA3_IMPL}")
 
 list(APPEND SHA3_SOURCES
-    sha3/KeccakHash.c
-    sha3/KeccakSpongeWidth1600.c)
+     sha3/KeccakHash.c
+     sha3/KeccakSpongeWidth1600.c)
 
 if(${SHA3_IMPL} STREQUAL "avx2")
   list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.c)
@@ -175,24 +176,27 @@ else()
 endif()
 
 list(APPEND PICNIC_SOURCES
-    aligned_alloc.c
-    bitstream.c
-    cpu.c
-    io.c
-    lowmc.c
-    lowmc_pars.c
-    lowmc_128_128_20.c
-    lowmc_192_192_30.c
-    lowmc_256_256_38.c
-    lowmc_128_128_182.c
-    lowmc_192_192_284.c
-    lowmc_256_256_363.c
-    mpc.c
-    mpc_lowmc.c
-    mzd_additional.c
-    picnic.c
-    picnic_impl.c
-    randomness.c)
+     aligned_alloc.c
+     bitstream.c
+     cpu.c
+     io.c
+     lowmc.c
+     lowmc_pars.c
+     lowmc_128_128_20.c
+     lowmc_192_192_30.c
+     lowmc_256_256_38.c
+     mpc.c
+     mpc_lowmc.c
+     mzd_additional.c
+     picnic.c
+     picnic_impl.c
+     randomness.c)
+if(WITH_LOWMC_M1)
+  list(APPEND PICNIC_SOURCES
+       lowmc_128_128_182.c
+       lowmc_192_192_284.c
+       lowmc_256_256_363.c)
+endif()
 list(APPEND PICNIC_HEADERS picnic.h)
 
 # shared library
@@ -230,10 +234,13 @@ function(apply_picnic_options lib)
   target_compile_definitions(${lib} PRIVATE
                              WITH_LOWMC_128_128_20
                              WITH_LOWMC_192_192_30
-                             WITH_LOWMC_256_256_38
-                             WITH_LOWMC_128_128_182
-                             WITH_LOWMC_192_192_284
-                             WITH_LOWMC_256_256_363)
+                             WITH_LOWMC_256_256_38)
+  if(WITH_LOWMC_M1)
+    target_compile_definitions(${lib} PRIVATE
+                               WITH_LOWMC_128_128_182
+                               WITH_LOWMC_192_192_284
+                               WITH_LOWMC_256_256_363)
+  endif()
   if(WITH_SIMD_OPT)
     target_compile_definitions(${lib} PRIVATE WITH_OPT)
     if(CC_SUPPORTS_SSE2 AND WITH_SSE2)
