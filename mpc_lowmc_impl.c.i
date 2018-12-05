@@ -52,7 +52,6 @@ static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mz
   mpc_copy(in_out_shares->s, lowmc_key, SC_PROOF);
   ++in_out_shares;
 
-  CONCAT(VARS, SBOX_ARGS)(SC_PROOF, LOWMC_N);
   mzd_local_t** x = in_out_shares->s;
   mzd_local_t* y[SC_PROOF];
   mzd_local_init_multiple_ex(y, SC_PROOF, 1, (LOWMC_N), false);
@@ -76,7 +75,6 @@ static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mz
 #undef sbox
 
   mzd_local_free_multiple(y);
-  CONCAT(VARS_FREE, SBOX_ARGS);
 }
 
 static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t* views,
@@ -87,7 +85,6 @@ static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t
   mzd_local_t* const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;
 
-  CONCAT(VARS, SBOX_ARGS)(SC_VERIFY, LOWMC_N);
   mzd_local_t* x[2 * SC_VERIFY];
   mzd_local_t** y = &x[SC_VERIFY];
   mzd_local_init_multiple_ex(x, 2 * SC_VERIFY, 1, LOWMC_N, false);
@@ -106,7 +103,6 @@ static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t
   mpc_copy(in_out_shares->s, x, SC_VERIFY);
 
   mzd_local_free_multiple(x);
-  CONCAT(VARS_FREE, SBOX_ARGS);
 }
 
 #if defined(M_FIXED_10) || defined(M_FIXED_1)

@@ -147,13 +147,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
   bitsliced_step_2_uint64_1(SC_VERIFY);
 }
 
-#define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, vars, n, shares)                              \
-  CONCAT(SBOX_mzd, X)(sbox, y, x, views, r, lowmcmask, vars, n)
+#define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, n, shares)                                    \
+  CONCAT(SBOX_mzd, X)(sbox, y, x, views, r, lowmcmask, n)
 
-#define SBOX_mzd_5(sbox, y, x, views, r, lowmcmask, vars, n) sbox(y, x, views, r, lowmcmask)
-#define SBOX_mzd_6(sbox, y, x, views, r, lowmcmask, vars, n) sbox(y, x, views, r, lowmcmask, vars)
+#define SBOX_mzd_5(sbox, y, x, views, r, lowmcmask, n) sbox(y, x, views, r, lowmcmask)
 
-#define SBOX_uint64(X, sbox, y, x, views, r, lowmcmask, vars, n, shares)                           \
+#define SBOX_uint64(X, sbox, y, x, views, r, lowmcmask, n, shares)                                 \
   do {                                                                                             \
     uint64_t in[shares];                                                                           \
     for (unsigned int count = 0; count < shares; ++count) {                                        \
@@ -169,14 +168,6 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 
 #define R_mzd mzd_local_t** r = rvec[i].s
 #define R_uint64 const uint64_t* r = rvec[i].t
-
-#define VARS_5(shares, n)
-#define VARS_6(shares, n)                                                                          \
-  sbox_vars_t vars;                                                                                \
-  sbox_vars_init(&vars, n, shares)
-
-#define VARS_FREE_5
-#define VARS_FREE_6 sbox_vars_clear(&vars)
 
 // uint64 based implementation
 #define XOR mzd_xor_uint64
