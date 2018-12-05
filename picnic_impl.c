@@ -1153,7 +1153,7 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 #endif
 
 #if defined(MUL_M4RI)
-static lowmc_t* const lowmc_instances[3] = {
+static lowmc_t* const lowmc_instances[6] = {
 #else
 static const lowmc_t* const lowmc_instances[6] = {
 #endif
