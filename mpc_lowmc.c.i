@@ -23,6 +23,7 @@
 #undef LOWMC_INSTANCE
 #undef M_FIXED_10
 
+#if defined(WITH_LOWMC_M1)
 #define M_FIXED_1
 #define N_SIGN CONCAT(SIGN, 1)
 #define N_VERIFY CONCAT(VERIFY, 1)
@@ -38,6 +39,7 @@
 #undef LOWMC_R
 #undef LOWMC_INSTANCE
 #undef M_FIXED_1
+#endif
 
 #undef SIGN
 #undef VERIFY

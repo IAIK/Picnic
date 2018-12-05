@@ -49,6 +49,7 @@ static void sbox_layer_10_uint64(mzd_local_t* x) {
   *d          = sbox_layer_10_bitsliced_uint64(*d);
 }
 
+#if defined(WITH_LOWMC_M1)
 static uint64_t sbox_layer_1_bitsliced_uint64(uint64_t in) {
   // a, b, c
   const uint64_t x0s = (in & MASK_X0I_1) << 2;
@@ -72,6 +73,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
   uint64_t* d = &FIRST_ROW(x)[x->width - 1];
   *d          = sbox_layer_1_bitsliced_uint64(*d);
 }
+#endif
 
 // uint64 based implementation
 #define XOR mzd_xor_uint64
@@ -488,6 +490,7 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return lowmc_avx_256_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
@@ -498,6 +501,7 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return lowmc_avx_256_1;
       }
     }
+#endif
   }
 #endif
 #if defined(WITH_SSE2)
@@ -512,7 +516,8 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return lowmc_sse_256_10;
       }
     }
-    if(lowmc->m == 1) {
+#if defined(WITH_LOWMC_M1)
+    if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
           return lowmc_sse_128_1;
@@ -522,6 +527,7 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return lowmc_sse_256_1;
       }
     }
+#endif
   }
 #endif
 #if defined(WITH_NEON)
@@ -536,6 +542,7 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return lowmc_neon_256_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
@@ -546,14 +553,17 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
           return lowmc_neon_256_1;
       }
     }
+#endif
   }
 #endif
 #endif
 
   if (lowmc->m == 10)
     return lowmc_uint64_10;
+#if defined(WITH_LOWMC_M1)
   else if (lowmc->m == 1)
     return lowmc_uint64_1;
+#endif
   else
     return NULL;
 }
@@ -572,6 +582,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
           return lowmc_avx_256_store_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
@@ -582,6 +593,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
           return lowmc_avx_256_store_1;
       }
     }
+#endif
   }
 #endif
 #if defined(WITH_SSE2)
@@ -596,6 +608,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
           return lowmc_sse_256_store_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
@@ -606,6 +619,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
           return lowmc_sse_256_store_1;
       }
     }
+#endif
   }
 #endif
 #if defined(WITH_NEON)
@@ -636,8 +650,10 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 
   if (lowmc->m == 10)
     return lowmc_uint64_store_10;
+#if defined(WITH_LOWMC_M1)
   else if (lowmc->m == 1)
     return lowmc_uint64_store_1;
+#endif
   else
     return NULL;
 }

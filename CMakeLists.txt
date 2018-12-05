@@ -237,6 +237,7 @@ function(apply_picnic_options lib)
                              WITH_LOWMC_256_256_38)
   if(WITH_LOWMC_M1)
     target_compile_definitions(${lib} PRIVATE
+                               WITH_LOWMC_M1
                                WITH_LOWMC_128_128_182
                                WITH_LOWMC_192_192_284
                                WITH_LOWMC_256_256_363)

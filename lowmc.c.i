@@ -33,6 +33,7 @@
 #undef N_LOWMC
 #undef LOWMC_M
 
+#if defined(WITH_LOWMC_M1)
 #define M_FIXED_1
 #define SBOX sbox_layer_1_uint64
 #define N_LOWMC CONCAT(LOWMC, 1)
@@ -58,5 +59,6 @@
 #undef LOWMC_INSTANCE
 #undef N_LOWMC
 #undef LOWMC_M
+#endif
 
 // vim: ft=c

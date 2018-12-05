@@ -126,6 +126,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
   bitsliced_step_2_uint64_10(SC_VERIFY);
 }
 
+#if defined(WITH_LOWMC_M1)
 static void mpc_sbox_layer_bitsliced_uint64_1(uint64_t* in, view_t* view, uint64_t const* rvec) {
   bitsliced_step_1_uint64_1(SC_PROOF);
 
@@ -146,6 +147,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 
   bitsliced_step_2_uint64_1(SC_VERIFY);
 }
+#endif
 
 #define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, n, shares)                                    \
   CONCAT(SBOX_mzd, X)(sbox, y, x, views, r, lowmcmask, n)
@@ -607,6 +609,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
           return mpc_lowmc_call_256_avx_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
@@ -617,6 +620,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
           return mpc_lowmc_call_256_avx_1;
       }
     }
+#endif
   }
 #endif
 #if defined(WITH_SSE2)
@@ -631,6 +635,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
           return mpc_lowmc_call_256_sse_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
@@ -641,6 +646,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
           return mpc_lowmc_call_256_sse_1;
       }
     }
+#endif
   }
 #endif
 #if defined(WITH_NEON)
@@ -655,6 +661,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
         return mpc_lowmc_call_256_neon_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
       case 128:
@@ -665,14 +672,17 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
         return mpc_lowmc_call_256_neon_1;
       }
     }
+#endif
   }
 #endif
 #endif
 
   if (lowmc->m == 10)
     return mpc_lowmc_call_10;
+#if defined(WITH_LOWMC_M1)
   if (lowmc->m == 1)
     return mpc_lowmc_call_1;
+#endif
   return NULL;
 }
 
@@ -690,6 +700,7 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
           return mpc_lowmc_call_verify_256_avx_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
@@ -700,6 +711,7 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
           return mpc_lowmc_call_verify_256_avx_1;
       }
     }
+#endif
   }
 #endif
 #if defined(WITH_SSE2)
@@ -714,6 +726,7 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
           return mpc_lowmc_call_verify_256_sse_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
         case 128:
@@ -724,6 +737,7 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
           return mpc_lowmc_call_verify_256_sse_1;
       }
     }
+#endif
   }
 #endif
 #if defined(WITH_NEON)
@@ -738,6 +752,7 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
         return mpc_lowmc_call_verify_256_neon_10;
       }
     }
+#if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
       case 128:
@@ -748,13 +763,16 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
         return mpc_lowmc_call_verify_256_neon_1;
       }
     }
+#endif
   }
 #endif
 #endif
 
   if (lowmc->m == 10)
     return mpc_lowmc_call_verify_10;
+#if defined(WITH_LOWMC_M1)
   if (lowmc->m == 1)
     return mpc_lowmc_call_verify_1;
+#endif
   return NULL;
 }
