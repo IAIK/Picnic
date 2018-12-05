@@ -44,8 +44,8 @@ The cmake based build system supports the following flags:
  * ``WITH_MARCH_NATIVE``: Build with -march=native -mtune=native (if supported).
  * ``WITH_LTO``: Enable link-time optimization (if supported).
  * ``WITH_MUL_M4RI``: Use methods of four russians for matrix multiplication.
- * ``WITH_LOWMC_OPT={none,RRKC,OLLC}``: Enable reduced round key computation (RRKC) or optimized
-   linear layer computation (OLLC) optimizations.
+ * ``WITH_LOWMC_OPT={none,ORKC,OLLE}``: Enable optimized round key computation (ORKC) or optimized
+   linear layer evaluation (OLLE) optimizations.
 
 Building on Windows
 -------------------
