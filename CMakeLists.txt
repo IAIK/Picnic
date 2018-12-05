@@ -94,6 +94,10 @@ if(MSVC)
   set(USE_STATIC_RUNTIME OFF CACHE BOOL "Use MSVC's static runtime for the static library.")
 endif()
 
+if(WITH_MUL_M4RI AND WITH_LOWMC_OPT STREQUAL "OLLC")
+  message(FATAL_ERROR "M4RI combined with OLLC is currently not implemented.")
+endif()
+
 # do not build with -rdynamic
 string(REGEX REPLACE "-rdynamic" "" CMAKE_EXE_LINKER_FLAGS
   "${CMAKE_EXE_LINKER_FLAGS}")
