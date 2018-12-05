@@ -8,10 +8,10 @@
  */
 
 lowmc_round_t const* round = lowmc->rounds;
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
   mzd_local_t* nl_part[reduced_shares];
   mzd_local_init_multiple_ex(nl_part, reduced_shares, 1, (LOWMC_R)*32, false);
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
   MPC_LOOP_CONST_C(XOR, x, x, lowmc->precomputed_constant_linear, reduced_shares, ch);
   MPC_LOOP_CONST(MUL_MC, nl_part, lowmc_key,
                  CONCAT(lowmc->precomputed_non_linear_part, matrix_postfix), reduced_shares);

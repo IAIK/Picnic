@@ -73,10 +73,10 @@ typedef struct {
 #define LOWMC_L5_1_R 363
 
 typedef struct {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
   const mzd_local_t* k_matrix;
 #endif
-#if !defined(REDUCED_LINEAR_LAYER_NEXT)
+#if !defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
   const mzd_local_t* l_matrix;
 #else
   const mzd_local_t* z_matrix;
@@ -85,12 +85,12 @@ typedef struct {
   const uint32_t*    r_cols;
   const word         r_mask;
 #endif
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
   const mzd_local_t* constant;
 #endif
 
 #if defined(MUL_M4RI)
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
   mzd_local_t* k_lookup;
 #endif
   mzd_local_t* l_lookup;
@@ -107,7 +107,7 @@ typedef struct {
   uint32_t k;
 
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
   const mzd_local_t* zr_matrix; // combined linear layers
 #endif
 #if defined(MUL_M4RI)
@@ -119,7 +119,7 @@ typedef struct {
   const lowmc_round_t* rounds;
 #endif
 
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
   const mzd_local_t* precomputed_non_linear_part_matrix;
 #if defined(MUL_M4RI)
   mzd_local_t* precomputed_non_linear_part_lookup;

@@ -6,7 +6,7 @@
 
 #include "lowmc_128_128_20.h"
 
-#if !defined(REDUCED_LINEAR_LAYER_NEXT)
+#if !defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 static const mzd_local_t L_0 = { 128, 128, 2, 2, { 0 }, {
   UINT64_C(0xde3547d35d776373), UINT64_C(0x7b6ec5825f32786d),
   UINT64_C(0xa1bf2597d8732f36), UINT64_C(0x7e52b8560916d23a),
@@ -2628,7 +2628,7 @@ static const mzd_local_t L_19 = { 128, 128, 2, 2, { 0 }, {
 }};
 
 #endif
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 static const mzd_local_t K_0 = { 128, 128, 2, 2, { 0 }, {
   UINT64_C(0xfc6e5633b1b14b6b), UINT64_C(0x76818985a86a01e2),
   UINT64_C(0x0fb016685c4614be), UINT64_C(0xab372846fb6e0100),
@@ -5460,7 +5460,7 @@ static const mzd_local_t C_19 = { 1, 128, 2, 2, { 0 }, {
   UINT64_C(0x2678a63bf4f438b2), UINT64_C(0x7c778776bab589d1),
 }};
 #endif
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
 static const mzd_local_t precomputed_round_key_matrix_linear_part = { 128, 128, 2, 2, { 0 }, {
   UINT64_C(0x7f6e7b7adabc4318), UINT64_C(0x76818984b3248786),
   UINT64_C(0x3a3cd67b6c4c501d), UINT64_C(0xab37284643366193),
@@ -5731,7 +5731,7 @@ static const mzd_local_t precomputed_constant_non_linear_part = { 1, 640, 10, 12
   UINT64_C(0xf2022c1c0c1eaaec), UINT64_C(0x48b20c3c80f6772c), UINT64_C(0xf8cdc194143b7e54), UINT64_C(0x4e7a8e804d79e9e8), UINT64_C(0x60ecd440f69dbeb4), UINT64_C(0x2e79594c7e6c4218), UINT64_C(0xf919ee049a212a04), UINT64_C(0xdecb9b7001bac034), UINT64_C(0xc8334a505f0cc2e8), UINT64_C(0x47d94960afcb8dcc), UINT64_C(0x0000000000000000), UINT64_C(0x0000000000000000),
 }};
 
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 static const mzd_local_t Z_r = { 128, 128, 2, 2, { 0 }, {
   UINT64_C(0x2de1869e7dc3a13f), UINT64_C(0xe2d06c36848483d3),
   UINT64_C(0xf706d405b49aa563), UINT64_C(0x04dd87d50204db29),
@@ -7165,14 +7165,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
 
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_1, &L_0, &C_0, NULL, NULL
 #else
     &K_1, &L_0, &C_0
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_0, &Ri_0, 4, Ri_cols_0, UINT64_C(0xffffffda40000000),
 #else
 #if defined(MUL_M4RI)
@@ -7184,14 +7184,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_2, &L_1, &C_1, NULL, NULL
 #else
     &K_2, &L_1, &C_1
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_1, &Ri_1, 3, Ri_cols_1, UINT64_C(0xffffffe700000000),
 #else
 #if defined(MUL_M4RI)
@@ -7203,14 +7203,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_3, &L_2, &C_2, NULL, NULL
 #else
     &K_3, &L_2, &C_2
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_2, &Ri_2, 1, Ri_cols_2, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7222,14 +7222,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_4, &L_3, &C_3, NULL, NULL
 #else
     &K_4, &L_3, &C_3
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_3, &Ri_3, 1, Ri_cols_3, UINT64_C(0xfffffff880000000),
 #else
 #if defined(MUL_M4RI)
@@ -7241,14 +7241,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_5, &L_4, &C_4, NULL, NULL
 #else
     &K_5, &L_4, &C_4
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_4, &Ri_4, 0, Ri_cols_4, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7260,14 +7260,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_6, &L_5, &C_5, NULL, NULL
 #else
     &K_6, &L_5, &C_5
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_5, &Ri_5, 4, Ri_cols_5, UINT64_C(0xffffffdc40000000),
 #else
 #if defined(MUL_M4RI)
@@ -7279,14 +7279,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_7, &L_6, &C_6, NULL, NULL
 #else
     &K_7, &L_6, &C_6
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_6, &Ri_6, 0, Ri_cols_6, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7298,14 +7298,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_8, &L_7, &C_7, NULL, NULL
 #else
     &K_8, &L_7, &C_7
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_7, &Ri_7, 1, Ri_cols_7, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7317,14 +7317,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_9, &L_8, &C_8, NULL, NULL
 #else
     &K_9, &L_8, &C_8
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_8, &Ri_8, 0, Ri_cols_8, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7336,14 +7336,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_10, &L_9, &C_9, NULL, NULL
 #else
     &K_10, &L_9, &C_9
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_9, &Ri_9, 1, Ri_cols_9, UINT64_C(0xfffffff840000000),
 #else
 #if defined(MUL_M4RI)
@@ -7355,14 +7355,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_11, &L_10, &C_10, NULL, NULL
 #else
     &K_11, &L_10, &C_10
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_10, &Ri_10, 0, Ri_cols_10, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7374,14 +7374,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_12, &L_11, &C_11, NULL, NULL
 #else
     &K_12, &L_11, &C_11
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_11, &Ri_11, 0, Ri_cols_11, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7393,14 +7393,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_13, &L_12, &C_12, NULL, NULL
 #else
     &K_13, &L_12, &C_12
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_12, &Ri_12, 1, Ri_cols_12, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7412,14 +7412,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_14, &L_13, &C_13, NULL, NULL
 #else
     &K_14, &L_13, &C_13
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_13, &Ri_13, 0, Ri_cols_13, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7431,14 +7431,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_15, &L_14, &C_14, NULL, NULL
 #else
     &K_15, &L_14, &C_14
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_14, &Ri_14, 1, Ri_cols_14, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7450,14 +7450,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_16, &L_15, &C_15, NULL, NULL
 #else
     &K_16, &L_15, &C_15
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_15, &Ri_15, 0, Ri_cols_15, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7469,14 +7469,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_17, &L_16, &C_16, NULL, NULL
 #else
     &K_17, &L_16, &C_16
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_16, &Ri_16, 1, Ri_cols_16, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7488,14 +7488,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_18, &L_17, &C_17, NULL, NULL
 #else
     &K_18, &L_17, &C_17
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_17, &Ri_17, 0, Ri_cols_17, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
@@ -7507,14 +7507,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_19, &L_18, &C_18, NULL, NULL
 #else
     &K_19, &L_18, &C_18
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     &Zi_18, &Ri_18, 3, Ri_cols_18, UINT64_C(0xffffffe580000000),
 #else
 #if defined(MUL_M4RI)
@@ -7526,14 +7526,14 @@ static const lowmc_round_t rounds[20] = {
 #endif
   },
   {
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
 #if defined(MUL_M4RI)
     &K_20, &L_19, &C_19, NULL, NULL
 #else
     &K_20, &L_19, &C_19
 #endif
 #else
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     NULL, NULL, 0, NULL, 0,
 #else
 #if defined(MUL_M4RI)
@@ -7552,19 +7552,19 @@ lowmc_t lowmc_128_128_20 = {
 const lowmc_t lowmc_128_128_20 = {
 #endif
   10, 128, 20, 128,
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
   &precomputed_round_key_matrix_linear_part,
 #else
   &K_0,
 #endif
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
   &Z_r,
 #endif
 #if defined(MUL_M4RI)
   NULL,
 #endif
   rounds,
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
   &precomputed_round_key_matrix_non_linear_part,
 #if defined(MUL_M4RI)
   NULL,

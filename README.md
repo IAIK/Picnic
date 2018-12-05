@@ -34,8 +34,8 @@ The cmake based build system supports the following flags:
  * ``WITH_NEON``: Use NEON if available.
  * ``WITH_MARCH_NATIVE``: Build with -march=native -mtune=native (if supported).
  * ``WITH_LTO``: Enable link-time optimization (if supported).
- * ``WITH_MUL_M4RI``: Use methods of four Russians for matrix multiplication.
- * ``WITH_REDUCED_LINEAR_LAYER``: Enable partial pre-computation of round key.
+ * ``WITH_MUL_M4RI``: Use methods of four russians for matrix multiplication.
+ * ``WITH_REDUCED_ROUND_KEY_COMPUTATION``: Enable partial pre-computation of round key.
 
 Building on Windows
 -------------------

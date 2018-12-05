@@ -1495,7 +1495,7 @@ void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
 }
 
 // specific instances
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 //no simd
 void mzd_mul_v_uint64_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
     const unsigned int rowstride = A->rowstride;

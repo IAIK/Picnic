@@ -23,7 +23,7 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 #if defined(LOWMC_INSTANCE)
   (void)lowmc_instance;
 #endif
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
   mzd_local_t* x       = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* y       = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* tmp     = mzd_local_init_ex(1, LOWMC_N, false);
@@ -35,7 +35,7 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
   #error "RLL only works with 1 or 10 Sboxes atm"
 #endif
 
-#if defined(REDUCED_LINEAR_LAYER_NEXT)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
   XOR(x, p, lowmc->precomputed_constant_linear);
   ADDMUL(x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix));
   MUL_MC(nl_part, lowmc_key, CONCAT(lowmc->precomputed_non_linear_part, matrix_postfix));

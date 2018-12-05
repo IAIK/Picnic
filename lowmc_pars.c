@@ -34,13 +34,13 @@ bool lowmc_init(lowmc_t* lowmc) {
   }
 
   lowmc->k0_lookup = mzd_precompute_matrix_lookup(lowmc->k0_matrix);
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
   lowmc->precomputed_non_linear_part_lookup =
       mzd_precompute_matrix_lookup(lowmc->precomputed_non_linear_part_matrix);
 #endif
   for (unsigned int i = 0; i < lowmc->r; ++i) {
     lowmc->rounds[i].l_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].l_matrix);
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
     lowmc->rounds[i].k_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].k_matrix);
 #endif
   }
@@ -52,7 +52,7 @@ bool lowmc_init(lowmc_t* lowmc) {
 void lowmc_clear(lowmc_t* lowmc) {
   for (unsigned int i = 0; i < lowmc->r; ++i) {
 #if defined(MUL_M4RI)
-#if !defined(REDUCED_LINEAR_LAYER)
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
     mzd_local_free(lowmc->rounds[i].k_lookup);
 #endif
     mzd_local_free(lowmc->rounds[i].l_lookup);
@@ -60,7 +60,7 @@ void lowmc_clear(lowmc_t* lowmc) {
   }
 #if defined(MUL_M4RI)
   mzd_local_free(lowmc->k0_lookup);
-#if defined(REDUCED_LINEAR_LAYER)
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
   mzd_local_free(lowmc->precomputed_non_linear_part_lookup);
 #endif
 #endif
