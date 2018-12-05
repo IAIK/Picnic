@@ -1,5 +1,13 @@
 #!/bin/bash
 
+BASE=()
+while [ "$1" != "--" ]
+do
+  BASE+=("$1")
+  shift
+done
+shift
+
 powerset() {
   [ $# -eq 0 ] && { echo; return; }
   ( shift; powerset "$@" ) | while read a
@@ -9,4 +17,4 @@ powerset() {
   done
 }
 
-powerset "$@" | xargs -L 1 bash .ci-build.sh
+powerset "$@" | xargs -L 1 bash .ci-build.sh "${BASE[@]}"
