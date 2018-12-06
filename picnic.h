@@ -74,12 +74,14 @@ extern "C" {
 /** Parameter set names */
 typedef enum {
   PARAMETER_SET_INVALID,
+  /* Instances from the Picnic parameter set with LowMC m=10 */
   Picnic_L1_FS, // 1
   Picnic_L1_UR, // 2
   Picnic_L3_FS, // 3
   Picnic_L3_UR, // 4
   Picnic_L5_FS, // 5
   Picnic_L5_UR, // 6
+  /* Instances with LowMC m=1 */
   Picnic_L1_1_FS, // 7
   Picnic_L1_1_UR, // 8
   Picnic_L3_1_FS, // 9
