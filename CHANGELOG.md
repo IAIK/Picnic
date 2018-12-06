@@ -1,3 +1,8 @@
+Version X.X -- XXXX-XX-XX
+
+* Implement linear layer optimizations to speed up LowMC evaluations.
+* Provide LowMC instances with m=1 to demonstrate feasibility of those instances.
+
 Version 1.2 -- 2018-12-05
 
 * Implement RRKC optimizations for round constants.
@@ -8,7 +13,7 @@ Version 1.2 -- 2018-12-05
 * Update SHA3 implementation and fix endiannes bug on big-endian.
 * Record state before Sbox evaluation and drop one branch of XOR computations. This optimization is
   based based on an idea by Markus Schofnegger.
-* Add per-signature salt to random tapes generation. Prevents a seed-ugessing attack reported by
+* Add per-signature salt to random tapes generation. Prevents a seed-guessing attack reported by
   Itai Dinur.
 
 Version 1.1 -- 2018-06-29
