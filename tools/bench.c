@@ -92,7 +92,7 @@ static void bench_sign_and_verify(const bench_options_t* options) {
 }
 
 int main(int argc, char** argv) {
-  bench_options_t opts = {0};
+  bench_options_t opts = {PARAMETER_SET_INVALID, 0};
   int ret              = parse_args(&opts, argc, argv) ? 0 : -1;
 
   if (!ret) {
