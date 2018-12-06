@@ -1162,7 +1162,8 @@ static const lowmc_t* const lowmc_instances[6] = {
 static bool lowmc_instances_initialized[6];
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
-    {0},
+    {NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PARAMETER_SET_INVALID,
+     TRANSFORM_FS},
     {LOWMC_L1_OR_NULL, NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_FS, Picnic_L1_FS, TRANSFORM_FS},
     {LOWMC_L1_OR_NULL, NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
