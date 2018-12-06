@@ -87,7 +87,7 @@ set(WITH_MUL_M4RI OFF CACHE BOOL "Use method of four russians for matrix multipl
 set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
 set(WITH_LOWMC_OPT "OLLC" CACHE STRING "Enable LowMC optimizations.")
 set_property(CACHE WITH_LOWMC_OPT PROPERTY STRINGS "OFF" "ORKC" "OLLE")
-set(WITH_LOWMC_M1 ON CACHE BOOL "Enable LowMC instances with 1 Sbox.")
+set(WITH_LOWMC_M1 OFF CACHE BOOL "Enable LowMC instances with 1 Sbox.")
 set(WITH_EXTRA_RANDOMNESS OFF CACHE BOOL "Feed extra random bytes to KDF (fault attack counter measure).")
 set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h.")
 if(MSVC)

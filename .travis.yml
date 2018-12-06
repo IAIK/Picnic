@@ -103,8 +103,9 @@ install:
   - if [[ -n "$COMPILER" ]]; then export CC=$COMPILER; fi
 
 script:
-  - bash .ci-script.sh -DWITH_LOWMC_OPT=OFF  -- -DWITH_SIMD_OPT=OFF -DWITH_LTO=OFF -DWITH_LOWMC_M1=OFF -DWITH_MUL_M4RI=ON
-  - bash .ci-script.sh -DWITH_LOWMC_OPT=ORKC -- -DWITH_SIMD_OPT=OFF -DWITH_LTO=OFF -DWITH_LOWMC_M1=OFF -DWITH_MUL_M4RI=ON
-  - bash .ci-script.sh -DWITH_LOWMC_OPT=OLLE -- -DWITH_SIMD_OPT=OFF -DWITH_LTO=OFF -DWITH_LOWMC_M1=OFF
+  - bash .ci-script.sh -DWITH_LOWMC_OPT=OFF  -- -DWITH_SIMD_OPT=OFF -DWITH_LTO=OFF -DWITH_MUL_M4RI=ON
+  - bash .ci-script.sh -DWITH_LOWMC_OPT=ORKC -- -DWITH_SIMD_OPT=OFF -DWITH_LTO=OFF -DWITH_MUL_M4RI=ON
+  - bash .ci-script.sh -DWITH_LOWMC_OPT=OLLE -- -DWITH_SIMD_OPT=OFF -DWITH_LTO=OFF
   - bash .ci-build.sh -DWITH_EXTRA_RANDOMNESS=ON
   - bash .ci-build.sh -DWITH_CONFIG_H=OFF
+  - bash .ci-build.sh -DWITH_LOWMC_M1=ON
