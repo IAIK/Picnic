@@ -7116,44 +7116,6 @@ static const mzd_local_t Ri_18 = { 30, 98, 2, 2, { 0 }, {
   UINT64_C(0xd1c81d521c125c81), UINT64_C(0x000000021ff6a7ff),
   UINT64_C(0x601ff085df5bea75), UINT64_C(0x00000003ab96995d),
 }};
-
-static const uint32_t Ri_cols_0[] = {94, 97, 99, 100, };
-
-static const uint32_t Ri_cols_1[] = {96, 97, 98, };
-
-static const uint32_t Ri_cols_2[] = {97, };
-
-static const uint32_t Ri_cols_3[] = {95, };
-
-static const uint32_t Ri_cols_4[] = {};
-
-static const uint32_t Ri_cols_5[] = {94, 98, 99, 100, };
-
-static const uint32_t Ri_cols_6[] = {};
-
-static const uint32_t Ri_cols_7[] = {97, };
-
-static const uint32_t Ri_cols_8[] = {};
-
-static const uint32_t Ri_cols_9[] = {94, };
-
-static const uint32_t Ri_cols_10[] = {};
-
-static const uint32_t Ri_cols_11[] = {};
-
-static const uint32_t Ri_cols_12[] = {97, };
-
-static const uint32_t Ri_cols_13[] = {};
-
-static const uint32_t Ri_cols_14[] = {97, };
-
-static const uint32_t Ri_cols_15[] = {};
-
-static const uint32_t Ri_cols_16[] = {97, };
-
-static const uint32_t Ri_cols_17[] = {};
-
-static const uint32_t Ri_cols_18[] = {95, 96, 98, };
 #endif
 
 #endif
@@ -7173,7 +7135,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_0, &Ri_0, 4, Ri_cols_0, UINT64_C(0xffffffda40000000),
+    &Zi_0, &Ri_0, UINT64_C(0xffffffda40000000),
 #else
 #if defined(MUL_M4RI)
     &L_0, NULL
@@ -7192,7 +7154,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_1, &Ri_1, 3, Ri_cols_1, UINT64_C(0xffffffe700000000),
+    &Zi_1, &Ri_1, UINT64_C(0xffffffe700000000),
 #else
 #if defined(MUL_M4RI)
     &L_1, NULL
@@ -7211,7 +7173,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_2, &Ri_2, 1, Ri_cols_2, UINT64_C(0xfffffffa00000000),
+    &Zi_2, &Ri_2, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
     &L_2, NULL
@@ -7230,7 +7192,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_3, &Ri_3, 1, Ri_cols_3, UINT64_C(0xfffffff880000000),
+    &Zi_3, &Ri_3, UINT64_C(0xfffffff880000000),
 #else
 #if defined(MUL_M4RI)
     &L_3, NULL
@@ -7249,7 +7211,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_4, &Ri_4, 0, Ri_cols_4, UINT64_C(0xfffffffc00000000),
+    &Zi_4, &Ri_4, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_4, NULL
@@ -7268,7 +7230,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_5, &Ri_5, 4, Ri_cols_5, UINT64_C(0xffffffdc40000000),
+    &Zi_5, &Ri_5, UINT64_C(0xffffffdc40000000),
 #else
 #if defined(MUL_M4RI)
     &L_5, NULL
@@ -7287,7 +7249,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_6, &Ri_6, 0, Ri_cols_6, UINT64_C(0xfffffffc00000000),
+    &Zi_6, &Ri_6, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_6, NULL
@@ -7306,7 +7268,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_7, &Ri_7, 1, Ri_cols_7, UINT64_C(0xfffffffa00000000),
+    &Zi_7, &Ri_7, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
     &L_7, NULL
@@ -7325,7 +7287,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_8, &Ri_8, 0, Ri_cols_8, UINT64_C(0xfffffffc00000000),
+    &Zi_8, &Ri_8, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_8, NULL
@@ -7344,7 +7306,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_9, &Ri_9, 1, Ri_cols_9, UINT64_C(0xfffffff840000000),
+    &Zi_9, &Ri_9, UINT64_C(0xfffffff840000000),
 #else
 #if defined(MUL_M4RI)
     &L_9, NULL
@@ -7363,7 +7325,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_10, &Ri_10, 0, Ri_cols_10, UINT64_C(0xfffffffc00000000),
+    &Zi_10, &Ri_10, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_10, NULL
@@ -7382,7 +7344,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_11, &Ri_11, 0, Ri_cols_11, UINT64_C(0xfffffffc00000000),
+    &Zi_11, &Ri_11, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_11, NULL
@@ -7401,7 +7363,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_12, &Ri_12, 1, Ri_cols_12, UINT64_C(0xfffffffa00000000),
+    &Zi_12, &Ri_12, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
     &L_12, NULL
@@ -7420,7 +7382,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_13, &Ri_13, 0, Ri_cols_13, UINT64_C(0xfffffffc00000000),
+    &Zi_13, &Ri_13, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_13, NULL
@@ -7439,7 +7401,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_14, &Ri_14, 1, Ri_cols_14, UINT64_C(0xfffffffa00000000),
+    &Zi_14, &Ri_14, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
     &L_14, NULL
@@ -7458,7 +7420,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_15, &Ri_15, 0, Ri_cols_15, UINT64_C(0xfffffffc00000000),
+    &Zi_15, &Ri_15, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_15, NULL
@@ -7477,7 +7439,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_16, &Ri_16, 1, Ri_cols_16, UINT64_C(0xfffffffa00000000),
+    &Zi_16, &Ri_16, UINT64_C(0xfffffffa00000000),
 #else
 #if defined(MUL_M4RI)
     &L_16, NULL
@@ -7496,7 +7458,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_17, &Ri_17, 0, Ri_cols_17, UINT64_C(0xfffffffc00000000),
+    &Zi_17, &Ri_17, UINT64_C(0xfffffffc00000000),
 #else
 #if defined(MUL_M4RI)
     &L_17, NULL
@@ -7515,7 +7477,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    &Zi_18, &Ri_18, 3, Ri_cols_18, UINT64_C(0xffffffe580000000),
+    &Zi_18, &Ri_18, UINT64_C(0xffffffe580000000),
 #else
 #if defined(MUL_M4RI)
     &L_18, NULL
@@ -7534,7 +7496,7 @@ static const lowmc_round_t rounds[20] = {
 #endif
 #else
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-    NULL, NULL, 0, NULL, 0,
+    NULL, NULL, 0,
 #else
 #if defined(MUL_M4RI)
     &L_19, NULL

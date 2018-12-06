@@ -47,18 +47,14 @@ lowmc_round_t const* round = lowmc->rounds;
 #endif
     }
 #else
-    //shuffle x correctly (in-place), slow and probably stupid version
-    for(unsigned j = round->num_fixes; j; j--) {
-      for(unsigned l = round->r_cols[j-1]; l < LOWMC_N - 1 - (3*LOWMC_M-j); l++) {
-        for(unsigned int k = 0; k < reduced_shares; ++k) {
-          //swap bits
-          word a = (FIRST_ROW(y[k])[l / (sizeof(word) * 8)] >> (l % (sizeof(word) * 8))) & WORD_C(0x1);
-          word b = (FIRST_ROW(y[k])[(l+1) / (sizeof(word) * 8)] >> ((l+1) % (sizeof(word) * 8))) & WORD_C(0x1);
-          word xx = a ^ b;
-          FIRST_ROW(y[k])[l / (sizeof(word) * 8)] ^=  xx << (l % (sizeof(word) * 8));
-          FIRST_ROW(y[k])[(l+1) / (sizeof(word) * 8)] ^=  xx << ((l+1) % (sizeof(word) * 8));
-        }
-      }
+    for(unsigned int k = 0; k < reduced_shares; ++k) {
+#if defined(M_FIXED_10)
+      mzd_shuffle_30(y[k], round->r_mask);
+#elif defined(M_FIXED_1)
+      mzd_shuffle_3(y[k], round->r_mask);
+#else
+#error "RLL only works with 1 or 10 Sboxes atm"
+#endif
     }
 #endif
 

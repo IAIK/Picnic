@@ -74,8 +74,6 @@ typedef struct {
 #else
   const mzd_local_t* z_matrix;
   const mzd_local_t* r_matrix;
-  const uint32_t     num_fixes;
-  const uint32_t*    r_cols;
   const word         r_mask;
 #endif
 #if !defined(REDUCED_ROUND_KEY_COMPUTATION)

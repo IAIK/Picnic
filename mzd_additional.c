@@ -1494,6 +1494,27 @@ void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   }
 }
 
+// non-constant time bit extract
+word extract_bits(word in, word mask) {
+  word res = 0;
+  for (word bb = 1; mask != 0; bb <<= 1, mask &= (mask - 1)) {
+    if (in & mask & -mask) {
+      res |= bb;
+    }
+  }
+  return res;
+}
+
+void mzd_shuffle_30(mzd_local_t* x, const word mask) {
+  word a                     = extract_bits(CONST_FIRST_ROW(x)[x->width - 1], mask) << (34);
+  FIRST_ROW(x)[x->width - 1] = a | extract_bits(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
+}
+
+void mzd_shuffle_3(mzd_local_t* x, const word mask) {
+  word a                     = extract_bits(CONST_FIRST_ROW(x)[x->width - 1], mask) << (61);
+  FIRST_ROW(x)[x->width - 1] = a | extract_bits(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
+}
+
 // specific instances
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 //no simd
