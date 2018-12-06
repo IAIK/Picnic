@@ -33,7 +33,7 @@ else
 fi
 cd ..
 
-cmake --build "$directory" -j
+MAKEFLAGS=-j cmake --build "$directory"
 case "$CMAKE_GENERATOR" in
   Visual*)
     cmake --build "$directory" --target RUN_TESTS
