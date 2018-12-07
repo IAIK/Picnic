@@ -32,6 +32,15 @@ void test(void) {
 }
 #endif
 
+#if defined(SSE42)
+#include <nmmintrin.h>
+
+ATTRIBUTE_TARGET("sse4.2") void test(void) {
+  unsigned long long v = _mm_popcnt_u64(0);
+  (void)v;
+}
+#endif
+
 int main() {
   test();
 }

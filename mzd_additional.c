@@ -28,9 +28,34 @@
 static const size_t mzd_local_t_size = (sizeof(mzd_local_t) + 0x1f) & ~0x1f;
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
+// http://en.wikipedia.org/wiki/Hamming_weight#Efficient_implementation
+static inline uint64_t popcount64c(uint64_t in)
+{
+  const uint64_t m1  = 0x5555555555555555ll;
+  const uint64_t m2  = 0x3333333333333333ll;
+  const uint64_t m4  = 0x0F0F0F0F0F0F0F0Fll;
+  const uint64_t h01 = 0x0101010101010101ll;
+
+  in -= (in >> 1) & m1;
+  in = (in & m2) + ((in >> 2) & m2);
+  in = (in + (in >> 4)) & m4;
+  return (in * h01) >> 56;
+}
+
+#define popcount64 popcount64c
 
 #if defined(WITH_OPT)
 #include "simd.h"
+
+//select appropriate popcount, if available
+#if defined(WITH_SSE42)
+#include <nmmintrin.h>
+ATTRIBUTE_TARGET("sse4.2") static inline uint64_t popcount64_sse42(uint64_t in) {
+  return _mm_popcnt_u64(in);
+}
+#undef popcount64
+#define popcount64 popcount64_sse42
+#endif
 
 #if defined(WITH_SSE2) || defined(WITH_AVX2) || defined(WITH_NEON)
 static const unsigned int word_size_bits = 8 * sizeof(word);
@@ -421,7 +446,7 @@ void mzd_mul_v_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
     word popcnt = 0;
     for (unsigned int w = 0; w < width; ++w) {
       word idx = vptr[w] & Aptr[w+(i-1)*rowstride];
-      popcnt += __builtin_popcountll(idx);
+      popcnt += popcount64(idx);
     }
     *cptr <<= 1;
     *cptr |= (popcnt & WORD_C(0x1));
@@ -1565,7 +1590,7 @@ void mzd_mul_v_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
     word const* A = Aptr + (30-i)*rowstride;
     word popcnt = 0;
     for(unsigned int j = 0; j < width; j++) {
-      popcnt += __builtin_popcountll(vptr[j] & A[j]);
+      popcnt += popcount64(vptr[j] & A[j]);
     }
     cptr[width-1] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
@@ -1582,8 +1607,8 @@ void mzd_mul_v_98_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
   }
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
-    word popcnt = __builtin_popcountll(vptr[0] & A[0])
-                + __builtin_popcountll(vptr[1] & A[1]);
+    word popcnt = popcount64(vptr[0] & A[0])
+                + popcount64(vptr[1] & A[1]);
     cptr[1] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
@@ -1598,9 +1623,9 @@ void mzd_mul_v_162_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t c
   }
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
-    word popcnt = __builtin_popcountll(vptr[0] & A[0])
-                + __builtin_popcountll(vptr[1] & A[1])
-                + __builtin_popcountll(vptr[2] & A[2]);
+    word popcnt = popcount64(vptr[0] & A[0])
+                + popcount64(vptr[1] & A[1])
+                + popcount64(vptr[2] & A[2]);
     cptr[2] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
@@ -1615,10 +1640,10 @@ void mzd_mul_v_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t c
   }
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
-    word popcnt = __builtin_popcountll(vptr[0] & A[0])
-                + __builtin_popcountll(vptr[1] & A[1])
-                + __builtin_popcountll(vptr[2] & A[2])
-                + __builtin_popcountll(vptr[3] & A[3]);
+    word popcnt = popcount64(vptr[0] & A[0])
+                + popcount64(vptr[1] & A[1])
+                + popcount64(vptr[2] & A[2])
+                + popcount64(vptr[3] & A[3]);
     cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
@@ -1637,7 +1662,7 @@ void mzd_mul_v_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
     word const* A = Aptr + (3-i)*rowstride;
     word popcnt = 0;
     for(unsigned int j = 0; j < width; j++) {
-      popcnt += __builtin_popcountll(vptr[j] & A[j]);
+      popcnt += popcount64(vptr[j] & A[j]);
     }
     cptr[width-1] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
@@ -1654,8 +1679,8 @@ void mzd_mul_v_125_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
   }
   for(unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
-    word popcnt = __builtin_popcountll(vptr[0] & A[0])
-                  + __builtin_popcountll(vptr[1] & A[1]);
+    word popcnt = popcount64(vptr[0] & A[0])
+                  + popcount64(vptr[1] & A[1]);
    cptr[1] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
@@ -1671,9 +1696,9 @@ void mzd_mul_v_189_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
   }
   for(unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
-    word popcnt = __builtin_popcountll(vptr[0] & A[0])
-                  + __builtin_popcountll(vptr[1] & A[1])
-                  + __builtin_popcountll(vptr[2] & A[2]);
+    word popcnt = popcount64(vptr[0] & A[0])
+                  + popcount64(vptr[1] & A[1])
+                  + popcount64(vptr[2] & A[2]);
     cptr[2] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
@@ -1689,10 +1714,10 @@ void mzd_mul_v_253_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
   }
   for(unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
-    word popcnt = __builtin_popcountll(vptr[0] & A[0])
-                  + __builtin_popcountll(vptr[1] & A[1])
-                  + __builtin_popcountll(vptr[2] & A[2])
-                  + __builtin_popcountll(vptr[3] & A[3]);
+    word popcnt = popcount64(vptr[0] & A[0])
+                  + popcount64(vptr[1] & A[1])
+                  + popcount64(vptr[2] & A[2])
+                  + popcount64(vptr[3] & A[3]);
     cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }
@@ -1922,10 +1947,10 @@ void mzd_mul_v_avx_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local
 
   for(unsigned i = 30; i; --i, mAptr++) {
     __m256i cnt = _mm256_and_si256(*vptr, *mAptr);
-    word popcnt = __builtin_popcountll(_mm256_extract_epi64(cnt, 0)) +
-                  __builtin_popcountll(_mm256_extract_epi64(cnt, 1)) +
-                  __builtin_popcountll(_mm256_extract_epi64(cnt, 2)) +
-                  __builtin_popcountll(_mm256_extract_epi64(cnt, 3));
+    word popcnt = popcount64(_mm256_extract_epi64(cnt, 0)) +
+                  popcount64(_mm256_extract_epi64(cnt, 1)) +
+                  popcount64(_mm256_extract_epi64(cnt, 2)) +
+                  popcount64(_mm256_extract_epi64(cnt, 3));
     cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
   }
 }

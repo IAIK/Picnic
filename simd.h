@@ -24,11 +24,6 @@
 #include <arm_neon.h>
 #endif
 
-#ifdef _MSC_VER
-#  include <intrin.h>
-#  define __builtin_popcountll __popcnt64
-#endif
-
 #if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8)) &&                        \
     !defined(__MINGW32__) && !defined(__MINGW64__)
 #define BUILTIN_CPU_SUPPORTED
