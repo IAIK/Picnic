@@ -50,7 +50,8 @@ static inline uint64_t popcount64c(uint64_t in)
 //select appropriate popcount, if available
 #if defined(WITH_SSE42)
 #include <nmmintrin.h>
-ATTRIBUTE_TARGET("sse4.2") static inline uint64_t popcount64_sse42(uint64_t in) {
+ATTR_TARGET("sse4.2")
+static inline uint64_t popcount64_sse42(uint64_t in) {
   return _mm_popcnt_u64(in);
 }
 #undef popcount64
