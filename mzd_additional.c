@@ -2080,6 +2080,7 @@ void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   *mcptr = _mm256_xor_si256(*mcptr, _mm256_xor_si256(cval[0], cval[1]));
 }
 
+#if defined(WITH_POPCNT)
 ATTR_TARGET("avx2,popcnt")
 void mzd_mul_v_parity_avx_popcnt_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
@@ -2223,6 +2224,7 @@ void mzd_mul_v_parity_avx_popcnt_253_3(mzd_local_t* c, mzd_local_t const* v, mzd
     cptr[3] |= popcnt << (64-i);
   }
 }
+#endif
 
 #if defined(__x86_64__) || defined(_M_X64)
 ATTR_TARGET("avx2,bmi2")
