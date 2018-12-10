@@ -1520,13 +1520,11 @@ void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   }
 }
 
-// non-constant time bit extract
+// bit extract, non-constant time for mask, but mask is public in our calls
 word extract_bits(word in, word mask) {
   word res = 0;
   for (word bb = 1; mask != 0; bb <<= 1, mask &= (mask - 1)) {
-    if (in & mask & -mask) {
-      res |= bb;
-    }
+      res |= bb & (-((word)!!(in & mask & -mask)));
   }
   return res;
 }
