@@ -94,7 +94,9 @@ void mzd_mul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) 
 void mzd_mul_v_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_v_neon_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_v_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
+void mzd_mul_v_parity_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
+void mzd_mul_v_parity_sse_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
+void mzd_mul_v_parity_avx_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 
 /**
  * Compute v * A optimized for v being a vector, for specific sizes depending on instance
@@ -129,14 +131,41 @@ void mzd_mul_v_neon_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
 void mzd_mul_v_neon_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_v_neon_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 
-void mzd_mul_v_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_v_98_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_v_162_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_v_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_v_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_v_125_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_v_189_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_v_253_3_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+/**
+ * Compute using parity based algorithm
+ * */
+void mzd_mul_v_parity_uint64_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_uint64_98_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_uint64_162_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_uint64_226_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_uint64_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_uint64_125_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_uint64_189_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_uint64_253_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+
+/**
+ * Using SSE2 and popcnt
+ */
+void mzd_mul_v_parity_sse_popcnt_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_sse_popcnt_98_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_sse_popcnt_162_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_sse_popcnt_226_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_sse_popcnt_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_sse_popcnt_125_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_sse_popcnt_189_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_sse_popcnt_253_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+
+/**
+ * Using AVX2 and popcnt
+ */
+void mzd_mul_v_parity_avx_popcnt_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_avx_popcnt_98_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_avx_popcnt_162_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_avx_popcnt_226_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_avx_popcnt_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_avx_popcnt_125_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_avx_popcnt_189_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_v_parity_avx_popcnt_253_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 
 /**
  * Compute c + v * A optimized for c and v being vectors.

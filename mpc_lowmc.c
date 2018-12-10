@@ -192,8 +192,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_uint64_3
 #define MUL_R_10 mzd_mul_v_uint64_30
-#define MUL_Z_1  mzd_mul_v_3_popcnt
-#define MUL_Z_10 mzd_mul_v_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_30
 
 #define SIGN mpc_lowmc_call
 #define VERIFY mpc_lowmc_call_verify
@@ -263,8 +263,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_128
 #define MUL_R_10 mzd_mul_v_sse_30_128
-#define MUL_Z_1  mzd_mul_v_125_3_popcnt
-#define MUL_Z_10 mzd_mul_v_98_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_125_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_98_30
 
 #define SIGN mpc_lowmc_call_128_sse
 #define VERIFY mpc_lowmc_call_verify_128_sse
@@ -304,8 +304,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_192
 #define MUL_R_10 mzd_mul_v_sse_30_192
-#define MUL_Z_1  mzd_mul_v_189_3_popcnt
-#define MUL_Z_10 mzd_mul_v_162_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_189_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_162_30
 
 #define SIGN mpc_lowmc_call_192_sse
 #define VERIFY mpc_lowmc_call_verify_192_sse
@@ -338,8 +338,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_256
 #define MUL_R_10 mzd_mul_v_sse_30_256
-#define MUL_Z_1  mzd_mul_v_253_3_popcnt
-#define MUL_Z_10 mzd_mul_v_226_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_253_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_226_30
 
 #define SIGN mpc_lowmc_call_256_sse
 #define VERIFY mpc_lowmc_call_verify_256_sse
@@ -430,8 +430,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_avx_3_192
 #define MUL_R_10 mzd_mul_v_avx_30_192
-#define MUL_Z_1  mzd_mul_v_189_3_popcnt
-#define MUL_Z_10 mzd_mul_v_162_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_189_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_162_30
 
 #define SIGN mpc_lowmc_call_192_avx
 #define VERIFY mpc_lowmc_call_verify_192_avx
@@ -464,8 +464,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_avx_3_256
 #define MUL_R_10 mzd_mul_v_avx_30_256
-#define MUL_Z_1  mzd_mul_v_253_3_popcnt
-#define MUL_Z_10 mzd_mul_v_226_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_253_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_226_30
 
 #define SIGN mpc_lowmc_call_256_avx
 #define VERIFY mpc_lowmc_call_verify_256_avx
@@ -514,8 +514,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_neon_3_128
 #define MUL_R_10 mzd_mul_v_neon_30_128
-#define MUL_Z_1  mzd_mul_v_125_3_popcnt
-#define MUL_Z_10 mzd_mul_v_98_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_125_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_98_30
 
 #define SIGN mpc_lowmc_call_128_neon
 #define VERIFY mpc_lowmc_call_verify_128_neon
@@ -555,8 +555,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_neon_3_192
 #define MUL_R_10 mzd_mul_v_neon_30_192
-#define MUL_Z_1  mzd_mul_v_189_3_popcnt
-#define MUL_Z_10 mzd_mul_v_162_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_189_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_162_30
 
 #define SIGN mpc_lowmc_call_192_neon
 #define VERIFY mpc_lowmc_call_verify_192_neon
@@ -589,8 +589,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_neon_3_256
 #define MUL_R_10 mzd_mul_v_neon_30_256
-#define MUL_Z_1  mzd_mul_v_253_3_popcnt
-#define MUL_Z_10 mzd_mul_v_226_30_popcnt
+#define MUL_Z_1  mzd_mul_v_parity_uint64_253_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_226_30
 
 #define SIGN mpc_lowmc_call_256_neon
 #define VERIFY mpc_lowmc_call_verify_256_neon
