@@ -126,7 +126,6 @@
 #define FN_ATTRIBUTES_SSE2_CONST FN_ATTRIBUTES_SSE2 ATTR_CONST
 #define FN_ATTRIBUTES_NEON_CONST FN_ATTRIBUTES_NEON ATTR_CONST
 
-
 /* concatenation */
 #define CONCAT2(a, b) a##_##b
 #define CONCAT(a, b) CONCAT2(a, b)
@@ -154,6 +153,20 @@
 static inline bool sub_overflow_size_t(const size_t x, const size_t y, size_t* diff) {
   *diff = x - y;
   return x < y;
+}
+#endif
+
+/* parity */
+#if GNUC_CHECK(4, 9) || __has_builtin(__builtin_parity)
+#define parity64_uint64(x) __builtin_parityll(x)
+#else
+ATTR_CONST
+static inline uint64_t parity64_uint64(uint64_t in) {
+  in ^= in >> 32;
+  in ^= in >> 16;
+  in ^= in >> 8;
+  in ^= in >> 4;
+  return (0x6996 >> (in & 0xf)) & 1;
 }
 #endif
 

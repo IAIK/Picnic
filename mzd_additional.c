@@ -28,15 +28,6 @@
 static const size_t mzd_local_t_size = (sizeof(mzd_local_t) + 0x1f) & ~0x1f;
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
-ATTR_CONST
-static inline uint64_t parity64_uint64(uint64_t in) {
-  in ^= in >> 32;
-  in ^= in >> 16;
-  in ^= in >> 8;
-  in ^= in >> 4;
-  return (0x6996 >> (in & 0xf)) & 1;
-}
-
 #if defined(WITH_OPT)
 #include "simd.h"
 
