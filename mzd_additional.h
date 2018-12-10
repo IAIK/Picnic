@@ -192,6 +192,9 @@ void mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
  */
 mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) ATTR_NONNULL;
 
+/**
+ * Shuffle vector x according to info in mask. Needed for OLLE optimiztaions.
+ */
 void mzd_shuffle_30(mzd_local_t* x, word mask) ATTR_NONNULL;
 void mzd_shuffle_3(mzd_local_t* x, word mask) ATTR_NONNULL;
 void mzd_shuffle_pext_30(mzd_local_t* x, word mask) ATTR_NONNULL;
