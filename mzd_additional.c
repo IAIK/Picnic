@@ -448,7 +448,7 @@ void mzd_mul_v_parity_uint64_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_
   }
 }
 
-void mzd_mul_v_parity_uint64_98_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_uint64_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -464,7 +464,7 @@ void mzd_mul_v_parity_uint64_98_30(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   }
 }
 
-void mzd_mul_v_parity_uint64_162_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_uint64_192_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -480,7 +480,7 @@ void mzd_mul_v_parity_uint64_162_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   }
 }
 
-void mzd_mul_v_parity_uint64_226_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_uint64_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -516,7 +516,7 @@ void mzd_mul_v_parity_uint64_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   }
 }
 
-void mzd_mul_v_parity_uint64_125_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_uint64_128_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -532,7 +532,7 @@ void mzd_mul_v_parity_uint64_125_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   }
 }
 
-void mzd_mul_v_parity_uint64_189_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_uint64_192_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -548,7 +548,7 @@ void mzd_mul_v_parity_uint64_189_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   }
 }
 
-void mzd_mul_v_parity_uint64_253_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_uint64_256_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -608,7 +608,7 @@ void mzd_mul_v_parity_popcnt_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_
 }
 
 ATTR_TARGET("popcnt")
-void mzd_mul_v_parity_popcnt_98_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_popcnt_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -625,7 +625,7 @@ void mzd_mul_v_parity_popcnt_98_30(mzd_local_t* c, mzd_local_t const* v, mzd_loc
 }
 
 ATTR_TARGET("popcnt")
-void mzd_mul_v_parity_popcnt_162_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_popcnt_192_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -642,7 +642,7 @@ void mzd_mul_v_parity_popcnt_162_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
 }
 
 ATTR_TARGET("popcnt")
-void mzd_mul_v_parity_popcnt_226_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_popcnt_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -680,7 +680,7 @@ void mzd_mul_v_parity_popcnt_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
 }
 
 ATTR_TARGET("popcnt")
-void mzd_mul_v_parity_popcnt_125_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_popcnt_128_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -697,7 +697,7 @@ void mzd_mul_v_parity_popcnt_125_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
 }
 
 ATTR_TARGET("popcnt")
-void mzd_mul_v_parity_popcnt_189_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_popcnt_192_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
@@ -714,7 +714,7 @@ void mzd_mul_v_parity_popcnt_189_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
 }
 
 ATTR_TARGET("popcnt")
-void mzd_mul_v_parity_popcnt_253_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+void mzd_mul_v_parity_popcnt_256_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const unsigned int rowstride = At->rowstride;
   word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
