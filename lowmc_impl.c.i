@@ -65,23 +65,7 @@ static mzd_local_t* N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lo
 #endif
 
     MUL_Z(y, x, CONCAT(round->z, matrix_postfix));
-#if defined(WITH_AVX2) && (defined(__x86_64__) || defined(_M_X64))
-#if defined(M_FIXED_10)
-    mzd_shuffle_pext_30(x, round->r_mask);
-#elif defined(M_FIXED_1)
-    mzd_shuffle_pext_3(x, round->r_mask);
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
-#endif
-#else
-#if defined(M_FIXED_10)
-    mzd_shuffle_30(x, round->r_mask);
-#elif defined(M_FIXED_1)
-    mzd_shuffle_3(x, round->r_mask);
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
-#endif
-#endif
+    MZD_SHUFFLE(x, round->r_mask);
     MUL_R(y, x, CONCAT(round->r, matrix_postfix));
 
 #if defined(M_FIXED_10)

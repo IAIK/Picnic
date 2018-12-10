@@ -81,6 +81,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_uint64, mzd_addmul_vl_uint64)
 #define XOR_MC mzd_xor_uint64
 #define MUL_MC SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
+#define SHUFFLE mzd_shuffle
 
 #undef MUL_R_1
 #undef MUL_R_10
@@ -353,8 +354,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #if defined(WITH_AVX2)
 #undef XOR_MC
 #undef MUL_MC
+#undef SHUFFLE
 #define XOR_MC mzd_xor_avx
 #define MUL_MC SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
+#define SHUFFLE mzd_shuffle_pext
 #define FN_ATTR ATTR_TARGET("avx2,bmi2")
 
 // L1 using AVX2
@@ -464,13 +467,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #include "lowmc.c.i"
 
 #undef FN_ATTR
-#endif
 
-#if defined(WITH_AVX2) && defined(WITH_POPCNT)
-#undef XOR_MC
-#undef MUL_MC
-#define XOR_MC mzd_xor_avx
-#define MUL_MC SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
+#if defined(WITH_POPCNT)
 #define FN_ATTR ATTR_TARGET("avx2,bmi2,popcnt")
 
 // L1 using AVX2
@@ -580,6 +578,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #include "lowmc.c.i"
 
 #undef FN_ATTR
+#endif
+
+#undef SHUFFLE
+#define SHUFFLE mzd_shuffle
 #endif
 
 #if defined(WITH_NEON)

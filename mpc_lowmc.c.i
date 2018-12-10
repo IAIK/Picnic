@@ -10,6 +10,7 @@
 #define M_FIXED_10
 #define N_SIGN CONCAT(SIGN, 10)
 #define N_VERIFY CONCAT(VERIFY, 10)
+#define MZD_SHUFFLE CONCAT(SHUFFLE, 30)
 #define MUL_R MUL_R_10
 #define MUL_Z MUL_Z_10
 #define LOWMC_R LOWMC_R_10
@@ -22,11 +23,13 @@
 #undef LOWMC_R
 #undef LOWMC_INSTANCE
 #undef M_FIXED_10
+#undef MZD_SHUFFLE
 
 #if defined(WITH_LOWMC_M1)
 #define M_FIXED_1
 #define N_SIGN CONCAT(SIGN, 1)
 #define N_VERIFY CONCAT(VERIFY, 1)
+#define MZD_SHUFFLE CONCAT(SHUFFLE, 3)
 #define MUL_R MUL_R_1
 #define MUL_Z MUL_Z_1
 #define LOWMC_R LOWMC_R_1
@@ -39,6 +42,7 @@
 #undef LOWMC_R
 #undef LOWMC_INSTANCE
 #undef M_FIXED_1
+#undef MZD_SHUFFLE
 #endif
 
 #undef SIGN

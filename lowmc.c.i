@@ -14,6 +14,7 @@
 #define MUL_Z MUL_Z_10
 #define LOWMC_R LOWMC_R_10
 #define LOWMC_M 10
+#define MZD_SHUFFLE CONCAT(SHUFFLE, 30)
 #if defined(LOWMC_INSTANCE_10)
 #define LOWMC_INSTANCE LOWMC_INSTANCE_10
 #endif
@@ -32,6 +33,7 @@
 #undef LOWMC_INSTANCE
 #undef N_LOWMC
 #undef LOWMC_M
+#undef MZD_SHUFFLE
 
 #if defined(WITH_LOWMC_M1)
 #define M_FIXED_1
@@ -41,6 +43,7 @@
 #define MUL_Z MUL_Z_1
 #define LOWMC_R LOWMC_R_1
 #define LOWMC_M 1
+#define MZD_SHUFFLE CONCAT(SHUFFLE, 3)
 #if defined(LOWMC_INSTANCE_1)
 #define LOWMC_INSTANCE LOWMC_INSTANCE_1
 #endif
@@ -59,6 +62,7 @@
 #undef LOWMC_INSTANCE
 #undef N_LOWMC
 #undef LOWMC_M
+#undef MZD_SHUFFLE
 #endif
 
 // vim: ft=c
