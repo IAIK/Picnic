@@ -29,7 +29,8 @@ static const size_t mzd_local_t_size = (sizeof(mzd_local_t) + 0x1f) & ~0x1f;
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
 // http://en.wikipedia.org/wiki/Hamming_weight#Efficient_implementation
-static inline uint64_t popcount64c(uint64_t in)
+ATTR_CONST
+static inline uint64_t popcount64_uint64(uint64_t in)
 {
   const uint64_t m1  = 0x5555555555555555ll;
   const uint64_t m2  = 0x3333333333333333ll;
@@ -42,7 +43,7 @@ static inline uint64_t popcount64c(uint64_t in)
   return (in * h01) >> 56;
 }
 
-#define popcount64 popcount64c
+#define popcount64 popcount64_uint64
 
 #if defined(WITH_OPT)
 #include "simd.h"
@@ -51,7 +52,7 @@ static inline uint64_t popcount64c(uint64_t in)
 #if defined(WITH_POPCNT)
 #include <nmmintrin.h>
 
-ATTR_TARGET("popcnt")
+ATTR_TARGET("popcnt") ATTR_CONST
 static inline uint64_t popcount64_popcnt(uint64_t in) {
   return _mm_popcnt_u64(in);
 }
