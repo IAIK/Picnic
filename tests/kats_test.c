@@ -194,7 +194,7 @@ static int run_test_vectors_from_file(const char* path, size_t pks, size_t sks) 
 
   size_t vectors_run       = 0;
   size_t vectors_succeeded = 0;
-  test_vector_t tv         = {0};
+  test_vector_t tv         = {0, NULL, {0}, {0}, 0, NULL};
   while (read_test_vector(file, &tv, pks, sks) != -1) {
     // Test vectors generated for NIST have message length and the message at the beginning.
     const size_t offset = tv.mlen + sizeof(uint32_t);
