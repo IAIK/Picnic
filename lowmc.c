@@ -95,7 +95,6 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define LOWMC_R_10 lowmc->r
 #define LOWMC_R_1 lowmc->r
 
-#define SBOX_IMPL sbox_layer_bitsliced
 #define LOWMC lowmc_uint64
 #include "lowmc.c.i"
 
@@ -158,9 +157,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define MUL_Z_1  mzd_mul_v_125_3_popcnt
 #define MUL_Z_10 mzd_mul_v_98_30_popcnt
 
-#undef SBOX_IMPL
 #undef LOWMC
-#define SBOX_IMPL sbox_layer_sse
 #define LOWMC lowmc_sse_128
 #include "lowmc.c.i"
 
@@ -196,9 +193,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define MUL_Z_1  mzd_mul_v_189_3_popcnt
 #define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
-#undef SBOX_IMPL
 #undef LOWMC
-#define SBOX_IMPL sbox_layer_bitsliced
 #define LOWMC lowmc_sse_192
 #include "lowmc.c.i"
 
@@ -278,9 +273,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define MUL_Z_1  mzd_mul_v_125_3_popcnt
 #define MUL_Z_10 mzd_mul_v_98_30_popcnt
 
-#undef SBOX_IMPL
 #undef LOWMC
-#define SBOX_IMPL sbox_layer_sse
 #define LOWMC lowmc_avx_128
 #include "lowmc.c.i"
 
@@ -316,9 +309,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define MUL_Z_1  mzd_mul_v_189_3_popcnt
 #define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
-#undef SBOX_IMPL
 #undef LOWMC
-#define SBOX_IMPL sbox_layer_avx
 #define LOWMC lowmc_avx_192
 #include "lowmc.c.i"
 
@@ -397,9 +388,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define MUL_Z_1  mzd_mul_v_125_3_popcnt
 #define MUL_Z_10 mzd_mul_v_98_30_popcnt
 
-#undef SBOX_IMPL
 #undef LOWMC
-#define SBOX_IMPL sbox_layer_neon
 #define LOWMC lowmc_neon_128
 #include "lowmc.c.i"
 
@@ -435,9 +424,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define MUL_Z_1  mzd_mul_v_189_3_popcnt
 #define MUL_Z_10 mzd_mul_v_162_30_popcnt
 
-#undef SBOX_IMPL
 #undef LOWMC
-#define SBOX_IMPL sbox_layer_bitsliced
 #define LOWMC lowmc_neon_192
 #include "lowmc.c.i"
 
@@ -471,9 +458,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define MUL_Z_1  mzd_mul_v_253_3_popcnt
 #define MUL_Z_10 mzd_mul_v_226_30_popcnt
 
-#undef SBOX_IMPL
 #undef LOWMC
-#define SBOX_IMPL sbox_layer_bitsliced
 #define LOWMC lowmc_neon_256
 #include "lowmc.c.i"
 
