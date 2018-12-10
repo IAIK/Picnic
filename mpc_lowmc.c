@@ -389,8 +389,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_128
 #define MUL_R_10 mzd_mul_v_sse_30_128
-#define MUL_Z_1  mzd_mul_v_parity_sse_popcnt_125_3
-#define MUL_Z_10 mzd_mul_v_parity_sse_popcnt_98_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_125_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_98_30
 
 #define SIGN mpc_lowmc_call_128_sse_popcnt
 #define VERIFY mpc_lowmc_call_verify_128_sse_popcnt
@@ -430,8 +430,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_192
 #define MUL_R_10 mzd_mul_v_sse_30_192
-#define MUL_Z_1  mzd_mul_v_parity_sse_popcnt_189_3
-#define MUL_Z_10 mzd_mul_v_parity_sse_popcnt_162_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_189_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_162_30
 
 #define SIGN mpc_lowmc_call_192_sse_popcnt
 #define VERIFY mpc_lowmc_call_verify_192_sse_popcnt
@@ -464,8 +464,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_256
 #define MUL_R_10 mzd_mul_v_sse_30_256
-#define MUL_Z_1  mzd_mul_v_parity_sse_popcnt_253_3
-#define MUL_Z_10 mzd_mul_v_parity_sse_popcnt_226_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_253_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_226_30
 
 #define SIGN mpc_lowmc_call_256_sse_popcnt
 #define VERIFY mpc_lowmc_call_verify_256_sse_popcnt
@@ -641,8 +641,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_128
 #define MUL_R_10 mzd_mul_v_avx_30_128
-#define MUL_Z_1  mzd_mul_v_parity_avx_popcnt_125_3
-#define MUL_Z_10 mzd_mul_v_parity_avx_popcnt_98_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_125_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_98_30
 
 #define SIGN mpc_lowmc_call_128_avx_popcnt
 #define VERIFY mpc_lowmc_call_verify_128_avx_popcnt
@@ -682,8 +682,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_avx_3_192
 #define MUL_R_10 mzd_mul_v_avx_30_192
-#define MUL_Z_1  mzd_mul_v_parity_avx_popcnt_189_3
-#define MUL_Z_10 mzd_mul_v_parity_avx_popcnt_162_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_189_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_162_30
 
 #define SIGN mpc_lowmc_call_192_avx_popcnt
 #define VERIFY mpc_lowmc_call_verify_192_avx_popcnt
@@ -716,8 +716,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_avx_3_256
 #define MUL_R_10 mzd_mul_v_avx_30_256
-#define MUL_Z_1  mzd_mul_v_parity_avx_popcnt_253_3
-#define MUL_Z_10 mzd_mul_v_parity_avx_popcnt_226_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_253_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_226_30
 
 #define SIGN mpc_lowmc_call_256_avx_popcnt
 #define VERIFY mpc_lowmc_call_verify_256_avx_popcnt

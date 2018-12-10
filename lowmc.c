@@ -270,8 +270,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_128
 #define MUL_R_10 mzd_mul_v_sse_30_128
-#define MUL_Z_1  mzd_mul_v_parity_sse_popcnt_125_3
-#define MUL_Z_10 mzd_mul_v_parity_sse_popcnt_98_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_125_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_98_30
 
 #undef LOWMC
 #define LOWMC lowmc_sse_popcnt_128
@@ -306,8 +306,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_192
 #define MUL_R_10 mzd_mul_v_sse_30_192
-#define MUL_Z_1  mzd_mul_v_parity_sse_popcnt_189_3
-#define MUL_Z_10 mzd_mul_v_parity_sse_popcnt_162_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_189_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_162_30
 
 #undef LOWMC
 #define LOWMC lowmc_sse_popcnt_192
@@ -340,8 +340,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_256
 #define MUL_R_10 mzd_mul_v_sse_30_256
-#define MUL_Z_1  mzd_mul_v_parity_sse_popcnt_253_3
-#define MUL_Z_10 mzd_mul_v_parity_sse_popcnt_226_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_253_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_226_30
 
 #undef LOWMC
 #define LOWMC lowmc_sse_popcnt_256
@@ -502,8 +502,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_sse_3_128
 #define MUL_R_10 mzd_mul_v_avx_30_128
-#define MUL_Z_1  mzd_mul_v_parity_avx_popcnt_125_3
-#define MUL_Z_10 mzd_mul_v_parity_avx_popcnt_98_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_125_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_98_30
 
 #undef LOWMC
 #define LOWMC lowmc_avx_popcnt_128
@@ -538,8 +538,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_avx_3_192
 #define MUL_R_10 mzd_mul_v_avx_30_192
-#define MUL_Z_1  mzd_mul_v_parity_avx_popcnt_189_3
-#define MUL_Z_10 mzd_mul_v_parity_avx_popcnt_162_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_189_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_162_30
 
 #undef LOWMC
 #define LOWMC lowmc_avx_popcnt_192
@@ -572,8 +572,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_avx_3_256
 #define MUL_R_10 mzd_mul_v_avx_30_256
-#define MUL_Z_1  mzd_mul_v_parity_avx_popcnt_253_3
-#define MUL_Z_10 mzd_mul_v_parity_avx_popcnt_226_30
+#define MUL_Z_1  mzd_mul_v_parity_popcnt_253_3
+#define MUL_Z_10 mzd_mul_v_parity_popcnt_226_30
 
 #undef LOWMC
 #define LOWMC lowmc_avx_popcnt_256
