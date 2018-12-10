@@ -13,6 +13,9 @@
 #define lowmc lowmc_instance
 #endif
 
+#if defined(FN_ATTR)
+FN_ATTR
+#endif
 #if defined(RECORD_STATE)
 static void N_LOWMC(lowmc_t const* lowmc_instance, lowmc_key_t const* lowmc_key,
                             mzd_local_t const* p, recorded_state_t* state) {

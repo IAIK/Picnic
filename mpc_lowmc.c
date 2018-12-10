@@ -227,6 +227,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_MC
 #define XOR_MC mzd_xor_sse
 #define MUL_MC SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
+#define FN_ATTR ATTR_TARGET("sse2")
 
 // L1 using SSE2
 #undef XOR
@@ -344,6 +345,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define VERIFY mpc_lowmc_call_verify_256_sse
 #include "mpc_lowmc.c.i"
 
+#undef FN_ATTR
 #endif
 
 #if defined(WITH_AVX2)
@@ -351,6 +353,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_MC
 #define XOR_MC mzd_xor_avx
 #define MUL_MC SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
+#define FN_ATTR ATTR_TARGET("avx2,bmi2")
 
 // L1 using AVX2
 #undef XOR
@@ -468,6 +471,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define VERIFY mpc_lowmc_call_verify_256_avx
 #include "mpc_lowmc.c.i"
 
+#undef FN_ATTR
 #endif
 
 #if defined(WITH_NEON)

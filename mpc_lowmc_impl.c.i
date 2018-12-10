@@ -43,6 +43,9 @@
 #define lowmc lowmc_instance
 #endif
 
+#if defined(FN_ATTR)
+FN_ATTR
+#endif
 static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mzd_local_t const* p,
                    view_t* views, in_out_shares_t* in_out_shares, rvec_t* rvec,
                    recorded_state_t* recorded_state) {
@@ -77,6 +80,9 @@ static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mz
   mzd_local_free_multiple(y);
 }
 
+#if defined(FN_ATTR)
+FN_ATTR
+#endif
 static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t* views,
                      in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {
 #if defined(LOWMC_INSTANCE)
