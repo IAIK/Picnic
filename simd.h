@@ -30,17 +30,6 @@
 #endif
 
 #if defined(WITH_SSE2)
-/* backwards compatibility macros for GCC 4.8 and 4.9
- *
- * bs{l,r}i was introduced in GCC 5 and in clang as macros sometime in 2015.
- * */
-#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 5) ||                                  \
-    (defined(__clang__) && !defined(_mm_bslli_si128)) || defined(_MSC_VER)
-#define _mm_bslli_si128(a, imm) _mm_slli_si128((a), (imm))
-#define _mm_bsrli_si128(a, imm) _mm_srli_si128((a), (imm))
-#endif
-#endif
-
 #include "cpu.h"
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
