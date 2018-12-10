@@ -843,7 +843,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
   if (CPU_SUPPORTS_AVX2) {
     if (lowmc->m == 10) {
 #if defined(WITH_POPCNT)
-      if (CPU_CAP_POPCNT) {
+      if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
         case 128:
           return lowmc_avx_popcnt_128_store_10;
