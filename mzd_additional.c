@@ -2042,7 +2042,7 @@ void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
 }
 
-#if defined(__x86_64__) || defined(_M_X64)
+#if defined(_M_X64) || !defined(_MSC_VER)
 ATTR_TARGET("avx2,bmi2")
 void mzd_shuffle_pext_30(mzd_local_t* x, const word mask)  {
   word a = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (34);
@@ -2053,6 +2053,17 @@ ATTR_TARGET("avx2,bmi2")
 void mzd_shuffle_pext_3(mzd_local_t* x, const word mask)  {
   word a = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (61);
   FIRST_ROW(x)[x->width - 1] = a | _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
+}
+#else
+/* TODO: check where _pext_u64 is available, and if not maybe use inline asm instead */
+ATTR_TARGET("avx2,bmi2")
+void mzd_shuffle_pext_30(mzd_local_t* x, const word mask)  {
+  mzd_shuffle_30(x, mask);
+}
+
+ATTR_TARGET("avx2,bmi2")
+void mzd_shuffle_pext_3(mzd_local_t* x, const word mask)  {
+  mzd_shuffle_3(x, mask);
 }
 #endif
 #endif
