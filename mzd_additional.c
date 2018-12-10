@@ -1904,13 +1904,6 @@ void mzd_mul_v_avx_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
 }
 
 ATTR_TARGET("avx2")
-void mzd_mul_v_avx_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-    (void)c, (void)v, (void)A;
-    assert(false && "3_128 not faster for AVX, use sse_3_128");
-    exit(-1);
-}
-
-ATTR_TARGET("avx2")
 void mzd_mul_v_avx_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   __m256i* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(__m256i));
@@ -1936,24 +1929,6 @@ void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   mm256_xor_mask_region(&cval[1], mAptr + 1, _mm256_set1_epi64x(-((idx >> 1) & 1)), 1);
   mm256_xor_mask_region(&cval[0], mAptr + 2, _mm256_set1_epi64x(-((idx >> 2) & 1)), 1);
   *mcptr = _mm256_xor_si256(*mcptr, _mm256_xor_si256(cval[0], cval[1]));
-}
-
-// Multiplication using AVX & popcnt, slower than 226_30_popcnt without AVX
-ATTR_TARGET("avx2")
-void mzd_mul_v_avx_226_30_popcnt(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-  __m256i const* vptr          = ASSUME_ALIGNED(CONST_FIRST_ROW(v), alignof(__m256i));
-  __m256i const* mAptr         = ASSUME_ALIGNED(CONST_FIRST_ROW(At), alignof(__m256i));
-  word* cptr                   = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  cptr[3] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
-
-  for(unsigned i = 30; i; --i, mAptr++) {
-    __m256i cnt = _mm256_and_si256(*vptr, *mAptr);
-    word popcnt = popcount64(_mm256_extract_epi64(cnt, 0)) +
-                  popcount64(_mm256_extract_epi64(cnt, 1)) +
-                  popcount64(_mm256_extract_epi64(cnt, 2)) +
-                  popcount64(_mm256_extract_epi64(cnt, 3));
-    cptr[3] |= (popcnt & WORD_C(0x1)) << (64-i);
-  }
 }
 
 ATTR_TARGET("bmi2")
