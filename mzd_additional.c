@@ -1931,6 +1931,7 @@ void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   *mcptr = _mm256_xor_si256(*mcptr, _mm256_xor_si256(cval[0], cval[1]));
 }
 
+#if defined(__x86_64__) || defined(_M_X64)
 ATTR_TARGET("bmi2")
 void mzd_shuffle_pext_30(mzd_local_t* x, const word mask)  {
   word a = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (34);
@@ -1941,6 +1942,7 @@ void mzd_shuffle_pext_3(mzd_local_t* x, const word mask)  {
   word a = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (61);
   FIRST_ROW(x)[x->width - 1] = a | _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
 }
+#endif
 #endif
 
 #if defined(WITH_NEON)
