@@ -58,6 +58,9 @@ static unsigned init_caps(void) {
     if (regs.edx & (1 << 26)) {
       caps |= CPU_CAP_SSE2;
     }
+    if (regs.ecx & (1 << 20)) {
+      caps |= CPU_CAP_SSE42;
+    }
   }
 
   if (max >= 7) {
@@ -103,6 +106,9 @@ static unsigned init_caps(void) {
   if (__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
     if (edx & (1 << 26)) {
       caps |= CPU_CAP_SSE2;
+    }
+    if (ecx & (1 << 20)) {
+      caps |= CPU_CAP_SSE42;
     }
   }
 

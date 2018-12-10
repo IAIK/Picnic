@@ -12,8 +12,13 @@
 
 #include <stdbool.h>
 
+/* CPU supports SSE2 */
 #define CPU_CAP_SSE2 0x00000001
+/* CPU supports SSE4.2 */
+#define CPU_CAP_SSE42 0x00000002
+/* CPU supports AVX2 + BMI2 */
 #define CPU_CAP_AVX2 0x00000004
+/* CPU supports NEON */
 #define CPU_CAP_NEON 0x00000008
 
 /**
