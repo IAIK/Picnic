@@ -58,8 +58,8 @@ static unsigned init_caps(void) {
     if (regs.edx & (1 << 26)) {
       caps |= CPU_CAP_SSE2;
     }
-    if (regs.ecx & (1 << 20)) {
-      caps |= CPU_CAP_SSE42;
+    if (regs.ecx & (1 << 23)) {
+      caps |= CPU_CAP_POPCNT;
     }
   }
 
@@ -107,8 +107,8 @@ static unsigned init_caps(void) {
     if (edx & (1 << 26)) {
       caps |= CPU_CAP_SSE2;
     }
-    if (ecx & (1 << 20)) {
-      caps |= CPU_CAP_SSE42;
+    if (ecx & (1 << 23)) {
+      caps |= CPU_CAP_POPCNT;
     }
   }
 

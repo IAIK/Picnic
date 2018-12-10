@@ -32,10 +32,10 @@ void test(void) {
 }
 #endif
 
-#if defined(SSE42)
+#if defined(POPCNT)
 #include <nmmintrin.h>
 
-ATTRIBUTE_TARGET("sse4.2") void test(void) {
+ATTRIBUTE_TARGET("popcnt") void test(void) {
   unsigned long long v = _mm_popcnt_u64(0);
   (void)v;
 }

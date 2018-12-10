@@ -48,14 +48,16 @@ static inline uint64_t popcount64c(uint64_t in)
 #include "simd.h"
 
 //select appropriate popcount, if available
-#if defined(WITH_SSE42)
+#if defined(WITH_POPCNT)
 #include <nmmintrin.h>
-ATTR_TARGET("sse4.2")
-static inline uint64_t popcount64_sse42(uint64_t in) {
+
+ATTR_TARGET("popcnt")
+static inline uint64_t popcount64_popcnt(uint64_t in) {
   return _mm_popcnt_u64(in);
 }
+
 #undef popcount64
-#define popcount64 popcount64_sse42
+#define popcount64 popcount64_popcnt
 #endif
 
 #if defined(WITH_SSE2) || defined(WITH_AVX2) || defined(WITH_NEON)
