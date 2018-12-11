@@ -118,6 +118,13 @@ if(CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
   add_compile_options("-Werror=implicit-function-declaration")
 endif()
 
+if(MSVC)
+  list(APPEND WARNINGS 4711 4820 4324 4710 4464 4255 4668)
+  foreach(warning IN ITEMS ${WARNINGS})
+    add_compile_options("/wd${warning}")
+  endforeach(warning)
+endif()
+
 # enable -march=native -mtune=native if supported
 if(WITH_MARCH_NATIVE)
   if (CC_SUPPORTS_MARCH_NATIVE)
