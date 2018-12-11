@@ -62,7 +62,7 @@ static void bench_lowmc(const bench_options_t* options) {
   for (unsigned int i = 0; i != options->iter; ++i) {
     const uint64_t start_time = timing_read(&ctx);
 
-    mzd_local_t* ct = lowmc_impl(lowmc, sk, pt);
+    mzd_local_t* ct = lowmc_impl(sk, pt);
     mzd_local_free(pt);
     pt = ct;
 

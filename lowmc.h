@@ -16,10 +16,9 @@ typedef struct {
   mzd_local_t** state;
 } recorded_state_t;
 
-typedef mzd_local_t* (*lowmc_implementation_f)(lowmc_t const*, lowmc_key_t const*,
-                                               mzd_local_t const*);
-typedef void (*lowmc_store_implementation_f)(lowmc_t const*, lowmc_key_t const*,
-                                             mzd_local_t const*, recorded_state_t* state);
+typedef mzd_local_t* (*lowmc_implementation_f)(lowmc_key_t const*, mzd_local_t const*);
+typedef void (*lowmc_store_implementation_f)(lowmc_key_t const*, mzd_local_t const*,
+                                             recorded_state_t* state);
 
 lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc);
 lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc);

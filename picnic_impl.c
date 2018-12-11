@@ -817,7 +817,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   recorded_state_t recorded_state;
   recorded_state.state = calloc(lowmc_r + 1, sizeof(mzd_local_t*));
   mzd_local_init_multiple_ex(recorded_state.state, lowmc_r + 1, 1, lowmc_n, false);
-  lowmc_store_impl(lowmc, lowmc_key, p, &recorded_state);
+  lowmc_store_impl(lowmc_key, p, &recorded_state);
 
   sig_proof_t* prf = proof_new(pp);
   view_t* views    = calloc(sizeof(view_t), view_count);

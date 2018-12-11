@@ -75,31 +75,6 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 }
 #endif
 
-// uint64 based implementation
-#define XOR mzd_xor_uint64
-#define MUL SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_uint64, mzd_addmul_vl_uint64)
-#define XOR_MC mzd_xor_uint64
-#define MUL_MC SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
-#define SHUFFLE mzd_shuffle
-
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_uint64_3
-#define MUL_R_10 mzd_mul_v_uint64_30
-#define MUL_Z_1  mzd_mul_v_parity_uint64_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_30
-
-#define LOWMC_N lowmc->n
-#define LOWMC_R_10 lowmc->r
-#define LOWMC_R_1 lowmc->r
-
-#define LOWMC lowmc_uint64
-#include "lowmc.c.i"
-
-#if defined(WITH_OPT)
 #if defined(WITH_LOWMC_128_128_20)
 #include "lowmc_128_128_20.h"
 #endif
@@ -119,6 +94,82 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #include "lowmc_256_256_363.h"
 #endif
 
+// uint64 based implementation
+#define XOR mzd_xor_uint64
+#define MUL SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_uint64, mzd_addmul_vl_uint64)
+#define XOR_MC mzd_xor_uint64
+#define MUL_MC SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
+#define SHUFFLE mzd_shuffle
+
+#undef MUL_R_1
+#undef MUL_R_10
+#undef MUL_Z_1
+#undef MUL_Z_10
+#define MUL_R_1  mzd_mul_v_uint64_3
+#define MUL_R_10 mzd_mul_v_uint64_30
+#define MUL_Z_1  mzd_mul_v_parity_uint64_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_30
+
+#define LOWMC_N LOWMC_L1_N
+#define LOWMC_R_10 LOWMC_L1_R
+#define LOWMC_R_1 LOWMC_L1_1_R
+#if defined(WITH_LOWMC_128_128_20)
+#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#endif
+#if defined(WITH_LOWMC_128_128_182)
+#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#endif
+
+#define LOWMC lowmc_uint64_128
+#include "lowmc.c.i"
+
+#undef LOWMC
+#undef LOWMC_N
+#undef LOWMC_R_10
+#undef LOWMC_R_1
+#undef LOWMC_INSTANCE_10
+#undef LOWMC_INSTANCE_1
+
+#define LOWMC_N LOWMC_L3_N
+#define LOWMC_R_10 LOWMC_L3_R
+#define LOWMC_R_1 LOWMC_L3_1_R
+#if defined(WITH_LOWMC_192_192_30)
+#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#endif
+#define LOWMC lowmc_uint64_192
+#include "lowmc.c.i"
+
+#undef LOWMC
+#undef LOWMC_N
+#undef LOWMC_R_10
+#undef LOWMC_R_1
+#undef LOWMC_INSTANCE_10
+#undef LOWMC_INSTANCE_1
+
+#define LOWMC_N LOWMC_L5_N
+#define LOWMC_R_10 LOWMC_L5_R
+#define LOWMC_R_1 LOWMC_L5_1_R
+#if defined(WITH_LOWMC_256_256_38)
+#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#endif
+#define LOWMC lowmc_uint64_256
+#include "lowmc.c.i"
+
+#undef LOWMC
+#undef LOWMC_N
+#undef LOWMC_R_10
+#undef LOWMC_R_1
+#undef LOWMC_INSTANCE_10
+#undef LOWMC_INSTANCE_1
+
+#if defined(WITH_OPT)
 #if defined(WITH_SSE2)
 #undef XOR_MC
 #undef MUL_MC
@@ -707,22 +758,34 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
         case 128:
           return lowmc_avx_popcnt_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
         case 192:
           return lowmc_avx_popcnt_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
         case 256:
           return lowmc_avx_popcnt_256_10;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
-        case 128:
-          return lowmc_avx_128_10;
-        case 192:
-          return lowmc_avx_192_10;
-        case 256:
-          return lowmc_avx_256_10;
+#if defined(WITH_LOWMC_128_128_20)
+      case 128:
+        return lowmc_avx_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+      case 192:
+        return lowmc_avx_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+      case 256:
+        return lowmc_avx_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
@@ -730,22 +793,34 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
         case 128:
           return lowmc_avx_popcnt_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
         case 192:
           return lowmc_avx_popcnt_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
         case 256:
           return lowmc_avx_popcnt_256_1;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
-        case 128:
-          return lowmc_avx_128_1;
-        case 192:
-          return lowmc_avx_192_1;
-        case 256:
-          return lowmc_avx_256_1;
+#if defined(WITH_LOWMC_128_128_182)
+      case 128:
+        return lowmc_avx_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+      case 192:
+        return lowmc_avx_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+      case 256:
+        return lowmc_avx_256_1;
+#endif
       }
     }
 #endif
@@ -757,22 +832,34 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
         case 128:
           return lowmc_sse_popcnt_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
         case 192:
           return lowmc_sse_popcnt_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
         case 256:
           return lowmc_sse_popcnt_256_10;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
-        case 128:
-          return lowmc_sse_128_10;
-        case 192:
-          return lowmc_sse_192_10;
-        case 256:
-          return lowmc_sse_256_10;
+#if defined(WITH_LOWMC_128_128_20)
+      case 128:
+        return lowmc_sse_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+      case 192:
+        return lowmc_sse_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+      case 256:
+        return lowmc_sse_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
@@ -780,22 +867,34 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
         case 128:
           return lowmc_sse_popcnt_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
         case 192:
           return lowmc_sse_popcnt_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
         case 256:
           return lowmc_sse_popcnt_256_1;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
-        case 128:
-          return lowmc_sse_128_1;
-        case 192:
-          return lowmc_sse_192_1;
-        case 256:
-          return lowmc_sse_256_1;
+#if defined(WITH_LOWMC_128_128_182)
+      case 128:
+        return lowmc_sse_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+      case 192:
+        return lowmc_sse_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+      case 256:
+        return lowmc_sse_256_1;
+#endif
       }
     }
 #endif
@@ -805,23 +904,35 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
   if (CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
-        case 128:
-          return lowmc_neon_128_10;
-        case 192:
-          return lowmc_neon_192_10;
-        case 256:
-          return lowmc_neon_256_10;
+#if defined(WITH_LOWMC_128_128_20)
+      case 128:
+        return lowmc_neon_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+      case 192:
+        return lowmc_neon_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+      case 256:
+        return lowmc_neon_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
-        case 128:
-          return lowmc_neon_128_1;
-        case 192:
-          return lowmc_neon_192_1;
-        case 256:
-          return lowmc_neon_256_1;
+#if defined(WITH_LOWMC_128_128_182)
+      case 128:
+        return lowmc_neon_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+      case 192:
+        return lowmc_neon_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+      case 256:
+        return lowmc_neon_256_1;
+#endif
       }
     }
 #endif
@@ -829,14 +940,43 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #endif
 #endif
 
-  if (lowmc->m == 10)
-    return lowmc_uint64_10;
-#if defined(WITH_LOWMC_M1)
-  else if (lowmc->m == 1)
-    return lowmc_uint64_1;
+  if (lowmc->m == 10) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
+    case 128:
+      return lowmc_uint64_128_10;
 #endif
-  else
-    return NULL;
+#if defined(WITH_LOWMC_192_192_30)
+    case 192:
+      return lowmc_uint64_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+    case 256:
+      return lowmc_uint64_256_10;
+#endif
+    }
+  }
+
+#if defined(WITH_LOWMC_M1)
+  if (lowmc->m == 1) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
+    case 128:
+      return lowmc_uint64_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+    case 192:
+      return lowmc_uint64_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+    case 256:
+      return lowmc_uint64_256_1;
+#endif
+    }
+  }
+#endif
+
+  return NULL;
 }
 
 lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc) {
@@ -847,22 +987,34 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
         case 128:
           return lowmc_avx_popcnt_128_store_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
         case 192:
           return lowmc_avx_popcnt_192_store_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
         case 256:
           return lowmc_avx_popcnt_256_store_10;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
         return lowmc_avx_128_store_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
         return lowmc_avx_192_store_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
         return lowmc_avx_256_store_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
@@ -870,22 +1022,34 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
         case 128:
           return lowmc_avx_popcnt_128_store_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
         case 192:
           return lowmc_avx_popcnt_192_store_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
         case 256:
           return lowmc_avx_popcnt_256_store_1;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
         return lowmc_avx_128_store_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
         return lowmc_avx_192_store_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
         return lowmc_avx_256_store_1;
+#endif
       }
     }
 #endif
@@ -897,22 +1061,34 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
         case 128:
           return lowmc_sse_popcnt_128_store_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
         case 192:
           return lowmc_sse_popcnt_192_store_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
         case 256:
           return lowmc_sse_popcnt_256_store_10;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
         return lowmc_sse_128_store_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
         return lowmc_sse_192_store_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
         return lowmc_sse_256_store_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
@@ -920,22 +1096,34 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
         case 128:
           return lowmc_sse_popcnt_128_store_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
         case 192:
           return lowmc_sse_popcnt_192_store_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
         case 256:
           return lowmc_sse_popcnt_256_store_1;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
         return lowmc_sse_128_store_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
         return lowmc_sse_192_store_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
         return lowmc_sse_256_store_1;
+#endif
       }
     }
 #endif
@@ -945,23 +1133,35 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
   if (CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
         return lowmc_neon_128_store_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
         return lowmc_neon_192_store_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
         return lowmc_neon_256_store_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
         return lowmc_neon_128_store_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
         return lowmc_neon_192_store_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
         return lowmc_neon_256_store_1;
+#endif
       }
     }
 #endif
@@ -969,13 +1169,41 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #endif
 #endif
 
-  if (lowmc->m == 10)
-    return lowmc_uint64_store_10;
-#if defined(WITH_LOWMC_M1)
-  else if (lowmc->m == 1)
-    return lowmc_uint64_store_1;
+  if (lowmc->m == 10) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
+    case 128:
+      return lowmc_uint64_128_store_10;
 #endif
-  else
-    return NULL;
+#if defined(WITH_LOWMC_192_192_30)
+    case 192:
+      return lowmc_uint64_192_store_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+    case 256:
+      return lowmc_uint64_256_store_10;
+#endif
+    }
+  }
 
+#if defined(WITH_LOWMC_M1)
+  if (lowmc->m == 1) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
+    case 128:
+      return lowmc_uint64_128_store_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+    case 192:
+      return lowmc_uint64_192_store_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+    case 256:
+      return lowmc_uint64_256_store_1;
+#endif
+    }
+  }
+#endif
+
+  return NULL;
 }

@@ -7,6 +7,7 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#if defined(LOWMC_INSTANCE_10)
 #define M_FIXED_10
 #define SBOX sbox_layer_10_uint64
 #define N_LOWMC CONCAT(LOWMC, 10)
@@ -15,9 +16,7 @@
 #define LOWMC_R LOWMC_R_10
 #define LOWMC_M 10
 #define MZD_SHUFFLE CONCAT(SHUFFLE, 30)
-#if defined(LOWMC_INSTANCE_10)
 #define LOWMC_INSTANCE LOWMC_INSTANCE_10
-#endif
 #include "lowmc_impl.c.i"
 
 #undef N_LOWMC
@@ -34,8 +33,9 @@
 #undef N_LOWMC
 #undef LOWMC_M
 #undef MZD_SHUFFLE
+#endif
 
-#if defined(WITH_LOWMC_M1)
+#if defined(WITH_LOWMC_M1) && defined(LOWMC_INSTANCE_1)
 #define M_FIXED_1
 #define SBOX sbox_layer_1_uint64
 #define N_LOWMC CONCAT(LOWMC, 1)
@@ -44,9 +44,7 @@
 #define LOWMC_R LOWMC_R_1
 #define LOWMC_M 1
 #define MZD_SHUFFLE CONCAT(SHUFFLE, 3)
-#if defined(LOWMC_INSTANCE_1)
 #define LOWMC_INSTANCE LOWMC_INSTANCE_1
-#endif
 #include "lowmc_impl.c.i"
 
 #undef N_LOWMC

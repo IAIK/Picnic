@@ -149,6 +149,25 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 }
 #endif
 
+#if defined(WITH_LOWMC_128_128_20)
+#include "lowmc_128_128_20.h"
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+#include "lowmc_192_192_30.h"
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+#include "lowmc_256_256_38.h"
+#endif
+#if defined(WITH_LOWMC_128_128_182)
+#include "lowmc_128_128_182.h"
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+#include "lowmc_192_192_284.h"
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+#include "lowmc_256_256_363.h"
+#endif
+
 #define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, n, shares)                                    \
   CONCAT(SBOX_mzd, X)(sbox, y, x, views, r, lowmcmask, n)
 
@@ -179,47 +198,73 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_MC SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
 #define SHUFFLE mzd_shuffle
 
-#define LOWMC_N lowmc->n
-#define LOWMC_R_10 lowmc->r
-#define LOWMC_R_1 lowmc->r
-
 #define SIGN_SBOX mpc_sbox_layer_bitsliced
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify
 #define SBOX_NUM_ARGS 6
 
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
 #define MUL_R_1  mzd_mul_v_uint64_3
 #define MUL_R_10 mzd_mul_v_uint64_30
 #define MUL_Z_1  mzd_mul_v_parity_uint64_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_30
 
-#define SIGN mpc_lowmc_call
-#define VERIFY mpc_lowmc_call_verify
-#include "mpc_lowmc.c.i"
-
-#if defined(WITH_OPT)
+#define LOWMC_N LOWMC_L1_N
+#define LOWMC_R_10 LOWMC_L1_R
+#define LOWMC_R_1 LOWMC_L1_1_R
 #if defined(WITH_LOWMC_128_128_20)
-#include "lowmc_128_128_20.h"
-#endif
-#if defined(WITH_LOWMC_192_192_30)
-#include "lowmc_192_192_30.h"
-#endif
-#if defined(WITH_LOWMC_256_256_38)
-#include "lowmc_256_256_38.h"
+#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#include "lowmc_128_128_182.h"
+#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#endif
+#define SIGN mpc_lowmc_call_uint64_128
+#define VERIFY mpc_lowmc_call_verify_uint64_128
+#include "mpc_lowmc.c.i"
+
+#undef LOWMC_N
+#undef LOWMC_R_10
+#undef LOWMC_R_1
+#undef LOWMC_INSTANCE_10
+#undef LOWMC_INSTANCE_1
+
+#define LOWMC_N LOWMC_L3_N
+#define LOWMC_R_10 LOWMC_L3_R
+#define LOWMC_R_1 LOWMC_L3_1_R
+#if defined(WITH_LOWMC_192_192_30)
+#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#include "lowmc_192_192_284.h"
+#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#endif
+#define SIGN mpc_lowmc_call_uint64_192
+#define VERIFY mpc_lowmc_call_verify_uint64_192
+#include "mpc_lowmc.c.i"
+
+#undef LOWMC_N
+#undef LOWMC_R_10
+#undef LOWMC_R_1
+#undef LOWMC_INSTANCE_10
+#undef LOWMC_INSTANCE_1
+
+#define LOWMC_N LOWMC_L5_N
+#define LOWMC_R_10 LOWMC_L5_R
+#define LOWMC_R_1 LOWMC_L5_1_R
+#if defined(WITH_LOWMC_256_256_38)
+#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#include "lowmc_256_256_363.h"
+#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
 #endif
+#define SIGN mpc_lowmc_call_uint64_256
+#define VERIFY mpc_lowmc_call_verify_uint64_256
+#include "mpc_lowmc.c.i"
 
+#undef LOWMC_N
+#undef LOWMC_R_10
+#undef LOWMC_R_1
+#undef LOWMC_INSTANCE_10
+#undef LOWMC_INSTANCE_1
+
+#if defined(WITH_OPT)
 #undef SBOX_NUM_ARGS
 #define SBOX_NUM_ARGS 5
 
@@ -267,8 +312,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
-#define SIGN mpc_lowmc_call_128_sse
-#define VERIFY mpc_lowmc_call_verify_128_sse
+#define SIGN mpc_lowmc_call_sse_128
+#define VERIFY mpc_lowmc_call_verify_sse_128
 #include "mpc_lowmc.c.i"
 
 // L3 using SSE2
@@ -308,8 +353,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
-#define SIGN mpc_lowmc_call_192_sse
-#define VERIFY mpc_lowmc_call_verify_192_sse
+#define SIGN mpc_lowmc_call_sse_192
+#define VERIFY mpc_lowmc_call_verify_sse_192
 #include "mpc_lowmc.c.i"
 
 // L5 using SSE2
@@ -342,8 +387,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
-#define SIGN mpc_lowmc_call_256_sse
-#define VERIFY mpc_lowmc_call_verify_256_sse
+#define SIGN mpc_lowmc_call_sse_256
+#define VERIFY mpc_lowmc_call_verify_sse_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -393,8 +438,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_128_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
 
-#define SIGN mpc_lowmc_call_128_sse_popcnt
-#define VERIFY mpc_lowmc_call_verify_128_sse_popcnt
+#define SIGN mpc_lowmc_call_sse_popcnt_128
+#define VERIFY mpc_lowmc_call_verify_sse_popcnt_128
 #include "mpc_lowmc.c.i"
 
 // L3 using SSE2
@@ -434,8 +479,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 
-#define SIGN mpc_lowmc_call_192_sse_popcnt
-#define VERIFY mpc_lowmc_call_verify_192_sse_popcnt
+#define SIGN mpc_lowmc_call_sse_popcnt_192
+#define VERIFY mpc_lowmc_call_verify_sse_popcnt_192
 #include "mpc_lowmc.c.i"
 
 // L5 using SSE2
@@ -468,8 +513,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_256_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
 
-#define SIGN mpc_lowmc_call_256_sse_popcnt
-#define VERIFY mpc_lowmc_call_verify_256_sse_popcnt
+#define SIGN mpc_lowmc_call_sse_popcnt_256
+#define VERIFY mpc_lowmc_call_verify_sse_popcnt_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -521,8 +566,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
-#define SIGN mpc_lowmc_call_128_avx
-#define VERIFY mpc_lowmc_call_verify_128_avx
+#define SIGN mpc_lowmc_call_avx_128
+#define VERIFY mpc_lowmc_call_verify_avx_128
 #include "mpc_lowmc.c.i"
 
 // L3 using AVX2
@@ -562,8 +607,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
-#define SIGN mpc_lowmc_call_192_avx
-#define VERIFY mpc_lowmc_call_verify_192_avx
+#define SIGN mpc_lowmc_call_avx_192
+#define VERIFY mpc_lowmc_call_verify_avx_192
 #include "mpc_lowmc.c.i"
 
 // L5 using AVX2
@@ -596,8 +641,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
-#define SIGN mpc_lowmc_call_256_avx
-#define VERIFY mpc_lowmc_call_verify_256_avx
+#define SIGN mpc_lowmc_call_avx_256
+#define VERIFY mpc_lowmc_call_verify_avx_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -642,8 +687,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_128_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
 
-#define SIGN mpc_lowmc_call_128_avx_popcnt
-#define VERIFY mpc_lowmc_call_verify_128_avx_popcnt
+#define SIGN mpc_lowmc_call_avx_popcnt_128
+#define VERIFY mpc_lowmc_call_verify_avx_popcnt_128
 #include "mpc_lowmc.c.i"
 
 // L3 using AVX2
@@ -683,8 +728,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 
-#define SIGN mpc_lowmc_call_192_avx_popcnt
-#define VERIFY mpc_lowmc_call_verify_192_avx_popcnt
+#define SIGN mpc_lowmc_call_avx_popcnt_192
+#define VERIFY mpc_lowmc_call_verify_avx_popcnt_192
 #include "mpc_lowmc.c.i"
 
 // L5 using AVX2
@@ -717,8 +762,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_256_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
 
-#define SIGN mpc_lowmc_call_256_avx_popcnt
-#define VERIFY mpc_lowmc_call_verify_256_avx_popcnt
+#define SIGN mpc_lowmc_call_avx_popcnt_256
+#define VERIFY mpc_lowmc_call_verify_avx_popcnt_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -771,8 +816,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
-#define SIGN mpc_lowmc_call_128_neon
-#define VERIFY mpc_lowmc_call_verify_128_neon
+#define SIGN mpc_lowmc_call_neon_128
+#define VERIFY mpc_lowmc_call_verify_neon_128
 #include "mpc_lowmc.c.i"
 
 // L3 using NEON
@@ -812,8 +857,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
-#define SIGN mpc_lowmc_call_192_neon
-#define VERIFY mpc_lowmc_call_verify_192_neon
+#define SIGN mpc_lowmc_call_neon_192
+#define VERIFY mpc_lowmc_call_verify_neon_192
 #include "mpc_lowmc.c.i"
 
 // L5 using NEON
@@ -846,8 +891,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
-#define SIGN mpc_lowmc_call_256_neon
-#define VERIFY mpc_lowmc_call_verify_256_neon
+#define SIGN mpc_lowmc_call_neon_256
+#define VERIFY mpc_lowmc_call_verify_neon_256
 #include "mpc_lowmc.c.i"
 
 #endif
@@ -861,22 +906,34 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
         case 128:
-          return mpc_lowmc_call_128_avx_popcnt_10;
+          return mpc_lowmc_call_avx_popcnt_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
         case 192:
-          return mpc_lowmc_call_192_avx_popcnt_10;
+          return mpc_lowmc_call_avx_popcnt_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
         case 256:
-          return mpc_lowmc_call_256_avx_popcnt_10;
+          return mpc_lowmc_call_avx_popcnt_256_10;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_128_avx_10;
+        return mpc_lowmc_call_avx_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_192_avx_10;
+        return mpc_lowmc_call_avx_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_256_avx_10;
+        return mpc_lowmc_call_avx_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
@@ -884,22 +941,34 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
         case 128:
-          return mpc_lowmc_call_128_avx_popcnt_1;
+          return mpc_lowmc_call_avx_popcnt_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
         case 192:
-          return mpc_lowmc_call_192_avx_popcnt_1;
+          return mpc_lowmc_call_avx_popcnt_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
         case 256:
-          return mpc_lowmc_call_256_avx_popcnt_1;
+          return mpc_lowmc_call_avx_popcnt_256_1;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_128_avx_1;
+        return mpc_lowmc_call_avx_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_192_avx_1;
+        return mpc_lowmc_call_avx_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_256_avx_1;
+        return mpc_lowmc_call_avx_256_1;
+#endif
       }
     }
 #endif
@@ -911,22 +980,34 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
         case 128:
-          return mpc_lowmc_call_128_sse_popcnt_10;
+          return mpc_lowmc_call_sse_popcnt_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
         case 192:
-          return mpc_lowmc_call_192_sse_popcnt_10;
+          return mpc_lowmc_call_sse_popcnt_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
         case 256:
-          return mpc_lowmc_call_256_sse_popcnt_10;
+          return mpc_lowmc_call_sse_popcnt_256_10;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_128_sse_10;
+        return mpc_lowmc_call_sse_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_192_sse_10;
+        return mpc_lowmc_call_sse_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_256_sse_10;
+        return mpc_lowmc_call_sse_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
@@ -934,22 +1015,34 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
         case 128:
-          return mpc_lowmc_call_128_sse_popcnt_1;
+          return mpc_lowmc_call_sse_popcnt_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
         case 192:
-          return mpc_lowmc_call_192_sse_popcnt_1;
+          return mpc_lowmc_call_sse_popcnt_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
         case 256:
-          return mpc_lowmc_call_256_sse_popcnt_1;
+          return mpc_lowmc_call_sse_popcnt_256_1;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_128_sse_1;
+        return mpc_lowmc_call_sse_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_192_sse_1;
+        return mpc_lowmc_call_sse_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_256_sse_1;
+        return mpc_lowmc_call_sse_256_1;
+#endif
       }
     }
 #endif
@@ -959,23 +1052,35 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
   if (CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_128_neon_10;
+        return mpc_lowmc_call_neon_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_192_neon_10;
+        return mpc_lowmc_call_neon_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_256_neon_10;
+        return mpc_lowmc_call_neon_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_128_neon_1;
+        return mpc_lowmc_call_neon_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_192_neon_1;
+        return mpc_lowmc_call_neon_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_256_neon_1;
+        return mpc_lowmc_call_neon_256_1;
+#endif
       }
     }
 #endif
@@ -983,12 +1088,42 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
 #endif
 
-  if (lowmc->m == 10)
-    return mpc_lowmc_call_10;
-#if defined(WITH_LOWMC_M1)
-  if (lowmc->m == 1)
-    return mpc_lowmc_call_1;
+  if (lowmc->m == 10) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
+    case 128:
+      return mpc_lowmc_call_uint64_128_10;
 #endif
+#if defined(WITH_LOWMC_192_192_30)
+    case 192:
+      return mpc_lowmc_call_uint64_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+    case 256:
+      return mpc_lowmc_call_uint64_256_10;
+#endif
+    }
+  }
+
+#if defined(WITH_LOWMC_M1)
+  if (lowmc->m == 1) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
+    case 128:
+      return mpc_lowmc_call_uint64_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+    case 192:
+      return mpc_lowmc_call_uint64_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+    case 256:
+      return mpc_lowmc_call_uint64_256_1;
+#endif
+    }
+  }
+#endif
+
   return NULL;
 }
 
@@ -1000,22 +1135,34 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
         case 128:
-          return mpc_lowmc_call_verify_128_avx_popcnt_10;
+          return mpc_lowmc_call_verify_avx_popcnt_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
         case 192:
-          return mpc_lowmc_call_verify_192_avx_popcnt_10;
+          return mpc_lowmc_call_verify_avx_popcnt_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
         case 256:
-          return mpc_lowmc_call_verify_256_avx_popcnt_10;
+          return mpc_lowmc_call_verify_avx_popcnt_256_10;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_verify_128_avx_10;
+        return mpc_lowmc_call_verify_avx_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_verify_192_avx_10;
+        return mpc_lowmc_call_verify_avx_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_verify_256_avx_10;
+        return mpc_lowmc_call_verify_avx_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
@@ -1023,22 +1170,34 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
         case 128:
-          return mpc_lowmc_call_verify_128_avx_popcnt_1;
+          return mpc_lowmc_call_verify_avx_popcnt_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
         case 192:
-          return mpc_lowmc_call_verify_192_avx_popcnt_1;
+          return mpc_lowmc_call_verify_avx_popcnt_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
         case 256:
-          return mpc_lowmc_call_verify_256_avx_popcnt_1;
+          return mpc_lowmc_call_verify_avx_popcnt_256_1;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_verify_128_avx_1;
+        return mpc_lowmc_call_verify_avx_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_verify_192_avx_1;
+        return mpc_lowmc_call_verify_avx_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_verify_256_avx_1;
+        return mpc_lowmc_call_verify_avx_256_1;
+#endif
       }
     }
 #endif
@@ -1050,22 +1209,34 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
         case 128:
-          return mpc_lowmc_call_verify_128_sse_popcnt_10;
+          return mpc_lowmc_call_verify_sse_popcnt_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
         case 192:
-          return mpc_lowmc_call_verify_192_sse_popcnt_10;
+          return mpc_lowmc_call_verify_sse_popcnt_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
         case 256:
-          return mpc_lowmc_call_verify_256_sse_popcnt_10;
+          return mpc_lowmc_call_verify_sse_popcnt_256_10;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_verify_128_sse_10;
+        return mpc_lowmc_call_verify_sse_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_verify_192_sse_10;
+        return mpc_lowmc_call_verify_sse_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_verify_256_sse_10;
+        return mpc_lowmc_call_verify_sse_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
@@ -1073,22 +1244,34 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
         case 128:
-          return mpc_lowmc_call_verify_128_sse_popcnt_1;
+          return mpc_lowmc_call_verify_sse_popcnt_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
         case 192:
-          return mpc_lowmc_call_verify_192_sse_popcnt_1;
+          return mpc_lowmc_call_verify_sse_popcnt_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
         case 256:
-          return mpc_lowmc_call_verify_256_sse_popcnt_1;
+          return mpc_lowmc_call_verify_sse_popcnt_256_1;
+#endif
         }
       }
 #endif
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_verify_128_sse_1;
+        return mpc_lowmc_call_verify_sse_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_verify_192_sse_1;
+        return mpc_lowmc_call_verify_sse_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_verify_256_sse_1;
+        return mpc_lowmc_call_verify_sse_256_1;
+#endif
       }
     }
 #endif
@@ -1098,23 +1281,35 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
   if (CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_verify_128_neon_10;
+        return mpc_lowmc_call_verify_neon_128_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_verify_192_neon_10;
+        return mpc_lowmc_call_verify_neon_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_verify_256_neon_10;
+        return mpc_lowmc_call_verify_neon_256_10;
+#endif
       }
     }
 #if defined(WITH_LOWMC_M1)
     if (lowmc->m == 1) {
       switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_verify_128_neon_1;
+        return mpc_lowmc_call_verify_neon_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_verify_192_neon_1;
+        return mpc_lowmc_call_verify_neon_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_verify_256_neon_1;
+        return mpc_lowmc_call_verify_neon_256_1;
+#endif
       }
     }
 #endif
@@ -1122,11 +1317,41 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
 #endif
 
-  if (lowmc->m == 10)
-    return mpc_lowmc_call_verify_10;
-#if defined(WITH_LOWMC_M1)
-  if (lowmc->m == 1)
-    return mpc_lowmc_call_verify_1;
+  if (lowmc->m == 10) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
+    case 128:
+      return mpc_lowmc_call_verify_uint64_128_10;
 #endif
+#if defined(WITH_LOWMC_192_192_30)
+    case 192:
+      return mpc_lowmc_call_verify_uint64_192_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+    case 256:
+      return mpc_lowmc_call_verify_uint64_256_10;
+#endif
+    }
+  }
+
+#if defined(WITH_LOWMC_M1)
+  if (lowmc->m == 1) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_182)
+    case 128:
+      return mpc_lowmc_call_verify_uint64_128_1;
+#endif
+#if defined(WITH_LOWMC_192_192_284)
+    case 192:
+      return mpc_lowmc_call_verify_uint64_192_1;
+#endif
+#if defined(WITH_LOWMC_256_256_363)
+    case 256:
+      return mpc_lowmc_call_verify_uint64_256_1;
+#endif
+    }
+  }
+#endif
+
   return NULL;
 }
