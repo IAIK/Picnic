@@ -2073,7 +2073,7 @@ void mzd_shuffle_pext_3(mzd_local_t* x, const word mask) {
 
 #if defined(WITH_NEON)
 void mzd_mul_v_neon_30_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* vptr        = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   uint32x4_t* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(uint32x4_t));
   uint32x4_t const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(uint32x4_t));
 
@@ -2091,7 +2091,7 @@ void mzd_mul_v_neon_30_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 }
 
 void mzd_mul_v_neon_30_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* vptr        = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   uint32x4_t* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(uint32x4_t));
   uint32x4_t const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(uint32x4_t));
 
@@ -2107,7 +2107,7 @@ void mzd_mul_v_neon_30_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 }
 
 void mzd_mul_v_neon_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* vptr        = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   uint32x4_t* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(uint32x4_t));
   uint32x4_t const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(uint32x4_t));
 
@@ -2123,7 +2123,7 @@ void mzd_mul_v_neon_30_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 }
 
 void mzd_mul_v_neon_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* vptr        = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   uint32x4_t* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(uint32x4_t));
   uint32x4_t const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(uint32x4_t));
 
@@ -2136,7 +2136,7 @@ void mzd_mul_v_neon_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
 }
 
 void mzd_mul_v_neon_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* vptr        = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   uint32x4_t* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(uint32x4_t));
   uint32x4_t const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(uint32x4_t));
 
@@ -2151,7 +2151,7 @@ void mzd_mul_v_neon_3_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
 }
 
 void mzd_mul_v_neon_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
+  word const* vptr        = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   uint32x4_t* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(uint32x4_t));
   uint32x4_t const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(uint32x4_t));
 
