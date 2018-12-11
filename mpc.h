@@ -47,8 +47,6 @@ typedef view_t rvec_t;
     }                                                                                              \
   } while (0)
 
-void mpc_clear(mzd_local_t* const* res, unsigned sc) ATTR_NONNULL;
-
 void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second, uint64_t const* r,
                     view_t* view, unsigned viewshift) ATTR_NONNULL;
 

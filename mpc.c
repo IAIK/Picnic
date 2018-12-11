@@ -13,12 +13,6 @@
 
 #include "mpc.h"
 
-void mpc_clear(mzd_local_t* const* res, unsigned sc) {
-  for (unsigned int i = 0; i < sc; i++) {
-    mzd_local_clear(res[i]);
-  }
-}
-
 void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second, uint64_t const* r,
                     view_t* view, unsigned viewshift) {
   for (unsigned m = 0; m < SC_PROOF; ++m) {
