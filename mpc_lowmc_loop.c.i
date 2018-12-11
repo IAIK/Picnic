@@ -21,7 +21,7 @@ lowmc_round_t const* round = LOWMC_INSTANCE->rounds;
 #if defined(RECOVER_FROM_STATE)
     RECOVER_FROM_STATE(x, i);
 #endif
-    SBOX(SBOX_ARGS, sbox, y, x, views, r, &LOWMC_INSTANCE->mask, LOWMC_N, shares);
+    SBOX(sbox, y, x, views, r, LOWMC_N, shares);
     for (unsigned int k = 0; k < reduced_shares; ++k) {
 #if defined(M_FIXED_10)
       const word nl = CONST_FIRST_ROW(nl_part[k])[i >> 1];
@@ -57,7 +57,7 @@ lowmc_round_t const* round = LOWMC_INSTANCE->rounds;
 #if defined(RECOVER_FROM_STATE)
   RECOVER_FROM_STATE(x, i);
 #endif
-  SBOX(SBOX_ARGS, sbox, y, x, views, r, &LOWMC_INSTANCE->mask, LOWMC_N, shares);
+  SBOX(sbox, y, x, views, r, LOWMC_N, shares);
 
   for (unsigned int k = 0; k < reduced_shares; ++k) {
 #if defined(M_FIXED_10)
@@ -82,7 +82,7 @@ lowmc_round_t const* round = LOWMC_INSTANCE->rounds;
 #if defined(RECOVER_FROM_STATE)
     RECOVER_FROM_STATE(x, i);
 #endif
-    SBOX(SBOX_ARGS, sbox, y, x, views, r, &LOWMC_INSTANCE->mask, LOWMC_N, shares);
+    SBOX(sbox, y, x, views, r, LOWMC_N, shares);
     for (unsigned int k = 0; k < reduced_shares; ++k) {
 #if defined(M_FIXED_10)
       const word nl = CONST_FIRST_ROW(nl_part[k])[i >> 1];
@@ -105,7 +105,7 @@ for (unsigned i = 0; i < (LOWMC_R); ++i, ++views, ++round) {
 #if defined(RECOVER_FROM_STATE)
   RECOVER_FROM_STATE(x, i);
 #endif
-  SBOX(SBOX_ARGS, sbox, y, x, views, r, &LOWMC_INSTANCE->mask, LOWMC_N, shares);
+  SBOX(sbox, y, x, views, r, LOWMC_N, shares);
   MPC_LOOP_CONST(MUL, x, y, CONCAT(round->l, matrix_postfix), reduced_shares);
   MPC_LOOP_CONST_C(XOR, x, x, round->constant, reduced_shares, ch);
   MPC_LOOP_CONST(ADDMUL, x, lowmc_key, CONCAT(round->k, matrix_postfix), reduced_shares);

@@ -7,30 +7,23 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#define RANDTAPE R_uint64
+#define SBOX SBOX_uint64
+
 #if defined(M_FIXED_10)
-#undef SBOX_ARGS
 #undef SBOX_SIGN
 #undef SBOX_VERIFY
 
 #define LOWMC_M 10
-#define SBOX_ARGS 5
 #define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
 #define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
-
-#define RANDTAPE R_uint64
-#define SBOX SBOX_uint64
 #elif defined(M_FIXED_1)
 #define LOWMC_M 1
-#undef SBOX_ARGS
 #undef SBOX_SIGN
 #undef SBOX_VERIFY
 
-#define SBOX_ARGS 5
 #define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_1
 #define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_1
-
-#define RANDTAPE R_uint64
-#define SBOX SBOX_uint64
 #endif
 
 #if defined(FN_ATTR)
@@ -94,19 +87,14 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
   mzd_local_free_multiple(x);
 }
 
-#if defined(M_FIXED_10) || defined(M_FIXED_1)
 #undef SBOX_SIGN
 #undef SBOX_VERIFY
 #undef SBOX_ARGS
-#endif
-
-#undef sbox_selector
 #undef loop_impl
 #undef N_SIGN
 #undef N_VERIFY
 #undef RANDTAPE
 #undef SBOX
 #undef LOWMC_M
-#undef lowmc
 
 // vim: ft=c

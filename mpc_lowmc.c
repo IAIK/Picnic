@@ -168,12 +168,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #include "lowmc_256_256_363.h"
 #endif
 
-#define SBOX_mzd(X, sbox, y, x, views, r, lowmcmask, n, shares)                                    \
-  CONCAT(SBOX_mzd, X)(sbox, y, x, views, r, lowmcmask, n)
-
-#define SBOX_mzd_5(sbox, y, x, views, r, lowmcmask, n) sbox(y, x, views, r, lowmcmask)
-
-#define SBOX_uint64(X, sbox, y, x, views, r, lowmcmask, n, shares)                                 \
+#define SBOX_uint64(sbox, y, x, views, r, n, shares)                                               \
   do {                                                                                             \
     uint64_t in[shares];                                                                           \
     for (unsigned int count = 0; count < shares; ++count) {                                        \
@@ -187,7 +182,6 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
     }                                                                                              \
   } while (0)
 
-#define R_mzd mzd_local_t** r = rvec[i].s
 #define R_uint64 const uint64_t* r = rvec[i].t
 
 // uint64 based implementation
@@ -200,7 +194,6 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 
 #define SIGN_SBOX mpc_sbox_layer_bitsliced
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify
-#define SBOX_NUM_ARGS 6
 
 #define MUL_R_1  mzd_addmul_v_uint64_3
 #define MUL_R_10 mzd_addmul_v_uint64_30
@@ -275,9 +268,6 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_INSTANCE_1
 
 #if defined(WITH_OPT)
-#undef SBOX_NUM_ARGS
-#define SBOX_NUM_ARGS 5
-
 #if defined(WITH_SSE2)
 #undef XOR_MC
 #undef MUL_MC
