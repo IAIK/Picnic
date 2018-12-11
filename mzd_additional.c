@@ -2042,30 +2042,33 @@ void mzd_mul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   *mcptr = _mm256_xor_si256(cval[0], cval[1]);
 }
 
-#if defined(_M_X64) || !defined(_MSC_VER)
-ATTR_TARGET("avx2,bmi2")
-void mzd_shuffle_pext_30(mzd_local_t* x, const word mask)  {
-  word a = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (34);
-  FIRST_ROW(x)[x->width - 1] = a | _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
+#if !defined(__x86_64__) && !defined(_M_X64)
+ATTR_TARGET("avx2,bmi2") ATTR_CONST static uint8_t popcount_32(uint32_t value) {
+  uint64_t result = ((value & 0xfff) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
+  result += (((value & 0xfff000) >> 12) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
+  result += ((value >> 24) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
+  return result;
 }
 
-ATTR_TARGET("avx2,bmi2")
-void mzd_shuffle_pext_3(mzd_local_t* x, const word mask)  {
-  word a = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (61);
-  FIRST_ROW(x)[x->width - 1] = a | _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
-}
-#else
-/* TODO: check where _pext_u64 is available, and if not maybe use inline asm instead */
-ATTR_TARGET("avx2,bmi2")
-void mzd_shuffle_pext_30(mzd_local_t* x, const word mask)  {
-  mzd_shuffle_30(x, mask);
-}
+ATTR_TARGET("avx2,bmi2") ATTR_CONST static uint64_t _pext_u64(uint64_t a, uint64_t mask) {
+  const uint32_t low  = _pext_u32(a, mask);
+  const uint32_t high = _pext_u32((a & 0xFFFFFFFF00000000) >> 32, (mask & 0xFFFFFFFF00000000) >> 32);
 
-ATTR_TARGET("avx2,bmi2")
-void mzd_shuffle_pext_3(mzd_local_t* x, const word mask)  {
-  mzd_shuffle_3(x, mask);
+  return (((uint64_t)high) << popcount_32(mask)) | low;
 }
 #endif
+
+ATTR_TARGET("avx2,bmi2")
+void mzd_shuffle_pext_30(mzd_local_t* x, const word mask) {
+  word a                     = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (34);
+  FIRST_ROW(x)[x->width - 1] = a | _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
+}
+
+ATTR_TARGET("avx2,bmi2")
+void mzd_shuffle_pext_3(mzd_local_t* x, const word mask) {
+  word a                     = _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], mask) << (61);
+  FIRST_ROW(x)[x->width - 1] = a | _pext_u64(CONST_FIRST_ROW(x)[x->width - 1], ~(mask));
+}
 #endif
 
 #if defined(WITH_NEON)
