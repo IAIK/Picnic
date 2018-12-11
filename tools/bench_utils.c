@@ -89,7 +89,7 @@ bool parse_args(bench_options_t* options, int argc, char** argv) {
   }
 
   if (optind == argc - 1) {
-    uint32_t p = -1;
+    uint32_t p = PARAMETER_SET_INVALID;
     if (!parse_uint32_t(&p, argv[optind])) {
       printf("Failed to parse argument as positive base-10 number!\n");
       return false;
@@ -110,7 +110,7 @@ bool parse_args(bench_options_t* options, int argc, char** argv) {
     return false;
   }
 
-  uint32_t p = -1;
+  uint32_t p = PARAMETER_SET_INVALID;
   if (!parse_uint32_t(&options->iter, argv[1]) || !parse_uint32_t(&p, argv[2])) {
     printf("Failed to parse argument as positive base-10 number!\n");
     return false;
