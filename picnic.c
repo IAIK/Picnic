@@ -182,7 +182,7 @@ int PICNIC_CALLING_CONVENTION picnic_validate_keypair(const picnic_privatekey_t*
   mzd_from_char_array(privkey, sk_sk, instance->input_size);
 
   // compute public key
-  mzd_local_t* ciphertext = lowmc_call(lowmc, privkey, plaintext);
+  mzd_local_t* ciphertext = instance->lowmc_impl(lowmc, privkey, plaintext);
 
   uint8_t buffer[MAX_LOWMC_BLOCK_SIZE];
   mzd_to_char_array(buffer, ciphertext, output_size);

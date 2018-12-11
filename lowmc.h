@@ -24,13 +24,4 @@ typedef void (*lowmc_store_implementation_f)(lowmc_t const*, lowmc_key_t const*,
 lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc);
 lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc);
 
-/**
- * Implements LowMC encryption
- *
- * \param  lowmc the lowmc parameters
- * \param  p     the plaintext
- * \return       the ciphertext
- */
-mzd_local_t* lowmc_call(lowmc_t const* lowmc, lowmc_key_t const* lowmc_key, mzd_local_t const* p);
-
 #endif

@@ -36,7 +36,7 @@ static int lowmc_enc_str(const picnic_params_t param, const char* key, const cha
   mzd_local_t* ctl = mzd_convert(ct);
 
   int ret          = 0;
-  mzd_local_t* ctr = lowmc_call(lowmc, skl, ptl);
+  mzd_local_t* ctr = pp->lowmc_impl(lowmc, skl, ptl);
   if (!ctr) {
     ret = 1;
     goto end;

@@ -977,9 +977,5 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #endif
   else
     return NULL;
-}
 
-mzd_local_t* lowmc_call(lowmc_t const* lowmc, lowmc_key_t const* lowmc_key, mzd_local_t const* p) {
-  lowmc_implementation_f impl = lowmc_get_implementation(lowmc);
-  return impl(lowmc, lowmc_key, p);
 }
