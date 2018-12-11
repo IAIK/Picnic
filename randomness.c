@@ -105,7 +105,10 @@ int rand_bytes(uint8_t* dst, size_t len) {
 #include <windows.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
-  if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, dst, len, BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
+  if (len > ULONG_MAX) {
+    return 0;
+  }
+  if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, dst, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
     return 0;
   }
   return 1;
