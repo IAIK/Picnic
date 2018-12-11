@@ -18,6 +18,12 @@
 
 #define MSG_LEN 500
 
+#if defined(__WIN32__)
+#define SIZET_FMT "%Iu"
+#else
+#define SIZET_FMT "%zu"
+#endif
+
 int picnicExample(picnic_params_t parameters) {
   picnic_publickey_t pk;
   picnic_privatekey_t sk;
@@ -44,7 +50,7 @@ int picnicExample(picnic_params_t parameters) {
     printf("failed to allocate signature\n");
     exit(-1);
   }
-  fprintf(stdout, "Max signature length %" PRIuPTR " bytes\n", signature_len);
+  fprintf(stdout, "Max signature length " SIZET_FMT " bytes\n", signature_len);
 
   fprintf(stdout, "Signing a %d byte message... ", MSG_LEN);
   fflush(stdout);
@@ -54,7 +60,7 @@ int picnicExample(picnic_params_t parameters) {
     printf("picnic_sign failed\n");
     exit(-1);
   }
-  printf(" success, signature is %d bytes\n", (int)signature_len);
+  printf(" success, signature is " SIZET_FMT " bytes\n", signature_len);
 
   /* signature_len has the exact number of bytes used */
   if (signature_len < picnic_signature_size(parameters)) {
