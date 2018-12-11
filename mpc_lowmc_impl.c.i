@@ -31,27 +31,13 @@
 
 #define RANDTAPE R_uint64
 #define SBOX SBOX_uint64
-#else
-#define LOWMC_M (lowmc->m)
-#define RANDTAPE R_mzd
-#define SBOX SBOX_mzd
-#endif
-
-#if defined(LOWMC_INSTANCE)
-#define lowmc LOWMC_INSTANCE
-#else
-#define lowmc lowmc_instance
 #endif
 
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
-static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mzd_local_t const* p,
-                   view_t* views, in_out_shares_t* in_out_shares, rvec_t* rvec,
-                   recorded_state_t* recorded_state) {
-#if defined(LOWMC_INSTANCE)
-  (void)lowmc_instance;
-#endif
+static void N_SIGN(mpc_lowmc_key_t const* lowmc_key, mzd_local_t const* p, view_t* views,
+                   in_out_shares_t* in_out_shares, rvec_t* rvec, recorded_state_t* recorded_state) {
   mpc_copy(in_out_shares->s, lowmc_key, SC_PROOF);
   ++in_out_shares;
 
@@ -61,7 +47,7 @@ static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mz
 
 #define reduced_shares (SC_PROOF - 1)
 
-  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix), reduced_shares);
+  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix), reduced_shares);
   MPC_LOOP_CONST_C(XOR, x, x, p, reduced_shares, 0);
 
 #define RECOVER_FROM_STATE(x, i)                                                                   \
@@ -83,11 +69,8 @@ static void N_SIGN(lowmc_t const* lowmc_instance, mpc_lowmc_key_t* lowmc_key, mz
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
-static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t* views,
-                     in_out_shares_t* in_out_shares, rvec_t* rvec, unsigned int ch) {
-#if defined(LOWMC_INSTANCE)
-  (void)lowmc_instance;
-#endif
+static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_out_shares,
+                     rvec_t* rvec, unsigned int ch) {
   mzd_local_t* const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;
 
@@ -95,7 +78,7 @@ static void N_VERIFY(lowmc_t const* lowmc_instance, mzd_local_t const* p, view_t
   mzd_local_t** y = &x[SC_VERIFY];
   mzd_local_init_multiple_ex(x, 2 * SC_VERIFY, 1, LOWMC_N, false);
 
-  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(lowmc->k0, matrix_postfix), SC_VERIFY);
+  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix), SC_VERIFY);
   MPC_LOOP_CONST_C(XOR, x, x, p, SC_VERIFY, ch);
 
 #define shares SC_VERIFY

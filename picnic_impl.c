@@ -862,7 +862,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     }
 
     // perform ZKB++ LowMC evaluation
-    lowmc_impl(lowmc, shared_key, p, views, in_out_shares, rvec, &recorded_state);
+    lowmc_impl(shared_key, p, views, in_out_shares, rvec, &recorded_state);
 
     // commitments
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -960,7 +960,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
     decompress_view(views, pp, round->communicated_bits[1], 1);
     // perform ZKB++ LowMC evaluation
-    lowmc_verify_impl(lowmc, p, views, in_out_shares, rvec, a_i);
+    lowmc_verify_impl(p, views, in_out_shares, rvec, a_i);
     compress_view(round->communicated_bits[0], pp, views, 0);
 
     mzd_unshare(in_out_shares[1].s, c);
