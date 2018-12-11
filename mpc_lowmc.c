@@ -204,10 +204,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define LOWMC_R_10 LOWMC_L1_R
 #define LOWMC_R_1 LOWMC_L1_1_R
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define SIGN mpc_lowmc_call_uint64_128
 #define VERIFY mpc_lowmc_call_verify_uint64_128
@@ -228,10 +228,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define LOWMC_R_10 LOWMC_L3_R
 #define LOWMC_R_1 LOWMC_L3_1_R
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define SIGN mpc_lowmc_call_uint64_192
 #define VERIFY mpc_lowmc_call_verify_uint64_192
@@ -252,10 +252,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define LOWMC_R_10 LOWMC_L5_R
 #define LOWMC_R_1 LOWMC_L5_1_R
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define SIGN mpc_lowmc_call_uint64_256
 #define VERIFY mpc_lowmc_call_verify_uint64_256
@@ -289,10 +289,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -330,10 +330,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -369,10 +369,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
@@ -415,10 +415,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -456,10 +456,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -495,10 +495,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
@@ -543,10 +543,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -584,10 +584,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -623,10 +623,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
@@ -664,10 +664,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -705,10 +705,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -744,10 +744,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
@@ -793,10 +793,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -834,10 +834,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -873,10 +873,10 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R

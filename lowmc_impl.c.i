@@ -28,14 +28,14 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #endif
 
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-  XOR(x, p, LOWMC_INSTANCE->precomputed_constant_linear);
-  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix));
-  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE->precomputed_non_linear_part, matrix_postfix));
-  XOR_MC(nl_part, nl_part, LOWMC_INSTANCE->precomputed_constant_non_linear);
+  XOR(x, p, LOWMC_INSTANCE.precomputed_constant_linear);
+  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
+  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
+  XOR_MC(nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear);
 
   //multiply non-linear part of state with Z0 matrix
 
-  lowmc_round_t const* round = LOWMC_INSTANCE->rounds;
+  lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R-1; ++i, ++round) {
 #if defined(RECORD_STATE)
     mzd_local_copy(state->state[i], x);
@@ -86,17 +86,17 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #else
 #error "RLL only works with 1 or 10 Sboxes atm"
 #endif
-  MUL(y,x,CONCAT(LOWMC_INSTANCE->zr, matrix_postfix));
+  MUL(y,x,CONCAT(LOWMC_INSTANCE.zr, matrix_postfix));
   mzd_local_t* t = x;
   x              = y;
   y              = t;
 #else
-  XOR(x, p, LOWMC_INSTANCE->precomputed_constant_linear);
-  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix));
-  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE->precomputed_non_linear_part, matrix_postfix));
-  XOR_MC(nl_part, nl_part, LOWMC_INSTANCE->precomputed_constant_non_linear);
+  XOR(x, p, LOWMC_INSTANCE.precomputed_constant_linear);
+  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
+  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
+  XOR_MC(nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear);
 
-  lowmc_round_t const* round = LOWMC_INSTANCE->rounds;
+  lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
 #if defined(RECORD_STATE)
     mzd_local_copy(state->state[i], x);
@@ -135,9 +135,9 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   mzd_local_t* y = mzd_local_init_ex(1, LOWMC_N, false);
 
   mzd_local_copy(x, p);
-  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix));
+  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
 
-  lowmc_round_t const* round = LOWMC_INSTANCE->rounds;
+  lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
 #if defined(RECORD_STATE)
     mzd_local_copy(state->state[i], x);

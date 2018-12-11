@@ -42,7 +42,7 @@ static void N_SIGN(mpc_lowmc_key_t const* lowmc_key, mzd_local_t const* p, view_
 #define MPC_LOOP_CONST_C(function, result, first, second, sc, c)                                   \
   MPC_LOOP_CONST_C_0(function, result, first, second, sc)
 
-  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix), reduced_shares);
+  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix), reduced_shares);
   MPC_LOOP_CONST_C(XOR, x, x, p, reduced_shares, 0);
 
 #define RECOVER_FROM_STATE(x, i)                                                                   \
@@ -77,7 +77,7 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
 #define MPC_LOOP_CONST_C(function, result, first, second, sc, c)                                   \
   MPC_LOOP_CONST_C_ch(function, result, first, second, sc, c)
 
-  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix), SC_VERIFY);
+  MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix), SC_VERIFY);
   MPC_LOOP_CONST_C(XOR, x, x, p, SC_VERIFY, ch);
 
 #define shares SC_VERIFY

@@ -7,15 +7,15 @@
  *  SPDX-License-Identifier: MIT
  */
 
-lowmc_round_t const* round = LOWMC_INSTANCE->rounds;
+lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
   mzd_local_t* nl_part[reduced_shares];
   mzd_local_init_multiple_ex(nl_part, reduced_shares, 1, (LOWMC_R)*32, false);
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-  MPC_LOOP_CONST_C(XOR, x, x, LOWMC_INSTANCE->precomputed_constant_linear, reduced_shares, ch);
+  MPC_LOOP_CONST_C(XOR, x, x, LOWMC_INSTANCE.precomputed_constant_linear, reduced_shares, ch);
   MPC_LOOP_CONST(MUL_MC, nl_part, lowmc_key,
-                 CONCAT(LOWMC_INSTANCE->precomputed_non_linear_part, matrix_postfix), reduced_shares);
-  MPC_LOOP_CONST_C(XOR_MC, nl_part, nl_part, LOWMC_INSTANCE->precomputed_constant_non_linear, reduced_shares, ch);
+                 CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix), reduced_shares);
+  MPC_LOOP_CONST_C(XOR_MC, nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear, reduced_shares, ch);
   for (unsigned i = 0; i < (LOWMC_R-1); ++i, ++views, ++round) {
     RANDTAPE;
 #if defined(RECOVER_FROM_STATE)
@@ -71,12 +71,12 @@ lowmc_round_t const* round = LOWMC_INSTANCE->rounds;
 #error "RLL only works with 1 or 10 Sboxes atm"
 #endif
   }
-  MPC_LOOP_CONST(MUL, x, y, CONCAT(LOWMC_INSTANCE->zr, matrix_postfix), reduced_shares);
+  MPC_LOOP_CONST(MUL, x, y, CONCAT(LOWMC_INSTANCE.zr, matrix_postfix), reduced_shares);
 #else
-  MPC_LOOP_CONST_C(XOR, x, x, LOWMC_INSTANCE->precomputed_constant_linear, reduced_shares, ch);
+  MPC_LOOP_CONST_C(XOR, x, x, LOWMC_INSTANCE.precomputed_constant_linear, reduced_shares, ch);
   MPC_LOOP_CONST(MUL_MC, nl_part, lowmc_key,
-                 CONCAT(LOWMC_INSTANCE->precomputed_non_linear_part, matrix_postfix), reduced_shares);
-  MPC_LOOP_CONST_C(XOR_MC, nl_part, nl_part, LOWMC_INSTANCE->precomputed_constant_non_linear, reduced_shares, ch);
+                 CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix), reduced_shares);
+  MPC_LOOP_CONST_C(XOR_MC, nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear, reduced_shares, ch);
   for (unsigned i = 0; i < (LOWMC_R); ++i, ++views, ++round) {
     RANDTAPE;
 #if defined(RECOVER_FROM_STATE)

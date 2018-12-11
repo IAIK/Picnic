@@ -111,10 +111,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define LOWMC_R_10 LOWMC_L1_R
 #define LOWMC_R_1 LOWMC_L1_1_R
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 
 #define LOWMC lowmc_uint64_128
@@ -136,10 +136,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define LOWMC_R_10 LOWMC_L3_R
 #define LOWMC_R_1 LOWMC_L3_1_R
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC lowmc_uint64_192
 #include "lowmc.c.i"
@@ -160,10 +160,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define LOWMC_R_10 LOWMC_L5_R
 #define LOWMC_R_1 LOWMC_L5_1_R
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC lowmc_uint64_256
 #include "lowmc.c.i"
@@ -197,10 +197,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -233,10 +233,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -267,10 +267,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
@@ -313,10 +313,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -349,10 +349,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -383,10 +383,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
@@ -431,10 +431,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -467,10 +467,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -501,10 +501,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
@@ -542,10 +542,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -578,10 +578,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -612,10 +612,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
@@ -661,10 +661,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 (&lowmc_128_128_20)
+#define LOWMC_INSTANCE_10 lowmc_128_128_20
 #endif
 #if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 (&lowmc_128_128_182)
+#define LOWMC_INSTANCE_1 lowmc_128_128_182
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -697,10 +697,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 (&lowmc_192_192_30)
+#define LOWMC_INSTANCE_10 lowmc_192_192_30
 #endif
 #if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 (&lowmc_192_192_284)
+#define LOWMC_INSTANCE_1 lowmc_192_192_284
 #endif
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R_10 LOWMC_L3_R
@@ -731,10 +731,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef LOWMC_R_1
 #undef LOWMC_R_10
 #if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 (&lowmc_256_256_38)
+#define LOWMC_INSTANCE_10 lowmc_256_256_38
 #endif
 #if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 (&lowmc_256_256_363)
+#define LOWMC_INSTANCE_1 lowmc_256_256_363
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R_10 LOWMC_L5_R
