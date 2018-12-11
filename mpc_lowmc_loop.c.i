@@ -7,6 +7,10 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION) && !defined(M_FIXED_1) && !defined(M_FIXED_10)
+#error "OLLE is only implemented for 1 or 10 Sboxes"
+#endif
+
 lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
   mzd_local_t* nl_part[reduced_shares];
@@ -30,8 +34,6 @@ lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
 #elif defined(M_FIXED_1)
       const word nl = CONST_FIRST_ROW(nl_part[k])[i / 21];
       FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
 #endif
     }
     MPC_LOOP_CONST(MUL_Z, x, y, CONCAT(round->z, matrix_postfix), reduced_shares);
@@ -46,8 +48,6 @@ lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
       FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
 #elif defined(M_FIXED_1)
       FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
 #endif
     }
     MPC_LOOP_SHARED(XOR, x, x, y, reduced_shares);
@@ -67,8 +67,6 @@ lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
 #elif defined(M_FIXED_1)
     const word nl = CONST_FIRST_ROW(nl_part[k])[i / 21];
     FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
 #endif
   }
   MPC_LOOP_CONST(MUL, x, y, CONCAT(LOWMC_INSTANCE.zr, matrix_postfix), reduced_shares);
@@ -91,8 +89,6 @@ lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
 #elif defined(M_FIXED_1)
       const word nl = CONST_FIRST_ROW(nl_part[k])[i / 21];
       FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
 #endif
     }
     MPC_LOOP_CONST(MUL, x, y, CONCAT(round->l, matrix_postfix), reduced_shares);
