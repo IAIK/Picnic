@@ -13,15 +13,6 @@
 
 #include "mpc.h"
 
-#if !defined(_MSC_VER)
-#include <stdalign.h>
-#endif
-#if defined(WITH_OPT)
-#include "simd.h"
-#endif
-
-#include <string.h>
-
 void mpc_clear(mzd_local_t* const* res, unsigned sc) {
   for (unsigned int i = 0; i < sc; i++) {
     mzd_local_clear(res[i]);
