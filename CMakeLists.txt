@@ -63,6 +63,7 @@ check_c_compiler_flag(-Wall CC_SUPPORTS_WALL)
 check_c_compiler_flag(-Wextra CC_SUPPORTS_WEXTRA)
 check_c_compiler_flag(-fomit-frame-pointer CC_SUPPORTS_FOMIT_FRAME_POINTER)
 check_c_compiler_flag(-fvisibility=hidden CC_SUPPORTS_FVISIBILITY)
+check_c_compiler_flag(-Werror=implicit-function-declaration CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
 
 # check SIMD instructions set
 check_simd(SSE2  CC_SUPPORTS_SSE2)
@@ -106,12 +107,15 @@ string(REGEX REPLACE "-rdynamic" "" CMAKE_EXE_LINKER_FLAGS
 string(REGEX REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_C_FLAGS
   "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}")
 
-# build with -Wall and -Wextra if supported
+# build with additional flags if they are supported
 if(CC_SUPPORTS_WALL)
   add_compile_options("-Wall")
 endif()
 if(CC_SUPPORTS_WEXTRA)
   add_compile_options("-Wextra")
+endif()
+if(CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
+  add_compile_options("-Werror=implicit-function-declaration")
 endif()
 
 # enable -march=native -mtune=native if supported
