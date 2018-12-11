@@ -108,38 +108,38 @@ void mpc_and_verify_512_avx(__m256i res[SC_VERIFY][2], __m256i const first[SC_VE
 #endif
 
 #if defined(WITH_NEON)
-void mpc_and_neon(uint32x4_t* res, uint32x4_t const* first, uint32x4_t const* second,
-                  uint32x4_t const* r, view_t* view, unsigned viewshift);
+void mpc_and_neon(uint64x2_t* res, uint64x2_t const* first, uint64x2_t const* second,
+                  uint64x2_t const* r, view_t* view, unsigned viewshift);
 
-void mpc_and_verify_neon(uint32x4_t* res, uint32x4_t const* first, uint32x4_t const* second,
-                         uint32x4_t const* r, view_t* view, uint32x4_t const mask,
+void mpc_and_verify_neon(uint64x2_t* res, uint64x2_t const* first, uint64x2_t const* second,
+                         uint64x2_t const* r, view_t* view, uint64x2_t const mask,
                          unsigned viewshift) ATTR_NONNULL;
 
-void mpc_and_256_neon(uint32x4_t res[SC_PROOF][2], uint32x4_t const first[SC_PROOF][2],
-                      uint32x4_t const second[SC_PROOF][2], uint32x4_t const r[SC_PROOF][2],
+void mpc_and_256_neon(uint64x2_t res[SC_PROOF][2], uint64x2_t const first[SC_PROOF][2],
+                      uint64x2_t const second[SC_PROOF][2], uint64x2_t const r[SC_PROOF][2],
                       view_t* view, unsigned viewshift);
 
-void mpc_and_verify_256_neon(uint32x4_t res[SC_VERIFY][2], uint32x4_t const first[SC_VERIFY][2],
-                             uint32x4_t const second[SC_VERIFY][2],
-                             uint32x4_t const r[SC_VERIFY][2], view_t* view, uint32x4_t const* mask,
+void mpc_and_verify_256_neon(uint64x2_t res[SC_VERIFY][2], uint64x2_t const first[SC_VERIFY][2],
+                             uint64x2_t const second[SC_VERIFY][2],
+                             uint64x2_t const r[SC_VERIFY][2], view_t* view, uint64x2_t const* mask,
                              unsigned viewshift) ATTR_NONNULL;
 
-void mpc_and_384_neon(uint32x4_t res[SC_PROOF][3], uint32x4_t const first[SC_PROOF][3],
-                      uint32x4_t const second[SC_PROOF][3], uint32x4_t const r[SC_PROOF][3],
+void mpc_and_384_neon(uint64x2_t res[SC_PROOF][3], uint64x2_t const first[SC_PROOF][3],
+                      uint64x2_t const second[SC_PROOF][3], uint64x2_t const r[SC_PROOF][3],
                       view_t* view, unsigned viewshift) ATTR_NONNULL;
 
-void mpc_and_verify_384_neon(uint32x4_t res[SC_VERIFY][3], uint32x4_t const first[SC_VERIFY][3],
-                             uint32x4_t const second[SC_VERIFY][3],
-                             uint32x4_t const r[SC_VERIFY][3], view_t* view, uint32x4_t const* mask,
+void mpc_and_verify_384_neon(uint64x2_t res[SC_VERIFY][3], uint64x2_t const first[SC_VERIFY][3],
+                             uint64x2_t const second[SC_VERIFY][3],
+                             uint64x2_t const r[SC_VERIFY][3], view_t* view, uint64x2_t const* mask,
                              unsigned viewshift) ATTR_NONNULL;
 
-void mpc_and_512_neon(uint32x4_t res[SC_PROOF][4], uint32x4_t const first[SC_PROOF][4],
-                      uint32x4_t const second[SC_PROOF][4], uint32x4_t const r[SC_PROOF][4],
+void mpc_and_512_neon(uint64x2_t res[SC_PROOF][4], uint64x2_t const first[SC_PROOF][4],
+                      uint64x2_t const second[SC_PROOF][4], uint64x2_t const r[SC_PROOF][4],
                       view_t* view, unsigned viewshift) ATTR_NONNULL;
 
-void mpc_and_verify_512_neon(uint32x4_t res[SC_VERIFY][4], uint32x4_t const first[SC_VERIFY][4],
-                             uint32x4_t const second[SC_VERIFY][4],
-                             uint32x4_t const r[SC_VERIFY][4], view_t* view, uint32x4_t const* mask,
+void mpc_and_verify_512_neon(uint64x2_t res[SC_VERIFY][4], uint64x2_t const first[SC_VERIFY][4],
+                             uint64x2_t const second[SC_VERIFY][4],
+                             uint64x2_t const r[SC_VERIFY][4], view_t* view, uint64x2_t const* mask,
                              unsigned viewshift) ATTR_NONNULL;
 #endif
 #endif

@@ -121,11 +121,11 @@ apply_array(mm256_and_sse, __m128i, _mm_and_si128, 2, FN_ATTRIBUTES_SSE2);
 #endif
 
 #if defined(WITH_NEON)
-apply_region(mm128_xor_region, uint32x4_t, veorq_u32, FN_ATTRIBUTES_NEON);
-apply_mask_region(mm128_xor_mask_region, uint32x4_t, veorq_u32, vandq_u32, FN_ATTRIBUTES_NEON);
-apply_mask(mm128_xor_mask, uint32x4_t, veorq_u32, vandq_u32, FN_ATTRIBUTES_NEON_CONST);
-apply_array(mm256_xor, uint32x4_t, veorq_u32, 2, FN_ATTRIBUTES_NEON);
-apply_array(mm256_and, uint32x4_t, vandq_u32, 2, FN_ATTRIBUTES_NEON);
+apply_region(mm128_xor_region, uint64x2_t, veorq_u64, FN_ATTRIBUTES_NEON);
+apply_mask_region(mm128_xor_mask_region, uint64x2_t, veorq_u64, vandq_u64, FN_ATTRIBUTES_NEON);
+apply_mask(mm128_xor_mask, uint64x2_t, veorq_u64, vandq_u64, FN_ATTRIBUTES_NEON_CONST);
+apply_array(mm256_xor, uint64x2_t, veorq_u64, 2, FN_ATTRIBUTES_NEON);
+apply_array(mm256_and, uint64x2_t, vandq_u64, 2, FN_ATTRIBUTES_NEON);
 #endif
 
 #if defined(_MSC_VER)

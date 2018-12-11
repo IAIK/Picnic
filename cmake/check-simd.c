@@ -27,7 +27,7 @@ ATTRIBUTE_TARGET("avx2") void test(void) {
 #include <arm_neon.h>
 
 void test(void) {
-  uint32x4_t v = vmovq_n_u32(0);
+  uint64x2_t v = vmovq_n_u64(0);
   (void)v;
 }
 #endif
