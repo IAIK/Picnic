@@ -119,7 +119,7 @@ if(CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
 endif()
 
 if(MSVC)
-  list(APPEND WARNINGS 4711 4820 4324 4710 4464 4255 4668)
+  list(APPEND WARNINGS 4711 4820 4324 4710 4464 4255 4668 5045)
   foreach(warning IN ITEMS ${WARNINGS})
     add_compile_options("/wd${warning}")
   endforeach(warning)
