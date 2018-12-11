@@ -102,14 +102,10 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define MUL_MC SELECT_V_VL(mzd_mul_v_uint64, mzd_mul_vl_uint64)
 #define SHUFFLE mzd_shuffle
 
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_uint64_3
-#define MUL_R_10 mzd_mul_v_uint64_30
-#define MUL_Z_1  mzd_mul_v_parity_uint64_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_30
+#define MUL_R_1  mzd_addmul_v_uint64_3
+#define MUL_R_10 mzd_addmul_v_uint64_30
+#define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R_10 LOWMC_L1_R
@@ -123,6 +119,11 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 
 #define LOWMC lowmc_uint64_128
 #include "lowmc.c.i"
+
+#undef MUL_Z_1
+#undef MUL_Z_10
+#define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
 #undef LOWMC
 #undef LOWMC_N
@@ -142,6 +143,11 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #endif
 #define LOWMC lowmc_uint64_192
 #include "lowmc.c.i"
+
+#undef MUL_Z_1
+#undef MUL_Z_10
+#define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
+#define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
 #undef LOWMC
 #undef LOWMC_N
@@ -204,8 +210,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_sse_3_128
-#define MUL_R_10 mzd_mul_v_sse_30_128
+#define MUL_R_1  mzd_addmul_v_sse_3_128
+#define MUL_R_10 mzd_addmul_v_sse_30_128
 #define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
@@ -240,8 +246,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_sse_3_192
-#define MUL_R_10 mzd_mul_v_sse_30_192
+#define MUL_R_1  mzd_addmul_v_sse_3_192
+#define MUL_R_10 mzd_addmul_v_sse_30_192
 #define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
@@ -274,8 +280,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_sse_3_256
-#define MUL_R_10 mzd_mul_v_sse_30_256
+#define MUL_R_1  mzd_addmul_v_sse_3_256
+#define MUL_R_10 mzd_addmul_v_sse_30_256
 #define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
@@ -320,8 +326,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_sse_3_128
-#define MUL_R_10 mzd_mul_v_sse_30_128
+#define MUL_R_1  mzd_addmul_v_sse_3_128
+#define MUL_R_10 mzd_addmul_v_sse_30_128
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_128_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
 
@@ -356,8 +362,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_sse_3_192
-#define MUL_R_10 mzd_mul_v_sse_30_192
+#define MUL_R_1  mzd_addmul_v_sse_3_192
+#define MUL_R_10 mzd_addmul_v_sse_30_192
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 
@@ -390,8 +396,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_sse_3_256
-#define MUL_R_10 mzd_mul_v_sse_30_256
+#define MUL_R_1  mzd_addmul_v_sse_3_256
+#define MUL_R_10 mzd_addmul_v_sse_30_256
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_256_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
 
@@ -438,8 +444,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_sse_3_128
-#define MUL_R_10 mzd_mul_v_avx_30_128
+#define MUL_R_1  mzd_addmul_v_sse_3_128
+#define MUL_R_10 mzd_addmul_v_avx_30_128
 #define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
@@ -474,8 +480,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_avx_3_192
-#define MUL_R_10 mzd_mul_v_avx_30_192
+#define MUL_R_1  mzd_addmul_v_avx_3_192
+#define MUL_R_10 mzd_addmul_v_avx_30_192
 #define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
@@ -508,8 +514,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_avx_3_256
-#define MUL_R_10 mzd_mul_v_avx_30_256
+#define MUL_R_1  mzd_addmul_v_avx_3_256
+#define MUL_R_10 mzd_addmul_v_avx_30_256
 #define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
@@ -549,8 +555,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_sse_3_128
-#define MUL_R_10 mzd_mul_v_avx_30_128
+#define MUL_R_1  mzd_addmul_v_sse_3_128
+#define MUL_R_10 mzd_addmul_v_avx_30_128
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_128_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
 
@@ -585,8 +591,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_avx_3_192
-#define MUL_R_10 mzd_mul_v_avx_30_192
+#define MUL_R_1  mzd_addmul_v_avx_3_192
+#define MUL_R_10 mzd_addmul_v_avx_30_192
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 
@@ -619,8 +625,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_avx_3_256
-#define MUL_R_10 mzd_mul_v_avx_30_256
+#define MUL_R_1  mzd_addmul_v_avx_3_256
+#define MUL_R_10 mzd_addmul_v_avx_30_256
 #define MUL_Z_1  mzd_mul_v_parity_popcnt_256_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
 
@@ -668,8 +674,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_neon_3_128
-#define MUL_R_10 mzd_mul_v_neon_30_128
+#define MUL_R_1  mzd_addmul_v_neon_3_128
+#define MUL_R_10 mzd_addmul_v_neon_30_128
 #define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
@@ -704,8 +710,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_neon_3_192
-#define MUL_R_10 mzd_mul_v_neon_30_192
+#define MUL_R_1  mzd_addmul_v_neon_3_192
+#define MUL_R_10 mzd_addmul_v_neon_30_192
 #define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
@@ -738,8 +744,8 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_mul_v_neon_3_256
-#define MUL_R_10 mzd_mul_v_neon_30_256
+#define MUL_R_1  mzd_addmul_v_neon_3_256
+#define MUL_R_10 mzd_addmul_v_neon_30_256
 #define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
