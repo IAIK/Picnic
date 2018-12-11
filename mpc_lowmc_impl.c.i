@@ -39,6 +39,8 @@ static void N_SIGN(mpc_lowmc_key_t const* lowmc_key, mzd_local_t const* p, view_
   mzd_local_init_multiple_ex(y, SC_PROOF, 1, (LOWMC_N), false);
 
 #define reduced_shares (SC_PROOF - 1)
+#define MPC_LOOP_CONST_C(function, result, first, second, sc, c)                                   \
+  MPC_LOOP_CONST_C_0(function, result, first, second, sc)
 
   MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix), reduced_shares);
   MPC_LOOP_CONST_C(XOR, x, x, p, reduced_shares, 0);
@@ -55,6 +57,7 @@ static void N_SIGN(mpc_lowmc_key_t const* lowmc_key, mzd_local_t const* p, view_
 #undef ch
 #undef shares
 #undef sbox
+#undef MPC_LOOP_CONST_C
 
   mzd_local_free_multiple(y);
 }
@@ -71,6 +74,9 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
   mzd_local_t** y = &x[SC_VERIFY];
   mzd_local_init_multiple_ex(x, 2 * SC_VERIFY, 1, LOWMC_N, false);
 
+#define MPC_LOOP_CONST_C(function, result, first, second, sc, c)                                   \
+  MPC_LOOP_CONST_C_ch(function, result, first, second, sc, c)
+
   MPC_LOOP_CONST(MUL, x, lowmc_key, CONCAT(LOWMC_INSTANCE->k0, matrix_postfix), SC_VERIFY);
   MPC_LOOP_CONST_C(XOR, x, x, p, SC_VERIFY, ch);
 
@@ -81,6 +87,7 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
 #undef sbox
 #undef reduced_shares
 #undef shares
+#undef MPC_LOOP_CONST_C
 
   mpc_copy(in_out_shares->s, x, SC_VERIFY);
 

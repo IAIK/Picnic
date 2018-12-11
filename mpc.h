@@ -38,10 +38,13 @@ typedef view_t rvec_t;
     }                                                                                              \
   } while (0)
 
-#define MPC_LOOP_CONST_C(function, result, first, second, sc, c)                                   \
+#define MPC_LOOP_CONST_C_0(function, result, first, second, sc)                                    \
+  function((result)[0], (first)[0], (second))
+
+#define MPC_LOOP_CONST_C_ch(function, result, first, second, sc, c)                                \
   do {                                                                                             \
     if (!(c)) {                                                                                    \
-      function((result)[0], (first)[0], (second));                                                 \
+      MPC_LOOP_CONST_C_0(function, result, first, second, sc);                                     \
     } else if ((c) == (sc)) {                                                                      \
       function((result)[(sc)-1], first[(sc)-1], (second));                                         \
     }                                                                                              \
