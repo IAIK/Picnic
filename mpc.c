@@ -28,25 +28,6 @@ void mpc_clear(mzd_local_t* const* res, unsigned sc) {
   }
 }
 
-void mpc_shift_right(mzd_local_t* const* res, mzd_local_t* const* val, unsigned count,
-                     unsigned sc) {
-  MPC_LOOP_CONST(mzd_shift_right, res, val, count, sc);
-}
-
-void mpc_shift_left(mzd_local_t* const* res, mzd_local_t* const* val, unsigned count, unsigned sc) {
-  MPC_LOOP_CONST(mzd_shift_left, res, val, count, sc);
-}
-
-void mpc_and_const(mzd_local_t* const* result, mzd_local_t* const* first, mzd_local_t const* second,
-                   unsigned sc) {
-  MPC_LOOP_CONST(mzd_xor, result, first, second, sc);
-}
-
-void mpc_xor(mzd_local_t* const* result, mzd_local_t* const* first, mzd_local_t* const* second,
-             unsigned sc) {
-  MPC_LOOP_SHARED(mzd_xor, result, first, second, sc);
-}
-
 void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second, uint64_t const* r,
                     view_t* view, unsigned viewshift) {
   for (unsigned m = 0; m < SC_PROOF; ++m) {

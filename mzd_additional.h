@@ -49,11 +49,6 @@ mzd_local_t* mzd_local_copy(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNU
 
 void mzd_local_clear(mzd_local_t* c) ATTR_NONNULL;
 
-void mzd_shift_right(mzd_local_t* res, mzd_local_t const* val, unsigned count) ATTR_NONNULL;
-void mzd_shift_left(mzd_local_t* res, mzd_local_t const* val, unsigned count) ATTR_NONNULL;
-
-void mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
-
 void mzd_xor(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
@@ -80,7 +75,6 @@ bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second) ATTR_N
 /**
  * Compute v * A optimized for v being a vector.
  */
-void mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 void mzd_mul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
@@ -166,7 +160,6 @@ void mzd_mul_v_parity_popcnt_256_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
 /**
  * Compute c + v * A optimized for c and v being vectors.
  */
-void mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_addmul_v_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_addmul_v_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
@@ -184,7 +177,6 @@ void mzd_addmul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 /**
  * Compute v * A optimized for v being a vector.
  */
-void mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 void mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
@@ -199,7 +191,6 @@ void mzd_mul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A)
 /**
  * Compute c + v * A optimized for c and v being vectors.
  */
-void mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 void mzd_addmul_vl_sse_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_addmul_vl_sse_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_addmul_vl_sse_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
@@ -231,11 +222,5 @@ void mzd_shuffle_pext_3(mzd_local_t* x, word mask) ATTR_NONNULL;
 
 #define FIRST_ROW(v) ROW(v, 0)
 #define CONST_FIRST_ROW(v) CONST_ROW(v, 0)
-
-#define WRITE_BIT(w, spot, value)                                                                  \
-  ((w) = (((w) & ~(WORD_C(1) << (spot))) | (-(word)(value) & (WORD_C(1) << (spot)))))
-
-#define mzd_local_write_bit(v, r, c, b)                                                            \
-  WRITE_BIT(ROW(v, r)[c / (sizeof(word) * 8)], c % (sizeof(word) * 8), b)
 
 #endif

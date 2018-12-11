@@ -151,44 +151,6 @@ void mzd_local_clear(mzd_local_t* c) {
   memset(ASSUME_ALIGNED(FIRST_ROW(c), 32), 0, c->nrows * sizeof(word) * c->rowstride);
 }
 
-void mzd_shift_right(mzd_local_t* res, mzd_local_t const* val, unsigned count) {
-  if (!count) {
-    mzd_local_copy(res, val);
-    return;
-  }
-
-  const unsigned int nwords     = val->width;
-  const unsigned int left_count = 8 * sizeof(word) - count;
-
-  word* resptr       = ASSUME_ALIGNED(FIRST_ROW(res), 32);
-  word const* valptr = ASSUME_ALIGNED(CONST_FIRST_ROW(val), 32);
-
-  for (unsigned int i = nwords - 1; i; --i, ++resptr) {
-    const word tmp = *valptr >> count;
-    *resptr        = tmp | (*++valptr << left_count);
-  }
-  *resptr = *valptr >> count;
-}
-
-void mzd_shift_left(mzd_local_t* res, mzd_local_t const* val, unsigned count) {
-  if (!count) {
-    mzd_local_copy(res, val);
-    return;
-  }
-
-  const unsigned int nwords      = val->width;
-  const unsigned int right_count = 8 * sizeof(word) - count;
-
-  word* resptr       = FIRST_ROW(res) + nwords - 1;
-  word const* valptr = CONST_FIRST_ROW(val) + nwords - 1;
-
-  for (unsigned int i = nwords - 1; i; --i, --resptr) {
-    const word tmp = *valptr << count;
-    *resptr        = tmp | (*--valptr >> right_count);
-  }
-  *resptr = *valptr << count;
-}
-
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2)
 ATTR_TARGET("sse2")
@@ -248,30 +210,6 @@ static inline void mzd_and_uint64(mzd_local_t* res, mzd_local_t const* first,
   while (width--) {
     *resptr++ = *firstptr++ & *secondptr++;
   }
-}
-
-void mzd_and(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-#if defined(WITH_OPT)
-#if defined(WITH_AVX2)
-  if (CPU_SUPPORTS_AVX2 && first->ncols >= 256 && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    mzd_and_avx(res, first, second);
-    return;
-  }
-#endif
-#if defined(WITH_SSE2)
-  if (CPU_SUPPORTS_SSE2 && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    mzd_and_sse(res, first, second);
-    return;
-  }
-#endif
-#if defined(WITH_NEON)
-  if (CPU_SUPPORTS_NEON && first->ncols % ((first->ncols & (word_size_bits - 1)) == 0)) {
-    mzd_and_neon(res, first, second);
-    return;
-  }
-#endif
-#endif
-  mzd_and_uint64(res, first, second);
 }
 
 #if defined(WITH_OPT)
@@ -397,11 +335,6 @@ void mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t cons
   while (width--) {
     *resptr++ = *firstptr++ ^ *secondptr++;
   }
-}
-
-void mzd_mul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-  mzd_local_clear(c);
-  mzd_addmul_v(c, v, At);
 }
 
 void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -1185,35 +1118,6 @@ void mzd_addmul_v_neon_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 #endif
 #endif
 
-
-
-void mzd_addmul_v(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-#if defined(WITH_OPT)
-  if (A->nrows % (sizeof(word) * 8) == 0) {
-#if defined(WITH_AVX2)
-    if (CPU_SUPPORTS_AVX2 && (A->ncols & 0xff) == 0) {
-      mzd_addmul_v_avx(c, v, A);
-      return;
-    }
-#endif
-#if defined(WITH_SSE2)
-    if (CPU_SUPPORTS_SSE2 && (A->ncols & 0x7f) == 0) {
-      mzd_addmul_v_sse(c, v, A);
-      return;
-    }
-#endif
-#if defined(WITH_NEON)
-    if (CPU_SUPPORTS_NEON && (A->ncols & 0x7f) == 0) {
-      mzd_addmul_v_neon(c, v, A);
-      return;
-    }
-#endif
-  }
-#endif
-
-  mzd_addmul_v_uint64(c, v, A);
-}
-
 void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   const unsigned int len       = A->width;
   const unsigned int rowstride = A->rowstride;
@@ -1689,87 +1593,9 @@ void mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
 #endif
 #endif
 
-void mzd_mul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-#if defined(WITH_OPT)
-  if (A->nrows % (sizeof(word) * 8) == 0) {
-#if defined(WITH_AVX2)
-    if (CPU_SUPPORTS_AVX2) {
-      if (A->ncols == 256 && v->ncols == 256) {
-        mzd_mul_vl_avx_256(c, v, A);
-        return;
-      }
-    }
-#endif
-#if defined(WITH_SSE2)
-    if (CPU_SUPPORTS_SSE2) {
-      if (A->ncols == 128 && v->ncols == 128) {
-        mzd_mul_vl_sse_128(c, v, A);
-        return;
-      }
-    }
-#endif
-#if defined(WITH_NEON)
-    if (CPU_SUPPORTS_NEON) {
-      if (A->ncols == 128 && v->ncols == 128) {
-        mzd_mul_vl_neon_128(c, v, A);
-        return;
-      }
-    }
-#endif
-  }
-#endif
-  mzd_local_clear(c);
-  mzd_addmul_vl(c, v, A);
-}
-
 void mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
   mzd_addmul_vl_uint64(c, v, A);
-}
-
-void mzd_addmul_vl(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-#if defined(WITH_OPT)
-  if (A->nrows % (sizeof(word) * 8) == 0) {
-#if defined(WITH_AVX2)
-    if (CPU_SUPPORTS_AVX2) {
-      if (A->ncols == 256 && v->ncols == 256) {
-        mzd_addmul_vl_avx_256(c, v, A);
-        return;
-      }
-      if ((A->ncols & 0xff) == 0) {
-        mzd_addmul_vl_avx(c, v, A);
-        return;
-      }
-    }
-#endif
-#if defined(WITH_SSE2)
-    if (CPU_SUPPORTS_SSE2) {
-      if (A->ncols == 128 && v->ncols == 128) {
-        mzd_addmul_vl_sse_128(c, v, A);
-        return;
-      }
-      if ((A->ncols & 0x7f) == 0) {
-        mzd_addmul_vl_sse(c, v, A);
-        return;
-      }
-    }
-#endif
-#if defined(WITH_NEON)
-    if (CPU_SUPPORTS_NEON) {
-      if (A->ncols == 128 && v->ncols == 128) {
-        mzd_addmul_vl_neon_128(c, v, A);
-        return;
-      }
-      if ((A->ncols & 0x7f) == 0) {
-        mzd_addmul_vl_neon(c, v, A);
-        return;
-      }
-    }
-#endif
-  }
-#endif
-  mzd_addmul_vl_uint64(c, v, A);
-  return;
 }
 
 void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {

@@ -47,27 +47,7 @@ typedef view_t rvec_t;
     }                                                                                              \
   } while (0)
 
-void mpc_shift_right(mzd_local_t* const* res, mzd_local_t* const* val, unsigned count,
-                     unsigned sc) ATTR_NONNULL;
-
-void mpc_shift_left(mzd_local_t* const* res, mzd_local_t* const* val, unsigned count,
-                    unsigned sc) ATTR_NONNULL;
-
-void mpc_and_const(mzd_local_t* const* res, mzd_local_t* const* first, mzd_local_t const* second,
-                   unsigned sc) ATTR_NONNULL;
-
-void mpc_xor(mzd_local_t* const* res, mzd_local_t* const* first, mzd_local_t* const* second,
-             unsigned sc) ATTR_NONNULL;
-
 void mpc_clear(mzd_local_t* const* res, unsigned sc) ATTR_NONNULL;
-
-void mpc_and(mzd_local_t* const* res, mzd_local_t* const* first, mzd_local_t* const* second,
-             mzd_local_t* const* r, view_t* view, unsigned viewshift,
-             mzd_local_t* const* buffer) ATTR_NONNULL;
-
-void mpc_and_verify(mzd_local_t* const* res, mzd_local_t* const* first, mzd_local_t* const* second,
-                    mzd_local_t* const* r, view_t* view, mzd_local_t const* mask,
-                    unsigned viewshift, mzd_local_t* const* buffer) ATTR_NONNULL;
 
 void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second, uint64_t const* r,
                     view_t* view, unsigned viewshift) ATTR_NONNULL;

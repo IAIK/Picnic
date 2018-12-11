@@ -386,81 +386,10 @@ static int test_mzd_addmull_neon_256(void) {
 }
 #endif
 
-static int test_mzd_mul(void) {
-  int ret = 0;
-
-  for (unsigned int i = 1; i <= 10; ++i) {
-    for (unsigned int j = 1; j <= 10; ++j) {
-      mzd_t* A = mzd_init(i * 64, j * 64);
-      mzd_t* v = mzd_init(1, i * 64);
-      mzd_t* c = mzd_init(1, j * 64);
-
-      mzd_randomize(A);
-      mzd_randomize(v);
-      mzd_randomize(c);
-
-      mzd_local_t* Al  = mzd_convert(A);
-      mzd_local_t* All = mzd_precompute_matrix_lookup(Al);
-      mzd_local_t* vl  = mzd_convert(v);
-      mzd_local_t* cl  = mzd_convert(c);
-      mzd_local_t* cll = mzd_convert(c);
-
-      mzd_t* At = mzd_transpose(NULL, A);
-      mzd_t* vt = mzd_transpose(NULL, v);
-      mzd_t* c2 = mzd_copy(NULL, c);
-      mzd_t* c3 = mzd_transpose(NULL, c);
-
-      for (unsigned int k = 0; k < 3; ++k) {
-        mzd_mul_v(cl, vl, Al);
-        mzd_mul_vl(cll, vl, All);
-        mzd_t* r2 = mzd_mul(c2, v, A, __M4RI_STRASSEN_MUL_CUTOFF);
-        mzd_t* r3 = mzd_mul(c3, At, vt, __M4RI_STRASSEN_MUL_CUTOFF);
-
-        if (!mzd_local_equal(cl, cll)) {
-          printf("mul: fail [%u x %u]\n", i * 64, j * 64);
-          ret = -1;
-        }
-
-        mzd_local_t* rc = mzd_convert(r2);
-        if (!mzd_local_equal(cl, rc)) {
-          printf("mul: fail [%u x %u]\n", i * 64, j * 64);
-          ret = -1;
-        }
-        mzd_local_free(rc);
-
-        mzd_t* r4 = mzd_transpose(NULL, r3);
-        if (mzd_cmp(r4, r2) != 0) {
-          printf("mul: fail [%u x %u]\n", i * 64, j * 64);
-          ret = -1;
-        }
-        mzd_free(r4);
-      }
-
-      mzd_free(At);
-      mzd_free(A);
-      mzd_free(v);
-      mzd_free(c);
-
-      mzd_free(vt);
-      mzd_free(c2);
-      mzd_free(c3);
-
-      mzd_local_free(All);
-      mzd_local_free(Al);
-      mzd_local_free(cll);
-      mzd_local_free(cl);
-      mzd_local_free(vl);
-    }
-  }
-
-  return ret;
-}
-
 int main() {
   int ret = 0;
 
   ret |= test_mzd_local_equal();
-  ret |= test_mzd_mul();
   ret |= test_mzd_mul_uint64_128();
   ret |= test_mzd_mul_uint64_192();
   ret |= test_mzd_mul_uint64_256();

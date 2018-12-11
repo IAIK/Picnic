@@ -9,12 +9,6 @@
 
 #include "utils.h"
 
-static mzd_local_t** mpc_init_empty_share_vector(uint32_t n, unsigned sc) {
-  mzd_local_t** s = malloc(sc * sizeof(mzd_local_t*));
-  mzd_local_init_multiple(s, sc, 1, n);
-  return s;
-}
-
 static mzd_local_t* mpc_reconstruct_from_share(mzd_local_t* dst, mzd_local_t** shared_vec) {
   if (!dst) {
     dst = mzd_local_init(shared_vec[0]->nrows, shared_vec[0]->ncols);
@@ -58,37 +52,8 @@ static void test_mpc_share(void) {
   free(s1);
 }
 
-static void test_mpc_add(void) {
-  mzd_local_t* t1  = mzd_init_random_vector(10);
-  mzd_local_t* t2  = mzd_init_random_vector(10);
-  mzd_local_t* res = mzd_local_init(1, 10);
-  mzd_xor(res, t1, t2);
-
-  mzd_local_t** s1   = mpc_init_share_vector(t1);
-  mzd_local_t** s2   = mpc_init_share_vector(t2);
-  mzd_local_t** ress = mpc_init_empty_share_vector(10, 3);
-  mpc_xor(ress, s1, s2, 3);
-
-  mzd_local_t* cmp = mpc_reconstruct_from_share(NULL, ress);
-
-  if (mzd_local_equal(res, cmp))
-    printf("Shared add test successful.\n");
-
-  mzd_local_free(t1);
-  mzd_local_free(t2);
-  mzd_local_free(res);
-  mzd_local_free_multiple(s1);
-  mzd_local_free_multiple(s2);
-  mzd_local_free_multiple(ress);
-  mzd_local_free(cmp);
-  free(s1);
-  free(s2);
-  free(ress);
-}
-
 void run_tests(void) {
   test_mpc_share();
-  test_mpc_add();
 }
 
 int main() {
