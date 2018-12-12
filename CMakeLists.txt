@@ -119,7 +119,18 @@ if(CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
 endif()
 
 if(MSVC)
-  list(APPEND WARNINGS 4711 4820 4324 4710 4464 4255 4668 5045)
+  # function inlining
+  list(APPEND WARNINGS 4710 4711)
+  # padding of structs
+  list(APPEND WARNINGS 4820 4324)
+  # .. in include paths
+  list(APPEND WARNINGS 4464)
+  # undefined macros evaluating to 0 in MSVC headers
+  list(APPEND WARNINGS 4668)
+  # Spectre mitigation
+  list(APPEND WARNINGS 5045)
+  # initialization of aggregate types with non-constant values is valid C99
+  list(APPEND WARNINGS 4204)
   foreach(warning IN ITEMS ${WARNINGS})
     add_compile_options("/wd${warning}")
   endforeach(warning)
