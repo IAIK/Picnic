@@ -106,7 +106,7 @@ static const struct {
 
 static const size_t num_str_tests = sizeof(str_tests) / sizeof(str_tests[0]);
 
-int main() {
+int main(void) {
   int ret = 0;
   for (size_t s = 0; s < num_str_tests; ++s) {
     const int t = lowmc_enc_str(str_tests[s].param, str_tests[s].key, str_tests[s].plaintext,

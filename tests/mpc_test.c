@@ -52,12 +52,8 @@ static void test_mpc_share(void) {
   free(s1);
 }
 
-void run_tests(void) {
+int main(void) {
   test_mpc_share();
-}
-
-int main() {
-  run_tests();
 
   return 0;
 }

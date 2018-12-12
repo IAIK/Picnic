@@ -247,7 +247,7 @@ static const test_fn_t tests[] = {picnic_test_vector_L1FS, picnic_test_vector_L1
 
 static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 
-int main() {
+int main(void) {
   int ret = 0;
   for (size_t s = 0; s < num_tests; ++s) {
     const int t = tests[s]();

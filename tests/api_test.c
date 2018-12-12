@@ -20,7 +20,7 @@
 #define LL_FMT "%llu"
 #endif
 
-int main() {
+int main(void) {
   unsigned char pk[CRYPTO_PUBLICKEYBYTES]          = {0};
   unsigned char sk[CRYPTO_SECRETKEYBYTES]          = {0};
   const unsigned char message[50]                  = {0};

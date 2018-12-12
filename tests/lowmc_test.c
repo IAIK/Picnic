@@ -188,7 +188,7 @@ static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 #define SIZET_FMT "%zu"
 #endif
 
-int main() {
+int main(void) {
   int ret = 0;
   for (size_t s = 0; s < num_tests; ++s) {
     const int t = tests[s]();

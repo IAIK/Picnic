@@ -396,7 +396,7 @@ static int test_mzd_addmull_neon_256(void) {
 #endif
 #endif
 
-int main() {
+int main(void) {
   int ret = 0;
 
   ret |= test_mzd_local_equal();
