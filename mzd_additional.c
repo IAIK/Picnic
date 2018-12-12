@@ -1811,9 +1811,9 @@ void mzd_addmul_v_avx_3_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
 
 #if !defined(__x86_64__) && !defined(_M_X64)
 ATTR_TARGET("avx2,bmi2") ATTR_CONST static uint8_t popcount_32(uint32_t value) {
-  uint64_t result = ((value & 0xfff) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
-  result += (((value & 0xfff000) >> 12) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
-  result += ((value >> 24) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
+  uint64_t result = ((value & 0xfff) * UINT64_C(0x1001001001001) & UINT64_C(0x84210842108421)) % 0x1f;
+  result += (((value & 0xfff000) >> 12) * UINT64_C(0x1001001001001) & UINT64_C(0x84210842108421)) % 0x1f;
+  result += ((value >> 24) * UINT64_C(0x1001001001001) & UINT64_C(0x84210842108421)) % 0x1f;
   return result;
 }
 
