@@ -48,7 +48,7 @@ static int simple_test(void) {
   return ret;
 }
 
-static const uint64_t v = UINT64_C(0b110110000110110010100101001010);
+static const uint64_t v = UINT64_C(0x361b294a);
 
 static int test_30(void) {
   int ret                           = 0;
@@ -88,15 +88,13 @@ static int test_30(void) {
     }
   }
 
-  if (buffer[0] != 0b11011000 || buffer[1] != 0b01101100 || buffer[2] != 0b10100101 ||
-      buffer[3] != 0b00101000) {
+  if (buffer[0] != 0xd8 || buffer[1] != 0x6c || buffer[2] != 0xa5 || buffer[3] != 0x28) {
     printf("test_30: expected buffer %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n",
            v << 34, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6],
            buffer[7]);
     ret = -1;
   }
-  if (buffer2[0] != 0b11011000 || buffer2[1] != 0b01101100 || buffer2[2] != 0b10100101 ||
-      buffer2[3] != 0b00101000) {
+  if (buffer2[0] != 0xd8 || buffer2[1] != 0x6c || buffer2[2] != 0xa5 || buffer2[3] != 0x28) {
     printf("test_30: expected buffer2 %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n",
            v << 34, buffer2[0], buffer2[1], buffer2[2], buffer2[3], buffer2[4], buffer2[5],
            buffer2[6], buffer2[7]);
@@ -132,8 +130,7 @@ static int test_multiple_30(void) {
     ret = -1;
   }
 
-  if (buffer[0] != 0b11011000 || buffer[1] != 0b01101100 || buffer[2] != 0b10100101 ||
-      buffer[3] != 0b00101000) {
+  if (buffer[0] != 0xd8 || buffer[1] != 0x6c || buffer[2] != 0xa5 || buffer[3] != 0x28) {
     printf("test_30: expected buffer %016" PRIx64 ", got %02x%02x%02x%02x%02x%02x%02x%02x\n",
            v << 34, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6],
            buffer[7]);
