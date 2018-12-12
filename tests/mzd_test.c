@@ -95,6 +95,7 @@ static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, m
   return ret;
 }
 
+#if defined(MUL_M4RI)
 static int test_mzd_mul_l_f(const char* n, unsigned int rows, unsigned int cols, mul_fn f,
                             bool is_addmul) {
   int ret = 0;
@@ -139,6 +140,7 @@ static int test_mzd_mul_l_f(const char* n, unsigned int rows, unsigned int cols,
 
   return ret;
 }
+#endif
 
 static int test_mzd_mul_uint64_128(void) {
   return test_mzd_mul_f("mul uint64 128", 128, 128, mzd_mul_v_uint64, false);
@@ -164,6 +166,7 @@ static int test_mzd_addmul_uint64_256(void) {
   return test_mzd_mul_f("addmul uint64 256", 256, 256, mzd_addmul_v_uint64, true);
 }
 
+#if defined(MUL_M4RI)
 static int test_mzd_mull_uint64_128(void) {
   return test_mzd_mul_l_f("mull uint64 128", 128, 128, mzd_mul_vl_uint64, false);
 }
@@ -187,6 +190,7 @@ static int test_mzd_addmull_uint64_192(void) {
 static int test_mzd_addmull_uint64_256(void) {
   return test_mzd_mul_l_f("addmull uint64 256", 256, 256, mzd_addmul_vl_uint64, true);
 }
+#endif
 
 #ifdef WITH_AVX2
 static int test_mzd_mul_avx(void) {
@@ -221,6 +225,7 @@ static int test_mzd_addmul_avx_256(void) {
   return test_mzd_mul_f("addmul avx 256", 256, 256, mzd_addmul_v_avx_256, true);
 }
 
+#if defined(MUL_M4RI)
 static int test_mzd_mull_avx(void) {
   return test_mzd_mul_l_f("mull avx", 192, 192, mzd_mul_vl_avx, false);
 }
@@ -252,6 +257,7 @@ static int test_mzd_addmull_avx_192(void) {
 static int test_mzd_addmull_avx_256(void) {
   return test_mzd_mul_l_f("addmull avx 256", 256, 256, mzd_addmul_vl_avx_256, true);
 }
+#endif
 #endif
 
 #ifdef WITH_SSE2
@@ -287,6 +293,7 @@ static int test_mzd_addmul_sse_256(void) {
   return test_mzd_mul_f("addmul sse 256", 256, 256, mzd_addmul_v_sse_256, true);
 }
 
+#if defined(MUL_M4RI)
 static int test_mzd_mull_sse(void) {
   return test_mzd_mul_l_f("mull sse", 192, 192, mzd_mul_vl_sse, false);
 }
@@ -318,6 +325,7 @@ static int test_mzd_addmull_sse_192(void) {
 static int test_mzd_addmull_sse_256(void) {
   return test_mzd_mul_l_f("addmull sse 256", 256, 256, mzd_addmul_vl_sse_256, true);
 }
+#endif
 #endif
 
 #ifdef WITH_NEON
@@ -353,6 +361,7 @@ static int test_mzd_addmul_neon_256(void) {
   return test_mzd_mul_f("addmul neon 256", 256, 256, mzd_addmul_v_neon_256, true);
 }
 
+#if defined(MUL_M4RI)
 static int test_mzd_mull_neon(void) {
   return test_mzd_mul_l_f("mull neon", 192, 192, mzd_mul_vl_neon, false);
 }
@@ -385,6 +394,7 @@ static int test_mzd_addmull_neon_256(void) {
   return test_mzd_mul_l_f("addmull neon 256", 256, 256, mzd_addmul_vl_neon /*_256 */, true);
 }
 #endif
+#endif
 
 int main() {
   int ret = 0;
@@ -396,12 +406,14 @@ int main() {
   ret |= test_mzd_addmul_uint64_128();
   ret |= test_mzd_addmul_uint64_192();
   ret |= test_mzd_addmul_uint64_256();
+#if defined(MUL_M4RI)
   ret |= test_mzd_mull_uint64_128();
   ret |= test_mzd_mull_uint64_192();
   ret |= test_mzd_mull_uint64_256();
   ret |= test_mzd_addmull_uint64_128();
   ret |= test_mzd_addmull_uint64_192();
   ret |= test_mzd_addmull_uint64_256();
+#endif
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2) {
     ret |= test_mzd_mul_avx();
@@ -412,6 +424,7 @@ int main() {
     ret |= test_mzd_addmul_avx_128();
     ret |= test_mzd_addmul_avx_192();
     ret |= test_mzd_addmul_avx_256();
+#if defined(MUL_M4RI)
     ret |= test_mzd_mull_avx();
     ret |= test_mzd_mull_avx_128();
     ret |= test_mzd_mull_avx_192();
@@ -420,6 +433,7 @@ int main() {
     ret |= test_mzd_addmull_avx_128();
     ret |= test_mzd_addmull_avx_192();
     ret |= test_mzd_addmull_avx_256();
+#endif
   }
 #endif
 #ifdef WITH_SSE2
@@ -432,6 +446,7 @@ int main() {
     ret |= test_mzd_addmul_sse_128();
     ret |= test_mzd_addmul_sse_192();
     ret |= test_mzd_addmul_sse_256();
+#if defined(MUL_M4RI)
     ret |= test_mzd_mull_sse();
     ret |= test_mzd_mull_sse_128();
     ret |= test_mzd_mull_sse_192();
@@ -440,6 +455,7 @@ int main() {
     ret |= test_mzd_addmull_sse_128();
     ret |= test_mzd_addmull_sse_192();
     ret |= test_mzd_addmull_sse_256();
+#endif
   }
 #endif
 #ifdef WITH_NEON
@@ -452,6 +468,7 @@ int main() {
     ret |= test_mzd_addmul_neon_128();
     ret |= test_mzd_addmul_neon_192();
     ret |= test_mzd_addmul_neon_256();
+#if defined(MUL_M4RI)
     ret |= test_mzd_mull_neon();
     ret |= test_mzd_mull_neon_128();
     ret |= test_mzd_mull_neon_192();
@@ -460,6 +477,7 @@ int main() {
     ret |= test_mzd_addmull_neon_128();
     ret |= test_mzd_addmull_neon_192();
     ret |= test_mzd_addmull_neon_256();
+#endif
   }
 #endif
   return ret;

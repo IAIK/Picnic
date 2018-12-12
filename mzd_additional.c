@@ -1098,6 +1098,7 @@ bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second) {
   return true;
 }
 
+#if defined(MUL_M4RI)
 static void xor_comb(const unsigned int len, word* Brow, mzd_local_t const* A,
                      unsigned int r_offset, unsigned comb) {
   while (comb) {
@@ -1560,6 +1561,7 @@ void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
     }
   }
 }
+#endif
 
 // bit extract, non-constant time for mask, but mask is public in our calls
 static word extract_bits(word in, word mask) {
