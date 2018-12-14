@@ -10,6 +10,11 @@ Preprints describing the LowMC optimizations are available too:
 * **Improvements to the Linear Operations of LowMC: A Faster Picnic** Daniel Kales and Léo Perrin and Angela Promitzer and Sebastian Ramacher and Christian Rechberger. *[Cryptology ePrint Archive: Report 2017/1148](http://eprint.iacr.org/2017/1148)*
 * **Linear Equivalence of Block Ciphers with Partial Non-Linear Layers: Application to LowMC** Itai Dinur. *[Cryptology ePrint Archive: Report 2018/772](http://eprint.iacr.org/2018/772)*
 
+Packages
+--------
+
+Packages for Ubuntu bionic and cosmis are available via a [PPA](https://launchpad.net/~s-ramacher/+archive/ubuntu/picnic/).
+
 Building
 --------
 
