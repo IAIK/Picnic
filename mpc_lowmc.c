@@ -533,7 +533,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_sse_128
+#define XOR mzd_xor_avx_128
 #define MUL SELECT_V_VL(mzd_mul_v_avx_128, mzd_mul_vl_avx_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128)
 
@@ -654,7 +654,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_sse_128
+#define XOR mzd_xor_avx_128
 #define MUL SELECT_V_VL(mzd_mul_v_avx_128, mzd_mul_vl_avx_128)
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128)
 

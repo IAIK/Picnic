@@ -198,6 +198,15 @@ void mzd_xor_avx(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* 
 }
 
 ATTR_TARGET_AVX2
+void mzd_xor_avx_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  __m128i* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(__m128i));
+  __m128i const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(__m128i));
+  __m128i const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(__m128i));
+
+  *mresptr = _mm_xor_si128(*mfirstptr, *msecondptr);
+}
+
+ATTR_TARGET_AVX2
 void mzd_xor_avx_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   __m256i* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(__m256i));
   __m256i const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(__m256i));
