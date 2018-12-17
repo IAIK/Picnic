@@ -284,17 +284,20 @@ void mzd_mul_v_parity_uint64_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
   const unsigned int width     = v->width;
 
-  for(unsigned int j = 0; j < width; j++) {
+  for (unsigned int j = 0; j < width - 1; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
     word popcnt = 0;
     for(unsigned int j = 0; j < width; j++) {
       popcnt ^= vptr[j] & A[j];
     }
-    cptr[width-1] |= parity64_uint64(popcnt) << (64-i);
+    res |= parity64_uint64(popcnt) << (64-i);
   }
+  cptr[width - 1] = res;
 }
 
 void mzd_mul_v_parity_uint64_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -303,14 +306,15 @@ void mzd_mul_v_parity_uint64_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 2; j++) {
-    cptr[j] = 0;
-  }
+  cptr[0] = 0;
+
+  word res = 0;
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
     word const popcnt = parity64_uint64((vptr[0] & A[0]) ^ (vptr[1] & A[1]));
-    cptr[1] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+  cptr[1] = res;
 }
 
 void mzd_mul_v_parity_uint64_192_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -319,14 +323,18 @@ void mzd_mul_v_parity_uint64_192_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 3; j++) {
+  for (unsigned int j = 0; j < 2; j++) {
     cptr[j] = 0;
   }
-  for(unsigned i = 30; i; --i) {
+
+  word res = 0;
+  for (unsigned i = 30; i; --i) {
     word const* A     = Aptr + (30 - i) * rowstride;
     const word popcnt = parity64_uint64((vptr[0] & A[0]) ^ (vptr[1] & A[1]) ^ (vptr[2] & A[2]));
-    cptr[2] |= popcnt << (64-i);
+    res |= popcnt << (64 - i);
   }
+
+  cptr[2] = res;
 }
 
 void mzd_mul_v_parity_uint64_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -335,14 +343,17 @@ void mzd_mul_v_parity_uint64_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 4; j++) {
+  for (unsigned int j = 0; j < 3; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
     word const popcnt = parity64_uint64((vptr[0] & A[0]) ^ (vptr[1] & A[1]) ^ (vptr[2] & A[2]) ^ (vptr[3] & A[3]));
-    cptr[3] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+  cptr[3] = res;
 }
 
 void mzd_mul_v_parity_uint64_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -352,17 +363,20 @@ void mzd_mul_v_parity_uint64_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
   const unsigned int width     = v->width;
 
-  for(unsigned int j = 0; j < width; j++) {
+  for (unsigned int j = 0; j < width - 1; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
     word popcnt = 0;
     for(unsigned int j = 0; j < width; j++) {
       popcnt ^= vptr[j] & A[j];
     }
-    cptr[width-1] |= parity64_uint64(popcnt) << (64-i);
+    res |= parity64_uint64(popcnt) << (64-i);
   }
+  cptr[width-1] = res;
 }
 
 void mzd_mul_v_parity_uint64_128_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -371,14 +385,15 @@ void mzd_mul_v_parity_uint64_128_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 2; j++) {
-    cptr[j] = 0;
-  }
-  for(unsigned i = 3; i; --i) {
-    word const* A = Aptr + (3-i)*rowstride;
+  cptr[0] = 0;
+
+  word res = 0;
+  for (unsigned i = 3; i; --i) {
+    word const* A     = Aptr + (3 - i) * rowstride;
     word const popcnt = parity64_uint64((vptr[0] & A[0]) ^ (vptr[1] & A[1]));
-   cptr[1] |= popcnt << (64-i);
+    res |= popcnt << (64 - i);
   }
+  cptr[1] = res;
 }
 
 void mzd_mul_v_parity_uint64_192_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -387,14 +402,18 @@ void mzd_mul_v_parity_uint64_192_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 4; j++) {
+  for (unsigned int j = 0; j < 2; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
     word const popcnt = parity64_uint64((vptr[0] & A[0]) ^ (vptr[1] & A[1]) ^ (vptr[2] & A[2]));
-    cptr[2] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+
+  cptr[2] = res;
 }
 
 void mzd_mul_v_parity_uint64_256_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -403,14 +422,17 @@ void mzd_mul_v_parity_uint64_256_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 4; j++) {
+  for (unsigned int j = 0; j < 3; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
     word const popcnt = parity64_uint64((vptr[0] & A[0]) ^ (vptr[1] & A[1]) ^ (vptr[2] & A[2]) ^ (vptr[3] & A[3]));
-    cptr[3] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+  cptr[3] = res;
 }
 
 #if defined(WITH_OPT)
@@ -443,17 +465,20 @@ void mzd_mul_v_parity_popcnt_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
   const unsigned int width     = v->width;
 
-  for(unsigned int j = 0; j < width; j++) {
+  for (unsigned int j = 0; j < width - 1; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
     word popcnt = 0;
     for(unsigned int j = 0; j < width; j++) {
       popcnt ^= vptr[j] & A[j];
     }
-    cptr[width-1] |= parity64_popcnt(popcnt) << (64-i);
+    res |= parity64_popcnt(popcnt) << (64-i);
   }
+  cptr[width - 1] = res;
 }
 
 ATTR_TARGET("popcnt")
@@ -463,14 +488,15 @@ void mzd_mul_v_parity_popcnt_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 2; j++) {
-    cptr[j] = 0;
-  }
+  cptr[0] = 0;
+
+  word res = 0;
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
     word const popcnt = parity64_popcnt((vptr[0] & A[0]) ^ (vptr[1] & A[1]));
-    cptr[1] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+  cptr[1] = res;
 }
 
 ATTR_TARGET("popcnt")
@@ -480,14 +506,17 @@ void mzd_mul_v_parity_popcnt_192_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 3; j++) {
+  for (unsigned int j = 0; j < 2; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 30; i; --i) {
     word const* A     = Aptr + (30 - i) * rowstride;
     const word popcnt = parity64_popcnt((vptr[0] & A[0]) ^ (vptr[1] & A[1]) ^ (vptr[2] & A[2]));
-    cptr[2] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+  cptr[2] = res;
 }
 
 ATTR_TARGET("popcnt")
@@ -497,14 +526,17 @@ void mzd_mul_v_parity_popcnt_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 4; j++) {
+  for (unsigned int j = 0; j < 3; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 30; i; --i) {
     word const* A = Aptr + (30-i)*rowstride;
     word const popcnt = parity64_popcnt((vptr[0] & A[0]) ^ (vptr[1] & A[1]) ^ (vptr[2] & A[2]) ^ (vptr[3] & A[3]));
-    cptr[3] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+  cptr[3] = res;
 }
 
 ATTR_TARGET("popcnt")
@@ -515,17 +547,20 @@ void mzd_mul_v_parity_popcnt_3(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
   const unsigned int width     = v->width;
 
-  for(unsigned int j = 0; j < width; j++) {
+  for (unsigned int j = 0; j < width - 1; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
     word popcnt = 0;
     for(unsigned int j = 0; j < width; j++) {
       popcnt ^= vptr[j] & A[j];
     }
-    cptr[width-1] |= parity64_popcnt(popcnt) << (64-i);
+    res |= parity64_popcnt(popcnt) << (64-i);
   }
+  cptr[width - 1] = res;
 }
 
 ATTR_TARGET("popcnt")
@@ -535,14 +570,15 @@ void mzd_mul_v_parity_popcnt_128_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 2; j++) {
-    cptr[j] = 0;
-  }
-  for(unsigned i = 3; i; --i) {
-    word const* A = Aptr + (3-i)*rowstride;
+  cptr[0] = 0;
+
+  word res = 0;
+  for (unsigned i = 3; i; --i) {
+    word const* A     = Aptr + (3 - i) * rowstride;
     word const popcnt = parity64_popcnt((vptr[0] & A[0]) ^ (vptr[1] & A[1]));
-   cptr[1] |= popcnt << (64-i);
+    res |= popcnt << (64 - i);
   }
+  cptr[1] = res;
 }
 
 ATTR_TARGET("popcnt")
@@ -552,14 +588,17 @@ void mzd_mul_v_parity_popcnt_192_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 4; j++) {
+  for (unsigned int j = 0; j < 2; j++) {
     cptr[j] = 0;
   }
-  for(unsigned i = 3; i; --i) {
+
+  word res = 0;
+  for (unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
     word const popcnt = parity64_popcnt((vptr[0] & A[0]) ^ (vptr[1] & A[1]) ^ (vptr[2] & A[2]));
-    cptr[2] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+  cptr[2] = res;
 }
 
 ATTR_TARGET("popcnt")
@@ -569,14 +608,17 @@ void mzd_mul_v_parity_popcnt_256_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   word const* vptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   word const* Aptr             = ASSUME_ALIGNED(CONST_FIRST_ROW(At), 32);
 
-  for(unsigned int j = 0; j < 4; j++) {
+  for (unsigned int j = 0; j < 3; j++) {
     cptr[j] = 0;
   }
+
+  word res = 0;
   for(unsigned i = 3; i; --i) {
     word const* A = Aptr + (3-i)*rowstride;
     word const popcnt = parity64_popcnt((vptr[0] & A[0]) ^ (vptr[1] & A[1]) ^ (vptr[2] & A[2]) ^ (vptr[3] & A[3]));
-    cptr[3] |= popcnt << (64-i);
+    res |= popcnt << (64-i);
   }
+  cptr[3] = res;
 }
 #endif
 
