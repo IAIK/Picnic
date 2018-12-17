@@ -132,7 +132,7 @@ static void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t
 
 #define bitsliced_step_2_uint64_10(sc)                                                             \
   do {                                                                                             \
-    for (unsigned int m = 0; m < sc; ++m) {                                                        \
+    for (unsigned int m = 0; m < (sc); ++m) {                                                      \
       const uint64_t tmp1 = r2m[m] ^ x0s[m];                                                       \
       const uint64_t tmp2 = x0s[m] ^ x1s[m];                                                       \
       const uint64_t tmp3 = tmp2 ^ r1m[m];                                                         \
@@ -171,7 +171,7 @@ static void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t
 
 #define bitsliced_step_2_uint64_1(sc)                                                              \
   do {                                                                                             \
-    for (unsigned int m = 0; m < sc; ++m) {                                                        \
+    for (unsigned int m = 0; m < (sc); ++m) {                                                      \
       const uint64_t tmp1 = r2m[m] ^ x0s[m];                                                       \
       const uint64_t tmp2 = x0s[m] ^ x1s[m];                                                       \
       const uint64_t tmp3 = tmp2 ^ r1m[m];                                                         \
@@ -188,7 +188,7 @@ static void mpc_sbox_layer_bitsliced_uint64_10(uint64_t* in, view_t* view, uint6
   mpc_and_uint64(r2m, x1s, x2m, r1s, view, 1);
   mpc_and_uint64(r1m, x0s, x2m, r0s, view, 2);
 
-  bitsliced_step_2_uint64_10(SC_PROOF);
+  bitsliced_step_2_uint64_10(SC_PROOF - 1);
 }
 
 static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view,
@@ -210,7 +210,7 @@ static void mpc_sbox_layer_bitsliced_uint64_1(uint64_t* in, view_t* view, uint64
   mpc_and_uint64(r2m, x1s, x2m, r1s, view, 1);
   mpc_and_uint64(r1m, x0s, x2m, r0s, view, 2);
 
-  bitsliced_step_2_uint64_1(SC_PROOF);
+  bitsliced_step_2_uint64_1(SC_PROOF - 1);
 }
 
 static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
@@ -244,14 +244,14 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #include "lowmc_256_256_363.h"
 #endif
 
-#define SBOX_uint64(sbox, y, x, views, r, n, shares)                                               \
+#define SBOX_uint64(sbox, y, x, views, r, n, shares, shares2)                                      \
   do {                                                                                             \
     uint64_t in[shares];                                                                           \
     for (unsigned int count = 0; count < shares; ++count) {                                        \
       in[count] = CONST_FIRST_ROW(x[count])[(n) / (sizeof(word) * 8) - 1];                         \
     }                                                                                              \
     sbox(in, views, r);                                                                            \
-    for (unsigned int count = 0; count < shares; ++count) {                                        \
+    for (unsigned int count = 0; count < shares2; ++count) {                                       \
       memcpy(FIRST_ROW(y[count]), CONST_FIRST_ROW(x[count]),                                       \
              ((n) / (sizeof(word) * 8) - 1) * sizeof(word));                                       \
       FIRST_ROW(y[count])[(n) / (sizeof(word) * 8) - 1] = in[count];                               \
