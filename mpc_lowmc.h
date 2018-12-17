@@ -14,8 +14,17 @@
 
 #include "lowmc.h"
 #include "lowmc_pars.h"
-#include "mpc.h"
 
+/* Share count for proofs */
+#define SC_PROOF 3
+/* Share count for verification */
+#define SC_VERIFY 2
+
+typedef union {
+  uint64_t t[SC_PROOF];
+} view_t;
+
+typedef view_t rvec_t;
 typedef mzd_local_t* mpc_lowmc_key_t;
 
 typedef struct {

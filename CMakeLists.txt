@@ -214,7 +214,6 @@ list(APPEND PICNIC_SOURCES
      lowmc_128_128_20.c
      lowmc_192_192_30.c
      lowmc_256_256_38.c
-     mpc.c
      mpc_lowmc.c
      mzd_additional.c
      picnic.c

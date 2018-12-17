@@ -12,7 +12,6 @@
 #endif
 
 #include "lowmc_pars.h"
-#include "mpc.h"
 #include "mpc_lowmc.h"
 #include "mzd_additional.h"
 
@@ -26,6 +25,84 @@
 #if defined(WITH_OPT)
 #include "simd.h"
 #endif
+
+#define MPC_LOOP_CONST(function, result, first, second, sc)                                        \
+  do {                                                                                             \
+    for (unsigned int e = 0; e < (sc); ++e) {                                                      \
+      function((result)[e], (first)[e], (second));                                                 \
+    }                                                                                              \
+  } while (0)
+
+#define MPC_LOOP_SHARED(function, result, first, second, sc)                                       \
+  do {                                                                                             \
+    for (unsigned int o = 0; o < (sc); ++o) {                                                      \
+      function((result)[o], (first)[o], (second)[o]);                                              \
+    }                                                                                              \
+  } while (0)
+
+#define MPC_LOOP_SHARED_1(function, result, first, sc)                                             \
+  do {                                                                                             \
+    for (unsigned int o = 0; o < (sc); ++o) {                                                      \
+      function((result)[o], (first)[o]);                                                           \
+    }                                                                                              \
+  } while (0)
+
+#define MPC_LOOP_CONST_C_0(function, result, first, second, sc)                                    \
+  function((result)[0], (first)[0], (second))
+
+#define MPC_LOOP_CONST_C_ch(function, result, first, second, sc, c)                                \
+  do {                                                                                             \
+    if (!(c)) {                                                                                    \
+      MPC_LOOP_CONST_C_0(function, result, first, second, sc);                                     \
+    } else if ((c) == (sc)) {                                                                      \
+      function((result)[(sc)-1], first[(sc)-1], (second));                                         \
+    }                                                                                              \
+  } while (0)
+
+
+static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second, uint64_t const* r,
+                    view_t* view, unsigned viewshift) {
+  for (unsigned m = 0; m < SC_PROOF; ++m) {
+    const unsigned j = (m + 1) % SC_PROOF;
+    uint64_t tmp1    = second[m] ^ second[j];
+    uint64_t tmp2    = first[j] & second[m];
+    tmp1             = tmp1 & first[m];
+    tmp1             = tmp1 ^ tmp2;
+    tmp2             = r[m] ^ r[j];
+    res[m] = tmp1 = tmp1 ^ tmp2;
+    if (viewshift) {
+      tmp1       = tmp1 >> viewshift;
+      view->t[m] = view->t[m] ^ tmp1;
+    } else {
+      // on first call (viewshift == 0), view->t[0..2] == 0
+      view->t[m] = tmp1;
+    }
+  }
+}
+
+static void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
+                           uint64_t const* r, view_t* view, uint64_t const mask,
+                           unsigned viewshift) {
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned j = (m + 1);
+    uint64_t tmp1    = second[m] ^ second[j];
+    uint64_t tmp2    = first[j] & second[m];
+    tmp1             = tmp1 & first[m];
+    tmp1             = tmp1 ^ tmp2;
+    tmp2             = r[m] ^ r[j];
+    res[m] = tmp1 = tmp1 ^ tmp2;
+    if (viewshift || m) {
+      tmp1       = tmp1 >> viewshift;
+      view->t[m] = view->t[m] ^ tmp1;
+    } else {
+      // on first call (viewshift == 0), view->t[0] == 0
+      view->t[m] = tmp1;
+    }
+  }
+
+  const uint64_t rsc = view->t[SC_VERIFY - 1] << viewshift;
+  res[SC_VERIFY - 1] = rsc & mask;
+}
 
 #define bitsliced_step_1_uint64_10(sc)                                                             \
   uint64_t r0m[sc];                                                                                \
