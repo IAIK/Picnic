@@ -35,6 +35,15 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
+/* assume */
+#if GNUC_CHECK(4, 5) || __has_builtin(__builtin_unreachable)
+#define ASSUME(p) if (!(p)) __builtin_unreachable()
+#elif defined(_MSC_VER)
+#define ASSUME(p) __assume(p)
+#else
+#define ASSUME(p) (void)(p)
+#endif
+
 /* nonnull attribute */
 #if GNUC_CHECK(3, 3) || __has_attribute(nonnull)
 #define ATTR_NONNULL __attribute__((nonnull))
