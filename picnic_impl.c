@@ -56,7 +56,7 @@ static const uint8_t HASH_PREFIX_5 = 5;
 static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
                                const uint8_t* challenge) {
   bitstream_t bs;
-  bs.buffer   = collapsed;
+  bs.buffer.w = collapsed;
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
@@ -71,7 +71,7 @@ static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
 static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
                              const uint8_t* collapsed) {
   bitstream_t bs;
-  bs.cbuffer  = collapsed;
+  bs.buffer.r = collapsed;
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
@@ -292,7 +292,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
   const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
-  bs.buffer   = dst;
+  bs.buffer.w = dst;
   bs.position = 0;
 
   const view_t* v = &views[0];
@@ -315,7 +315,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
   const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
-  bs.buffer   = (uint8_t*)src;
+  bs.buffer.r = src;
   bs.position = 0;
 
   view_t* v = &views[0];
@@ -338,7 +338,7 @@ static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, co
   const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
-  bs.buffer   = (uint8_t*)src;
+  bs.buffer.r = src;
   bs.position = 0;
 
   rvec_t* rv = &rvec[0];

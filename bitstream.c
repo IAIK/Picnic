@@ -14,7 +14,7 @@
 #include "bitstream.h"
 
 bitstream_value_t bitstream_get_bits(bitstream_t* bs, unsigned int num_bits) {
-  const uint8_t* p              = &bs->cbuffer[bs->position / 8];
+  const uint8_t* p              = &bs->buffer.r[bs->position / 8];
   const unsigned int skip_bits  = bs->position % 8;
   const unsigned int start_bits = 8 - skip_bits;
 
@@ -39,7 +39,7 @@ bitstream_value_t bitstream_get_bits(bitstream_t* bs, unsigned int num_bits) {
 
 void bitstream_put_bits(bitstream_t* bs, bitstream_value_t value, unsigned int num_bits) {
   const unsigned int skip_bits = bs->position % 8;
-  uint8_t* p                   = &bs->buffer[bs->position / 8];
+  uint8_t* p                   = &bs->buffer.w[bs->position / 8];
 
   bs->position += num_bits;
   if (skip_bits) {

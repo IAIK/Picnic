@@ -16,9 +16,9 @@ typedef uint64_t bitstream_value_t;
 
 typedef struct {
   union {
-    uint8_t* buffer;
-    const uint8_t* cbuffer;
-  };
+    uint8_t* w;
+    const uint8_t* r;
+  } buffer;
   size_t position;
 } bitstream_t;
 
