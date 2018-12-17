@@ -59,9 +59,8 @@
     }                                                                                              \
   } while (0)
 
-
-static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second, uint64_t const* r,
-                    view_t* view, unsigned viewshift) {
+static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
+                           uint64_t const* r, view_t* view, unsigned viewshift) {
   for (unsigned m = 0; m < SC_PROOF; ++m) {
     const unsigned j = (m + 1) % SC_PROOF;
     uint64_t tmp1    = second[m] ^ second[j];
@@ -81,8 +80,8 @@ static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
 }
 
 static void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
-                           uint64_t const* r, view_t* view, uint64_t const mask,
-                           unsigned viewshift) {
+                                  uint64_t const* r, view_t* view, uint64_t const mask,
+                                  unsigned viewshift) {
   for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
     const unsigned j = (m + 1);
     uint64_t tmp1    = second[m] ^ second[j];
@@ -215,7 +214,7 @@ static void mpc_sbox_layer_bitsliced_uint64_1(uint64_t* in, view_t* view, uint64
 }
 
 static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
-                                                   uint64_t const* rvec) {
+                                                     uint64_t const* rvec) {
   bitsliced_step_1_uint64_1(SC_VERIFY);
 
   mpc_and_verify_uint64(r0m, x0s, x1s, r2m, view, MASK_X2I_1, 0);
@@ -272,9 +271,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define SIGN_SBOX mpc_sbox_layer_bitsliced
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify
 
-#define MUL_R_1  mzd_addmul_v_uint64_3
+#define MUL_R_1 mzd_addmul_v_uint64_3
 #define MUL_R_10 mzd_addmul_v_uint64_30
-#define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
 #define LOWMC_N LOWMC_L1_N
@@ -292,7 +291,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
 #undef LOWMC_N
@@ -316,7 +315,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
 #undef LOWMC_N
@@ -384,9 +383,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_sse_3_128
+#define MUL_R_1 mzd_addmul_v_sse_3_128
 #define MUL_R_10 mzd_addmul_v_sse_30_128
-#define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
 #define SIGN mpc_lowmc_call_sse_128
@@ -425,9 +424,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_sse_3_192
+#define MUL_R_1 mzd_addmul_v_sse_3_192
 #define MUL_R_10 mzd_addmul_v_sse_30_192
-#define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
 #define SIGN mpc_lowmc_call_sse_192
@@ -459,9 +458,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_sse_3_256
+#define MUL_R_1 mzd_addmul_v_sse_3_256
 #define MUL_R_10 mzd_addmul_v_sse_30_256
-#define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
 #define SIGN mpc_lowmc_call_sse_256
@@ -510,9 +509,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_sse_3_128
+#define MUL_R_1 mzd_addmul_v_sse_3_128
 #define MUL_R_10 mzd_addmul_v_sse_30_128
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_128_3
+#define MUL_Z_1 mzd_mul_v_parity_popcnt_128_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
 
 #define SIGN mpc_lowmc_call_sse_popcnt_128
@@ -551,9 +550,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_sse_3_192
+#define MUL_R_1 mzd_addmul_v_sse_3_192
 #define MUL_R_10 mzd_addmul_v_sse_30_192
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_192_3
+#define MUL_Z_1 mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 
 #define SIGN mpc_lowmc_call_sse_popcnt_192
@@ -585,9 +584,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_sse_3_256
+#define MUL_R_1 mzd_addmul_v_sse_3_256
 #define MUL_R_10 mzd_addmul_v_sse_30_256
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_256_3
+#define MUL_Z_1 mzd_mul_v_parity_popcnt_256_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
 
 #define SIGN mpc_lowmc_call_sse_popcnt_256
@@ -638,9 +637,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_sse_3_128
+#define MUL_R_1 mzd_addmul_v_sse_3_128
 #define MUL_R_10 mzd_addmul_v_avx_30_128
-#define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
 #define SIGN mpc_lowmc_call_avx_128
@@ -679,9 +678,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_avx_3_192
+#define MUL_R_1 mzd_addmul_v_avx_3_192
 #define MUL_R_10 mzd_addmul_v_avx_30_192
-#define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
 #define SIGN mpc_lowmc_call_avx_192
@@ -713,9 +712,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_avx_3_256
+#define MUL_R_1 mzd_addmul_v_avx_3_256
 #define MUL_R_10 mzd_addmul_v_avx_30_256
-#define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
 #define SIGN mpc_lowmc_call_avx_256
@@ -759,9 +758,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_sse_3_128
+#define MUL_R_1 mzd_addmul_v_sse_3_128
 #define MUL_R_10 mzd_addmul_v_avx_30_128
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_128_3
+#define MUL_Z_1 mzd_mul_v_parity_popcnt_128_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
 
 #define SIGN mpc_lowmc_call_avx_popcnt_128
@@ -800,9 +799,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_avx_3_192
+#define MUL_R_1 mzd_addmul_v_avx_3_192
 #define MUL_R_10 mzd_addmul_v_avx_30_192
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_192_3
+#define MUL_Z_1 mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 
 #define SIGN mpc_lowmc_call_avx_popcnt_192
@@ -834,9 +833,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_avx_3_256
+#define MUL_R_1 mzd_addmul_v_avx_3_256
 #define MUL_R_10 mzd_addmul_v_avx_30_256
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_256_3
+#define MUL_Z_1 mzd_mul_v_parity_popcnt_256_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
 
 #define SIGN mpc_lowmc_call_avx_popcnt_256
@@ -888,9 +887,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_neon_3_128
+#define MUL_R_1 mzd_addmul_v_neon_3_128
 #define MUL_R_10 mzd_addmul_v_neon_30_128
-#define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
 #define SIGN mpc_lowmc_call_neon_128
@@ -929,9 +928,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_neon_3_192
+#define MUL_R_1 mzd_addmul_v_neon_3_192
 #define MUL_R_10 mzd_addmul_v_neon_30_192
-#define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
 #define SIGN mpc_lowmc_call_neon_192
@@ -963,9 +962,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1  mzd_addmul_v_neon_3_256
+#define MUL_R_1 mzd_addmul_v_neon_3_256
 #define MUL_R_10 mzd_addmul_v_neon_30_256
-#define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
+#define MUL_Z_1 mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
 #define SIGN mpc_lowmc_call_neon_256
@@ -1433,43 +1432,50 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
   return NULL;
 }
 
-static void mzd_share_uint64(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+static void mzd_share_uint64(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                             const mzd_local_t* v3) {
   mzd_xor_uint64(r, v1, v2);
   mzd_xor_uint64(r, r, v3);
 }
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2)
-static void mzd_share_sse_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+static void mzd_share_sse_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                              const mzd_local_t* v3) {
   mzd_xor_sse_128(r, v1, v2);
   mzd_xor_sse_128(r, r, v3);
 }
 
-static void mzd_share_sse_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+static void mzd_share_sse_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                              const mzd_local_t* v3) {
   mzd_xor_sse_256(r, v1, v2);
   mzd_xor_sse_256(r, r, v3);
 }
 #endif
 
 #if defined(WITH_AVX2)
-static void mzd_share_avx_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+static void mzd_share_avx_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                              const mzd_local_t* v3) {
   mzd_xor_avx_128(r, v1, v2);
   mzd_xor_avx_128(r, r, v3);
 }
 
-static void mzd_share_avx_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+static void mzd_share_avx_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                              const mzd_local_t* v3) {
   mzd_xor_avx_256(r, v1, v2);
   mzd_xor_avx_256(r, r, v3);
 }
 #endif
 
 #if defined(WITH_NEON)
-static void mzd_share_neon_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+static void mzd_share_neon_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                               const mzd_local_t* v3) {
   mzd_xor_neon_128(r, v1, v2);
   mzd_xor_neon_128(r, r, v3);
 }
 
-static void mzd_share_neon_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+static void mzd_share_neon_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                               const mzd_local_t* v3) {
   mzd_xor_neon_256(r, v1, v2);
   mzd_xor_neon_256(r, r, v3);
 }
@@ -1509,6 +1515,6 @@ zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc) 
   }
 #endif
 #endif
-  (void) lowmc;
+  (void)lowmc;
   return mzd_share_uint64;
 }
