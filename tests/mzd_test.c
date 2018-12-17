@@ -26,7 +26,8 @@ static int test_mzd_local_equal(void) {
   for (unsigned int i = 0; i < 10; ++i) {
     mzd_local_t* a = mzd_local_init(1, (i + 1) * 64);
     mzd_randomize_ssl(a);
-    mzd_local_t* b = mzd_local_copy(NULL, a);
+    mzd_local_t* b = mzd_local_init(1, (i + 1) * 64);
+    mzd_local_copy(b, a);
 
     if (mzd_local_equal(a, b)) {
       printf("equal: ok [%u]\n", (i + 1) * 64);

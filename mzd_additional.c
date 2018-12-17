@@ -140,18 +140,9 @@ void mzd_local_free_multiple(mzd_local_t** vs) {
   }
 }
 
-mzd_local_t* mzd_local_copy(mzd_local_t* dst, mzd_local_t const* src) {
-  if (dst == src) {
-    return dst;
-  }
-
-  if (!dst) {
-    dst = mzd_local_init(src->nrows, src->ncols);
-  }
-
+void mzd_local_copy(mzd_local_t* dst, mzd_local_t const* src) {
   memcpy(ASSUME_ALIGNED(FIRST_ROW(dst), 32), ASSUME_ALIGNED(CONST_FIRST_ROW(src), 32),
          src->nrows * sizeof(word) * src->rowstride);
-  return dst;
 }
 
 void mzd_local_clear(mzd_local_t* c) {
