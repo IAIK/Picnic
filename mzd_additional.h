@@ -49,7 +49,6 @@ void mzd_local_copy(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL_ARG(2
 
 void mzd_local_clear(mzd_local_t* c) ATTR_NONNULL;
 
-void mzd_xor(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_sse(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_sse_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;

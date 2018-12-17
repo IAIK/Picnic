@@ -346,16 +346,6 @@ static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, co
   }
 }
 
-static void mzd_share(mzd_local_t* shared_value[SC_PROOF], const mzd_local_t* value) {
-  mzd_xor(shared_value[2], shared_value[0], value);
-  mzd_xor(shared_value[2], shared_value[1], shared_value[2]);
-}
-
-static void mzd_unshare(mzd_local_t* shared_value[SC_PROOF], const mzd_local_t* value) {
-  mzd_xor(shared_value[2], shared_value[0], shared_value[1]);
-  mzd_xor(shared_value[2], shared_value[2], value);
-}
-
 /**
  * Compute commitment to a view.
  */
@@ -789,18 +779,20 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
                      const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
                      const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
                      size_t* siglen) {
-  const lowmc_t* lowmc                                = pp->lowmc;
-  const zkbpp_lowmc_implementation_f lowmc_impl       = pp->zkbpp_lowmc_impl;
-  const lowmc_store_implementation_f lowmc_store_impl = pp->lowmc_store_impl;
-  const size_t num_rounds                             = pp->num_rounds;
-  const transform_t transform                         = pp->transform;
-  const size_t input_size                             = pp->input_size;
-  const size_t output_size                            = pp->output_size;
-  const size_t view_count                             = lowmc->r;
-  const size_t lowmc_k                                = lowmc->k;
-  const size_t lowmc_n                                = lowmc->n;
-  const size_t lowmc_r                                = lowmc->r;
-  const size_t view_size                              = pp->view_size;
+  const lowmc_t* lowmc        = pp->lowmc;
+  const size_t num_rounds     = pp->num_rounds;
+  const transform_t transform = pp->transform;
+  const size_t input_size     = pp->input_size;
+  const size_t output_size    = pp->output_size;
+  const size_t view_count     = lowmc->r;
+  const size_t lowmc_k        = lowmc->k;
+  const size_t lowmc_n        = lowmc->n;
+  const size_t lowmc_r        = lowmc->r;
+  const size_t view_size      = pp->view_size;
+
+  const zkbpp_lowmc_implementation_f lowmc_impl       = pp->impls.zkbpp_lowmc;
+  const lowmc_store_implementation_f lowmc_store_impl = pp->impls.lowmc_store;
+  const zkbpp_share_implementation_f mzd_share        = pp->impls.mzd_share;
 
   // Perform LowMC evaluation and record state before AND gates
   recorded_state_t recorded_state;
@@ -837,7 +829,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       kdf_shake_get_randomness(&kdfs[j], round->input_shares[j], input_size);
       mzd_from_char_array(shared_key[j], round->input_shares[j], input_size);
     }
-    mzd_share(shared_key, lowmc_key);
+    mzd_share(shared_key[2], shared_key[0], shared_key[1], lowmc_key);
     mzd_to_char_array(round->input_shares[SC_PROOF - 1], shared_key[SC_PROOF - 1], input_size);
 
     // compute random tapes
@@ -889,17 +881,19 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mzd_local_t const* p,
                        const uint8_t* ciphertext, mzd_local_t const* c, const uint8_t* m,
                        size_t m_len, const uint8_t* sig, size_t siglen) {
-  const size_t num_rounds                               = pp->num_rounds;
-  const lowmc_t* lowmc                                  = pp->lowmc;
-  const transform_t transform                           = pp->transform;
-  zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->zkbpp_lowmc_verify_impl;
-  const size_t input_size                               = pp->input_size;
-  const size_t output_size                              = pp->output_size;
-  const size_t view_count                               = lowmc->r;
-  const size_t lowmc_k                                  = lowmc->k;
-  const size_t lowmc_n                                  = lowmc->n;
-  const size_t lowmc_r                                  = lowmc->r;
-  const size_t view_size                                = pp->view_size;
+  const size_t num_rounds     = pp->num_rounds;
+  const lowmc_t* lowmc        = pp->lowmc;
+  const transform_t transform = pp->transform;
+  const size_t input_size     = pp->input_size;
+  const size_t output_size    = pp->output_size;
+  const size_t view_count     = lowmc->r;
+  const size_t lowmc_k        = lowmc->k;
+  const size_t lowmc_n        = lowmc->n;
+  const size_t lowmc_r        = lowmc->r;
+  const size_t view_size      = pp->view_size;
+
+  const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->impls.zkbpp_lowmc_verify;
+  const zkbpp_share_implementation_f mzd_share                = pp->impls.mzd_share;
 
   sig_proof_t* prf = sig_proof_from_char_array(pp, sig, siglen);
   if (!prf) {
@@ -952,7 +946,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
     lowmc_verify_impl(p, views, in_out_shares, rvec, a_i);
     compress_view(round->communicated_bits[0], pp, views, 0);
 
-    mzd_unshare(in_out_shares[1].s, c);
+    mzd_share(in_out_shares[1].s[2], in_out_shares[1].s[0], in_out_shares[1].s[1], c);
     // recompute commitments
     for (unsigned int j = 0; j < SC_VERIFY; ++j) {
       mzd_to_char_array(round->output_shares[j], in_out_shares[1].s[j], output_size);
@@ -1152,33 +1146,34 @@ static const lowmc_t* const lowmc_instances[6] = {
 static bool lowmc_instances_initialized[6];
 #endif
 
+#define NULL_FNS {NULL, NULL, NULL, NULL, NULL}
+
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
-    {NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PARAMETER_SET_INVALID,
-     TRANSFORM_FS},
-    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic_L1_FS, Picnic_L1_FS, TRANSFORM_FS},
-    {LOWMC_L1_OR_NULL, NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107,
-     PICNIC_SIGNATURE_SIZE_Picnic_L1_UR, Picnic_L1_UR, TRANSFORM_UR},
-    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic_L3_FS, Picnic_L3_FS, TRANSFORM_FS},
-    {LOWMC_L3_OR_NULL, NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
-     PICNIC_SIGNATURE_SIZE_Picnic_L3_UR, Picnic_L3_UR, TRANSFORM_UR},
-    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic_L5_FS, Picnic_L5_FS, TRANSFORM_FS},
-    {LOWMC_L5_OR_NULL, NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
-     PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR},
-    {LOWMC_L1_1_OR_NULL, NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 69, 3, 55, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic_L1_1_FS, Picnic_L1_1_FS, TRANSFORM_FS},
-    {LOWMC_L1_1_OR_NULL, NULL, NULL, NULL, NULL, 32, 16, 219, 16, 16, 69, 3, 55, 87, 103,
-     PICNIC_SIGNATURE_SIZE_Picnic_L1_1_UR, Picnic_L1_1_UR, TRANSFORM_UR},
-    {LOWMC_L3_1_OR_NULL, NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 107, 3, 83, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic_L3_1_FS, Picnic_L3_1_FS, TRANSFORM_FS},
-    {LOWMC_L3_1_OR_NULL, NULL, NULL, NULL, NULL, 48, 24, 329, 24, 24, 107, 3, 83, 131, 155,
-     PICNIC_SIGNATURE_SIZE_Picnic_L3_1_UR, Picnic_L3_1_UR, TRANSFORM_UR},
-    {LOWMC_L5_1_OR_NULL, NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 137, 3, 110, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic_L5_1_FS, Picnic_L5_1_FS, TRANSFORM_FS},
-    {LOWMC_L5_1_OR_NULL, NULL, NULL, NULL, NULL, 64, 32, 438, 32, 32, 137, 3, 110, 169, 201,
-     PICNIC_SIGNATURE_SIZE_Picnic_L5_1_UR, Picnic_L5_1_UR, TRANSFORM_UR}};
+    {NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PARAMETER_SET_INVALID, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L1_OR_NULL, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L1_FS,
+     Picnic_L1_FS, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L1_OR_NULL, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107, PICNIC_SIGNATURE_SIZE_Picnic_L1_UR,
+     Picnic_L1_UR, TRANSFORM_UR, NULL_FNS},
+    {LOWMC_L3_OR_NULL, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L3_FS,
+     Picnic_L3_FS, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L3_OR_NULL, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
+     PICNIC_SIGNATURE_SIZE_Picnic_L3_UR, Picnic_L3_UR, TRANSFORM_UR, NULL_FNS},
+    {LOWMC_L5_OR_NULL, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L5_FS,
+     Picnic_L5_FS, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L5_OR_NULL, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
+     PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR, NULL_FNS},
+    {LOWMC_L1_1_OR_NULL, 32, 16, 219, 16, 16, 69, 3, 55, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L1_1_FS,
+     Picnic_L1_1_FS, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L1_1_OR_NULL, 32, 16, 219, 16, 16, 69, 3, 55, 87, 103,
+     PICNIC_SIGNATURE_SIZE_Picnic_L1_1_UR, Picnic_L1_1_UR, TRANSFORM_UR, NULL_FNS},
+    {LOWMC_L3_1_OR_NULL, 48, 24, 329, 24, 24, 107, 3, 83, 0, 0,
+     PICNIC_SIGNATURE_SIZE_Picnic_L3_1_FS, Picnic_L3_1_FS, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L3_1_OR_NULL, 48, 24, 329, 24, 24, 107, 3, 83, 131, 155,
+     PICNIC_SIGNATURE_SIZE_Picnic_L3_1_UR, Picnic_L3_1_UR, TRANSFORM_UR, NULL_FNS},
+    {LOWMC_L5_1_OR_NULL, 64, 32, 438, 32, 32, 137, 3, 110, 0, 0,
+     PICNIC_SIGNATURE_SIZE_Picnic_L5_1_FS, Picnic_L5_1_FS, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L5_1_OR_NULL, 64, 32, 438, 32, 32, 137, 3, 110, 169, 201,
+     PICNIC_SIGNATURE_SIZE_Picnic_L5_1_UR, Picnic_L5_1_UR, TRANSFORM_UR, NULL_FNS}};
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
 static const lowmc_t* lowmc_get_instance(unsigned int idx) {
@@ -1245,10 +1240,11 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
     return false;
   }
 
-  pp->lowmc_impl              = lowmc_get_implementation(pp->lowmc);
-  pp->lowmc_store_impl        = lowmc_store_get_implementation(pp->lowmc);
-  pp->zkbpp_lowmc_impl        = get_zkbpp_lowmc_implementation(pp->lowmc);
-  pp->zkbpp_lowmc_verify_impl = get_zkbpp_lowmc_verify_implementation(pp->lowmc);
+  pp->impls.lowmc              = lowmc_get_implementation(pp->lowmc);
+  pp->impls.lowmc_store        = lowmc_store_get_implementation(pp->lowmc);
+  pp->impls.zkbpp_lowmc        = get_zkbpp_lowmc_implementation(pp->lowmc);
+  pp->impls.zkbpp_lowmc_verify = get_zkbpp_lowmc_verify_implementation(pp->lowmc);
+  pp->impls.mzd_share          = get_zkbpp_share_implentation(pp->lowmc);
 
   return true;
 }

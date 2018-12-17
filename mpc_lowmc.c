@@ -1432,3 +1432,83 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 
   return NULL;
 }
+
+static void mzd_share_uint64(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+  mzd_xor_uint64(r, v1, v2);
+  mzd_xor_uint64(r, r, v3);
+}
+
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2)
+static void mzd_share_sse_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+  mzd_xor_sse_128(r, v1, v2);
+  mzd_xor_sse_128(r, r, v3);
+}
+
+static void mzd_share_sse_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+  mzd_xor_sse_256(r, v1, v2);
+  mzd_xor_sse_256(r, r, v3);
+}
+#endif
+
+#if defined(WITH_AVX2)
+static void mzd_share_avx_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+  mzd_xor_avx_128(r, v1, v2);
+  mzd_xor_avx_128(r, r, v3);
+}
+
+static void mzd_share_avx_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+  mzd_xor_avx_256(r, v1, v2);
+  mzd_xor_avx_256(r, r, v3);
+}
+#endif
+
+#if defined(WITH_NEON)
+static void mzd_share_neon_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+  mzd_xor_neon_128(r, v1, v2);
+  mzd_xor_neon_128(r, r, v3);
+}
+
+static void mzd_share_neon_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2, const mzd_local_t* v3) {
+  mzd_xor_neon_256(r, v1, v2);
+  mzd_xor_neon_256(r, r, v3);
+}
+#endif
+#endif
+
+zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc) {
+#if defined(WITH_OPT)
+#if defined(WITH_AVX2)
+  if (CPU_SUPPORTS_AVX2) {
+    switch (lowmc->n) {
+    case 128:
+      return mzd_share_avx_128;
+    default:
+      return mzd_share_avx_256;
+    }
+  }
+#endif
+#if defined(WITH_SSE2)
+  if (CPU_SUPPORTS_SSE2) {
+    switch (lowmc->n) {
+    case 128:
+      return mzd_share_sse_128;
+    default:
+      return mzd_share_sse_256;
+    }
+  }
+#endif
+#if defined(WITH_NEON)
+  if (CPU_SUPPORTS_NEON) {
+    switch (lowmc->n) {
+    case 128:
+      return mzd_share_neon_128;
+    default:
+      return mzd_share_neon_256;
+    }
+  }
+#endif
+#endif
+  (void) lowmc;
+  return mzd_share_uint64;
+}

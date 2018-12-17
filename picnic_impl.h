@@ -21,10 +21,6 @@ typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 
 typedef struct {
   const lowmc_t* lowmc;
-  lowmc_implementation_f lowmc_impl;
-  lowmc_store_implementation_f lowmc_store_impl;
-  zkbpp_lowmc_implementation_f zkbpp_lowmc_impl;
-  zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify_impl;
 
   uint32_t digest_size; /* bytes */
   uint32_t seed_size;   /* bytes */
@@ -42,6 +38,14 @@ typedef struct {
 
   picnic_params_t params;
   transform_t transform;
+
+  struct {
+    lowmc_implementation_f lowmc;
+    lowmc_store_implementation_f lowmc_store;
+    zkbpp_lowmc_implementation_f zkbpp_lowmc;
+    zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify;
+    zkbpp_share_implementation_f mzd_share;
+  } impls;
 } picnic_instance_t;
 
 const picnic_instance_t* picnic_instance_get(picnic_params_t param);

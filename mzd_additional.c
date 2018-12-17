@@ -46,10 +46,6 @@ static inline uint64_t parity64_popcnt(uint64_t in) {
 }
 #endif
 #endif
-
-#if defined(WITH_SSE2) || defined(WITH_AVX2) || defined(WITH_NEON)
-static const unsigned int word_size_bits = 8 * sizeof(word);
-#endif
 #endif
 static const unsigned int align_bound = 128 / (8 * sizeof(word));
 
@@ -245,30 +241,6 @@ void mzd_xor_neon_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 }
 #endif
 #endif
-
-void mzd_xor(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-#if defined(WITH_OPT)
-#if defined(WITH_AVX2)
-  if (CPU_SUPPORTS_AVX2 && first->ncols >= 256 && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    mzd_xor_avx(res, first, second);
-    return;
-  }
-#endif
-#if defined(WITH_SSE2)
-  if (CPU_SUPPORTS_SSE2 && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    mzd_xor_sse(res, first, second);
-    return;
-  }
-#endif
-#if defined(WITH_NEON)
-  if (CPU_SUPPORTS_NEON && ((first->ncols & (word_size_bits - 1)) == 0)) {
-    mzd_xor_neon(res, first, second);
-    return;
-  }
-#endif
-#endif
-  mzd_xor_uint64(res, first, second);
-}
 
 void mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width    = first->width;

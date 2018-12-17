@@ -36,7 +36,7 @@ static int test_mzd_local_equal(void) {
       ret = -1;
     }
 
-    mzd_xor(b, b, a);
+    mzd_xor_uint64(b, b, a);
     if (!mzd_local_equal(a, b)) {
       printf("equal: ok [%u]\n", (i + 1) * 64);
     } else {
