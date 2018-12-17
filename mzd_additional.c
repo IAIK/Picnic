@@ -34,10 +34,17 @@ static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t 
 #if defined(WITH_POPCNT)
 #include <nmmintrin.h>
 
+#if !defined(__x86_64__) && !defined(_M_X64)
+ATTR_TARGET("popcnt") ATTR_CONST
+static inline uint64_t parity64_popcnt(uint64_t in) {
+  return (_mm_popcnt_u32(in >> 32) ^ _mm_popcnt_u32(in)) & 0x1;
+}
+#else
 ATTR_TARGET("popcnt") ATTR_CONST
 static inline uint64_t parity64_popcnt(uint64_t in) {
   return _mm_popcnt_u64(in) & 0x1;
 }
+#endif
 #endif
 
 #if defined(WITH_SSE2) || defined(WITH_AVX2) || defined(WITH_NEON)

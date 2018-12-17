@@ -38,7 +38,7 @@ void test(void) {
 #include <nmmintrin.h>
 
 ATTRIBUTE_TARGET("popcnt") void test(void) {
-  (void)_mm_popcnt_u64(0);
+  (void)_mm_popcnt_u32(0);
 }
 #endif
 
