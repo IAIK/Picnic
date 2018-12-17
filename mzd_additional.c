@@ -1826,7 +1826,7 @@ ATTR_TARGET_AVX2 ATTR_CONST static uint8_t popcount_32(uint32_t value) {
 
 ATTR_TARGET_AVX2 ATTR_CONST static uint64_t _pext_u64(uint64_t a, uint64_t mask) {
   const uint32_t low  = _pext_u32(a, mask);
-  const uint32_t high = _pext_u32((a & 0xFFFFFFFF00000000) >> 32, (mask & 0xFFFFFFFF00000000) >> 32);
+  const uint32_t high = _pext_u32(a >> 32, mask >> 32);
 
   return (((uint64_t)high) << popcount_32(mask)) | low;
 }
