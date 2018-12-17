@@ -38,6 +38,13 @@ typedef view_t rvec_t;
     }                                                                                              \
   } while (0)
 
+#define MPC_LOOP_SHARED_1(function, result, first, sc)                                             \
+  do {                                                                                             \
+    for (unsigned int o = 0; o < (sc); ++o) {                                                      \
+      function((result)[o], (first)[o]);                                                           \
+    }                                                                                              \
+  } while (0)
+
 #define MPC_LOOP_CONST_C_0(function, result, first, second, sc)                                    \
   function((result)[0], (first)[0], (second))
 
@@ -57,6 +64,5 @@ void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const*
                            uint64_t const* r, view_t* view, uint64_t const mask,
                            unsigned viewshift) ATTR_NONNULL;
 
-void mpc_copy(mzd_local_t** out, mzd_local_t* const* in, unsigned sc) ATTR_NONNULL_ARG(2);
 
 #endif
