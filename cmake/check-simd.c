@@ -4,31 +4,33 @@
 #define ATTRIBUTE_TARGET(x)
 #endif
 
-#if defined(SSE2) || defined(AVX2)
+#if defined(SSE2) || defined(AVX2) || defined(BMI2)
 #include <immintrin.h>
 
 #if defined(SSE2)
 ATTRIBUTE_TARGET("sse2") void test(void) {
-  __m128i v = _mm_setzero_si128();
-  (void)v;
+  (void)_mm_setzero_si128();
 }
 #endif
 
 #if defined(AVX2)
 ATTRIBUTE_TARGET("avx2") void test(void) {
-  __m256i v = _mm256_setzero_si256();
-  (void)v;
+  (void)_mm256_setzero_si256();
 }
 #endif
 
+#if defined(BMI2)
+ATTRIBUTE_TARGET("bmi2") void test(void) {
+  (void)_pext_u32(0, 0);
+}
+#endif
 #endif
 
 #if defined(NEON)
 #include <arm_neon.h>
 
 void test(void) {
-  uint64x2_t v = vmovq_n_u64(0);
-  (void)v;
+  (void)vmovq_n_u64(0);
 }
 #endif
 
@@ -36,8 +38,7 @@ void test(void) {
 #include <nmmintrin.h>
 
 ATTRIBUTE_TARGET("popcnt") void test(void) {
-  unsigned long long v = _mm_popcnt_u64(0);
-  (void)v;
+  (void)_mm_popcnt_u64(0);
 }
 #endif
 
