@@ -12,8 +12,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef uint64_t bitstream_value_t;
-
 typedef struct {
   union {
     uint8_t* w;
@@ -22,7 +20,11 @@ typedef struct {
   size_t position;
 } bitstream_t;
 
-bitstream_value_t bitstream_get_bits(bitstream_t* bs, unsigned int num_bits);
-void bitstream_put_bits(bitstream_t* bs, bitstream_value_t value, unsigned int num_bits);
+uint64_t bitstream_get_bits(bitstream_t* bs, unsigned int num_bits);
+uint8_t bitstream_get_bits_8(bitstream_t* bs, unsigned int num_bits);
+uint32_t bitstream_get_bits_32(bitstream_t* bs, unsigned int num_bits);
+void bitstream_put_bits(bitstream_t* bs, uint64_t value, unsigned int num_bits);
+void bitstream_put_bits_8(bitstream_t* bs, uint8_t value, unsigned int num_bits);
+void bitstream_put_bits_32(bitstream_t* bs, uint32_t value, unsigned int num_bits);
 
 #endif

@@ -61,7 +61,7 @@ static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
     // flip challenge bits according to spec
-    bitstream_put_bits(&bs, (challenge[i] >> 1) | ((challenge[i] & 1) << 1), 2);
+    bitstream_put_bits_8(&bs, (challenge[i] >> 1) | ((challenge[i] & 1) << 1), 2);
   }
 }
 
@@ -75,7 +75,7 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
   bs.position = 0;
 
   for (unsigned int i = 0; i < pp->num_rounds; ++i) {
-    uint8_t ch = bitstream_get_bits(&bs, 2);
+    const uint8_t ch = bitstream_get_bits_8(&bs, 2);
     if (ch == 3) {
       return false;
     }
@@ -271,20 +271,19 @@ static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const uint
 }
 
 static void uint64_to_bitstream_10(bitstream_t* bs, const uint64_t v) {
-  bitstream_put_bits(bs, v >> (64 - 30), 30);
+  bitstream_put_bits_32(bs, v >> (64 - 30), 30);
 }
 
 static uint64_t uint64_from_bitstream_10(bitstream_t* bs) {
-  return bitstream_get_bits(bs, 30) << (64 - 30);
+  return ((uint64_t)bitstream_get_bits_32(bs, 30)) << (64 - 30);
 }
 
-
 static void uint64_to_bitstream_1(bitstream_t* bs, const uint64_t v) {
-  bitstream_put_bits(bs, v >> (64 - 3), 3);
+  bitstream_put_bits_8(bs, v >> (64 - 3), 3);
 }
 
 static uint64_t uint64_from_bitstream_1(bitstream_t* bs) {
-  return bitstream_get_bits(bs, 3) << (64 - 3);
+  return ((uint64_t)bitstream_get_bits_8(bs, 3)) << (64 - 3);
 }
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
