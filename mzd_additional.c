@@ -87,17 +87,17 @@ mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) {
   unsigned char* buffer = aligned_alloc(32, (mzd_local_t_size + buffer_size + 31) & ~31);
 
   mzd_local_t* A = (mzd_local_t*)buffer;
-  buffer += mzd_local_t_size;
-
-  if (clear) {
-    memset(buffer, 0, buffer_size);
-  }
 
   // assign in order
   A->nrows     = r;
   A->ncols     = c;
   A->width     = width;
   A->rowstride = rowstride;
+
+  if (clear) {
+    buffer += mzd_local_t_size;
+    memset(buffer, 0, buffer_size);
+  }
 
   return A;
 }
@@ -117,20 +117,18 @@ void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_
 
   for (size_t s = 0; s < n; ++s, full_buffer += size_per_elem) {
     unsigned char* buffer = full_buffer;
-    mzd_local_t* A        = (mzd_local_t*)buffer;
-    dst[s]                = A;
-
-    buffer += mzd_local_t_size;
-
-    if (clear) {
-      memset(buffer, 0, buffer_size);
-    }
+    mzd_local_t* A        = dst[s] = (mzd_local_t*)buffer;
 
     // assign in order
     A->nrows     = r;
     A->ncols     = c;
     A->width     = width;
     A->rowstride = rowstride;
+
+    if (clear) {
+      buffer += mzd_local_t_size;
+      memset(buffer, 0, buffer_size);
+    }
   }
 }
 
