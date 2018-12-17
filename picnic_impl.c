@@ -286,7 +286,7 @@ static uint64_t uint64_from_bitstream_1(bitstream_t* bs) {
 }
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
-                          unsigned int idx) {
+                          const unsigned int idx) {
   const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
@@ -306,7 +306,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
 }
 
 static void decompress_view(view_t* views, const picnic_instance_t* pp, const uint8_t* src,
-                            unsigned int idx) {
+                            const unsigned int idx) {
   const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
@@ -326,7 +326,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
 }
 
 static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, const uint8_t* src,
-                                   unsigned int idx) {
+                                   const unsigned int idx) {
   const size_t num_views = pp->lowmc->r;
 
   bitstream_t bs;
@@ -350,7 +350,7 @@ static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, co
  * Compute commitment to a view.
  */
 static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round,
-                            unsigned int vidx) {
+                            const unsigned int vidx) {
   const size_t hashlen = pp->digest_size;
 
   hash_context ctx;
@@ -1136,15 +1136,13 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 #endif
 
 #if defined(MUL_M4RI)
+static bool lowmc_instances_initialized[6];
 static lowmc_t* const lowmc_instances[6] = {
 #else
 static const lowmc_t* const lowmc_instances[6] = {
 #endif
-    LOWMC_L1_OR_NULL, LOWMC_L3_OR_NULL, LOWMC_L5_OR_NULL,
+    LOWMC_L1_OR_NULL,   LOWMC_L3_OR_NULL,   LOWMC_L5_OR_NULL,
     LOWMC_L1_1_OR_NULL, LOWMC_L3_1_OR_NULL, LOWMC_L5_1_OR_NULL};
-#if defined(MUL_M4RI)
-static bool lowmc_instances_initialized[6];
-#endif
 
 #define NULL_FNS {NULL, NULL, NULL, NULL, NULL}
 
@@ -1220,17 +1218,17 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
   case Picnic_L1_1_FS:
   case Picnic_L1_1_UR:
     lowmc_instance = lowmc_get_instance(3);
-        break;
+    break;
 
   case Picnic_L3_1_FS:
   case Picnic_L3_1_UR:
     lowmc_instance = lowmc_get_instance(4);
-        break;
+    break;
 
   case Picnic_L5_1_FS:
   case Picnic_L5_1_UR:
     lowmc_instance = lowmc_get_instance(5);
-        break;
+    break;
 
   default:
     return false;
