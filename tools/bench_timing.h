@@ -24,7 +24,7 @@ struct timing_context_s {
 
   union {
     int fd;
-  };
+  } data;
 };
 
 bool timing_init(timing_context_t* ctx);

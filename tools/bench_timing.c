@@ -140,15 +140,15 @@ static bool armv8_init(timing_context_t* ctx) {
 #include <unistd.h>
 
 static void perf_close(timing_context_t* ctx) {
-  if (ctx->fd != -1) {
-    close(ctx->fd);
-    ctx->fd = -1;
+  if (ctx->data.fd != -1) {
+    close(ctx->data.fd);
+    ctx->data.fd = -1;
   }
 }
 
 static uint64_t perf_read(timing_context_t* ctx) {
   uint64_t tmp_time;
-  if (read(ctx->fd, &tmp_time, sizeof(tmp_time)) != sizeof(tmp_time)) {
+  if (read(ctx->data.fd, &tmp_time, sizeof(tmp_time)) != sizeof(tmp_time)) {
     return UINT64_MAX;
   }
 
@@ -186,9 +186,9 @@ static bool perf_init(timing_context_t* ctx) {
     return false;
   }
 
-  ctx->read  = perf_read;
-  ctx->close = perf_close;
-  ctx->fd    = fd;
+  ctx->read    = perf_read;
+  ctx->close   = perf_close;
+  ctx->data.fd = fd;
   return true;
 }
 #endif
