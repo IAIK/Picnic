@@ -181,7 +181,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #undef MUL_MC
 #define XOR_MC mzd_xor_sse
 #define MUL_MC SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
-#define FN_ATTR ATTR_TARGET("sse2")
+#define FN_ATTR ATTR_TARGET_SSE2
 
 // L1 using SSE2
 #undef XOR
@@ -415,7 +415,7 @@ static void sbox_layer_1_uint64(mzd_local_t* x) {
 #define XOR_MC mzd_xor_avx
 #define MUL_MC SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
 #define SHUFFLE mzd_shuffle_pext
-#define FN_ATTR ATTR_TARGET("avx2,bmi2")
+#define FN_ATTR ATTR_TARGET_AVX2
 
 // L1 using AVX2
 #undef XOR
