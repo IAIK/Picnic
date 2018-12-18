@@ -346,6 +346,7 @@ apply_base_options(bench)
 add_executable(bench_lowmc tools/bench_lowmc.c)
 target_link_libraries(bench_lowmc picnic_static bench_utils)
 apply_base_options(bench_lowmc)
+apply_opt_options(bench_lowmc)
 
 # example executable
 add_executable(example tools/example.c)
