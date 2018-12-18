@@ -22,6 +22,7 @@ if(M4RI_FOUND AND OPENSSL_FOUND)
     if(WITH_MUL_M4RI)
       target_compile_definitions("${target}_test" PRIVATE MUL_M4RI)
     endif()
+    target_compile_definitions("${target}_test" PRIVATE WITH_M4RI_UTILS)
 
     add_test(NAME ${target} COMMAND "${target}_test")
   endforeach(target)

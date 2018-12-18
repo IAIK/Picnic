@@ -61,18 +61,6 @@ void mzd_xor_neon_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 void mzd_xor_neon_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 
 /**
- * Compare two vectors for equality. Note that this version is optimized for
- * vectors with a multiple of sizeof(word) * 8 columns.
- *
- * \param first
- *          first vector
- * \param second
- *          second vector
- * \returns true if both vectors are equal, false otherwise.
- */
-bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
-
-/**
  * Compute v * A optimized for v being a vector.
  */
 void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;

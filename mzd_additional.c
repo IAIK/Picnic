@@ -937,27 +937,6 @@ void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
   mzd_addmul_v_uint64(c, v, At);
 }
 
-bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second) {
-  if (first == second) {
-    return true;
-  }
-  if (first->ncols != second->ncols || first->nrows != second->nrows) {
-    return false;
-  }
-
-  const unsigned int rows  = first->nrows;
-  const unsigned int width = first->width;
-
-  for (unsigned int r = 0; r < rows; ++r) {
-    if (memcmp(ASSUME_ALIGNED(CONST_ROW(first, r), 32), ASSUME_ALIGNED(CONST_ROW(second, r), 32),
-               sizeof(word) * width) != 0) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 #if defined(MUL_M4RI)
 static void xor_comb(const unsigned int len, word* Brow, mzd_local_t const* A,
                      unsigned int r_offset, unsigned comb) {

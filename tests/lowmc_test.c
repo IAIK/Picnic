@@ -18,6 +18,8 @@
 #include <inttypes.h>
 #include <stdint.h>
 
+#include "utils.h"
+
 static int lowmc_enc(const picnic_params_t param, const uint8_t* key, const uint8_t* plaintext,
                      const uint8_t* expected) {
   const picnic_instance_t* pp = picnic_instance_get(param);
