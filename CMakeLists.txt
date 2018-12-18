@@ -255,21 +255,7 @@ function(apply_base_options lib)
   endif()
 endfunction()
 
-function(apply_picnic_options lib)
-  apply_base_options(${lib})
-
-  set_target_properties(${lib} PROPERTIES C_VISIBILITY_PRESET hidden)
-  target_compile_definitions(${lib} PRIVATE
-                             WITH_LOWMC_128_128_20
-                             WITH_LOWMC_192_192_30
-                             WITH_LOWMC_256_256_38)
-  if(WITH_LOWMC_M1)
-    target_compile_definitions(${lib} PRIVATE
-                               WITH_LOWMC_M1
-                               WITH_LOWMC_128_128_182
-                               WITH_LOWMC_192_192_284
-                               WITH_LOWMC_256_256_363)
-  endif()
+function(apply_opt_options lib)
   if(WITH_SIMD_OPT)
     target_compile_definitions(${lib} PRIVATE WITH_OPT)
     if(CC_SUPPORTS_SSE2 AND WITH_SSE2)
@@ -284,6 +270,24 @@ function(apply_picnic_options lib)
     if(CC_SUPPORTS_NEON AND WITH_NEON)
       target_compile_definitions(${lib} PRIVATE WITH_NEON)
     endif()
+  endif()
+endfunction()
+
+function(apply_picnic_options lib)
+  apply_base_options(${lib})
+  apply_opt_options(${lib})
+
+  set_target_properties(${lib} PROPERTIES C_VISIBILITY_PRESET hidden)
+  target_compile_definitions(${lib} PRIVATE
+                             WITH_LOWMC_128_128_20
+                             WITH_LOWMC_192_192_30
+                             WITH_LOWMC_256_256_38)
+  if(WITH_LOWMC_M1)
+    target_compile_definitions(${lib} PRIVATE
+                               WITH_LOWMC_M1
+                               WITH_LOWMC_128_128_182
+                               WITH_LOWMC_192_192_284
+                               WITH_LOWMC_256_256_363)
   endif()
   if(WITH_EXTRA_RANDOMNESS)
     target_compile_definitions(${lib} PRIVATE WITH_EXTRA_RANDOMNESS)
