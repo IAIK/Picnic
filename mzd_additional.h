@@ -210,7 +210,7 @@ void mzd_shuffle_3(mzd_local_t* x, const word mask) ATTR_NONNULL;
 void mzd_shuffle_pext_30(mzd_local_t* x, const word mask) ATTR_NONNULL;
 void mzd_shuffle_pext_3(mzd_local_t* x, const word mask) ATTR_NONNULL;
 
-#define ROW(v, r) ((v)->rows + (v)->rowstride * (r))
+#define ROW(v, r) (&(v)->rows[(v)->rowstride * (r)])
 #define CONST_ROW(v, r) ((word const*)ROW(v, r))
 
 #define FIRST_ROW(v) ROW(v, 0)
