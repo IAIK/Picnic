@@ -70,20 +70,20 @@
   static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      unsigned int count) {                                         \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
-      *dst = (xor)(*dst, *src);                                                                    \
+      *dst = xor(*dst, *src);                                                                      \
     }                                                                                              \
   }
 
 #define apply_mask(name, type, xor, and, attributes)                                               \
   static inline type attributes name(const type lhs, const type rhs, const type mask) {            \
-    return (xor)(lhs, (and)(rhs, mask));                                                           \
+    return xor(lhs, and(rhs, mask));                                                               \
   }
 
 #define apply_mask_region(name, type, xor, and, attributes)                                        \
   static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      type const mask, unsigned int count) {                        \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
-      *dst = (xor)(*dst, (and)(*src, mask));                                                       \
+      *dst = xor(*dst, and(*src, mask));                                                           \
     }                                                                                              \
   }
 
@@ -94,7 +94,7 @@
     const type* l = lhs;                                                                           \
     const type* r = rhs;                                                                           \
     for (unsigned int i = count; i; --i, ++d, ++l, ++r) {                                          \
-      *d = (xor)(*l, *r);                                                                          \
+      *d = xor(*l, *r);                                                                            \
     }                                                                                              \
   }
 
@@ -106,31 +106,41 @@ typedef __m256i word256;
 #define _mm256_setr_m128i(v0, v1) _mm256_set_m128i((v1), (v0))
 #endif
 
+#define mm256_zero _mm256_setzero_si256()
+#define mm256_xor(l, r) _mm256_xor_si256(l, r)
+#define mm256_and(l, r) _mm256_and_si256(l, r)
 
-apply_region(mm256_xor_region, __m256i, _mm256_xor_si256, FN_ATTRIBUTES_AVX2);
-apply_mask_region(mm256_xor_mask_region, __m256i, _mm256_xor_si256, _mm256_and_si256,
-                  FN_ATTRIBUTES_AVX2);
-apply_mask(mm256_xor_mask, __m256i, _mm256_xor_si256, _mm256_and_si256, FN_ATTRIBUTES_AVX2_CONST);
+apply_region(mm256_xor_region, word256, mm256_xor, FN_ATTRIBUTES_AVX2);
+apply_mask_region(mm256_xor_mask_region, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2);
+apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST);
 #endif
 
 #if defined(WITH_SSE2)
 typedef __m128i word128;
 
-apply_region(mm128_xor_region, __m128i, _mm_xor_si128, FN_ATTRIBUTES_SSE2);
-apply_mask_region(mm128_xor_mask_region, __m128i, _mm_xor_si128, _mm_and_si128, FN_ATTRIBUTES_SSE2);
-apply_mask(mm128_xor_mask, __m128i, _mm_xor_si128, _mm_and_si128, FN_ATTRIBUTES_SSE2_CONST);
-apply_array(mm256_xor_sse, __m128i, _mm_xor_si128, 2, FN_ATTRIBUTES_SSE2);
-apply_array(mm256_and_sse, __m128i, _mm_and_si128, 2, FN_ATTRIBUTES_SSE2);
+#define mm128_zero _mm_setzero_si128()
+#define mm128_xor(l, r) _mm_xor_si128(l, r)
+#define mm128_and(l, r) _mm_and_si128(l, r)
+
+apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_SSE2);
+apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2);
+apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CONST);
+apply_array(mm256_xor_sse, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2);
+apply_array(mm256_and_sse, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2);
 #endif
 
 #if defined(WITH_NEON)
 typedef uint64x2_t word128;
 
-apply_region(mm128_xor_region, uint64x2_t, veorq_u64, FN_ATTRIBUTES_NEON);
-apply_mask_region(mm128_xor_mask_region, uint64x2_t, veorq_u64, vandq_u64, FN_ATTRIBUTES_NEON);
-apply_mask(mm128_xor_mask, uint64x2_t, veorq_u64, vandq_u64, FN_ATTRIBUTES_NEON_CONST);
-apply_array(mm256_xor, uint64x2_t, veorq_u64, 2, FN_ATTRIBUTES_NEON);
-apply_array(mm256_and, uint64x2_t, vandq_u64, 2, FN_ATTRIBUTES_NEON);
+#define mm128_zero vmovq_n_u64(0)
+#define mm128_xor(l, r) veorq_u64(l, r)
+#define mm128_and(l, r) vandq_u64(l, r)
+
+apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON);
+apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON);
+apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CONST);
+apply_array(mm256_xor, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON);
+apply_array(mm256_and, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
 #endif
 
 #if defined(_MSC_VER)
