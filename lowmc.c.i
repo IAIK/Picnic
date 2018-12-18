@@ -9,7 +9,7 @@
 
 #if defined(LOWMC_INSTANCE_10)
 #define M_FIXED_10
-#define SBOX sbox_layer_10_uint64
+#define SBOX(x) sbox_layer_10_uint64(&FIRST_ROW(x)[(LOWMC_N / (sizeof(word) * 8)) - 1])
 #define N_LOWMC CONCAT(LOWMC, 10)
 #define MUL_R MUL_R_10
 #define MUL_Z MUL_Z_10
@@ -37,7 +37,7 @@
 
 #if defined(WITH_LOWMC_M1) && defined(LOWMC_INSTANCE_1)
 #define M_FIXED_1
-#define SBOX sbox_layer_1_uint64
+#define SBOX(x) sbox_layer_1_uint64(&FIRST_ROW(x)[(LOWMC_N / (sizeof(word) * 8)) - 1])
 #define N_LOWMC CONCAT(LOWMC, 1)
 #define MUL_R MUL_R_1
 #define MUL_Z MUL_Z_1

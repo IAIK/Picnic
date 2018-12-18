@@ -44,9 +44,8 @@ static uint64_t sbox_layer_10_bitsliced_uint64(uint64_t in) {
 /**
  * S-box for m = 10
  */
-static void sbox_layer_10_uint64(mzd_local_t* x) {
-  uint64_t* d = &FIRST_ROW(x)[x->width - 1];
-  *d          = sbox_layer_10_bitsliced_uint64(*d);
+static void sbox_layer_10_uint64(uint64_t* d) {
+  *d = sbox_layer_10_bitsliced_uint64(*d);
 }
 
 #if defined(WITH_LOWMC_M1)
@@ -69,9 +68,8 @@ static uint64_t sbox_layer_1_bitsliced_uint64(uint64_t in) {
 /**
  * S-box for m = 1
  */
-static void sbox_layer_1_uint64(mzd_local_t* x) {
-  uint64_t* d = &FIRST_ROW(x)[x->width - 1];
-  *d          = sbox_layer_1_bitsliced_uint64(*d);
+static void sbox_layer_1_uint64(uint64_t* d) {
+  *d = sbox_layer_1_bitsliced_uint64(*d);
 }
 #endif
 
