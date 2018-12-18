@@ -35,13 +35,11 @@ static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t 
 #include <nmmintrin.h>
 
 #if !defined(__x86_64__) && !defined(_M_X64)
-ATTR_TARGET("popcnt") ATTR_CONST
-static inline uint64_t parity64_popcnt(uint64_t in) {
+ATTR_TARGET("popcnt") ATTR_CONST static inline uint64_t parity64_popcnt(uint64_t in) {
   return (_mm_popcnt_u32(in >> 32) ^ _mm_popcnt_u32(in)) & 0x1;
 }
 #else
-ATTR_TARGET("popcnt") ATTR_CONST
-static inline uint64_t parity64_popcnt(uint64_t in) {
+ATTR_TARGET("popcnt") ATTR_CONST static inline uint64_t parity64_popcnt(uint64_t in) {
   return _mm_popcnt_u64(in) & 0x1;
 }
 #endif
@@ -251,11 +249,6 @@ void mzd_xor_uint64(mzd_local_t* res, mzd_local_t const* first, mzd_local_t cons
   while (width--) {
     *resptr++ = *firstptr++ ^ *secondptr++;
   }
-}
-
-void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
-  mzd_local_clear(c);
-  mzd_addmul_v_uint64(c, v, At);
 }
 
 void mzd_mul_v_parity_uint64_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
@@ -937,6 +930,11 @@ void mzd_addmul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
       }
     }
   }
+}
+
+void mzd_mul_v_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  mzd_local_clear(c);
+  mzd_addmul_v_uint64(c, v, At);
 }
 
 bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second) {
