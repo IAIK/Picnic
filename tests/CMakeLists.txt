@@ -20,7 +20,7 @@ if(M4RI_FOUND AND OPENSSL_FOUND)
       target_compile_options("${target}_test" PRIVATE "/MT$<$<CONFIG:Debug>:d>")
     endif()
     if(WITH_MUL_M4RI)
-      target_compile_definitions(${lib} PRIVATE MUL_M4RI)
+      target_compile_definitions("${target}_test" PRIVATE MUL_M4RI)
     endif()
 
     add_test(NAME ${target} COMMAND "${target}_test")
