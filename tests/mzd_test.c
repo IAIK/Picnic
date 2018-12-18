@@ -210,10 +210,6 @@ static int test_mzd_mul_avx_256(void) {
   return test_mzd_mul_f("mul avx 256", 256, 256, mzd_mul_v_avx_256, false);
 }
 
-static int test_mzd_addmul_avx(void) {
-  return test_mzd_mul_f("addmul avx", 192, 192, mzd_addmul_v_avx, true);
-}
-
 static int test_mzd_addmul_avx_128(void) {
   return test_mzd_mul_f("addmul avx 128", 128, 128, mzd_addmul_v_avx_128, true);
 }
@@ -276,10 +272,6 @@ static int test_mzd_mul_sse_192(void) {
 
 static int test_mzd_mul_sse_256(void) {
   return test_mzd_mul_f("mul sse 256", 256, 256, mzd_mul_v_sse_256, false);
-}
-
-static int test_mzd_addmul_sse(void) {
-  return test_mzd_mul_f("addmul sse", 192, 192, mzd_addmul_v_sse, true);
 }
 
 static int test_mzd_addmul_sse_128(void) {
@@ -346,10 +338,6 @@ static int test_mzd_mul_neon_256(void) {
   return test_mzd_mul_f("mul neon 256", 256, 256, mzd_mul_v_neon_256, false);
 }
 
-static int test_mzd_addmul_neon(void) {
-  return test_mzd_mul_f("addmul neon", 192, 192, mzd_addmul_v_neon, true);
-}
-
 static int test_mzd_addmul_neon_128(void) {
   return test_mzd_mul_f("addmul neon 128", 128, 128, mzd_addmul_v_neon_128, true);
 }
@@ -368,31 +356,27 @@ static int test_mzd_mull_neon(void) {
 }
 
 static int test_mzd_mull_neon_128(void) {
-  return test_mzd_mul_l_f("mull neon 128", 128, 128, mzd_mul_vl_neon /* _128 */, false);
+  return test_mzd_mul_l_f("mull neon 128", 128, 128, mzd_mul_vl_neon_128, false);
 }
 
 static int test_mzd_mull_neon_192(void) {
-  return test_mzd_mul_l_f("mull neon 192", 192, 192, mzd_mul_vl_neon /* _192 */, false);
+  return test_mzd_mul_l_f("mull neon 192", 192, 192, mzd_mul_vl_neon_192, false);
 }
 
 static int test_mzd_mull_neon_256(void) {
-  return test_mzd_mul_l_f("mull neon 256", 256, 256, mzd_mul_vl_neon /* _256 */, false);
-}
-
-static int test_mzd_addmull_neon(void) {
-  return test_mzd_mul_l_f("addmull neon", 192, 192, mzd_addmul_vl_neon, true);
+  return test_mzd_mul_l_f("mull neon 256", 256, 256, mzd_mul_vl_neon_256, false);
 }
 
 static int test_mzd_addmull_neon_128(void) {
-  return test_mzd_mul_l_f("addmull neon 128", 128, 128, mzd_addmul_vl_neon /* _128 */, true);
+  return test_mzd_mul_l_f("addmull neon 128", 128, 128, mzd_addmul_vl_neon_128, true);
 }
 
 static int test_mzd_addmull_neon_192(void) {
-  return test_mzd_mul_l_f("addmull neon 192", 192, 192, mzd_addmul_vl_neon /* _192 */, true);
+  return test_mzd_mul_l_f("addmull neon 192", 192, 192, mzd_addmul_vl_neon_192, true);
 }
 
 static int test_mzd_addmull_neon_256(void) {
-  return test_mzd_mul_l_f("addmull neon 256", 256, 256, mzd_addmul_vl_neon /*_256 */, true);
+  return test_mzd_mul_l_f("addmull neon 256", 256, 256, mzd_addmul_vl_neon_256, true);
 }
 #endif
 #endif
@@ -421,7 +405,6 @@ int main(void) {
     ret |= test_mzd_mul_avx_128();
     ret |= test_mzd_mul_avx_192();
     ret |= test_mzd_mul_avx_256();
-    ret |= test_mzd_addmul_avx();
     ret |= test_mzd_addmul_avx_128();
     ret |= test_mzd_addmul_avx_192();
     ret |= test_mzd_addmul_avx_256();
@@ -443,7 +426,6 @@ int main(void) {
     ret |= test_mzd_mul_sse_128();
     ret |= test_mzd_mul_sse_192();
     ret |= test_mzd_mul_sse_256();
-    ret |= test_mzd_addmul_sse();
     ret |= test_mzd_addmul_sse_128();
     ret |= test_mzd_addmul_sse_192();
     ret |= test_mzd_addmul_sse_256();
@@ -465,7 +447,6 @@ int main(void) {
     ret |= test_mzd_mul_neon_128();
     ret |= test_mzd_mul_neon_192();
     ret |= test_mzd_mul_neon_256();
-    ret |= test_mzd_addmul_neon();
     ret |= test_mzd_addmul_neon_128();
     ret |= test_mzd_addmul_neon_192();
     ret |= test_mzd_addmul_neon_256();
@@ -474,7 +455,6 @@ int main(void) {
     ret |= test_mzd_mull_neon_128();
     ret |= test_mzd_mull_neon_192();
     ret |= test_mzd_mull_neon_256();
-    ret |= test_mzd_addmull_neon();
     ret |= test_mzd_addmull_neon_128();
     ret |= test_mzd_addmull_neon_192();
     ret |= test_mzd_addmull_neon_256();
