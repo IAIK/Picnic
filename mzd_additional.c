@@ -137,7 +137,7 @@ void mzd_local_copy(mzd_local_t* dst, mzd_local_t const* src) {
          src->nrows * sizeof(word) * src->rowstride);
 }
 
-void mzd_local_clear(mzd_local_t* c) {
+static void mzd_local_clear(mzd_local_t* c) {
   memset(ASSUME_ALIGNED(FIRST_ROW(c), 32), 0, c->nrows * sizeof(word) * c->rowstride);
 }
 
