@@ -7,6 +7,10 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION) && !defined(M_FIXED_1) && !defined(M_FIXED_10)
+#error "OLLE is only implemented for 1 or 10 Sboxes"
+#endif
+
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
@@ -23,8 +27,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   mzd_local_t* nl_part = mzd_local_init_ex(1, LOWMC_R * 32, false);
 #elif defined(M_FIXED_1)
   mzd_local_t* nl_part = mzd_local_init_ex(1, ((LOWMC_R + 20) / 21) * 64, false);
-#else
-  #error "RLL only works with 1 or 10 Sboxes atm"
 #endif
 
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
@@ -49,8 +51,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #elif defined(M_FIXED_1)
     const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
     FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
 #endif
 
     MUL_Z(y, x, CONCAT(round->z, matrix_postfix));
@@ -61,8 +61,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
 #elif defined(M_FIXED_1)
     FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
 #endif
     XOR(x, y, x);
 //    mzd_local_t* t = x;
@@ -83,8 +81,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #elif defined(M_FIXED_1)
   const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
   FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
 #endif
   MUL(y,x,CONCAT(LOWMC_INSTANCE.zr, matrix_postfix));
   mzd_local_t* t = x;
@@ -111,8 +107,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #elif defined(M_FIXED_1)
     const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
     FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
-#else
-#error "RLL only works with 1 or 10 Sboxes atm"
 #endif
     MUL(y, x, CONCAT(round->l, matrix_postfix));
     // swap x and y
