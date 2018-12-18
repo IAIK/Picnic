@@ -783,12 +783,6 @@ ATTR_CONST static inline __m256i mm256_compute_mask_2(const word idx, const size
 }
 
 ATTR_TARGET_AVX2
-void mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  mzd_local_clear(c);
-  mzd_addmul_v_avx(c, v, A);
-}
-
-ATTR_TARGET_AVX2
 void mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   const unsigned int width      = v->width;
@@ -806,6 +800,12 @@ void mzd_addmul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A
       mm256_xor_mask_region(mcptr, mAptr, mm256_compute_mask(idx, 0), len);
     }
   }
+}
+
+ATTR_TARGET_AVX2
+void mzd_mul_v_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  mzd_local_clear(c);
+  mzd_addmul_v_avx(c, v, A);
 }
 
 ATTR_TARGET_AVX2
@@ -935,11 +935,6 @@ static inline uint64x2_t mm128_compute_mask(const word idx, size_t bit) {
   return vdupq_n_u64(-((idx >> bit) & 1));
 }
 
-void mzd_mul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  mzd_local_clear(c);
-  mzd_addmul_v_neon(c, v, A);
-}
-
 void mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   const unsigned int width      = v->width;
   const unsigned int rowstride  = A->rowstride;
@@ -958,6 +953,11 @@ void mzd_addmul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
       mm128_xor_mask_region(mcptr, mAptr, mm128_compute_mask(idx, 0), len);
     }
   }
+}
+
+void mzd_mul_v_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  mzd_local_clear(c);
+  mzd_addmul_v_neon(c, v, A);
 }
 
 void mzd_mul_v_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
@@ -1156,12 +1156,6 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2)
 ATTR_TARGET_SSE2
-void mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  mzd_local_clear(c);
-  mzd_addmul_vl_sse(c, v, A);
-}
-
-ATTR_TARGET_SSE2
 void mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   const unsigned int width      = v->width;
@@ -1180,6 +1174,12 @@ void mzd_addmul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
       mm128_xor_region(mcptr, mAptr + comb * mrowstride, len);
     }
   }
+}
+
+ATTR_TARGET_SSE2
+void mzd_mul_vl_sse(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  mzd_local_clear(c);
+  mzd_addmul_vl_sse(c, v, A);
 }
 
 ATTR_TARGET_SSE2
@@ -1460,12 +1460,6 @@ void mzd_addmul_vl_avx_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 }
 
 ATTR_TARGET_AVX2
-void mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  mzd_local_clear(c);
-  mzd_addmul_vl_avx(c, v, A);
-}
-
-ATTR_TARGET_AVX2
 void mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   const unsigned int width      = v->width;
   const unsigned int rowstride  = A->rowstride;
@@ -1484,6 +1478,12 @@ void mzd_addmul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* 
       mm256_xor_region(mcptr, mAptr + comb * mrowstride, len);
     }
   }
+}
+
+ATTR_TARGET_AVX2
+void mzd_mul_vl_avx(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  mzd_local_clear(c);
+  mzd_addmul_vl_avx(c, v, A);
 }
 #endif
 
@@ -1525,11 +1525,6 @@ void mzd_addmul_vl_neon_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
   *mcptr = mc;
 }
 
-void mzd_mul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  mzd_local_clear(c);
-  mzd_addmul_vl_neon(c, v, A);
-}
-
 void mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   const unsigned int width      = v->width;
@@ -1549,13 +1544,13 @@ void mzd_addmul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
     }
   }
 }
-#endif
-#endif
 
-void mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+void mzd_mul_vl_neon(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   mzd_local_clear(c);
-  mzd_addmul_vl_uint64(c, v, A);
+  mzd_addmul_vl_neon(c, v, A);
 }
+#endif
+#endif
 
 void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   const unsigned int len   = A->width;
@@ -1579,6 +1574,11 @@ void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
       add += 256;
     }
   }
+}
+
+void mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  mzd_local_clear(c);
+  mzd_addmul_vl_uint64(c, v, A);
 }
 #endif
 
