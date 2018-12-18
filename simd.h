@@ -99,6 +99,8 @@
   }
 
 #if defined(WITH_AVX2)
+typedef __m256i word256;
+
 #if defined(__GNUC__) || defined(__clang__)
 #define _mm256_set_m128i(v0, v1) _mm256_insertf128_si256(_mm256_castsi128_si256(v1), (v0), 1)
 #define _mm256_setr_m128i(v0, v1) _mm256_set_m128i((v1), (v0))
@@ -112,6 +114,7 @@ apply_mask(mm256_xor_mask, __m256i, _mm256_xor_si256, _mm256_and_si256, FN_ATTRI
 #endif
 
 #if defined(WITH_SSE2)
+typedef __m128i word128;
 
 apply_region(mm128_xor_region, __m128i, _mm_xor_si128, FN_ATTRIBUTES_SSE2);
 apply_mask_region(mm128_xor_mask_region, __m128i, _mm_xor_si128, _mm_and_si128, FN_ATTRIBUTES_SSE2);
@@ -121,6 +124,8 @@ apply_array(mm256_and_sse, __m128i, _mm_and_si128, 2, FN_ATTRIBUTES_SSE2);
 #endif
 
 #if defined(WITH_NEON)
+typedef uint64x2_t word128;
+
 apply_region(mm128_xor_region, uint64x2_t, veorq_u64, FN_ATTRIBUTES_NEON);
 apply_mask_region(mm128_xor_mask_region, uint64x2_t, veorq_u64, vandq_u64, FN_ATTRIBUTES_NEON);
 apply_mask(mm128_xor_mask, uint64x2_t, veorq_u64, vandq_u64, FN_ATTRIBUTES_NEON_CONST);
