@@ -148,37 +148,37 @@ static void mzd_local_clear(mzd_local_t* c) {
 }
 
 #if defined(WITH_OPT)
-#if defined(WITH_SSE2)
-ATTR_TARGET_SSE2
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+ATTR_TARGET_S128
 void mzd_xor_s128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   unsigned int width        = first->rowstride;
-  __m128i* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(__m128i));
-  __m128i const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(__m128i));
-  __m128i const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(__m128i));
+  word128* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(word128));
+  word128 const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(word128));
+  word128 const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(word128));
 
   do {
-    *mresptr++ = _mm_xor_si128(*mfirstptr++, *msecondptr++);
-    width -= sizeof(__m128i) / sizeof(word);
+    *mresptr++ = mm128_xor(*mfirstptr++, *msecondptr++);
+    width -= sizeof(word128) / sizeof(word);
   } while (width);
 }
 
-ATTR_TARGET_SSE2
+ATTR_TARGET_S128
 void mzd_xor_s128_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  __m128i* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(__m128i));
-  __m128i const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(__m128i));
-  __m128i const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(__m128i));
+  word128* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(word128));
+  word128 const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(word128));
+  word128 const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(word128));
 
-  *mresptr = _mm_xor_si128(*mfirstptr, *msecondptr);
+  *mresptr = mm128_xor(*mfirstptr, *msecondptr);
 }
 
-ATTR_TARGET_SSE2
+ATTR_TARGET_S128
 void mzd_xor_s128_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  __m128i* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(__m128i));
-  __m128i const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(__m128i));
-  __m128i const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(__m128i));
+  word128* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(word128));
+  word128 const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(word128));
+  word128 const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(word128));
 
-  mresptr[0] = _mm_xor_si128(mfirstptr[0], msecondptr[0]);
-  mresptr[1] = _mm_xor_si128(mfirstptr[1], msecondptr[1]);
+  mresptr[0] = mm128_xor(mfirstptr[0], msecondptr[0]);
+  mresptr[1] = mm128_xor(mfirstptr[1], msecondptr[1]);
 }
 #endif
 
@@ -211,37 +211,6 @@ void mzd_xor_s256_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
   __m256i const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(__m256i));
 
   *mresptr = _mm256_xor_si256(*mfirstptr, *msecondptr);
-}
-#endif
-
-#if defined(WITH_NEON)
-void mzd_xor_s128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  unsigned int width           = first->rowstride;
-  uint64x2_t* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(uint64x2_t));
-  uint64x2_t const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(uint64x2_t));
-  uint64x2_t const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(uint64x2_t));
-
-  do {
-    *mresptr++ = veorq_u64(*mfirstptr++, *msecondptr++);
-    width -= sizeof(uint64x2_t) / sizeof(word);
-  } while (width);
-}
-
-void mzd_xor_s128_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  uint64x2_t* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(uint64x2_t));
-  uint64x2_t const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(uint64x2_t));
-  uint64x2_t const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(uint64x2_t));
-
-  *mresptr = veorq_u64(*mfirstptr, *msecondptr);
-}
-
-void mzd_xor_s128_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  uint64x2_t* mresptr          = ASSUME_ALIGNED(FIRST_ROW(res), alignof(uint64x2_t));
-  uint64x2_t const* mfirstptr  = ASSUME_ALIGNED(CONST_FIRST_ROW(first), alignof(uint64x2_t));
-  uint64x2_t const* msecondptr = ASSUME_ALIGNED(CONST_FIRST_ROW(second), alignof(uint64x2_t));
-
-  mresptr[0] = veorq_u64(mfirstptr[0], msecondptr[0]);
-  mresptr[1] = veorq_u64(mfirstptr[1], msecondptr[1]);
 }
 #endif
 #endif
