@@ -344,20 +344,22 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef LOWMC_INSTANCE_1
 
 #if defined(WITH_OPT)
-#if defined(WITH_SSE2)
+#if defined(WITH_SSE2) || defined(WITH_NEON)
 #undef XOR_MC
 #undef MUL_MC
-#define XOR_MC mzd_xor_sse
-#define MUL_MC SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
+#define XOR_MC mzd_xor_s128
+#define MUL_MC SELECT_V_VL(mzd_mul_v_s128, mzd_mul_vl_s128)
+#if defined(WITH_SSE2)
 #define FN_ATTR ATTR_TARGET_SSE2
+#endif
 
-// L1 using SSE2
+// L1 using SSE2/NEON
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_sse_128
-#define MUL SELECT_V_VL(mzd_mul_v_sse_128, mzd_mul_vl_sse_128)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128)
+#define XOR mzd_xor_s128_128
+#define MUL SELECT_V_VL(mzd_mul_v_s128_128, mzd_mul_vl_s128_128)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_128, mzd_addmul_vl_s128_128)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -383,22 +385,22 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_sse_3_128
-#define MUL_R_10 mzd_addmul_v_sse_30_128
+#define MUL_R_1 mzd_addmul_v_s128_3_128
+#define MUL_R_10 mzd_addmul_v_s128_30_128
 #define MUL_Z_1 mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
-#define SIGN mpc_lowmc_call_sse_128
-#define VERIFY mpc_lowmc_call_verify_sse_128
+#define SIGN mpc_lowmc_call_s128_128
+#define VERIFY mpc_lowmc_call_verify_s128_128
 #include "mpc_lowmc.c.i"
 
-// L3 using SSE2
+// L3 using SSE2/NEON
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_sse_256
-#define MUL SELECT_V_VL(mzd_mul_v_sse_192, mzd_mul_vl_sse_192)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_192, mzd_addmul_vl_sse_192)
+#define XOR mzd_xor_s128_256
+#define MUL SELECT_V_VL(mzd_mul_v_s128_192, mzd_mul_vl_s128_192)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_192, mzd_addmul_vl_s128_192)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -424,20 +426,20 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_sse_3_192
-#define MUL_R_10 mzd_addmul_v_sse_30_192
+#define MUL_R_1 mzd_addmul_v_s128_3_192
+#define MUL_R_10 mzd_addmul_v_s128_30_192
 #define MUL_Z_1 mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
-#define SIGN mpc_lowmc_call_sse_192
-#define VERIFY mpc_lowmc_call_verify_sse_192
+#define SIGN mpc_lowmc_call_s128_192
+#define VERIFY mpc_lowmc_call_verify_s128_192
 #include "mpc_lowmc.c.i"
 
-// L5 using SSE2
+// L5 using SSE2/NEON
 #undef MUL
 #undef ADDMUL
-#define MUL SELECT_V_VL(mzd_mul_v_sse_256, mzd_mul_vl_sse_256)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_256, mzd_addmul_vl_sse_256)
+#define MUL SELECT_V_VL(mzd_mul_v_s128_256, mzd_mul_vl_s128_256)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_256, mzd_addmul_vl_s128_256)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -458,13 +460,13 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_sse_3_256
-#define MUL_R_10 mzd_addmul_v_sse_30_256
+#define MUL_R_1 mzd_addmul_v_s128_3_256
+#define MUL_R_10 mzd_addmul_v_s128_30_256
 #define MUL_Z_1 mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
-#define SIGN mpc_lowmc_call_sse_256
-#define VERIFY mpc_lowmc_call_verify_sse_256
+#define SIGN mpc_lowmc_call_s128_256
+#define VERIFY mpc_lowmc_call_verify_s128_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -473,17 +475,17 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #if defined(WITH_SSE2) && defined(WITH_POPCNT)
 #undef XOR_MC
 #undef MUL_MC
-#define XOR_MC mzd_xor_sse
-#define MUL_MC SELECT_V_VL(mzd_mul_v_sse, mzd_mul_vl_sse)
+#define XOR_MC mzd_xor_s128
+#define MUL_MC SELECT_V_VL(mzd_mul_v_s128, mzd_mul_vl_s128)
 #define FN_ATTR ATTR_TARGET("sse2,popcnt")
 
 // L1 using SSE2
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_sse_128
-#define MUL SELECT_V_VL(mzd_mul_v_sse_128, mzd_mul_vl_sse_128)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_128, mzd_addmul_vl_sse_128)
+#define XOR mzd_xor_s128_128
+#define MUL SELECT_V_VL(mzd_mul_v_s128_128, mzd_mul_vl_s128_128)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_128, mzd_addmul_vl_s128_128)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -509,22 +511,22 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_sse_3_128
-#define MUL_R_10 mzd_addmul_v_sse_30_128
+#define MUL_R_1 mzd_addmul_v_s128_3_128
+#define MUL_R_10 mzd_addmul_v_s128_30_128
 #define MUL_Z_1 mzd_mul_v_parity_popcnt_128_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
 
-#define SIGN mpc_lowmc_call_sse_popcnt_128
-#define VERIFY mpc_lowmc_call_verify_sse_popcnt_128
+#define SIGN mpc_lowmc_call_s128_popcnt_128
+#define VERIFY mpc_lowmc_call_verify_s128_popcnt_128
 #include "mpc_lowmc.c.i"
 
 // L3 using SSE2
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_sse_256
-#define MUL SELECT_V_VL(mzd_mul_v_sse_192, mzd_mul_vl_sse_192)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_192, mzd_addmul_vl_sse_192)
+#define XOR mzd_xor_s128_256
+#define MUL SELECT_V_VL(mzd_mul_v_s128_192, mzd_mul_vl_s128_192)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_192, mzd_addmul_vl_s128_192)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -550,20 +552,20 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_sse_3_192
-#define MUL_R_10 mzd_addmul_v_sse_30_192
+#define MUL_R_1 mzd_addmul_v_s128_3_192
+#define MUL_R_10 mzd_addmul_v_s128_30_192
 #define MUL_Z_1 mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 
-#define SIGN mpc_lowmc_call_sse_popcnt_192
-#define VERIFY mpc_lowmc_call_verify_sse_popcnt_192
+#define SIGN mpc_lowmc_call_s128_popcnt_192
+#define VERIFY mpc_lowmc_call_verify_s128_popcnt_192
 #include "mpc_lowmc.c.i"
 
 // L5 using SSE2
 #undef MUL
 #undef ADDMUL
-#define MUL SELECT_V_VL(mzd_mul_v_sse_256, mzd_mul_vl_sse_256)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_sse_256, mzd_addmul_vl_sse_256)
+#define MUL SELECT_V_VL(mzd_mul_v_s128_256, mzd_mul_vl_s128_256)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_256, mzd_addmul_vl_s128_256)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -584,13 +586,13 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_sse_3_256
-#define MUL_R_10 mzd_addmul_v_sse_30_256
+#define MUL_R_1 mzd_addmul_v_s128_3_256
+#define MUL_R_10 mzd_addmul_v_s128_30_256
 #define MUL_Z_1 mzd_mul_v_parity_popcnt_256_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
 
-#define SIGN mpc_lowmc_call_sse_popcnt_256
-#define VERIFY mpc_lowmc_call_verify_sse_popcnt_256
+#define SIGN mpc_lowmc_call_s128_popcnt_256
+#define VERIFY mpc_lowmc_call_verify_s128_popcnt_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -600,8 +602,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef XOR_MC
 #undef MUL_MC
 #undef SHUFFLE
-#define XOR_MC mzd_xor_avx
-#define MUL_MC SELECT_V_VL(mzd_mul_v_avx, mzd_mul_vl_avx)
+#define XOR_MC mzd_xor_s256
+#define MUL_MC SELECT_V_VL(mzd_mul_v_s256, mzd_mul_vl_s256)
 #define FN_ATTR ATTR_TARGET_AVX2
 #define SHUFFLE mzd_shuffle_pext
 
@@ -609,9 +611,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_avx_128
-#define MUL SELECT_V_VL(mzd_mul_v_avx_128, mzd_mul_vl_avx_128)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128)
+#define XOR mzd_xor_s256_128
+#define MUL SELECT_V_VL(mzd_mul_v_s256_128, mzd_mul_vl_s256_128)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_128, mzd_addmul_vl_s256_128)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -637,22 +639,22 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_sse_3_128
-#define MUL_R_10 mzd_addmul_v_avx_30_128
+#define MUL_R_1 mzd_addmul_v_s128_3_128
+#define MUL_R_10 mzd_addmul_v_s256_30_128
 #define MUL_Z_1 mzd_mul_v_parity_uint64_128_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
 
-#define SIGN mpc_lowmc_call_avx_128
-#define VERIFY mpc_lowmc_call_verify_avx_128
+#define SIGN mpc_lowmc_call_s256_128
+#define VERIFY mpc_lowmc_call_verify_s256_128
 #include "mpc_lowmc.c.i"
 
 // L3 using AVX2
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_avx_256
-#define MUL SELECT_V_VL(mzd_mul_v_avx_192, mzd_mul_vl_avx_192)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192)
+#define XOR mzd_xor_s256_256
+#define MUL SELECT_V_VL(mzd_mul_v_s256_192, mzd_mul_vl_s256_192)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_192, mzd_addmul_vl_s256_192)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -678,20 +680,20 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_avx_3_192
-#define MUL_R_10 mzd_addmul_v_avx_30_192
+#define MUL_R_1 mzd_addmul_v_s256_3_192
+#define MUL_R_10 mzd_addmul_v_s256_30_192
 #define MUL_Z_1 mzd_mul_v_parity_uint64_192_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
 
-#define SIGN mpc_lowmc_call_avx_192
-#define VERIFY mpc_lowmc_call_verify_avx_192
+#define SIGN mpc_lowmc_call_s256_192
+#define VERIFY mpc_lowmc_call_verify_s256_192
 #include "mpc_lowmc.c.i"
 
 // L5 using AVX2
 #undef MUL
 #undef ADDMUL
-#define MUL SELECT_V_VL(mzd_mul_v_avx_256, mzd_mul_vl_avx_256)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256)
+#define MUL SELECT_V_VL(mzd_mul_v_s256_256, mzd_mul_vl_s256_256)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_256, mzd_addmul_vl_s256_256)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -712,13 +714,13 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_avx_3_256
-#define MUL_R_10 mzd_addmul_v_avx_30_256
+#define MUL_R_1 mzd_addmul_v_s256_3_256
+#define MUL_R_10 mzd_addmul_v_s256_30_256
 #define MUL_Z_1 mzd_mul_v_parity_uint64_256_3
 #define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
 
-#define SIGN mpc_lowmc_call_avx_256
-#define VERIFY mpc_lowmc_call_verify_avx_256
+#define SIGN mpc_lowmc_call_s256_256
+#define VERIFY mpc_lowmc_call_verify_s256_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -730,9 +732,9 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_avx_128
-#define MUL SELECT_V_VL(mzd_mul_v_avx_128, mzd_mul_vl_avx_128)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_128, mzd_addmul_vl_avx_128)
+#define XOR mzd_xor_s256_128
+#define MUL SELECT_V_VL(mzd_mul_v_s256_128, mzd_mul_vl_s256_128)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_128, mzd_addmul_vl_s256_128)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -758,22 +760,22 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_sse_3_128
-#define MUL_R_10 mzd_addmul_v_avx_30_128
+#define MUL_R_1 mzd_addmul_v_s128_3_128
+#define MUL_R_10 mzd_addmul_v_s256_30_128
 #define MUL_Z_1 mzd_mul_v_parity_popcnt_128_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
 
-#define SIGN mpc_lowmc_call_avx_popcnt_128
-#define VERIFY mpc_lowmc_call_verify_avx_popcnt_128
+#define SIGN mpc_lowmc_call_s256_popcnt_128
+#define VERIFY mpc_lowmc_call_verify_s256_popcnt_128
 #include "mpc_lowmc.c.i"
 
 // L3 using AVX2
 #undef XOR
 #undef MUL
 #undef ADDMUL
-#define XOR mzd_xor_avx_256
-#define MUL SELECT_V_VL(mzd_mul_v_avx_192, mzd_mul_vl_avx_192)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_192, mzd_addmul_vl_avx_192)
+#define XOR mzd_xor_s256_256
+#define MUL SELECT_V_VL(mzd_mul_v_s256_192, mzd_mul_vl_s256_192)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_192, mzd_addmul_vl_s256_192)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -799,20 +801,20 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_avx_3_192
-#define MUL_R_10 mzd_addmul_v_avx_30_192
+#define MUL_R_1 mzd_addmul_v_s256_3_192
+#define MUL_R_10 mzd_addmul_v_s256_30_192
 #define MUL_Z_1 mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 
-#define SIGN mpc_lowmc_call_avx_popcnt_192
-#define VERIFY mpc_lowmc_call_verify_avx_popcnt_192
+#define SIGN mpc_lowmc_call_s256_popcnt_192
+#define VERIFY mpc_lowmc_call_verify_s256_popcnt_192
 #include "mpc_lowmc.c.i"
 
 // L5 using AVX2
 #undef MUL
 #undef ADDMUL
-#define MUL SELECT_V_VL(mzd_mul_v_avx_256, mzd_mul_vl_avx_256)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_avx_256, mzd_addmul_vl_avx_256)
+#define MUL SELECT_V_VL(mzd_mul_v_s256_256, mzd_mul_vl_s256_256)
+#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_256, mzd_addmul_vl_s256_256)
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -833,13 +835,13 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_avx_3_256
-#define MUL_R_10 mzd_addmul_v_avx_30_256
+#define MUL_R_1 mzd_addmul_v_s256_3_256
+#define MUL_R_10 mzd_addmul_v_s256_30_256
 #define MUL_Z_1 mzd_mul_v_parity_popcnt_256_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
 
-#define SIGN mpc_lowmc_call_avx_popcnt_256
-#define VERIFY mpc_lowmc_call_verify_avx_popcnt_256
+#define SIGN mpc_lowmc_call_s256_popcnt_256
+#define VERIFY mpc_lowmc_call_verify_s256_popcnt_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -848,133 +850,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef SHUFFLE
 #define SHUFFLE mzd_shuffle
 #endif
-
-#if defined(WITH_NEON)
-#undef XOR_MC
-#undef MUL_MC
-#define XOR_MC mzd_xor_neon
-#define MUL_MC SELECT_V_VL(mzd_mul_v_neon, mzd_mul_vl_neon)
-
-// L1 using NEON
-#undef XOR
-#undef MUL
-#undef ADDMUL
-#define XOR mzd_xor_neon_128
-#define MUL SELECT_V_VL(mzd_mul_v_neon_128, mzd_mul_vl_neon_128)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_128, mzd_addmul_vl_neon_128)
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 lowmc_128_128_20
-#endif
-#if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 lowmc_128_128_182
-#endif
-#define LOWMC_N LOWMC_L1_N
-#define LOWMC_R_10 LOWMC_L1_R
-#define LOWMC_R_1 LOWMC_L1_1_R
-
-#undef SIGN_SBOX
-#undef VERIFY_SBOX
-#define SIGN_SBOX mpc_sbox_layer_bitsliced_128_neon
-#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_128_neon
-
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_neon_3_128
-#define MUL_R_10 mzd_addmul_v_neon_30_128
-#define MUL_Z_1 mzd_mul_v_parity_uint64_128_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
-
-#define SIGN mpc_lowmc_call_neon_128
-#define VERIFY mpc_lowmc_call_verify_neon_128
-#include "mpc_lowmc.c.i"
-
-// L3 using NEON
-#undef XOR
-#undef MUL
-#undef ADDMUL
-#define XOR mzd_xor_neon_256
-#define MUL SELECT_V_VL(mzd_mul_v_neon_192, mzd_mul_vl_neon_192)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_192, mzd_addmul_vl_neon_192)
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 lowmc_192_192_30
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 lowmc_192_192_284
-#endif
-#define LOWMC_N LOWMC_L3_N
-#define LOWMC_R_10 LOWMC_L3_R
-#define LOWMC_R_1 LOWMC_L3_1_R
-
-#undef SIGN_SBOX
-#undef VERIFY_SBOX
-#define SIGN_SBOX mpc_sbox_layer_bitsliced_256_neon
-#define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify_256_neon
-
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_neon_3_192
-#define MUL_R_10 mzd_addmul_v_neon_30_192
-#define MUL_Z_1 mzd_mul_v_parity_uint64_192_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
-
-#define SIGN mpc_lowmc_call_neon_192
-#define VERIFY mpc_lowmc_call_verify_neon_192
-#include "mpc_lowmc.c.i"
-
-// L5 using NEON
-#undef MUL
-#undef ADDMUL
-#define MUL SELECT_V_VL(mzd_mul_v_neon_256, mzd_mul_vl_neon_256)
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_neon_256, mzd_addmul_vl_neon_256)
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 lowmc_256_256_38
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 lowmc_256_256_363
-#endif
-#define LOWMC_N LOWMC_L5_N
-#define LOWMC_R_10 LOWMC_L5_R
-#define LOWMC_R_1 LOWMC_L5_1_R
-
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#define MUL_R_1 mzd_addmul_v_neon_3_256
-#define MUL_R_10 mzd_addmul_v_neon_30_256
-#define MUL_Z_1 mzd_mul_v_parity_uint64_256_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
-
-#define SIGN mpc_lowmc_call_neon_256
-#define VERIFY mpc_lowmc_call_verify_neon_256
-#include "mpc_lowmc.c.i"
-
-#endif
 #endif
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {
+  ASSUME(lowmc->m == 10 || lowmc->m == 1);
+  ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
@@ -984,15 +865,15 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
         switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
         case 128:
-          return mpc_lowmc_call_avx_popcnt_128_10;
+          return mpc_lowmc_call_s256_popcnt_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
         case 192:
-          return mpc_lowmc_call_avx_popcnt_192_10;
+          return mpc_lowmc_call_s256_popcnt_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
         case 256:
-          return mpc_lowmc_call_avx_popcnt_256_10;
+          return mpc_lowmc_call_s256_popcnt_256_10;
 #endif
         }
       }
@@ -1000,15 +881,15 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_avx_128_10;
+        return mpc_lowmc_call_s256_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_avx_192_10;
+        return mpc_lowmc_call_s256_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_avx_256_10;
+        return mpc_lowmc_call_s256_256_10;
 #endif
       }
     }
@@ -1019,15 +900,15 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
         switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
         case 128:
-          return mpc_lowmc_call_avx_popcnt_128_1;
+          return mpc_lowmc_call_s256_popcnt_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
         case 192:
-          return mpc_lowmc_call_avx_popcnt_192_1;
+          return mpc_lowmc_call_s256_popcnt_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
         case 256:
-          return mpc_lowmc_call_avx_popcnt_256_1;
+          return mpc_lowmc_call_s256_popcnt_256_1;
 #endif
         }
       }
@@ -1035,38 +916,38 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_avx_128_1;
+        return mpc_lowmc_call_s256_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_avx_192_1;
+        return mpc_lowmc_call_s256_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_avx_256_1;
+        return mpc_lowmc_call_s256_256_1;
 #endif
       }
     }
 #endif
   }
 #endif
-#if defined(WITH_SSE2)
-  if (CPU_SUPPORTS_SSE2) {
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+  if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
         case 128:
-          return mpc_lowmc_call_sse_popcnt_128_10;
+          return mpc_lowmc_call_s128_popcnt_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
         case 192:
-          return mpc_lowmc_call_sse_popcnt_192_10;
+          return mpc_lowmc_call_s128_popcnt_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
         case 256:
-          return mpc_lowmc_call_sse_popcnt_256_10;
+          return mpc_lowmc_call_s128_popcnt_256_10;
 #endif
         }
       }
@@ -1074,15 +955,15 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_sse_128_10;
+        return mpc_lowmc_call_s128_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_sse_192_10;
+        return mpc_lowmc_call_s128_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_sse_256_10;
+        return mpc_lowmc_call_s128_256_10;
 #endif
       }
     }
@@ -1093,15 +974,15 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
         switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
         case 128:
-          return mpc_lowmc_call_sse_popcnt_128_1;
+          return mpc_lowmc_call_s128_popcnt_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
         case 192:
-          return mpc_lowmc_call_sse_popcnt_192_1;
+          return mpc_lowmc_call_s128_popcnt_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
         case 256:
-          return mpc_lowmc_call_sse_popcnt_256_1;
+          return mpc_lowmc_call_s128_popcnt_256_1;
 #endif
         }
       }
@@ -1109,53 +990,15 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_sse_128_1;
+        return mpc_lowmc_call_s128_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_sse_192_1;
+        return mpc_lowmc_call_s128_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_sse_256_1;
-#endif
-      }
-    }
-#endif
-  }
-#endif
-#if defined(WITH_NEON)
-  if (CPU_SUPPORTS_NEON) {
-    if (lowmc->m == 10) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
-      case 128:
-        return mpc_lowmc_call_neon_128_10;
-#endif
-#if defined(WITH_LOWMC_192_192_30)
-      case 192:
-        return mpc_lowmc_call_neon_192_10;
-#endif
-#if defined(WITH_LOWMC_256_256_38)
-      case 256:
-        return mpc_lowmc_call_neon_256_10;
-#endif
-      }
-    }
-#if defined(WITH_LOWMC_M1)
-    if (lowmc->m == 1) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-      case 128:
-        return mpc_lowmc_call_neon_128_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-      case 192:
-        return mpc_lowmc_call_neon_192_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-      case 256:
-        return mpc_lowmc_call_neon_256_1;
+        return mpc_lowmc_call_s128_256_1;
 #endif
       }
     }
@@ -1204,6 +1047,9 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 }
 
 zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc) {
+  ASSUME(lowmc->m == 10 || lowmc->m == 1);
+  ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
@@ -1213,15 +1059,15 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
         switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
         case 128:
-          return mpc_lowmc_call_verify_avx_popcnt_128_10;
+          return mpc_lowmc_call_verify_s256_popcnt_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
         case 192:
-          return mpc_lowmc_call_verify_avx_popcnt_192_10;
+          return mpc_lowmc_call_verify_s256_popcnt_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
         case 256:
-          return mpc_lowmc_call_verify_avx_popcnt_256_10;
+          return mpc_lowmc_call_verify_s256_popcnt_256_10;
 #endif
         }
       }
@@ -1229,15 +1075,15 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_verify_avx_128_10;
+        return mpc_lowmc_call_verify_s256_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_verify_avx_192_10;
+        return mpc_lowmc_call_verify_s256_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_verify_avx_256_10;
+        return mpc_lowmc_call_verify_s256_256_10;
 #endif
       }
     }
@@ -1248,15 +1094,15 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
         switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
         case 128:
-          return mpc_lowmc_call_verify_avx_popcnt_128_1;
+          return mpc_lowmc_call_verify_s256_popcnt_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
         case 192:
-          return mpc_lowmc_call_verify_avx_popcnt_192_1;
+          return mpc_lowmc_call_verify_s256_popcnt_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
         case 256:
-          return mpc_lowmc_call_verify_avx_popcnt_256_1;
+          return mpc_lowmc_call_verify_s256_popcnt_256_1;
 #endif
         }
       }
@@ -1264,38 +1110,38 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_verify_avx_128_1;
+        return mpc_lowmc_call_verify_s256_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_verify_avx_192_1;
+        return mpc_lowmc_call_verify_s256_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_verify_avx_256_1;
+        return mpc_lowmc_call_verify_s256_256_1;
 #endif
       }
     }
 #endif
   }
 #endif
-#if defined(WITH_SSE2)
-  if (CPU_SUPPORTS_SSE2) {
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+  if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
 #if defined(WITH_POPCNT)
       if (CPU_SUPPORTS_POPCNT) {
         switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
         case 128:
-          return mpc_lowmc_call_verify_sse_popcnt_128_10;
+          return mpc_lowmc_call_verify_s128_popcnt_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
         case 192:
-          return mpc_lowmc_call_verify_sse_popcnt_192_10;
+          return mpc_lowmc_call_verify_s128_popcnt_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
         case 256:
-          return mpc_lowmc_call_verify_sse_popcnt_256_10;
+          return mpc_lowmc_call_verify_s128_popcnt_256_10;
 #endif
         }
       }
@@ -1303,15 +1149,15 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_verify_sse_128_10;
+        return mpc_lowmc_call_verify_s128_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_verify_sse_192_10;
+        return mpc_lowmc_call_verify_s128_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_verify_sse_256_10;
+        return mpc_lowmc_call_verify_s128_256_10;
 #endif
       }
     }
@@ -1322,15 +1168,15 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
         switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
         case 128:
-          return mpc_lowmc_call_verify_sse_popcnt_128_1;
+          return mpc_lowmc_call_verify_s128_popcnt_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
         case 192:
-          return mpc_lowmc_call_verify_sse_popcnt_192_1;
+          return mpc_lowmc_call_verify_s128_popcnt_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
         case 256:
-          return mpc_lowmc_call_verify_sse_popcnt_256_1;
+          return mpc_lowmc_call_verify_s128_popcnt_256_1;
 #endif
         }
       }
@@ -1338,15 +1184,15 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_verify_sse_128_1;
+        return mpc_lowmc_call_verify_s128_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_verify_sse_192_1;
+        return mpc_lowmc_call_verify_s128_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_verify_sse_256_1;
+        return mpc_lowmc_call_verify_s128_256_1;
 #endif
       }
     }
@@ -1359,15 +1205,15 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
       case 128:
-        return mpc_lowmc_call_verify_neon_128_10;
+        return mpc_lowmc_call_verify_s128_128_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
       case 192:
-        return mpc_lowmc_call_verify_neon_192_10;
+        return mpc_lowmc_call_verify_s128_192_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
       case 256:
-        return mpc_lowmc_call_verify_neon_256_10;
+        return mpc_lowmc_call_verify_s128_256_10;
 #endif
       }
     }
@@ -1376,15 +1222,15 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_182)
       case 128:
-        return mpc_lowmc_call_verify_neon_128_1;
+        return mpc_lowmc_call_verify_s128_128_1;
 #endif
 #if defined(WITH_LOWMC_192_192_284)
       case 192:
-        return mpc_lowmc_call_verify_neon_192_1;
+        return mpc_lowmc_call_verify_s128_192_1;
 #endif
 #if defined(WITH_LOWMC_256_256_363)
       case 256:
-        return mpc_lowmc_call_verify_neon_256_1;
+        return mpc_lowmc_call_verify_s128_256_1;
 #endif
       }
     }
@@ -1439,45 +1285,31 @@ static void mzd_share_uint64(mzd_local_t* r, const mzd_local_t* v1, const mzd_lo
 }
 
 #if defined(WITH_OPT)
-#if defined(WITH_SSE2)
-static void mzd_share_sse_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+#if defined(WITH_SSE2) || defined(NEON)
+static void mzd_share_s128_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
                               const mzd_local_t* v3) {
-  mzd_xor_sse_128(r, v1, v2);
-  mzd_xor_sse_128(r, r, v3);
+  mzd_xor_s128_128(r, v1, v2);
+  mzd_xor_s128_128(r, r, v3);
 }
 
-static void mzd_share_sse_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+static void mzd_share_s128_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
                               const mzd_local_t* v3) {
-  mzd_xor_sse_256(r, v1, v2);
-  mzd_xor_sse_256(r, r, v3);
+  mzd_xor_s128_256(r, v1, v2);
+  mzd_xor_s128_256(r, r, v3);
 }
 #endif
 
 #if defined(WITH_AVX2)
-static void mzd_share_avx_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+static void mzd_share_s256_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
                               const mzd_local_t* v3) {
-  mzd_xor_avx_128(r, v1, v2);
-  mzd_xor_avx_128(r, r, v3);
+  mzd_xor_s256_128(r, v1, v2);
+  mzd_xor_s256_128(r, r, v3);
 }
 
-static void mzd_share_avx_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+static void mzd_share_s256_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
                               const mzd_local_t* v3) {
-  mzd_xor_avx_256(r, v1, v2);
-  mzd_xor_avx_256(r, r, v3);
-}
-#endif
-
-#if defined(WITH_NEON)
-static void mzd_share_neon_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
-                               const mzd_local_t* v3) {
-  mzd_xor_neon_128(r, v1, v2);
-  mzd_xor_neon_128(r, r, v3);
-}
-
-static void mzd_share_neon_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
-                               const mzd_local_t* v3) {
-  mzd_xor_neon_256(r, v1, v2);
-  mzd_xor_neon_256(r, r, v3);
+  mzd_xor_s256_256(r, v1, v2);
+  mzd_xor_s256_256(r, r, v3);
 }
 #endif
 #endif
@@ -1488,29 +1320,19 @@ zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc) 
   if (CPU_SUPPORTS_AVX2) {
     switch (lowmc->n) {
     case 128:
-      return mzd_share_avx_128;
+      return mzd_share_s256_128;
     default:
-      return mzd_share_avx_256;
+      return mzd_share_s256_256;
     }
   }
 #endif
-#if defined(WITH_SSE2)
-  if (CPU_SUPPORTS_SSE2) {
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+  if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     switch (lowmc->n) {
     case 128:
-      return mzd_share_sse_128;
+      return mzd_share_s128_128;
     default:
-      return mzd_share_sse_256;
-    }
-  }
-#endif
-#if defined(WITH_NEON)
-  if (CPU_SUPPORTS_NEON) {
-    switch (lowmc->n) {
-    case 128:
-      return mzd_share_neon_128;
-    default:
-      return mzd_share_neon_256;
+      return mzd_share_s128_256;
     }
   }
 #endif
