@@ -138,11 +138,6 @@ void mzd_local_free_multiple(mzd_local_t** vs) {
   }
 }
 
-void mzd_local_copy(mzd_local_t* dst, mzd_local_t const* src) {
-  memcpy(ASSUME_ALIGNED(FIRST_ROW(dst), 32), ASSUME_ALIGNED(CONST_FIRST_ROW(src), 32),
-         src->nrows * sizeof(word) * src->rowstride);
-}
-
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
 ATTR_TARGET_S128

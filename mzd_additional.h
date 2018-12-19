@@ -58,10 +58,6 @@ void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_
  * mzd_local_free for mzd_local_init_multiple.
  */
 void mzd_local_free_multiple(mzd_local_t** vs);
-/**
- * Improved mzd_copy for specific memory layouts. Requires that dst already exists.
- */
-void mzd_local_copy(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL_ARG(2);
 
 void mzd_xor_uint64_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_uint64_192(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
