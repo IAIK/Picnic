@@ -23,7 +23,7 @@
 static int test_mzd_local_equal(void) {
   int ret = 0;
 
-  for (unsigned int i = 0; i < 10; ++i) {
+  for (unsigned int i = 1; i < 4; ++i) {
     mzd_local_t* a = mzd_local_init(1, (i + 1) * 64);
     mzd_randomize_ssl(a);
     mzd_local_t* b = mzd_local_init(1, (i + 1) * 64);
@@ -36,7 +36,18 @@ static int test_mzd_local_equal(void) {
       ret = -1;
     }
 
-    mzd_xor_uint64(b, b, a);
+    switch (i) {
+      case 1:
+        mzd_xor_uint64_128(b, b, a);
+        break;
+      case 2:
+        mzd_xor_uint64_192(b, b, a);
+        break;
+      case 3:
+        mzd_xor_uint64_256(b, b, a);
+        break;
+    }
+
     if (!mzd_local_equal(a, b)) {
       printf("equal: ok [%u]\n", (i + 1) * 64);
     } else {
@@ -144,27 +155,51 @@ static int test_mzd_mul_l_f(const char* n, unsigned int rows, unsigned int cols,
 #endif
 
 static int test_mzd_mul_uint64_128(void) {
-  return test_mzd_mul_f("mul uint64 128", 128, 128, mzd_mul_v_uint64, false);
+  return test_mzd_mul_f("mul uint64 128", 128, 128, mzd_mul_v_uint64_128, false);
 }
 
 static int test_mzd_mul_uint64_192(void) {
-  return test_mzd_mul_f("mul uint64 192", 192, 192, mzd_mul_v_uint64, false);
+  return test_mzd_mul_f("mul uint64 192", 192, 192, mzd_mul_v_uint64_192, false);
 }
 
 static int test_mzd_mul_uint64_256(void) {
-  return test_mzd_mul_f("mul uint64 256", 256, 256, mzd_mul_v_uint64, false);
+  return test_mzd_mul_f("mul uint64 256", 256, 256, mzd_mul_v_uint64_256, false);
+}
+
+static int test_mzd_mul_uint64_128_576(void) {
+  return test_mzd_mul_f("mul uint64 128 576", 128, 576, mzd_mul_v_uint64_128_576, false);
+}
+
+static int test_mzd_mul_uint64_128_640(void) {
+  return test_mzd_mul_f("mul uint64 128 640", 128, 640, mzd_mul_v_uint64_128_640, false);
+}
+
+static int test_mzd_mul_uint64_192_896(void) {
+  return test_mzd_mul_f("mul uint64 192 896", 192, 896, mzd_mul_v_uint64_192_896, false);
+}
+
+static int test_mzd_mul_uint64_192_960(void) {
+  return test_mzd_mul_f("mul uint64 192 960", 192, 960, mzd_mul_v_uint64_192_960, false);
+}
+
+static int test_mzd_mul_uint64_256_1152(void) {
+  return test_mzd_mul_f("mul uint64 256 1152", 256, 1152, mzd_mul_v_uint64_256_1152, false);
+}
+
+static int test_mzd_mul_uint64_256_1216(void) {
+  return test_mzd_mul_f("mul uint64 256 1216", 256, 1216, mzd_mul_v_uint64_256_1216, false);
 }
 
 static int test_mzd_addmul_uint64_128(void) {
-  return test_mzd_mul_f("addmul uint64 128", 128, 128, mzd_addmul_v_uint64, true);
+  return test_mzd_mul_f("addmul uint64 128", 128, 128, mzd_addmul_v_uint64_128, true);
 }
 
 static int test_mzd_addmul_uint64_192(void) {
-  return test_mzd_mul_f("addmul uint64 192", 192, 192, mzd_addmul_v_uint64, true);
+  return test_mzd_mul_f("addmul uint64 192", 192, 192, mzd_addmul_v_uint64_192, true);
 }
 
 static int test_mzd_addmul_uint64_256(void) {
-  return test_mzd_mul_f("addmul uint64 256", 256, 256, mzd_addmul_v_uint64, true);
+  return test_mzd_mul_f("addmul uint64 256", 256, 256, mzd_addmul_v_uint64_256, true);
 }
 
 #if defined(MUL_M4RI)
@@ -194,10 +229,6 @@ static int test_mzd_addmull_uint64_256(void) {
 #endif
 
 #if defined(WITH_AVX2)
-static int test_mzd_mul_s256(void) {
-  return test_mzd_mul_f("mul s256", 192, 192, mzd_mul_v_s256, false);
-}
-
 static int test_mzd_mul_s256_128(void) {
   return test_mzd_mul_f("mul s256 128", 128, 128, mzd_mul_v_s256_128, false);
 }
@@ -258,20 +289,36 @@ static int test_mzd_addmull_s256_256(void) {
 #endif
 
 #if defined(WITH_SSE2) || defined(WITH_NEON)
-static int test_mzd_mul_s128(void) {
-  return test_mzd_mul_f("mul s128", 192, 192, mzd_mul_v_s128, false);
-}
-
 static int test_mzd_mul_s128_128(void) {
   return test_mzd_mul_f("mul s128 128", 128, 128, mzd_mul_v_s128_128, false);
+}
+
+static int test_mzd_mul_s128_128_640(void) {
+  return test_mzd_mul_f("mul s128 128 640", 128, 640, mzd_mul_v_s128_128_640, false);
 }
 
 static int test_mzd_mul_s128_192(void) {
   return test_mzd_mul_f("mul s128 192", 192, 192, mzd_mul_v_s128_192, false);
 }
 
+static int test_mzd_mul_s128_192_896(void) {
+  return test_mzd_mul_f("mul s128 192 896", 192, 896, mzd_mul_v_s128_192_896, false);
+}
+
+static int test_mzd_mul_s128_192_1024(void) {
+  return test_mzd_mul_f("mul s128 192 1024", 192, 1024, mzd_mul_v_s128_192_1024, false);
+}
+
 static int test_mzd_mul_s128_256(void) {
   return test_mzd_mul_f("mul s128 256", 256, 256, mzd_mul_v_s128_256, false);
+}
+
+static int test_mzd_mul_s128_256_1152(void) {
+  return test_mzd_mul_f("mul s128 256 1152", 256, 1152, mzd_mul_v_s128_256_1152, false);
+}
+
+static int test_mzd_mul_s128_256_1280(void) {
+  return test_mzd_mul_f("mul s128 256 1280", 256, 1280, mzd_mul_v_s128_256_1280, false);
 }
 
 static int test_mzd_addmul_s128_128(void) {
@@ -328,6 +375,12 @@ int main(void) {
   ret |= test_mzd_mul_uint64_128();
   ret |= test_mzd_mul_uint64_192();
   ret |= test_mzd_mul_uint64_256();
+  ret |= test_mzd_mul_uint64_128_576();
+  ret |= test_mzd_mul_uint64_128_640();
+  ret |= test_mzd_mul_uint64_192_896();
+  ret |= test_mzd_mul_uint64_192_960();
+  ret |= test_mzd_mul_uint64_256_1152();
+  ret |= test_mzd_mul_uint64_256_1216();
   ret |= test_mzd_addmul_uint64_128();
   ret |= test_mzd_addmul_uint64_192();
   ret |= test_mzd_addmul_uint64_256();
@@ -341,7 +394,6 @@ int main(void) {
 #endif
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2) {
-    ret |= test_mzd_mul_s256();
     ret |= test_mzd_mul_s256_128();
     ret |= test_mzd_mul_s256_192();
     ret |= test_mzd_mul_s256_256();
@@ -362,10 +414,14 @@ int main(void) {
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
-    ret |= test_mzd_mul_s128();
     ret |= test_mzd_mul_s128_128();
+    ret |= test_mzd_mul_s128_128_640();
     ret |= test_mzd_mul_s128_192();
+    ret |= test_mzd_mul_s128_192_896();
+    ret |= test_mzd_mul_s128_192_1024();
     ret |= test_mzd_mul_s128_256();
+    ret |= test_mzd_mul_s128_256_1152();
+    ret |= test_mzd_mul_s128_256_1280();
     ret |= test_mzd_addmul_s128_128();
     ret |= test_mzd_addmul_s128_192();
     ret |= test_mzd_addmul_s128_256();

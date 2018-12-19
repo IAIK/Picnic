@@ -11,6 +11,8 @@
 #error "OLLE is only implemented for 1 or 10 Sboxes"
 #endif
 
+#define copy(d, s) memcpy(BLOCK(d, 0), CONST_BLOCK(s, 0), LOWMC_N / 8)
+
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
@@ -40,17 +42,17 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R-1; ++i, ++round) {
 #if defined(RECORD_STATE)
-    mzd_local_copy(state->state[i], x);
+    copy(state->state[i], x);
 #endif
     SBOX(x);
 
 #if defined(M_FIXED_10)
-    const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
-    FIRST_ROW(x)
-    [(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << (1-(i&1))*32) & WORD_C(0xFFFFFFFF00000000);
+    const word nl = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+        (nl << (1 - (i & 1)) * 32) & WORD_C(0xFFFFFFFF00000000);
 #elif defined(M_FIXED_1)
-    const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
-    FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+    const word nl = CONST_BLOCK(nl_part, i / (4 * 21))->w64[(i % (4 * 21)) / 21];
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
 #endif
 
     MUL_Z(y, x, CONCAT(round->z, matrix_postfix));
@@ -58,9 +60,9 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     MUL_R(y, x, CONCAT(round->r, matrix_postfix));
 
 #if defined(M_FIXED_10)
-    FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
 #elif defined(M_FIXED_1)
-    FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
 #endif
     XOR(x, y, x);
 //    mzd_local_t* t = x;
@@ -69,18 +71,19 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 
   }
 #if defined(RECORD_STATE)
-  mzd_local_copy(state->state[LOWMC_R-1], x);
+  copy(state->state[LOWMC_R-1], x);
 #endif
   SBOX(x);
 
   unsigned i = (LOWMC_R-1);
 #if defined(M_FIXED_10)
-  const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
-  FIRST_ROW(x)
-  [(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << (1-(i&1))*32) & WORD_C(0xFFFFFFFF00000000);
+  const word nl = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
+  BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+      (nl << (1 - (i & 1)) * 32) & WORD_C(0xFFFFFFFF00000000);
 #elif defined(M_FIXED_1)
-  const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
-  FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+  const word nl = CONST_BLOCK(nl_part, i / (4 * 21))->w64[(i % (4 * 21)) / 21];
+  BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+      (nl << ((20 - (i % 21)) * 3)) & WORD_C(0xE000000000000000);
 #endif
   MUL(y,x,CONCAT(LOWMC_INSTANCE.zr, matrix_postfix));
   mzd_local_t* t = x;
@@ -95,18 +98,18 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
 #if defined(RECORD_STATE)
-    mzd_local_copy(state->state[i], x);
+    copy(state->state[i], x);
 #endif
     SBOX(x);
 
 #if defined(M_FIXED_10)
-    const word nl = CONST_FIRST_ROW(nl_part)[i >> 1];
-    FIRST_ROW(x)
-    [(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+    const word nl = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
         (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
 #elif defined(M_FIXED_1)
-    const word nl = CONST_FIRST_ROW(nl_part)[i / 21];
-    FIRST_ROW(x)[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+    const word nl = CONST_BLOCK(nl_part, i / (4 * 21))->w64[(i % (4 * 21)) / 21];
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+        (nl << ((20 - (i % 21)) * 3)) & WORD_C(0xE000000000000000);
 #endif
     MUL(y, x, CONCAT(round->l, matrix_postfix));
     // swap x and y
@@ -119,7 +122,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   mzd_local_free(tmp);
   mzd_local_free(y);
 #if defined(RECORD_STATE)
-  mzd_local_copy(state->state[LOWMC_R], x);
+  copy(state->state[LOWMC_R], x);
   mzd_local_free(x);
 #else
   return x;
@@ -128,13 +131,13 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   mzd_local_t* x = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* y = mzd_local_init_ex(1, LOWMC_N, false);
 
-  mzd_local_copy(x, p);
+  copy(x, p);
   ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
 #if defined(RECORD_STATE)
-    mzd_local_copy(state->state[i], x);
+    copy(state->state[i], x);
 #endif
     SBOX(x);
 
@@ -145,12 +148,14 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 
   mzd_local_free(y);
 #if defined(RECORD_STATE)
-  mzd_local_copy(state->state[LOWMC_R], x);
+  copy(state->state[LOWMC_R], x);
   mzd_local_free(x);
 #else
   return x;
 #endif
 #endif
 }
+
+#undef copy
 
 // vim: ft=c

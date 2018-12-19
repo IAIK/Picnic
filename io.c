@@ -18,22 +18,22 @@
 
 void mzd_to_char_array(uint8_t* dst, const mzd_local_t* data, size_t len) {
   const size_t word_count = len / sizeof(uint64_t);
-  const uint64_t* rows    = &CONST_FIRST_ROW(data)[word_count - 1];
+  const block_t* block    = CONST_BLOCK(data, 0);
 
-  for (size_t i = word_count; i; --i, --rows, dst += sizeof(uint64_t)) {
-    const uint64_t tmp = htobe64(*rows);
+  for (size_t i = word_count; i; --i, dst += sizeof(uint64_t)) {
+    const uint64_t tmp = htobe64(block->w64[i - 1]);
     memcpy(dst, &tmp, sizeof(tmp));
   }
 }
 
 void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, size_t len) {
   const size_t word_count = len / sizeof(uint64_t);
-  uint64_t* rows          = &FIRST_ROW(result)[word_count - 1];
+  block_t* block          = BLOCK(result, 0);
 
-  for (size_t i = word_count; i; --i, --rows, data += sizeof(uint64_t)) {
+  for (size_t i = word_count; i; --i, data += sizeof(uint64_t)) {
     uint64_t tmp;
     memcpy(&tmp, data, sizeof(tmp));
-    *rows = be64toh(tmp);
+    block->w64[i - 1] = be64toh(tmp);
   }
 }
 

@@ -28,12 +28,12 @@ lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
     SBOX(sbox, y, x, views, r, LOWMC_N, shares, reduced_shares);
     for (unsigned int k = 0; k < reduced_shares; ++k) {
 #if defined(M_FIXED_10)
-      const word nl = CONST_FIRST_ROW(nl_part[k])[i >> 1];
-      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+      const word nl = CONST_BLOCK(nl_part[k], i >> 3)->w64[(i & 0x7) >> 1];
+      BLOCK(y[k], 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
         (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
 #elif defined(M_FIXED_1)
-      const word nl = CONST_FIRST_ROW(nl_part[k])[i / 21];
-      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+      const word nl = CONST_BLOCK(nl_part[k], i / (4 * 21))->w64[(i % (4 * 21)) / 21];
+      BLOCK(y[k], 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
 #endif
     }
     MPC_LOOP_CONST(MUL_Z, x, y, CONCAT(round->z, matrix_postfix), reduced_shares);
@@ -45,9 +45,9 @@ lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
     MPC_LOOP_CONST(MUL_R, x, y, CONCAT(round->r, matrix_postfix), reduced_shares);
     for(unsigned int k = 0; k < reduced_shares; ++k) {
 #if defined(M_FIXED_10)
-      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+      BLOCK(y[k], 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
 #elif defined(M_FIXED_1)
-      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
+      BLOCK(y[k], 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
 #endif
     }
     MPC_LOOP_SHARED(XOR, x, x, y, reduced_shares);
@@ -61,12 +61,12 @@ lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
 
   for (unsigned int k = 0; k < reduced_shares; ++k) {
 #if defined(M_FIXED_10)
-    const word nl = CONST_FIRST_ROW(nl_part[k])[i >> 1];
-    FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
-        (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
+    const word nl = CONST_BLOCK(nl_part[k], i >> 3)->w64[(i & 0x7) >> 1];
+    BLOCK(y[k], 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+      (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
 #elif defined(M_FIXED_1)
-    const word nl = CONST_FIRST_ROW(nl_part[k])[i / 21];
-    FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+    const word nl = CONST_BLOCK(nl_part[k], i / (4 * 21))->w64[(i % (4 * 21)) / 21];
+    BLOCK(y[k], 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
 #endif
   }
   MPC_LOOP_CONST(MUL, x, y, CONCAT(LOWMC_INSTANCE.zr, matrix_postfix), reduced_shares);
@@ -83,12 +83,12 @@ lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
     SBOX(sbox, y, x, views, r, LOWMC_N, shares, reduced_shares);
     for (unsigned int k = 0; k < reduced_shares; ++k) {
 #if defined(M_FIXED_10)
-      const word nl = CONST_FIRST_ROW(nl_part[k])[i >> 1];
-      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+      const word nl = CONST_BLOCK(nl_part[k], i >> 3)->w64[(i & 0x7) >> 1];
+      BLOCK(y[k], 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
         (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
 #elif defined(M_FIXED_1)
-      const word nl = CONST_FIRST_ROW(nl_part[k])[i / 21];
-      FIRST_ROW(y[k])[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+      const word nl = CONST_BLOCK(nl_part[k], i / (4 * 21))->w64[(i % (4 * 21)) / 21];
+      BLOCK(y[k], 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
 #endif
     }
     MPC_LOOP_CONST(MUL, x, y, CONCAT(round->l, matrix_postfix), reduced_shares);
