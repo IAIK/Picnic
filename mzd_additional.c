@@ -2097,7 +2097,7 @@ static void mzd_addmul_v_s128_3_256_idx(mzd_local_t* c, mzd_local_t const* A, co
   mm128_xor_mask_region(&cval[0], Ablock[2].w128, mm128_compute_mask(idx, 2), 2);
 
   cblock->w128[0] = mm128_xor(cval[0], cval[2]);
-  cblock->w128[1] = mm128_xor(cval[2], cval[3]);
+  cblock->w128[1] = mm128_xor(cval[1], cval[3]);
 }
 
 ATTR_TARGET_S128
