@@ -1092,9 +1092,7 @@ void mzd_mul_v_uint64_128_576(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
   const word* vptr      = CONST_BLOCK(v, 0)->w64;
   const block_t* Ablock = CONST_BLOCK(A, 0);
 
-  for (unsigned int j = 0; j < 2; ++j) {
-    clear_uint64_block(BLOCK(c, j), 4);
-  }
+  clear_uint64_blocks(BLOCK(c, 0), 2);
   clear_uint64_block(BLOCK(c, 2), 1);
 
   for (unsigned int w = 2; w; --w, ++vptr) {
@@ -1113,9 +1111,7 @@ void mzd_mul_v_uint64_128_640(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
   const word* vptr      = CONST_BLOCK(v, 0)->w64;
   const block_t* Ablock = CONST_BLOCK(A, 0);
 
-  for (unsigned int j = 0; j < 2; ++j) {
-    clear_uint64_block(BLOCK(c, j), 4);
-  }
+  clear_uint64_blocks(BLOCK(c, 0), 2);
   clear_uint64_block(BLOCK(c, 2), 2);
 
   for (unsigned int w = 2; w; --w, ++vptr) {
@@ -1134,9 +1130,7 @@ void mzd_mul_v_uint64_192_896(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
   const word* vptr      = CONST_BLOCK(v, 0)->w64;
   const block_t* Ablock = CONST_BLOCK(A, 0);
 
-  for (unsigned int j = 0; j < 3; ++j) {
-    clear_uint64_block(BLOCK(c, j), 4);
-  }
+  clear_uint64_blocks(BLOCK(c, 0), 3);
   clear_uint64_block(BLOCK(c, 3), 2);
 
   for (unsigned int w = 3; w; --w, ++vptr) {
@@ -1155,9 +1149,7 @@ void mzd_mul_v_uint64_192_960(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
   const word* vptr      = CONST_BLOCK(v, 0)->w64;
   const block_t* Ablock = CONST_BLOCK(A, 0);
 
-  for (unsigned int j = 0; j < 3; ++j) {
-    clear_uint64_block(BLOCK(c, j), 4);
-  }
+  clear_uint64_blocks(BLOCK(c, 0), 3);
   clear_uint64_block(BLOCK(c, 3), 3);
 
   for (unsigned int w = 3; w; --w, ++vptr) {
@@ -1176,9 +1168,7 @@ void mzd_mul_v_uint64_256_1152(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   const word* vptr      = CONST_BLOCK(v, 0)->w64;
   const block_t* Ablock = CONST_BLOCK(A, 0);
 
-  for (unsigned int j = 0; j < 4; ++j) {
-    clear_uint64_block(BLOCK(c, j), 4);
-  }
+  clear_uint64_blocks(BLOCK(c, 0), 4);
   clear_uint64_block(BLOCK(c, 4), 2);
 
   for (unsigned int w = 4; w; --w, ++vptr) {
@@ -1197,9 +1187,7 @@ void mzd_mul_v_uint64_256_1216(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   const word* vptr      = CONST_BLOCK(v, 0)->w64;
   const block_t* Ablock = CONST_BLOCK(A, 0);
 
-  for (unsigned int j = 0; j < 4; ++j) {
-    clear_uint64_block(BLOCK(c, j), 4);
-  }
+  clear_uint64_blocks(BLOCK(c, 0), 4);
   clear_uint64_block(BLOCK(c, 4), 3);
 
   for (unsigned int w = 4; w; --w, ++vptr) {
