@@ -42,7 +42,7 @@ static int lowmc_enc_str(const picnic_params_t param, const char* key, const cha
     goto end;
   }
 
-  if (!mzd_local_equal(ctr, ctl)) {
+  if (!mzd_local_equal(ctr, ctl, 1, lowmc->n)) {
     ret = 2;
   }
 

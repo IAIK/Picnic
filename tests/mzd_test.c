@@ -24,15 +24,21 @@ static int test_mzd_local_equal(void) {
   int ret = 0;
 
   for (unsigned int i = 1; i < 4; ++i) {
-    mzd_local_t* a = mzd_local_init(1, (i + 1) * 64);
-    mzd_randomize_ssl(a);
-    mzd_local_t* b = mzd_local_init(1, (i + 1) * 64);
-    memcpy(BLOCK(b, 0)->w64, CONST_BLOCK(a, 0)->w64, (i + 1) * 64 / 8);
+    const unsigned int cols = (i + 1) * 64;
 
-    if (mzd_local_equal(a, b)) {
-      printf("equal: ok [%u]\n", (i + 1) * 64);
+    mzd_t* ma = mzd_init(1, cols);
+    mzd_randomize(ma);
+
+    mzd_local_t* a = mzd_convert(ma);
+    mzd_free(ma);
+
+    mzd_local_t* b = mzd_local_init(1, cols);
+    memcpy(BLOCK(b, 0)->w64, CONST_BLOCK(a, 0)->w64, cols / 8);
+
+    if (mzd_local_equal(a, b, 1, cols)) {
+      printf("equal: ok [%u]\n", cols);
     } else {
-      printf("equal: fail [%u]\n", (i + 1) * 64);
+      printf("equal: fail [%u]\n", cols);
       ret = -1;
     }
 
@@ -48,10 +54,10 @@ static int test_mzd_local_equal(void) {
         break;
     }
 
-    if (!mzd_local_equal(a, b)) {
-      printf("equal: ok [%u]\n", (i + 1) * 64);
+    if (!mzd_local_equal(a, b, 1, cols)) {
+      printf("equal: ok [%u]\n", cols);
     } else {
-      printf("equal: fail [%u]\n", (i + 1) * 64);
+      printf("equal: fail [%u]\n", cols);
       ret = -1;
     }
 
@@ -86,7 +92,7 @@ static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, m
 
     mzd_local_t* rc = mzd_convert(r);
 
-    if (!mzd_local_equal(rc, c2)) {
+    if (!mzd_local_equal(rc, c2, 1, cols)) {
       printf("%s: fail [%u x %u]\n", n, rows, cols);
       ret = -1;
     } else {
@@ -131,7 +137,7 @@ static int test_mzd_mul_l_f(const char* n, unsigned int rows, unsigned int cols,
 
     mzd_local_t* rc = mzd_convert(r);
 
-    if (!mzd_local_equal(rc, c2)) {
+    if (!mzd_local_equal(rc, c21, cols)) {
       printf("%s: fail [%u x %u]\n", n, rows, cols);
       ret = -1;
     } else {
