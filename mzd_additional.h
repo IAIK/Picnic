@@ -176,19 +176,35 @@ void mzd_addmul_v_s256_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 /**
  * Compute v * A optimized for v being a vector.
  */
-void mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_128_576(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_128_640(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_192_896(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_192_960(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_256_1152(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_uint64_256_1216(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_s128_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_s128_128_640(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_s128_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_s128_192_896(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_s128_192_1024(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_s128_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_vl_s128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_s128_256_1152(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_s128_256_1280(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_s256_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_s256_128_768(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_s256_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_s256_192_1024(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_mul_vl_s256_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
-void mzd_mul_vl_s256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_mul_vl_s256_256_1280(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 /**
  * Compute c + v * A optimized for c and v being vectors.
  */
-void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_addmul_vl_uint64_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_addmul_vl_uint64_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
+void mzd_addmul_vl_uint64_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_addmul_vl_s128_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_addmul_vl_s128_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
 void mzd_addmul_vl_s128_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
@@ -199,7 +215,7 @@ void mzd_addmul_vl_s256_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
 /**
  * Pre-compute matrices for mzd_{add,}mul_vl computions.
  */
-mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) ATTR_NONNULL;
+mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A, unsigned int r, unsigned int c) ATTR_NONNULL;
 #endif
 
 /**
@@ -224,7 +240,7 @@ void mzd_shuffle_pext_256_3(mzd_local_t* x, const word mask) ATTR_NONNULL;
 #define FIRST_ROW(v) ROW(v, 0)
 #define CONST_FIRST_ROW(v) CONST_ROW(v, 0)
 
-#define BLOCK(v, b) ((block_t*)ASSUME_ALIGNED(&(v)->rows[b], 32))
-#define CONST_BLOCK(v, b) ((const block_t*)ASSUME_ALIGNED(&(v)->rows[b], 32))
+#define BLOCK(v, b) ((block_t*)ASSUME_ALIGNED(&(v)->rows[(b)], 32))
+#define CONST_BLOCK(v, b) ((const block_t*)ASSUME_ALIGNED(&(v)->rows[(b)], 32))
 
 #endif

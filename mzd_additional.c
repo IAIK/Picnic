@@ -1214,36 +1214,58 @@ void mzd_mul_v_uint64_256_1216(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
 }
 
 #if defined(MUL_M4RI)
-static void xor_comb(const unsigned int len, word* Brow, mzd_local_t const* A,
-                     unsigned int r_offset, unsigned comb) {
-  while (comb) {
-    const word* Arow = CONST_ROW(A, r_offset);
-    if (comb & 0x1) {
-      for (unsigned int i = 0; i < len; ++i) {
-        Brow[i] ^= Arow[i];
-      }
-    }
+#include <stdio.h>
 
-    comb >>= 1;
-    ++r_offset;
+static void xor_comb(const unsigned int len, const unsigned int rowstride, block_t* Bblock,
+                     mzd_local_t const* A, unsigned int r_offset, unsigned comb) {
+  for (; comb; comb >>= 1, ++r_offset) {
+    if (comb & 0x1) {
+      const block_t* Ablock = CONST_BLOCK(A, r_offset * rowstride / 4);
+      unsigned int i        = 0;
+      unsigned int j        = len;
+      for (; i < len / 4; ++i, j -= 4) {
+        mzd_xor_uint64_block(&Bblock[i], &Bblock[i], &Ablock[i], 4);
+      }
+      mzd_xor_uint64_block(&Bblock[i], &Bblock[i], &Ablock[i], j);
+    }
+  }
+}
+
+static void xor_comb_128(block_t* Bblock, const unsigned int boffset, mzd_local_t const* A,
+                         unsigned int r_offset, unsigned comb) {
+  for (; comb; comb >>= 1, ++r_offset) {
+    if (comb & 0x1) {
+      const block_t* Ablock      = CONST_BLOCK(A, r_offset / 2);
+      const unsigned int aoffset = (r_offset & 0x1) << 1;
+
+      Bblock->w64[boffset] ^= Ablock->w64[aoffset];
+      Bblock->w64[boffset + 1] ^= Ablock->w64[aoffset + 1];
+    }
   }
 }
 
 /**
  * Pre-compute matrices for faster mzd_addmul_v computions.
  */
-mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
-  mzd_local_t* B = mzd_local_init_ex(32 * A->nrows, A->ncols, true);
+mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A, unsigned int rows, unsigned int cols) {
+  mzd_local_t* B = mzd_local_init_ex(32 * rows, cols, true);
 
-  const unsigned int len = A->width;
-  for (unsigned int r = 0; r < B->nrows; ++r) {
+  const unsigned int len = calculate_width(cols);
+  const unsigned int rowstride = calculate_rowstride(len);
+
+  for (unsigned int r = 0; r < 32 * rows; ++r) {
     const unsigned int comb     = r & 0xff;
     const unsigned int r_offset = (r >> 8) << 3;
     if (!comb) {
       continue;
     }
 
-    xor_comb(len, ROW(B, r), A, r_offset, comb);
+    if (len == 2) {
+      /* 128 columns are special. they have two rows per block */
+      xor_comb_128(BLOCK(B, r / 2), (r & 0x1) << 1, A, r_offset, comb);
+    } else {
+      xor_comb(len, rowstride, BLOCK(B, r * rowstride / 4), A, r_offset, comb);
+    }
   }
 
   return B;
@@ -1252,365 +1274,340 @@ mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A) {
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
 ATTR_TARGET_S128
-static void mzd_addmul_vl_s128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr              = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  const unsigned int width      = v->width;
-  const unsigned int rowstride  = A->rowstride;
-  const unsigned int mrowstride = rowstride * sizeof(word) / sizeof(word128);
-  const unsigned int len        = mrowstride;
-  const unsigned int moff2      = 256 * mrowstride;
-
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
-
-  for (unsigned int w = width; w; --w, ++vptr) {
-    word idx = *vptr;
-    for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
-      const word comb = idx & 0xff;
-      mm128_xor_region(mcptr, mAptr + comb * mrowstride, len);
-    }
-  }
-}
-
-static void mzd_local_clear(mzd_local_t* c) {
-  memset(ASSUME_ALIGNED(FIRST_ROW(c), 32), 0, c->nrows * sizeof(word) * c->rowstride);
-}
-
-ATTR_TARGET_S128
-void mzd_mul_vl_s128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  mzd_local_clear(c);
-  mzd_addmul_vl_s128(c, v, A);
-}
-
-ATTR_TARGET_S128
 void mzd_addmul_vl_s128_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  static const unsigned int moff2 = 256;
+  static const unsigned int moff2 = 128;
 
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word128 cval[2] ATTR_ALIGNED(alignof(word128)) = {*mcptr, mm128_zero};
+  word128 cval[2] ATTR_ALIGNED(alignof(word128)) = {cblock->w128[0], mm128_zero};
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm128_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
-      mAptr += moff2;
-      mm128_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
-      mAptr += moff2;
+      cval[0] = mm128_xor(cval[0], Ablock[(idx >> 1) & 0x7f].w128[idx & 0x1]);
+      Ablock += moff2;
+      cval[1] = mm128_xor(cval[1], Ablock[(idx >> 9) & 0x7f].w128[(idx >> 8) & 0x1]);
+      Ablock += moff2;
     }
   }
-  *mcptr = mm128_xor(cval[0], cval[1]);
+  cblock->w128[0] = mm128_xor(cval[0], cval[1]);
 }
 
 ATTR_TARGET_S128
 void mzd_mul_vl_s128_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  static const unsigned int moff2 = 256;
+  static const unsigned int moff2 = 128;
 
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
   word128 cval[2] ATTR_ALIGNED(alignof(word128)) = {mm128_zero, mm128_zero};
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm128_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
-      mAptr += moff2;
-      mm128_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
-      mAptr += moff2;
+      cval[0] = mm128_xor(cval[0], Ablock[(idx >> 1) & 0x7f].w128[idx & 0x1]);
+      Ablock += moff2;
+      cval[1] = mm128_xor(cval[1], Ablock[(idx >> 9) & 0x7f].w128[(idx >> 8) & 0x1]);
+      Ablock += moff2;
     }
   }
-  *mcptr = mm128_xor(cval[0], cval[1]);
+  cblock->w128[0] = mm128_xor(cval[0], cval[1]);
 }
 
 ATTR_TARGET_S128
 void mzd_addmul_vl_s128_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  static const unsigned int moff2 = 512;
+  static const unsigned int moff2 = 256;
 
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word128 cval[4] ATTR_ALIGNED(alignof(word128)) = {mcptr[0], mcptr[1], mm128_zero, mm128_zero};
+  word128 cval[4] ATTR_ALIGNED(alignof(word128)) = {cblock->w128[0], cblock->w128[1], mm128_zero,
+                                                    mm128_zero};
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm128_xor_region(&cval[0], mAptr + 2 * ((idx >> 0) & 0xff), 2);
-      mAptr += moff2;
-      mm128_xor_region(&cval[2], mAptr + 2 * ((idx >> 8) & 0xff), 2);
-      mAptr += moff2;
+      mm128_xor_region(&cval[0], Ablock[(idx >> 0) & 0xff].w128, 2);
+      Ablock += moff2;
+      mm128_xor_region(&cval[2], Ablock[(idx >> 8) & 0xff].w128, 2);
+      Ablock += moff2;
     }
   }
-  mcptr[0] = mm128_xor(cval[0], cval[2]);
-  mcptr[1] = mm128_xor(cval[1], cval[3]);
+  cblock->w128[0] = mm128_xor(cval[0], cval[2]);
+  cblock->w128[1] = mm128_xor(cval[1], cval[3]);
 }
 
 ATTR_TARGET_S128
 void mzd_mul_vl_s128_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  static const unsigned int moff2 = 512;
+  static const unsigned int moff2 = 256;
 
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
   word128 cval[4] ATTR_ALIGNED(alignof(word128)) = {mm128_zero, mm128_zero, mm128_zero, mm128_zero};
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm128_xor_region(&cval[0], mAptr + 2 * ((idx >> 0) & 0xff), 2);
-      mAptr += moff2;
-      mm128_xor_region(&cval[2], mAptr + 2 * ((idx >> 8) & 0xff), 2);
-      mAptr += moff2;
+      mm128_xor_region(&cval[0], Ablock[(idx >> 0) & 0xff].w128, 2);
+      Ablock += moff2;
+      mm128_xor_region(&cval[2], Ablock[(idx >> 8) & 0xff].w128, 2);
+      Ablock += moff2;
     }
   }
-  mcptr[0] = mm128_xor(cval[0], cval[2]);
-  mcptr[1] = mm128_xor(cval[1], cval[3]);
+  cblock->w128[0] = mm128_xor(cval[0], cval[2]);
+  cblock->w128[1] = mm128_xor(cval[1], cval[3]);
 }
 
 ATTR_TARGET_S128
 void mzd_addmul_vl_s128_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  static const unsigned int moff2 = 512;
+  static const unsigned int moff2 = 256;
 
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word128 cval[4] ATTR_ALIGNED(alignof(word128)) = {mcptr[0], mcptr[1], mm128_zero, mm128_zero};
+  word128 cval[4] ATTR_ALIGNED(alignof(word128)) = {cblock->w128[0], cblock->w128[1], mm128_zero,
+                                                    mm128_zero};
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm128_xor_region(&cval[0], mAptr + 2 * ((idx >> 0) & 0xff), 2);
-      mAptr += moff2;
-      mm128_xor_region(&cval[2], mAptr + 2 * ((idx >> 8) & 0xff), 2);
-      mAptr += moff2;
+      mm128_xor_region(&cval[0], Ablock[(idx >> 0) & 0xff].w128, 2);
+      Ablock += moff2;
+      mm128_xor_region(&cval[2], Ablock[(idx >> 8) & 0xff].w128, 2);
+      Ablock += moff2;
     }
   }
-  mcptr[0] = mm128_xor(cval[0], cval[2]);
-  mcptr[1] = mm128_xor(cval[1], cval[3]);
+  cblock->w128[0] = mm128_xor(cval[0], cval[2]);
+  cblock->w128[1] = mm128_xor(cval[1], cval[3]);
 }
 
 ATTR_TARGET_S128
 void mzd_mul_vl_s128_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  static const unsigned int moff2 = 512;
+  static const unsigned int moff2 = 256;
 
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
   word128 cval[4] ATTR_ALIGNED(alignof(word128)) = {mm128_zero, mm128_zero, mm128_zero, mm128_zero};
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm128_xor_region(&cval[0], mAptr + 2 * ((idx >> 0) & 0xff), 2);
-      mAptr += moff2;
-      mm128_xor_region(&cval[2], mAptr + 2 * ((idx >> 8) & 0xff), 2);
-      mAptr += moff2;
+      mm128_xor_region(&cval[0], Ablock[(idx >> 0) & 0xff].w128, 2);
+      Ablock += moff2;
+      mm128_xor_region(&cval[2], Ablock[(idx >> 8) & 0xff].w128, 2);
+      Ablock += moff2;
     }
   }
-  mcptr[0] = mm128_xor(cval[0], cval[2]);
-  mcptr[1] = mm128_xor(cval[1], cval[3]);
+  cblock->w128[0] = mm128_xor(cval[0], cval[2]);
+  cblock->w128[1] = mm128_xor(cval[1], cval[3]);
 }
 #endif
 
 #if defined(WITH_AVX2)
 ATTR_TARGET_AVX2
 void mzd_mul_vl_s256_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   static const unsigned int moff2 = 256;
 
-  word256* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word256));
-  word256 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word256));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {mm256_zero, mm256_zero};
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm256_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
-      mAptr += moff2;
-      mm256_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
-      mAptr += moff2;
+      cval[0] = mm256_xor(cval[0], Ablock[(idx >> 0) & 0xff].w256);
+      Ablock += moff2;
+      cval[1] = mm256_xor(cval[1], Ablock[(idx >> 8) & 0xff].w256);
+      Ablock += moff2;
     }
   }
-  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+  cblock->w256 = _mm256_xor_si256(cval[0], cval[1]);
 }
 
 ATTR_TARGET_AVX2
 void mzd_addmul_vl_s256_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   static const unsigned int moff2 = 256;
 
-  word256* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word256));
-  word256 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word256));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {*mcptr, _mm256_setzero_si256()};
+  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {cblock->w256, mm256_zero};
   for (unsigned int w = 4; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm256_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
-      mAptr += moff2;
-      mm256_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
-      mAptr += moff2;
+      cval[0] = mm256_xor(cval[0], Ablock[(idx >> 0) & 0xff].w256);
+      Ablock += moff2;
+      cval[1] = mm256_xor(cval[1], Ablock[(idx >> 8) & 0xff].w256);
+      Ablock += moff2;
     }
   }
-  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+  cblock->w256 = _mm256_xor_si256(cval[0], cval[1]);
 }
 
 ATTR_TARGET_AVX2
 void mzd_mul_vl_s256_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   static const unsigned int moff2 = 256;
 
-  word256* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word256));
-  word256 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word256));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {mm256_zero, mm256_zero};
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm256_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
-      mAptr += moff2;
-      mm256_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
-      mAptr += moff2;
+      cval[0] = mm256_xor(cval[0], Ablock[(idx >> 0) & 0xff].w256);
+      Ablock += moff2;
+      cval[1] = mm256_xor(cval[1], Ablock[(idx >> 8) & 0xff].w256);
+      Ablock += moff2;
     }
   }
-  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+  cblock->w256 = _mm256_xor_si256(cval[0], cval[1]);
 }
 
 ATTR_TARGET_AVX2
 void mzd_addmul_vl_s256_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
   static const unsigned int moff2 = 256;
 
-  word256* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word256));
-  word256 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word256));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {*mcptr, _mm256_setzero_si256()};
+  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {cblock->w256, mm256_zero};
   for (unsigned int w = 3; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
-      mm256_xor_region(&cval[0], mAptr + ((idx >> 0) & 0xff), 1);
-      mAptr += moff2;
-      mm256_xor_region(&cval[1], mAptr + ((idx >> 8) & 0xff), 1);
-      mAptr += moff2;
+      cval[0] = mm256_xor(cval[0], Ablock[(idx >> 0) & 0xff].w256);
+      Ablock += moff2;
+      cval[1] = mm256_xor(cval[1], Ablock[(idx >> 8) & 0xff].w256);
+      Ablock += moff2;
     }
   }
-  *mcptr = _mm256_xor_si256(cval[0], cval[1]);
+  cblock->w256 = _mm256_xor_si256(cval[0], cval[1]);
 }
 
 ATTR_TARGET_AVX2
 void mzd_mul_vl_s256_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  static const unsigned int moff2 = 256;
+  static const unsigned int moff2 = 128;
 
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {_mm256_setzero_si256(), _mm256_setzero_si256()};
+  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {mm256_zero, mm256_zero};
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 4, idx >>= 32) {
       const word256 t1 =
-          _mm256_set_m128i(mAptr[(idx >> 0) & 0xff], mAptr[((idx >> 8) & 0xff) + moff2]);
-      mm256_xor_region(&cval[0], &t1, 1);
-      mAptr += 2 * moff2;
+          _mm256_set_m128i(Ablock[(idx >> 1) & 0x7f].w128[idx & 0x1],
+                           Ablock[((idx >> 9) & 0x7f) + moff2].w128[(idx >> 8) & 0x1]);
+      cval[0] = mm256_xor(cval[0], t1);
+      Ablock += 2 * moff2;
 
       const word256 t2 =
-          _mm256_set_m128i(mAptr[(idx >> 16) & 0xff], mAptr[((idx >> 24) & 0xff) + moff2]);
-      mm256_xor_region(&cval[1], &t2, 1);
-      mAptr += 2 * moff2;
+          _mm256_set_m128i(Ablock[(idx >> 17) & 0x7f].w128[(idx >> 16) & 0x1],
+                           Ablock[((idx >> 25) & 0x7f) + moff2].w128[(idx >> 24) & 0x1]);
+      cval[1] = mm256_xor(cval[1], t2);
+      Ablock += 2 * moff2;
     }
   }
-  cval[0] = _mm256_xor_si256(cval[0], cval[1]);
-  *mcptr =
-      _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
+  cval[0] = mm256_xor(cval[0], cval[1]);
+  cblock->w128[0] =
+      mm128_xor(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
 }
 
 ATTR_TARGET_AVX2
 void mzd_addmul_vl_s256_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  word const* vptr                = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  static const unsigned int moff2 = 256;
+  static const unsigned int moff2 = 128;
 
-  word128* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word128));
-  word128 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word128));
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
 
-  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {_mm256_castsi128_si256(*mcptr),
-                                                    _mm256_setzero_si256()};
+  word256 cval[2] ATTR_ALIGNED(alignof(word256)) = {_mm256_castsi128_si256(cblock->w128[0]),
+                                                    mm256_zero};
   for (unsigned int w = 2; w; --w, ++vptr) {
     word idx = *vptr;
     for (unsigned int s = sizeof(word); s; s -= 4, idx >>= 32) {
       const word256 t1 =
-          _mm256_set_m128i(mAptr[(idx >> 0) & 0xff], mAptr[((idx >> 8) & 0xff) + moff2]);
-      mm256_xor_region(&cval[0], &t1, 1);
-      mAptr += 2 * moff2;
+          _mm256_set_m128i(Ablock[(idx >> 1) & 0x7f].w128[idx & 0x1],
+                           Ablock[((idx >> 9) & 0x7f) + moff2].w128[(idx >> 8) & 0x1]);
+      cval[0] = mm256_xor(cval[0], t1);
+      Ablock += 2 * moff2;
 
       const word256 t2 =
-          _mm256_set_m128i(mAptr[(idx >> 16) & 0xff], mAptr[((idx >> 24) & 0xff) + moff2]);
-      mm256_xor_region(&cval[1], &t2, 1);
-      mAptr += 2 * moff2;
+          _mm256_set_m128i(Ablock[(idx >> 17) & 0x7f].w128[(idx >> 16) & 0x1],
+                           Ablock[((idx >> 25) & 0x7f) + moff2].w128[(idx >> 24) & 0x1]);
+      cval[1] = mm256_xor(cval[1], t2);
+      Ablock += 2 * moff2;
     }
   }
-  cval[0] = _mm256_xor_si256(cval[0], cval[1]);
-  *mcptr =
-      _mm_xor_si128(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
-}
-
-ATTR_TARGET_AVX2
-static void mzd_addmul_vl_s256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int width      = v->width;
-  const unsigned int rowstride  = A->rowstride;
-  const unsigned int mrowstride = rowstride * sizeof(word) / sizeof(word256);
-  const unsigned int moff2      = 256 * mrowstride;
-  const unsigned int len        = mrowstride;
-
-  word const* vptr     = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  word256* mcptr       = ASSUME_ALIGNED(FIRST_ROW(c), alignof(word256));
-  word256 const* mAptr = ASSUME_ALIGNED(CONST_FIRST_ROW(A), alignof(word256));
-
-  for (unsigned int w = width; w; --w, ++vptr) {
-    word idx = *vptr;
-    for (unsigned int s = sizeof(word); s; --s, idx >>= 8, mAptr += moff2) {
-      const word comb = idx & 0xff;
-      mm256_xor_region(mcptr, mAptr + comb * mrowstride, len);
-    }
-  }
-}
-
-ATTR_TARGET_AVX2
-void mzd_mul_vl_s256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  mzd_local_clear(c);
-  mzd_addmul_vl_s256(c, v, A);
+  cval[0] = mm256_xor(cval[0], cval[1]);
+  cblock->w128[0] =
+      mm128_xor(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
 }
 #endif
 #endif
 
-void mzd_addmul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  const unsigned int len   = A->width;
-  word* cptr               = ASSUME_ALIGNED(FIRST_ROW(c), 32);
-  word const* vptr         = ASSUME_ALIGNED(CONST_FIRST_ROW(v), 32);
-  const unsigned int width = v->width;
+void mzd_addmul_vl_uint64_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  block_t* cblock  = BLOCK(c, 0);
+  word const* vptr = CONST_BLOCK(v, 0)->w64;
 
-  for (unsigned int w = 0; w < width; ++w, ++vptr) {
-    word idx         = *vptr;
+  for (unsigned int w = 0; w < 2; ++w, ++vptr) {
     unsigned int add = 0;
+    for (word idx = *vptr; idx; idx >>= 8, add += 128) {
+      const word comb            = idx & 0xff;
+      const unsigned int aoffset = (comb & 0x1) << 1;
+      const block_t* Ablock      = CONST_BLOCK(A, w * sizeof(word) * 8 * 16 + add + (comb >> 1));
 
-    while (idx) {
-      const word comb = idx & 0xff;
-
-      word const* Aptr = CONST_ROW(A, w * sizeof(word) * 8 * 32 + add + comb);
-      for (unsigned int i = 0; i < len; ++i) {
-        cptr[i] ^= Aptr[i];
-      }
-
-      idx >>= 8;
-      add += 256;
+      cblock->w64[0] ^= Ablock->w64[aoffset];
+      cblock->w64[1] ^= Ablock->w64[aoffset + 1];
     }
   }
 }
 
-void mzd_mul_vl_uint64(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
-  mzd_local_clear(c);
-  mzd_addmul_vl_uint64(c, v, A);
+void mzd_mul_vl_uint64_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  clear_uint64_block(BLOCK(c, 0), 2);
+  mzd_addmul_vl_uint64_128(c, v, A);
+}
+
+static void mzd_addmul_vl_uint64_256_len(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A,
+                                         const unsigned int len) {
+  block_t* cblock  = BLOCK(c, 0);
+  word const* vptr = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int w = 0; w < len; ++w, ++vptr) {
+    unsigned int add = 0;
+    for (word idx = *vptr; idx; idx >>= 8, add += 256) {
+      const word comb = idx & 0xff;
+
+      mzd_xor_uint64_block(cblock, cblock, CONST_BLOCK(A, w * sizeof(word) * 8 * 32 + add + comb),
+                           len);
+    }
+  }
+}
+
+void mzd_addmul_vl_uint64_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  mzd_addmul_vl_uint64_256_len(c, v, A, 3);
+}
+
+void mzd_mul_vl_uint64_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  clear_uint64_block(BLOCK(c, 0), 3);
+  mzd_addmul_vl_uint64_192(c, v, A);
+}
+
+void mzd_addmul_vl_uint64_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  mzd_addmul_vl_uint64_256_len(c, v, A, 4);
+}
+
+void mzd_mul_vl_uint64_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  clear_uint64_block(BLOCK(c, 0), 4);
+  mzd_addmul_vl_uint64_256(c, v, A);
 }
 #endif
 

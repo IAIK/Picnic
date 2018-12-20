@@ -16,13 +16,6 @@
 #include "macros.h"
 #include "mzd_additional.h"
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-
-
 #if defined(MUL_M4RI)
 bool lowmc_init(lowmc_t* lowmc) {
   if (!lowmc) {
@@ -33,15 +26,16 @@ bool lowmc_init(lowmc_t* lowmc) {
     return false;
   }
 
-  lowmc->k0_lookup = mzd_precompute_matrix_lookup(lowmc->k0_matrix);
+  lowmc->k0_lookup = mzd_precompute_matrix_lookup(lowmc->k0_matrix, lowmc->n, lowmc->n);
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
+  const unsigned int cols = lowmc->m == 1 ? ((lowmc->r + 20) / 21) * 64 : lowmc->r * 32;
   lowmc->precomputed_non_linear_part_lookup =
-      mzd_precompute_matrix_lookup(lowmc->precomputed_non_linear_part_matrix);
+      mzd_precompute_matrix_lookup(lowmc->precomputed_non_linear_part_matrix, lowmc->n, cols);
 #endif
   for (unsigned int i = 0; i < lowmc->r; ++i) {
-    lowmc->rounds[i].l_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].l_matrix);
+    lowmc->rounds[i].l_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].l_matrix, lowmc->n, lowmc->n);
 #if !defined(REDUCED_ROUND_KEY_COMPUTATION)
-    lowmc->rounds[i].k_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].k_matrix);
+    lowmc->rounds[i].k_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].k_matrix, lowmc->n, lowmc->n);
 #endif
   }
 
