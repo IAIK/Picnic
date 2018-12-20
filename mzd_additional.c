@@ -1405,6 +1405,145 @@ void mzd_mul_vl_s128_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const
   cblock->w128[0] = mm128_xor(cval[0], cval[2]);
   cblock->w128[1] = mm128_xor(cval[1], cval[3]);
 }
+
+ATTR_TARGET_S128
+void mzd_mul_vl_s128_128_640(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  static const unsigned int moff2 = 256 * 3;
+
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int j = 0; j < 2; ++j) {
+    BLOCK(c, j)->w128[0] = BLOCK(c, j)->w128[1] = mm128_zero;
+  }
+  BLOCK(c, 2)->w128[0] = mm128_zero;
+
+  for (unsigned int w = 2; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      const block_t* Ablock1 = &Ablock[((idx >> 0) & 0xff) * 3];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock1, 2);
+      cblock[2].w128[0] = mm128_xor(cblock[2].w128[0], Ablock1[2].w128[0]);
+      Ablock += moff2;
+
+      const block_t* Ablock2 = &Ablock[((idx >> 8) & 0xff) * 3];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock2, 2);
+      cblock[2].w128[0] = mm128_xor(cblock[2].w128[0], Ablock2[2].w128[0]);
+      Ablock += moff2;
+    }
+  }
+}
+
+ATTR_TARGET_S128
+void mzd_mul_vl_s128_192_896(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  static const unsigned int moff2 = 256 * 4;
+
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int j = 0; j < 3; ++j) {
+    BLOCK(c, j)->w128[0] = BLOCK(c, j)->w128[1] = mm128_zero;
+  }
+  BLOCK(c, 3)->w128[0] = mm128_zero;
+
+  for (unsigned int w = 3; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      const block_t* Ablock1 = &Ablock[((idx >> 0) & 0xff) * 4];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock1, 3);
+      cblock[3].w128[0] = mm128_xor(cblock[3].w128[0], Ablock1[3].w128[0]);
+      Ablock += moff2;
+
+      const block_t* Ablock2 = &Ablock[((idx >> 8) & 0xff) * 4];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock2, 3);
+      cblock[3].w128[0] = mm128_xor(cblock[3].w128[0], Ablock2[3].w128[0]);
+      Ablock += moff2;
+    }
+  }
+}
+
+ATTR_TARGET_S128
+void mzd_mul_vl_s128_192_1024(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  static const unsigned int moff2 = 256 * 4;
+
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int j = 0; j < 4; ++j) {
+    BLOCK(c, j)->w128[0] = BLOCK(c, j)->w128[1] = mm128_zero;
+  }
+
+  for (unsigned int w = 3; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      const block_t* Ablock1 = &Ablock[((idx >> 0) & 0xff) * 4];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock1, 4);
+      Ablock += moff2;
+
+      const block_t* Ablock2 = &Ablock[((idx >> 8) & 0xff) * 4];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock2, 4);
+      Ablock += moff2;
+    }
+  }
+}
+
+ATTR_TARGET_S128
+void mzd_mul_vl_s128_256_1152(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  static const unsigned int moff2 = 256 * 5;
+
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int j = 0; j < 4; ++j) {
+    BLOCK(c, j)->w128[0] = BLOCK(c, j)->w128[1] = mm128_zero;
+  }
+  BLOCK(c, 4)->w128[0] = mm128_zero;
+
+  for (unsigned int w = 4; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      const block_t* Ablock1 = &Ablock[((idx >> 0) & 0xff) * 5];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock1, 4);
+      cblock[4].w128[0] = mm128_xor(cblock[4].w128[0], Ablock1[4].w128[0]);
+      Ablock += moff2;
+
+      const block_t* Ablock2 = &Ablock[((idx >> 8) & 0xff) * 5];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock2, 4);
+      cblock[4].w128[0] = mm128_xor(cblock[4].w128[0], Ablock2[4].w128[0]);
+      Ablock += moff2;
+    }
+  }
+}
+
+ATTR_TARGET_S128
+void mzd_mul_vl_s128_256_1280(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  static const unsigned int moff2 = 256 * 5;
+
+  block_t* cblock       = BLOCK(c, 0);
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int j = 0; j < 5; ++j) {
+    BLOCK(c, j)->w128[0] = BLOCK(c, j)->w128[1] = mm128_zero;
+  }
+
+  for (unsigned int w = 4; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      const block_t* Ablock1 = &Ablock[((idx >> 0) & 0xff) * 5];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock1, 5);
+      Ablock += moff2;
+
+      const block_t* Ablock2 = &Ablock[((idx >> 8) & 0xff) * 5];
+      mzd_xor_s128_blocks(cblock, cblock, Ablock2, 5);
+      Ablock += moff2;
+    }
+  }
+}
 #endif
 
 #if defined(WITH_AVX2)

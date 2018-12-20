@@ -321,12 +321,16 @@ static int test_mzd_mul_s128_128(void) {
   return test_mzd_mul_f("mul s128 128", 128, 128, mzd_mul_v_s128_128, false);
 }
 
-static int test_mzd_mul_s128_128_640(void) {
-  return test_mzd_mul_f("mul s128 128 640", 128, 640, mzd_mul_v_s128_128_640, false);
-}
-
 static int test_mzd_mul_s128_192(void) {
   return test_mzd_mul_f("mul s128 192", 192, 192, mzd_mul_v_s128_192, false);
+}
+
+static int test_mzd_mul_s128_256(void) {
+  return test_mzd_mul_f("mul s128 256", 256, 256, mzd_mul_v_s128_256, false);
+}
+
+static int test_mzd_mul_s128_128_640(void) {
+  return test_mzd_mul_f("mul s128 128 640", 128, 640, mzd_mul_v_s128_128_640, false);
 }
 
 static int test_mzd_mul_s128_192_896(void) {
@@ -335,10 +339,6 @@ static int test_mzd_mul_s128_192_896(void) {
 
 static int test_mzd_mul_s128_192_1024(void) {
   return test_mzd_mul_f("mul s128 192 1024", 192, 1024, mzd_mul_v_s128_192_1024, false);
-}
-
-static int test_mzd_mul_s128_256(void) {
-  return test_mzd_mul_f("mul s128 256", 256, 256, mzd_mul_v_s128_256, false);
 }
 
 static int test_mzd_mul_s128_256_1152(void) {
@@ -372,6 +372,26 @@ static int test_mzd_mull_s128_192(void) {
 
 static int test_mzd_mull_s128_256(void) {
   return test_mzd_mul_l_f("mull s128 256", 256, 256, mzd_mul_vl_s128_256, false);
+}
+
+static int test_mzd_mull_s128_128_640(void) {
+  return test_mzd_mul_l_f("mull s128 128 640", 128, 640, mzd_mul_vl_s128_128_640, false);
+}
+
+static int test_mzd_mull_s128_192_896(void) {
+  return test_mzd_mul_l_f("mull s128 192 896", 192, 896, mzd_mul_vl_s128_192_896, false);
+}
+
+static int test_mzd_mull_s128_192_1024(void) {
+  return test_mzd_mul_l_f("mull s128 192 1024", 192, 1024, mzd_mul_vl_s128_192_1024, false);
+}
+
+static int test_mzd_mull_s128_256_1152(void) {
+  return test_mzd_mul_l_f("mull s128 256 1152", 256, 1152, mzd_mul_vl_s128_256_1152, false);
+}
+
+static int test_mzd_mull_s128_256_1280(void) {
+  return test_mzd_mul_l_f("mull s128 256 1280", 256, 1280, mzd_mul_vl_s128_256_1280, false);
 }
 
 static int test_mzd_addmull_s128_128(void) {
@@ -454,8 +474,13 @@ int main(void) {
     ret |= test_mzd_addmul_s128_256();
 #if defined(MUL_M4RI)
     ret |= test_mzd_mull_s128_128();
+    ret |= test_mzd_mull_s128_128_640();
     ret |= test_mzd_mull_s128_192();
+    ret |= test_mzd_mull_s128_192_896();
+    ret |= test_mzd_mull_s128_192_1024();
     ret |= test_mzd_mull_s128_256();
+    ret |= test_mzd_mull_s128_256_1152();
+    ret |= test_mzd_mull_s128_256_1280();
     ret |= test_mzd_addmull_s128_128();
     ret |= test_mzd_addmull_s128_192();
     ret |= test_mzd_addmull_s128_256();
