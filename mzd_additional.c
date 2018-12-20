@@ -359,7 +359,7 @@ void mzd_mul_v_parity_uint64_128_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   const word parity2 =
       parity64_uint64((vblock->w64[0] & Ablock1->w64[2]) ^ (vblock->w64[1] & Ablock1->w64[3]));
   const word parity3 =
-      parity64_uint64((vblock->w64[0] & Ablock2->w64[0]) ^ (vblock->w64[1] & Ablock1->w64[1]));
+      parity64_uint64((vblock->w64[0] & Ablock2->w64[0]) ^ (vblock->w64[1] & Ablock2->w64[1]));
 
   cblock->w64[1] = (parity1 | (parity2 << 1) | (parity3 << 2)) << 61;
 }
@@ -478,7 +478,7 @@ void mzd_mul_v_parity_popcnt_128_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
   const word parity2 =
       parity64_popcnt((vblock->w64[0] & Ablock1->w64[2]) ^ (vblock->w64[1] & Ablock1->w64[3]));
   const word parity3 =
-      parity64_popcnt((vblock->w64[0] & Ablock2->w64[0]) ^ (vblock->w64[1] & Ablock1->w64[1]));
+      parity64_popcnt((vblock->w64[0] & Ablock2->w64[0]) ^ (vblock->w64[1] & Ablock2->w64[1]));
 
   cblock->w64[1] = (parity1 | (parity2 << 1) | (parity3 << 2)) << 61;
 }
