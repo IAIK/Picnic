@@ -25,7 +25,6 @@
 #define static_assert _Static_assert
 #endif
 
-static const size_t mzd_local_t_size = (sizeof(mzd_local_t) + 0x1f) & ~0x1f;
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
 #if defined(WITH_OPT)
@@ -84,18 +83,10 @@ mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) {
   /* We always align mzd_local_ts to 32 bytes. Thus the first row is always
    * aligned to 32 bytes as well. For 128 bit and SSE all other rows are then
    * aligned to 16 bytes. */
-  unsigned char* buffer = aligned_alloc(32, (mzd_local_t_size + buffer_size + 31) & ~31);
+  unsigned char* buffer = aligned_alloc(32, (buffer_size + 31) & ~31);
 
   mzd_local_t* A = (mzd_local_t*)buffer;
-
-  // assign in order
-  A->nrows     = r;
-  A->ncols     = c;
-  A->width     = width;
-  A->rowstride = rowstride;
-
   if (clear) {
-    buffer += mzd_local_t_size;
     memset(buffer, 0, buffer_size);
   }
 
@@ -111,22 +102,15 @@ void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_
   const uint32_t rowstride = calculate_rowstride(width);
 
   const size_t buffer_size   = r * rowstride * sizeof(word);
-  const size_t size_per_elem = (mzd_local_t_size + buffer_size + 31) & ~31;
+  const size_t size_per_elem = (buffer_size + 31) & ~31;
 
   unsigned char* full_buffer = aligned_alloc(32, size_per_elem * n);
 
   for (size_t s = 0; s < n; ++s, full_buffer += size_per_elem) {
     unsigned char* buffer = full_buffer;
-    mzd_local_t* A = dst[s] = (mzd_local_t*)buffer;
-
-    // assign in order
-    A->nrows     = r;
-    A->ncols     = c;
-    A->width     = width;
-    A->rowstride = rowstride;
+    dst[s] = (mzd_local_t*)buffer;
 
     if (clear) {
-      buffer += mzd_local_t_size;
       memset(buffer, 0, buffer_size);
     }
   }

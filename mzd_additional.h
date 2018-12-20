@@ -37,11 +37,15 @@ typedef union {
 #endif
 } block_t ATTR_ALIGNED(32);
 
-typedef struct {
-  uint32_t nrows, ncols, width, rowstride;
-  uint32_t padding[4];
-  block_t rows[];
-} mzd_local_t ATTR_ALIGNED(32);
+/**
+ * Representation of matrices and vectors
+ *
+ * The basic memory unit is a block of 256 bit. Each row is stored in (possible multiple) blocks
+ * depending on the number of columns. Matrices with up to 128 columns are the only excpetion. In
+ * this case a block actually contains two rows. The row with even index is contained in w64[0] and
+ * w61[1], the row with odd index is contained in w64[2] and w64[3].
+ */
+typedef block_t mzd_local_t;
 
 mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) ATTR_ASSUME_ALIGNED(32);
 
@@ -234,13 +238,7 @@ void mzd_shuffle_pext_192_3(mzd_local_t* x, const word mask) ATTR_NONNULL;
 void mzd_shuffle_pext_256_30(mzd_local_t* x, const word mask) ATTR_NONNULL;
 void mzd_shuffle_pext_256_3(mzd_local_t* x, const word mask) ATTR_NONNULL;
 
-#define ROW(v, r) (&(v)->rows[0].w64[(v)->rowstride * (r)])
-#define CONST_ROW(v, r) ((word const*)ROW(v, r))
-
-#define FIRST_ROW(v) ROW(v, 0)
-#define CONST_FIRST_ROW(v) CONST_ROW(v, 0)
-
-#define BLOCK(v, b) ((block_t*)ASSUME_ALIGNED(&(v)->rows[(b)], 32))
-#define CONST_BLOCK(v, b) ((const block_t*)ASSUME_ALIGNED(&(v)->rows[(b)], 32))
+#define BLOCK(v, b) ((block_t*)ASSUME_ALIGNED(&(v)[(b)], 32))
+#define CONST_BLOCK(v, b) ((const block_t*)ASSUME_ALIGNED(&(v)[(b)], 32))
 
 #endif
