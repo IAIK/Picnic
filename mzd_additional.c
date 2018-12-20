@@ -79,18 +79,17 @@ mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) {
   const uint32_t rowstride = calculate_rowstride(width);
 
   const size_t buffer_size = r * rowstride * sizeof(word);
+  const size_t alloc_size = (buffer_size + 31) & ~31;
 
   /* We always align mzd_local_ts to 32 bytes. Thus the first row is always
    * aligned to 32 bytes as well. For 128 bit and SSE all other rows are then
    * aligned to 16 bytes. */
-  unsigned char* buffer = aligned_alloc(32, (buffer_size + 31) & ~31);
-
-  mzd_local_t* A = (mzd_local_t*)buffer;
+  unsigned char* buffer = aligned_alloc(32, alloc_size);
   if (clear) {
-    memset(buffer, 0, buffer_size);
+    memset(buffer, 0, alloc_size);
   }
 
-  return A;
+  return (mzd_local_t*)buffer;
 }
 
 void mzd_local_free(mzd_local_t* v) {
@@ -105,14 +104,13 @@ void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_
   const size_t size_per_elem = (buffer_size + 31) & ~31;
 
   unsigned char* full_buffer = aligned_alloc(32, size_per_elem * n);
+  if (clear) {
+    memset(full_buffer, 0, size_per_elem * n);
+  }
 
   for (size_t s = 0; s < n; ++s, full_buffer += size_per_elem) {
     unsigned char* buffer = full_buffer;
     dst[s] = (mzd_local_t*)buffer;
-
-    if (clear) {
-      memset(buffer, 0, buffer_size);
-    }
   }
 }
 
