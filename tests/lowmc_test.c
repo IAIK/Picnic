@@ -20,7 +20,6 @@
 
 #include "utils.h"
 
-#define WITH_LOWMC_M1
 static int lowmc_enc(const picnic_params_t param, const uint8_t* key, const uint8_t* plaintext,
                      const uint8_t* expected) {
   const picnic_instance_t* pp = picnic_instance_get(param);
