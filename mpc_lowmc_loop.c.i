@@ -14,7 +14,11 @@
 lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
   mzd_local_t* nl_part[reduced_shares];
+#if defined(M_FIXED_10)
   mzd_local_init_multiple_ex(nl_part, reduced_shares, 1, (LOWMC_R)*32, false);
+#else
+  mzd_local_init_multiple_ex(nl_part, reduced_shares, 1, ((LOWMC_R + 20) / 21) * 64, false);
+#endif
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
   MPC_LOOP_CONST_C(XOR, x, x, LOWMC_INSTANCE.precomputed_constant_linear, reduced_shares, ch);
   MPC_LOOP_CONST(MUL_MC, nl_part, lowmc_key,
