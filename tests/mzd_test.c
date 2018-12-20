@@ -137,7 +137,7 @@ static int test_mzd_mul_l_f(const char* n, unsigned int rows, unsigned int cols,
 
     mzd_local_t* rc = mzd_convert(r);
 
-    if (!mzd_local_equal(rc, c21, cols)) {
+    if (!mzd_local_equal(rc, c2, 1, cols)) {
       printf("%s: fail [%u x %u]\n", n, rows, cols);
       ret = -1;
     } else {
