@@ -1551,6 +1551,72 @@ void mzd_addmul_vl_s256_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t co
   cblock->w128[0] =
       mm128_xor(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
 }
+
+ATTR_TARGET_AVX2
+void mzd_mul_vl_s256_128_768(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  static const unsigned int moff2 = 256 * 3;
+
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int j = 0; j < 3; ++j) {
+    BLOCK(c, j)->w256 = mm256_zero;
+  }
+
+  for (unsigned int w = 2; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mzd_xor_s256_blocks(BLOCK(c, 0), CONST_BLOCK(c, 0), &Ablock[((idx >> 0) & 0xff) * 3], 3);
+      Ablock += moff2;
+      mzd_xor_s256_blocks(BLOCK(c, 0), CONST_BLOCK(c, 0), &Ablock[((idx >> 8) & 0xff) * 3], 3);
+      Ablock += moff2;
+    }
+  }
+}
+
+ATTR_TARGET_AVX2
+void mzd_mul_vl_s256_192_1024(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  static const unsigned int moff2 = 256 * 4;
+
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int j = 0; j < 4; ++j) {
+    BLOCK(c, j)->w256 = mm256_zero;
+  }
+
+  for (unsigned int w = 3; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mzd_xor_s256_blocks(BLOCK(c, 0), CONST_BLOCK(c, 0), &Ablock[((idx >> 0) & 0xff) * 4], 4);
+      Ablock += moff2;
+      mzd_xor_s256_blocks(BLOCK(c, 0), CONST_BLOCK(c, 0), &Ablock[((idx >> 8) & 0xff) * 4], 4);
+      Ablock += moff2;
+    }
+  }
+}
+
+ATTR_TARGET_AVX2
+void mzd_mul_vl_s256_256_1280(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  static const unsigned int moff2 = 256 * 5;
+
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+  word const* vptr      = CONST_BLOCK(v, 0)->w64;
+
+  for (unsigned int j = 0; j < 5; ++j) {
+    BLOCK(c, j)->w256 = mm256_zero;
+  }
+
+  for (unsigned int w = 4; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int s = sizeof(word); s; s -= 2, idx >>= 16) {
+      mzd_xor_s256_blocks(BLOCK(c, 0), CONST_BLOCK(c, 0), &Ablock[((idx >> 0) & 0xff) * 5], 5);
+      Ablock += moff2;
+      mzd_xor_s256_blocks(BLOCK(c, 0), CONST_BLOCK(c, 0), &Ablock[((idx >> 8) & 0xff) * 5], 5);
+      Ablock += moff2;
+    }
+  }
+}
 #endif
 #endif
 
