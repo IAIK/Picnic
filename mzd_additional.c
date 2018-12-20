@@ -1995,7 +1995,7 @@ void mzd_addmul_v_uint64_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
   const word idx       = CONST_BLOCK(v, 0)->w64[1] >> 61;
   const uint64_t mask1 = -(idx & 1);
   const uint64_t mask2 = -((idx >> 1) & 1);
-  const uint64_t mask3 = -((idx >> 1) & 1);
+  const uint64_t mask3 = -((idx >> 2) & 1);
 
   for (unsigned int j = 0; j < 2; ++j) {
     cblock->w64[j] ^=
