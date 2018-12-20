@@ -33,7 +33,6 @@ include(CheckIncludeFiles)
 include(CheckSymbolExists)
 
 # required libraries
-find_package(OpenSSL)
 find_package(m4ri 20140914)
 
 if(APPLE)
