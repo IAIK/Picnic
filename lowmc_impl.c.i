@@ -24,7 +24,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
   mzd_local_t* x       = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* y       = mzd_local_init_ex(1, LOWMC_N, false);
-  mzd_local_t* tmp     = mzd_local_init_ex(1, LOWMC_N, false);
 #if defined(M_FIXED_10)
   mzd_local_t* nl_part = mzd_local_init_ex(1, LOWMC_R * 32, false);
 #elif defined(M_FIXED_1)
@@ -65,10 +64,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
 #endif
     XOR(x, y, x);
-//    mzd_local_t* t = x;
-//    x              = y;
-//    y              = t;
-
   }
 #if defined(RECORD_STATE)
   copy(state->state[LOWMC_R-1], x);
@@ -85,7 +80,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
       (nl << ((20 - (i % 21)) * 3)) & WORD_C(0xE000000000000000);
 #endif
-  MUL(y,x,CONCAT(LOWMC_INSTANCE.zr, matrix_postfix));
+  MUL(y, x, CONCAT(LOWMC_INSTANCE.zr, matrix_postfix));
   mzd_local_t* t = x;
   x              = y;
   y              = t;
@@ -119,7 +114,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   }
 #endif
   mzd_local_free(nl_part);
-  mzd_local_free(tmp);
   mzd_local_free(y);
 #if defined(RECORD_STATE)
   copy(state->state[LOWMC_R], x);
