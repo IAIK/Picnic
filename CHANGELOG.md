@@ -1,8 +1,10 @@
 Version X.X -- XXXX-XX-XX
 -------------------------
 
-* Implement linear layer optimizations to speed up LowMC evaluations.
+* Implement linear layer optimizations to speed up LowMC evaluations. Besides the runtime improvements, this optimization also greatly reduces the memory size of the LowMC instances.
 * Provide LowMC instances with m=1 to demonstrate feasibility of those instances.
+* Sligthly improve internal storage of matrices to require less memory.
+* Remove unused code and support for dynamic LowMC instances.
 
 Version 1.2 -- 2018-12-05
 -------------------------
