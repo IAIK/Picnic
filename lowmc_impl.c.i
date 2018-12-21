@@ -25,9 +25,9 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   mzd_local_t* x       = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* y       = mzd_local_init_ex(1, LOWMC_N, false);
 #if defined(M_FIXED_10)
-  mzd_local_t* nl_part = mzd_local_init_ex(1, LOWMC_R * 32, false);
+  mzd_local_t nl_part[(LOWMC_R * 32 + 255) / 256];
 #elif defined(M_FIXED_1)
-  mzd_local_t* nl_part = mzd_local_init_ex(1, ((LOWMC_R + 20) / 21) * 64, false);
+  mzd_local_t nl_part[(((LOWMC_R + 20) / 21) * 64 + 255) / 256];
 #endif
 
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
@@ -113,7 +113,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     y              = t;
   }
 #endif
-  mzd_local_free(nl_part);
   mzd_local_free(y);
 #if defined(RECORD_STATE)
   copy(state->state[LOWMC_R], x);
