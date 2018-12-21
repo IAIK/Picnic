@@ -1,4 +1,4 @@
-Version X.X -- XXXX-XX-XX
+Version 1.3 -- 2018-12-21
 -------------------------
 
 * Implement linear layer optimizations to speed up LowMC evaluations. Besides the runtime improvements, this optimization also greatly reduces the memory size of the LowMC instances.
