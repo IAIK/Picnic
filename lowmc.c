@@ -93,129 +93,19 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #endif
 
 // uint64 based implementation
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_uint64_128, mzd_addmul_vl_uint64_128)
-#define MUL SELECT_V_VL(mzd_mul_v_uint64_128, mzd_mul_vl_uint64_128)
-#define XOR mzd_xor_uint64_128
-#define SHUFFLE mzd_shuffle_128
-
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_uint64_128_576, mzd_mul_vl_uint64_128_576)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_uint64_128_640, mzd_mul_vl_uint64_128_640)
-#define MUL_R_1  mzd_addmul_v_uint64_3_128
-#define MUL_R_10 mzd_addmul_v_uint64_30_128
-#define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
-#define XOR_MC_1 mzd_xor_uint64_576
-#define XOR_MC_10 mzd_xor_uint64_640
-
-#define LOWMC_N LOWMC_L1_N
-#define LOWMC_R_10 LOWMC_L1_R
-#define LOWMC_R_1 LOWMC_L1_1_R
-#if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 lowmc_128_128_20
-#endif
-#if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 lowmc_128_128_182
-#endif
-
+#include "lowmc_fns_uint64_L1.h"
 #define LOWMC lowmc_uint64_128
 #include "lowmc.c.i"
 
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_uint64_192, mzd_addmul_vl_uint64_192)
-#define MUL SELECT_V_VL(mzd_mul_v_uint64_192, mzd_mul_vl_uint64_192)
-#define SHUFFLE mzd_shuffle_192
-#define XOR mzd_xor_uint64_192
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_uint64_192_896, mzd_mul_vl_uint64_192_896)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_uint64_192_960, mzd_mul_vl_uint64_192_960)
-#define MUL_R_1  mzd_addmul_v_uint64_3_192
-#define MUL_R_10 mzd_addmul_v_uint64_30_192
-#define MUL_Z_1 mzd_mul_v_parity_uint64_192_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
-#define XOR_MC_1 mzd_xor_uint64_896
-#define XOR_MC_10 mzd_xor_uint64_960
-
+#include "lowmc_fns_uint64_L3.h"
 #undef LOWMC
-#undef LOWMC_N
-#undef LOWMC_R_10
-#undef LOWMC_R_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_INSTANCE_1
-
-#define LOWMC_N LOWMC_L3_N
-#define LOWMC_R_10 LOWMC_L3_R
-#define LOWMC_R_1 LOWMC_L3_1_R
-#if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 lowmc_192_192_30
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 lowmc_192_192_284
-#endif
 #define LOWMC lowmc_uint64_192
 #include "lowmc.c.i"
 
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_uint64_256, mzd_addmul_vl_uint64_256)
-#define MUL SELECT_V_VL(mzd_mul_v_uint64_256, mzd_mul_vl_uint64_256)
-#define SHUFFLE mzd_shuffle_256
-#define XOR mzd_xor_uint64_256
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_uint64_256_1152, mzd_mul_vl_uint64_256_1152)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_uint64_256_1216, mzd_mul_vl_uint64_256_1216)
-#define MUL_R_1  mzd_addmul_v_uint64_3_256
-#define MUL_R_10 mzd_addmul_v_uint64_30_256
-#define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
-#define XOR_MC_1 mzd_xor_uint64_1152
-#define XOR_MC_10 mzd_xor_uint64_1216
-
+#include "lowmc_fns_uint64_L5.h"
 #undef LOWMC
-#undef LOWMC_N
-#undef LOWMC_R_10
-#undef LOWMC_R_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_INSTANCE_1
-
-#define LOWMC_N LOWMC_L5_N
-#define LOWMC_R_10 LOWMC_L5_R
-#define LOWMC_R_1 LOWMC_L5_1_R
-#if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 lowmc_256_256_38
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 lowmc_256_256_363
-#endif
 #define LOWMC lowmc_uint64_256
 #include "lowmc.c.i"
-
-#undef LOWMC
-#undef LOWMC_N
-#undef LOWMC_R_10
-#undef LOWMC_R_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_INSTANCE_1
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -224,137 +114,19 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #endif
 
 // L1 using SSE2/NEON
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_128, mzd_addmul_vl_s128_128)
-#define MUL SELECT_V_VL(mzd_mul_v_s128_128, mzd_mul_vl_s128_128)
-#define SHUFFLE mzd_shuffle_128
-#define XOR mzd_xor_s128_128
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 lowmc_128_128_20
-#endif
-#if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 lowmc_128_128_182
-#endif
-#define LOWMC_N LOWMC_L1_N
-#define LOWMC_R_10 LOWMC_L1_R
-#define LOWMC_R_1 LOWMC_L1_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s128_128_640, mzd_mul_vl_s128_128_640)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s128_128_640, mzd_mul_vl_s128_128_640)
-#define MUL_R_1  mzd_addmul_v_s128_3_128
-#define MUL_R_10 mzd_addmul_v_s128_30_128
-#define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
-#define XOR_MC_1 mzd_xor_s128_640
-#define XOR_MC_10 mzd_xor_s128_640
-
+#include "lowmc_fns_s128_L1.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_128
 #include "lowmc.c.i"
 
 // L3 using SSE2/NEON
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_192, mzd_addmul_vl_s128_192)
-#define MUL SELECT_V_VL(mzd_mul_v_s128_192, mzd_mul_vl_s128_192)
-#define SHUFFLE mzd_shuffle_192
-#define XOR mzd_xor_s128_256
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 lowmc_192_192_30
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 lowmc_192_192_284
-#endif
-#define LOWMC_N LOWMC_L3_N
-#define LOWMC_R_10 LOWMC_L3_R
-#define LOWMC_R_1 LOWMC_L3_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s128_192_896, mzd_mul_vl_s128_192_896)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s128_192_1024, mzd_mul_vl_s128_192_1024)
-#define MUL_R_1  mzd_addmul_v_s128_3_192
-#define MUL_R_10 mzd_addmul_v_s128_30_192
-#define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
-#define XOR_MC_1 mzd_xor_s128_896
-#define XOR_MC_10 mzd_xor_s128_1024
-
+#include "lowmc_fns_s128_L3.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_192
 #include "lowmc.c.i"
 
 // L5 using SSE2/NEON
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_256, mzd_addmul_vl_s128_256)
-#define MUL SELECT_V_VL(mzd_mul_v_s128_256, mzd_mul_vl_s128_256)
-#define SHUFFLE mzd_shuffle_256
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 lowmc_256_256_38
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 lowmc_256_256_363
-#endif
-#define LOWMC_N LOWMC_L5_N
-#define LOWMC_R_10 LOWMC_L5_R
-#define LOWMC_R_1 LOWMC_L5_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s128_256_1152, mzd_mul_vl_s128_256_1152)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s128_256_1280, mzd_mul_vl_s128_256_1280)
-#define MUL_R_1  mzd_addmul_v_s128_3_256
-#define MUL_R_10 mzd_addmul_v_s128_30_256
-#define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
-#define XOR_MC_1 mzd_xor_s128_1152
-#define XOR_MC_10 mzd_xor_s128_1280
-
+#include "lowmc_fns_s128_L5.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_256
 #include "lowmc.c.i"
@@ -366,137 +138,19 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #define FN_ATTR ATTR_TARGET("sse2,popcnt")
 
 // L1 using SSE2 and POPCNT
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_128, mzd_addmul_vl_s128_128)
-#define MUL SELECT_V_VL(mzd_mul_v_s128_128, mzd_mul_vl_s128_128)
-#define SHUFFLE mzd_shuffle_128
-#define XOR mzd_xor_s128_128
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 lowmc_128_128_20
-#endif
-#if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 lowmc_128_128_182
-#endif
-#define LOWMC_N LOWMC_L1_N
-#define LOWMC_R_10 LOWMC_L1_R
-#define LOWMC_R_1 LOWMC_L1_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s128_128_640, mzd_mul_vl_s128_128_640)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s128_128_640, mzd_mul_vl_s128_128_640)
-#define MUL_R_1  mzd_addmul_v_s128_3_128
-#define MUL_R_10 mzd_addmul_v_s128_30_128
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_128_3
-#define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
-#define XOR_MC_1 mzd_xor_s128_640
-#define XOR_MC_10 mzd_xor_s128_640
-
+#include "lowmc_fns_s128_popcnt_L1.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_popcnt_128
 #include "lowmc.c.i"
 
 // L3 using SSE2 and POPCNT
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_192, mzd_addmul_vl_s128_192)
-#define MUL SELECT_V_VL(mzd_mul_v_s128_192, mzd_mul_vl_s128_192)
-#define SHUFFLE mzd_shuffle_192
-#define XOR mzd_xor_s128_256
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 lowmc_192_192_30
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 lowmc_192_192_284
-#endif
-#define LOWMC_N LOWMC_L3_N
-#define LOWMC_R_10 LOWMC_L3_R
-#define LOWMC_R_1 LOWMC_L3_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s128_192_896, mzd_mul_vl_s128_192_896)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s128_192_1024, mzd_mul_vl_s128_192_1024)
-#define MUL_R_1  mzd_addmul_v_s128_3_192
-#define MUL_R_10 mzd_addmul_v_s128_30_192
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_192_3
-#define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
-#define XOR_MC_1 mzd_xor_s128_896
-#define XOR_MC_10 mzd_xor_s128_1024
-
+#include "lowmc_fns_s128_popcnt_L3.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_popcnt_192
 #include "lowmc.c.i"
 
 // L5 using SSE2 and POPCNT
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_256, mzd_addmul_vl_s128_256)
-#define MUL SELECT_V_VL(mzd_mul_v_s128_256, mzd_mul_vl_s128_256)
-#define SHUFFLE mzd_shuffle_256
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 lowmc_256_256_38
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 lowmc_256_256_363
-#endif
-#define LOWMC_N LOWMC_L5_N
-#define LOWMC_R_10 LOWMC_L5_R
-#define LOWMC_R_1 LOWMC_L5_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s128_256_1152, mzd_mul_vl_s128_256_1152)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s128_256_1280, mzd_mul_vl_s128_256_1280)
-#define MUL_R_1  mzd_addmul_v_s128_3_256
-#define MUL_R_10 mzd_addmul_v_s128_30_256
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_256_3
-#define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
-#define XOR_MC_1 mzd_xor_s128_1152
-#define XOR_MC_10 mzd_xor_s128_1280
-
+#include "lowmc_fns_s128_popcnt_L5.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_popcnt_256
 #include "lowmc.c.i"
@@ -508,137 +162,19 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #define FN_ATTR ATTR_TARGET_AVX2
 
 // L1 using AVX2
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_128, mzd_addmul_vl_s256_128)
-#define MUL SELECT_V_VL(mzd_mul_v_s256_128, mzd_mul_vl_s256_128)
-#define SHUFFLE mzd_shuffle_pext_128
-#define XOR mzd_xor_s256_128
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 lowmc_128_128_20
-#endif
-#if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 lowmc_128_128_182
-#endif
-#define LOWMC_N LOWMC_L1_N
-#define LOWMC_R_10 LOWMC_L1_R
-#define LOWMC_R_1 LOWMC_L1_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s256_128_768, mzd_mul_vl_s256_128_768)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s256_128_768, mzd_mul_vl_s256_128_768)
-#define MUL_R_1  mzd_addmul_v_s256_3_128
-#define MUL_R_10 mzd_addmul_v_s256_30_128
-#define MUL_Z_1  mzd_mul_v_parity_uint64_128_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_128_30
-#define XOR_MC_1 mzd_xor_s256_768
-#define XOR_MC_10 mzd_xor_s256_768
-
+#include "lowmc_fns_s128_L1.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_128
 #include "lowmc.c.i"
 
 // L3 using AVX2
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_192, mzd_addmul_vl_s256_192)
-#define MUL SELECT_V_VL(mzd_mul_v_s256_192, mzd_mul_vl_s256_192)
-#define SHUFFLE mzd_shuffle_pext_192
-#define XOR mzd_xor_s256_256
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 lowmc_192_192_30
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 lowmc_192_192_284
-#endif
-#define LOWMC_N LOWMC_L3_N
-#define LOWMC_R_10 LOWMC_L3_R
-#define LOWMC_R_1 LOWMC_L3_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s256_192_1024, mzd_mul_vl_s256_192_1024)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s256_192_1024, mzd_mul_vl_s256_192_1024)
-#define MUL_R_1  mzd_addmul_v_s256_3_192
-#define MUL_R_10 mzd_addmul_v_s256_30_192
-#define MUL_Z_1  mzd_mul_v_parity_uint64_192_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_192_30
-#define XOR_MC_1 mzd_xor_s256_1024
-#define XOR_MC_10 mzd_xor_s256_1024
-
+#include "lowmc_fns_s256_L3.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_192
 #include "lowmc.c.i"
 
 // L5 using AVX2
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_256, mzd_addmul_vl_s256_256)
-#define MUL SELECT_V_VL(mzd_mul_v_s256_256, mzd_mul_vl_s256_256)
-#define SHUFFLE mzd_shuffle_pext_256
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 lowmc_256_256_38
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 lowmc_256_256_363
-#endif
-#define LOWMC_N LOWMC_L5_N
-#define LOWMC_R_10 LOWMC_L5_R
-#define LOWMC_R_1 LOWMC_L5_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s256_256_1280, mzd_mul_vl_s256_256_1280)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s256_256_1280, mzd_mul_vl_s256_256_1280)
-#define MUL_R_1  mzd_addmul_v_s256_3_256
-#define MUL_R_10 mzd_addmul_v_s256_30_256
-#define MUL_Z_1  mzd_mul_v_parity_uint64_256_3
-#define MUL_Z_10 mzd_mul_v_parity_uint64_256_30
-#define XOR_MC_1 mzd_xor_s256_1280
-#define XOR_MC_10 mzd_xor_s256_1280
-
+#include "lowmc_fns_s256_L5.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_256
 #include "lowmc.c.i"
@@ -649,146 +185,25 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #define FN_ATTR ATTR_TARGET("avx2,bmi2,popcnt")
 
 // L1 using AVX2
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_128, mzd_addmul_vl_s256_128)
-#define MUL SELECT_V_VL(mzd_mul_v_s256_128, mzd_mul_vl_s256_128)
-#define SHUFFLE mzd_shuffle_pext_128
-#define XOR mzd_xor_s256_128
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE_10 lowmc_128_128_20
-#endif
-#if defined(WITH_LOWMC_128_128_182)
-#define LOWMC_INSTANCE_1 lowmc_128_128_182
-#endif
-#define LOWMC_N LOWMC_L1_N
-#define LOWMC_R_10 LOWMC_L1_R
-#define LOWMC_R_1 LOWMC_L1_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s256_128_768, mzd_mul_vl_s256_128_768)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s256_128_768, mzd_mul_vl_s256_128_768)
-#define MUL_R_1  mzd_addmul_v_s256_3_128
-#define MUL_R_10 mzd_addmul_v_s256_30_128
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_128_3
-#define MUL_Z_10 mzd_mul_v_parity_popcnt_128_30
-#define XOR_MC_1 mzd_xor_s256_768
-#define XOR_MC_10 mzd_xor_s256_768
-
+#include "lowmc_fns_s256_popcnt_L1.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_popcnt_128
 #include "lowmc.c.i"
 
 // L3 using AVX2
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#undef XOR
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_192, mzd_addmul_vl_s256_192)
-#define MUL SELECT_V_VL(mzd_mul_v_s256_192, mzd_mul_vl_s256_192)
-#define SHUFFLE mzd_shuffle_pext_192
-#define XOR mzd_xor_s256_256
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_192_192_30)
-#define LOWMC_INSTANCE_10 lowmc_192_192_30
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-#define LOWMC_INSTANCE_1 lowmc_192_192_284
-#endif
-#define LOWMC_N LOWMC_L3_N
-#define LOWMC_R_10 LOWMC_L3_R
-#define LOWMC_R_1 LOWMC_L3_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s256_192_1024, mzd_mul_vl_s256_192_1024)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s256_192_1024, mzd_mul_vl_s256_192_1024)
-#define MUL_R_1  mzd_addmul_v_s256_3_192
-#define MUL_R_10 mzd_addmul_v_s256_30_192
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_192_3
-#define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
-#define XOR_MC_1 mzd_xor_s256_1024
-#define XOR_MC_10 mzd_xor_s256_1024
-
+#include "lowmc_fns_s256_popcnt_L3.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_popcnt_192
 #include "lowmc.c.i"
 
 // L5 using AVX2
-#undef ADDMUL
-#undef MUL
-#undef SHUFFLE
-#define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_256, mzd_addmul_vl_s256_256)
-#define MUL SELECT_V_VL(mzd_mul_v_s256_256, mzd_mul_vl_s256_256)
-#define SHUFFLE mzd_shuffle_pext_256
-
-#undef LOWMC_INSTANCE_1
-#undef LOWMC_INSTANCE_10
-#undef LOWMC_N
-#undef LOWMC_R_1
-#undef LOWMC_R_10
-#if defined(WITH_LOWMC_256_256_38)
-#define LOWMC_INSTANCE_10 lowmc_256_256_38
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-#define LOWMC_INSTANCE_1 lowmc_256_256_363
-#endif
-#define LOWMC_N LOWMC_L5_N
-#define LOWMC_R_10 LOWMC_L5_R
-#define LOWMC_R_1 LOWMC_L5_1_R
-
-#undef MUL_MC_1
-#undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
-#undef MUL_Z_1
-#undef MUL_Z_10
-#undef XOR_MC_1
-#undef XOR_MC_10
-#define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s256_256_1280, mzd_mul_vl_s256_256_1280)
-#define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s256_256_1280, mzd_mul_vl_s256_256_1280)
-#define MUL_R_1  mzd_addmul_v_s256_3_256
-#define MUL_R_10 mzd_addmul_v_s256_30_256
-#define MUL_Z_1  mzd_mul_v_parity_popcnt_256_3
-#define MUL_Z_10 mzd_mul_v_parity_popcnt_256_30
-#define XOR_MC_1 mzd_xor_s256_1280
-#define XOR_MC_10 mzd_xor_s256_1280
-
+#include "lowmc_fns_s256_popcnt_L5.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_popcnt_256
 #include "lowmc.c.i"
 
 #undef FN_ATTR
 #endif
-
-#undef SHUFFLE
-#define SHUFFLE mzd_shuffle
 #endif
 #endif
 

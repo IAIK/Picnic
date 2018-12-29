@@ -11,8 +11,6 @@
 #error "OLLE is only implemented for 1 or 10 Sboxes"
 #endif
 
-#define copy(d, s) memcpy(BLOCK(d, 0), CONST_BLOCK(s, 0), LOWMC_N / 8)
-
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
@@ -41,7 +39,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R-1; ++i, ++round) {
 #if defined(RECORD_STATE)
-    copy(state->state[i], x);
+    COPY(state->state[i], x);
 #endif
     SBOX(x);
 
@@ -66,7 +64,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     XOR(x, y, x);
   }
 #if defined(RECORD_STATE)
-  copy(state->state[LOWMC_R-1], x);
+  COPY(state->state[LOWMC_R-1], x);
 #endif
   SBOX(x);
 
@@ -93,7 +91,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
 #if defined(RECORD_STATE)
-    copy(state->state[i], x);
+    COPY(state->state[i], x);
 #endif
     SBOX(x);
 
@@ -115,7 +113,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #endif
   mzd_local_free(y);
 #if defined(RECORD_STATE)
-  copy(state->state[LOWMC_R], x);
+  COPY(state->state[LOWMC_R], x);
   mzd_local_free(x);
 #else
   return x;
@@ -124,13 +122,13 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   mzd_local_t* x = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* y = mzd_local_init_ex(1, LOWMC_N, false);
 
-  copy(x, p);
+  COPY(x, p);
   ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
 #if defined(RECORD_STATE)
-    copy(state->state[i], x);
+    COPY(state->state[i], x);
 #endif
     SBOX(x);
 
@@ -141,14 +139,12 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 
   mzd_local_free(y);
 #if defined(RECORD_STATE)
-  copy(state->state[LOWMC_R], x);
+  COPY(state->state[LOWMC_R], x);
   mzd_local_free(x);
 #else
   return x;
 #endif
 #endif
 }
-
-#undef copy
 
 // vim: ft=c
