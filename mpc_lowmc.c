@@ -265,6 +265,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL SELECT_V_VL(mzd_mul_v_uint64_128, mzd_mul_vl_uint64_128)
 #define XOR mzd_xor_uint64_128
 #define SHUFFLE mzd_shuffle_128
+#define copy mzd_copy_uint64_128
 
 #define SIGN_SBOX mpc_sbox_layer_bitsliced
 #define VERIFY_SBOX mpc_sbox_layer_bitsliced_verify
@@ -295,10 +296,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_uint64_192, mzd_addmul_vl_uint64_192)
 #define MUL SELECT_V_VL(mzd_mul_v_uint64_192, mzd_mul_vl_uint64_192)
 #define SHUFFLE mzd_shuffle_192
 #define XOR mzd_xor_uint64_192
+#define copy mzd_copy_uint64_192
 
 #undef MUL_MC_1
 #undef MUL_MC_10
@@ -336,6 +339,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define VERIFY mpc_lowmc_call_verify_uint64_192
 #include "mpc_lowmc.c.i"
 
+#undef copy
 #undef ADDMUL
 #undef MUL
 #undef SHUFFLE
@@ -344,6 +348,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define MUL SELECT_V_VL(mzd_mul_v_uint64_256, mzd_mul_vl_uint64_256)
 #define SHUFFLE mzd_shuffle_256
 #define XOR mzd_xor_uint64_256
+#define copy mzd_copy_uint64_256
 
 #undef MUL_MC_1
 #undef MUL_MC_10
@@ -398,10 +403,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_128, mzd_addmul_vl_s128_128)
 #define MUL SELECT_V_VL(mzd_mul_v_s128_128, mzd_mul_vl_s128_128)
 #define SHUFFLE mzd_shuffle_128
 #define XOR mzd_xor_s128_128
+#define copy mzd_copy_s128_128
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -448,10 +455,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_192, mzd_addmul_vl_s128_192)
 #define MUL SELECT_V_VL(mzd_mul_v_s128_192, mzd_mul_vl_s128_192)
 #define SHUFFLE mzd_shuffle_192
 #define XOR mzd_xor_s128_256
+#define copy mzd_copy_s128_256
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -498,9 +507,11 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef ADDMUL
 #undef MUL
 #undef SHUFFLE
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_256, mzd_addmul_vl_s128_256)
 #define MUL SELECT_V_VL(mzd_mul_v_s128_256, mzd_mul_vl_s128_256)
 #define SHUFFLE mzd_shuffle_256
+#define copy mzd_copy_s128_256
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -549,10 +560,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_128, mzd_addmul_vl_s128_128)
 #define MUL SELECT_V_VL(mzd_mul_v_s128_128, mzd_mul_vl_s128_128)
 #define SHUFFLE mzd_shuffle_128
 #define XOR mzd_xor_s128_128
+#define copy mzd_copy_s128_128
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -600,10 +613,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_192, mzd_addmul_vl_s128_192)
 #define MUL SELECT_V_VL(mzd_mul_v_s128_192, mzd_mul_vl_s128_192)
 #define SHUFFLE mzd_shuffle_192
 #define XOR mzd_xor_s128_256
+#define copy mzd_copy_s128_256
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -650,9 +665,11 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef ADDMUL
 #undef MUL
 #undef SHUFFLE
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s128_256, mzd_addmul_vl_s128_256)
 #define MUL SELECT_V_VL(mzd_mul_v_s128_256, mzd_mul_vl_s128_256)
 #define SHUFFLE mzd_shuffle_256
+#define copy mzd_copy_s128_256
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -703,10 +720,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_128, mzd_addmul_vl_s256_128)
 #define MUL SELECT_V_VL(mzd_mul_v_s256_128, mzd_mul_vl_s256_128)
 #define SHUFFLE mzd_shuffle_pext_128
 #define XOR mzd_xor_s256_128
+#define copy mzd_copy_s256_128
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -754,10 +773,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_192, mzd_addmul_vl_s256_192)
 #define MUL SELECT_V_VL(mzd_mul_v_s256_192, mzd_mul_vl_s256_192)
 #define SHUFFLE mzd_shuffle_pext_192
 #define XOR mzd_xor_s256_256
+#define copy mzd_copy_s256_256
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -804,9 +825,11 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef ADDMUL
 #undef MUL
 #undef SHUFFLE
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_256, mzd_addmul_vl_s256_256)
 #define MUL SELECT_V_VL(mzd_mul_v_s256_256, mzd_mul_vl_s256_256)
 #define SHUFFLE mzd_shuffle_pext_256
+#define copy mzd_copy_s256_128
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -854,10 +877,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_128, mzd_addmul_vl_s256_128)
 #define MUL SELECT_V_VL(mzd_mul_v_s256_128, mzd_mul_vl_s256_128)
 #define SHUFFLE mzd_shuffle_pext_128
 #define XOR mzd_xor_s256_128
+#define copy mzd_copy_s256_128
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -905,10 +930,12 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef MUL
 #undef SHUFFLE
 #undef XOR
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_192, mzd_addmul_vl_s256_192)
 #define MUL SELECT_V_VL(mzd_mul_v_s256_192, mzd_mul_vl_s256_192)
 #define SHUFFLE mzd_shuffle_pext_192
 #define XOR mzd_xor_s256_256
+#define copy mzd_copy_s256_256
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10
@@ -955,9 +982,11 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef ADDMUL
 #undef MUL
 #undef SHUFFLE
+#undef copy
 #define ADDMUL SELECT_V_VL(mzd_addmul_v_s256_256, mzd_addmul_vl_s256_256)
 #define MUL SELECT_V_VL(mzd_mul_v_s256_256, mzd_mul_vl_s256_256)
 #define SHUFFLE mzd_shuffle_pext_256
+#define copy mzd_copy_s256_256
 
 #undef LOWMC_INSTANCE_1
 #undef LOWMC_INSTANCE_10

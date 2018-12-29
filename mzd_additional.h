@@ -63,6 +63,14 @@ void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_
  */
 void mzd_local_free_multiple(mzd_local_t** vs);
 
+void mzd_copy_uint64_128(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
+void mzd_copy_uint64_192(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
+void mzd_copy_uint64_256(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
+void mzd_copy_s128_128(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
+void mzd_copy_s128_256(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
+void mzd_copy_s256_128(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
+void mzd_copy_s256_256(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
+
 void mzd_xor_uint64_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_uint64_192(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_uint64_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) ATTR_NONNULL;

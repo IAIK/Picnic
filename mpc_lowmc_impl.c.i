@@ -26,8 +26,6 @@
 #define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_1
 #endif
 
-#define copy(d, s) memcpy(BLOCK(d, 0), CONST_BLOCK(s, 0), LOWMC_N / 8)
-
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
@@ -104,6 +102,5 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
 #undef RANDTAPE
 #undef SBOX
 #undef LOWMC_M
-#undef copy
 
 // vim: ft=c

@@ -120,6 +120,61 @@ void mzd_local_free_multiple(mzd_local_t** vs) {
   }
 }
 
+void mzd_copy_uint64_128(mzd_local_t* dst, mzd_local_t const* src) {
+  const block_t* sblock = CONST_BLOCK(src, 0);
+  block_t* dblock = BLOCK(dst, 0);
+
+  for (unsigned int i = 0; i < 2; ++i) {
+    dblock->w64[i] = sblock->w64[i];
+  }
+}
+
+void mzd_copy_uint64_192(mzd_local_t* dst, mzd_local_t const* src) {
+  const block_t* sblock = CONST_BLOCK(src, 0);
+  block_t* dblock = BLOCK(dst, 0);
+
+  for (unsigned int i = 0; i < 3; ++i) {
+    dblock->w64[i] = sblock->w64[i];
+  }
+}
+
+void mzd_copy_uint64_256(mzd_local_t* dst, mzd_local_t const* src) {
+  const block_t* sblock = CONST_BLOCK(src, 0);
+  block_t* dblock = BLOCK(dst, 0);
+
+  for (unsigned int i = 0; i < 4; ++i) {
+    dblock->w64[i] = sblock->w64[i];
+  }
+}
+
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+ATTR_TARGET_S128
+void mzd_copy_s128_128(mzd_local_t* dst, mzd_local_t const* src) {
+  BLOCK(dst, 0)->w128[0] = CONST_BLOCK(src, 0)->w128[0];
+}
+
+ATTR_TARGET_S128
+void mzd_copy_s128_256(mzd_local_t* dst, mzd_local_t const* src) {
+  for (unsigned int i = 0; i < 2; ++i) {
+    dst->w128[i] = src->w128[i];
+  }
+}
+#endif
+
+#if defined(WITH_AVX2)
+ATTR_TARGET_AVX2
+void mzd_copy_s256_128(mzd_local_t* dst, mzd_local_t const* src) {
+  BLOCK(dst, 0)->w128[0] = CONST_BLOCK(src, 0)->w128[0];
+}
+
+ATTR_TARGET_AVX2
+void mzd_copy_s256_256(mzd_local_t* dst, mzd_local_t const* src) {
+  BLOCK(dst, 0)->w256 = CONST_BLOCK(src, 0)->w256;
+}
+#endif
+#endif
+
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
 ATTR_TARGET_S128
