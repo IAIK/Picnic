@@ -17,8 +17,8 @@
 
 #define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s128_192_896, mzd_mul_vl_s128_192_896)
 #define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s128_192_1024, mzd_mul_vl_s128_192_1024)
-#define MUL_R_1 mzd_addmul_v_s128_3_192
-#define MUL_R_10 mzd_addmul_v_s128_30_192
+#define ADDMUL_R_1 mzd_addmul_v_s128_3_192
+#define ADDMUL_R_10 mzd_addmul_v_s128_30_192
 #define MUL_Z_1 mzd_mul_v_parity_popcnt_192_3
 #define MUL_Z_10 mzd_mul_v_parity_popcnt_192_30
 #define XOR_MC_1 mzd_xor_s128_896

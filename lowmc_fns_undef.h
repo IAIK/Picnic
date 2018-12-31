@@ -17,8 +17,8 @@
 #undef MUL
 #undef MUL_MC_1
 #undef MUL_MC_10
-#undef MUL_R_1
-#undef MUL_R_10
+#undef ADDMUL_R_1
+#undef ADDMUL_R_10
 #undef MUL_Z_1
 #undef MUL_Z_10
 #undef SHUFFLE

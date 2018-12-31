@@ -12,7 +12,7 @@
 #define LOWMC_M 10
 #define LOWMC_R LOWMC_R_10
 #define MUL_MC MUL_MC_10
-#define MUL_R MUL_R_10
+#define ADDMUL_R ADDMUL_R_10
 #define MUL_Z MUL_Z_10
 #define MZD_SHUFFLE CONCAT(SHUFFLE, 30)
 #define M_FIXED_10
@@ -30,7 +30,7 @@
 #undef LOWMC_M
 #undef LOWMC_R
 #undef MUL_MC
-#undef MUL_R
+#undef ADDMUL_R
 #undef MUL_Z
 #undef MZD_SHUFFLE
 #undef M_FIXED_10
@@ -45,7 +45,7 @@
 #define LOWMC_M 1
 #define LOWMC_R LOWMC_R_1
 #define MUL_MC MUL_MC_1
-#define MUL_R MUL_R_1
+#define ADDMUL_R ADDMUL_R_1
 #define MUL_Z MUL_Z_1
 #define MZD_SHUFFLE CONCAT(SHUFFLE, 3)
 #define M_FIXED_1
@@ -63,7 +63,7 @@
 #undef LOWMC_M
 #undef LOWMC_R
 #undef MUL_MC
-#undef MUL_R
+#undef ADDMUL_R
 #undef MUL_Z
 #undef MZD_SHUFFLE
 #undef M_FIXED_1

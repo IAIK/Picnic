@@ -54,7 +54,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 
     MUL_Z(y, x, CONCAT(round->z, matrix_postfix));
     MZD_SHUFFLE(x, round->r_mask);
-    MUL_R(y, x, CONCAT(round->r, matrix_postfix));
+    ADDMUL_R(y, x, CONCAT(round->r, matrix_postfix));
 
 #if defined(M_FIXED_10)
     BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
