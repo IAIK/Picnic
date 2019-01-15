@@ -191,7 +191,8 @@ list(APPEND SHA3_SOURCES
      sha3/KeccakSpongeWidth1600.c)
 
 if(${SHA3_IMPL} STREQUAL "avx2")
-  list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.c)
+  list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.s)
+  set_property(SOURCE sha3/avx2/KeccakP-1600-AVX2.s PROPERTY LANGUAGE C)
 elseif(${SHA3_IMPL} STREQUAL "opt64")
   list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
 elseif(${SHA3_IMPL} STREQUAL "ref")
