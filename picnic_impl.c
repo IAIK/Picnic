@@ -656,6 +656,46 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   hash_squeeze(&ctx, prf_round->gs[vidx], outputlen);
 }
 
+/*
+ * 4x G permutation for Unruh transform
+ */
+static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned int vidx,
+                    bool include_is) {
+  hash_context_x4 ctx;
+
+  const size_t outputlen =
+          include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
+  const uint16_t size_le   = htole16(outputlen);
+  const size_t digest_size = pp->digest_size;
+  const size_t seedlen     = pp->seed_size;
+
+  // Hash the seed with H_5, store digest in output
+  hash_init_prefix_x4(&ctx, pp, HASH_PREFIX_5);
+  const uint8_t* seeds[4] = {prf_round[0].seeds[vidx], prf_round[1].seeds[vidx], prf_round[2].seeds[vidx], prf_round[3].seeds[vidx]};
+  hash_update_x4(&ctx, seeds, seedlen);
+  hash_final_x4(&ctx);
+
+  uint8_t tmp[4][MAX_DIGEST_SIZE];
+  uint8_t* tmpptr[4] = {tmp[0], tmp[1], tmp[2], tmp[3]};
+  const uint8_t* tmpptr_const[4] = {tmp[0], tmp[1], tmp[2], tmp[3]};
+  hash_squeeze_x4(&ctx, tmpptr, digest_size);
+
+  // Hash H_5(seed), the view, and the length
+  hash_init_x4(&ctx, pp);
+  hash_update_x4(&ctx, tmpptr_const, digest_size);
+  if (include_is) {
+    const uint8_t* input_shares[4] = {prf_round[0].input_shares[vidx], prf_round[1].input_shares[vidx], prf_round[2].input_shares[vidx], prf_round[3].input_shares[vidx]};
+    hash_update_x4(&ctx, input_shares, pp->input_size);
+  }
+  const uint8_t* communicated_bits[4] = {prf_round[0].communicated_bits[vidx], prf_round[1].communicated_bits[vidx], prf_round[2].communicated_bits[vidx], prf_round[3].communicated_bits[vidx], };
+  hash_update_x4(&ctx, communicated_bits, pp->view_size);
+  const uint8_t* sizes[4] = {(const uint8_t*)&size_le, (const uint8_t*)&size_le, (const uint8_t*)&size_le, (const uint8_t*)&size_le};
+  hash_update_x4(&ctx, sizes, sizeof(uint16_t));
+  hash_final_x4(&ctx);
+  uint8_t* gs[4] = {prf_round[0].gs[vidx], prf_round[1].gs[vidx], prf_round[2].gs[vidx], prf_round[3].gs[vidx]};
+  hash_squeeze_x4(&ctx, gs, outputlen);
+}
+
 // serilization helper functions
 static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
                                    uint8_t* result, size_t* siglen) {
@@ -947,12 +987,9 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     }
 
     // unruh G
-    // TODO: also in x4 variant
-    for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
-      if (transform == TRANSFORM_UR) {
-        for (unsigned int j = 0; j < SC_PROOF; ++j) {
-          unruh_G(pp, round+round_offset, j, j == SC_PROOF - 1);
-        }
+    if (transform == TRANSFORM_UR) {
+      for (unsigned int j = 0; j < SC_PROOF; ++j) {
+        unruh_G_x4(pp, round, j, j == SC_PROOF - 1);
       }
     }
   }
