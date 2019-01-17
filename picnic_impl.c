@@ -1090,7 +1090,71 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   uint8_t* tape_bytes = malloc(view_size);
 
   proof_round_t* round = prf->round;
-  for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
+  unsigned int i = 0;
+#if defined(WITH_AVX2)
+  for (; i < (num_rounds/4)*4; i+=4, round+=4) {
+    for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
+      const unsigned int a_i = prf->challenge[i+round_offset];
+      const unsigned int b_i = (a_i + 1) % 3;
+      const unsigned int c_i = (a_i + 2) % 3;
+
+      kdf_shake_t kdfs[SC_VERIFY];
+      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+        const bool include_input_size = (j == 0 && b_i) || (j == 1 && c_i);
+        const unsigned int player_number = (j == 0) ? a_i : b_i;
+        kdf_init_from_seed(&kdfs[j], round[round_offset].seeds[j], prf->salt, i+round_offset, player_number, include_input_size,
+                           pp);
+      }
+
+      // compute input shares if necessary
+      if (b_i) {
+        kdf_shake_get_randomness(&kdfs[0], round[round_offset].input_shares[0], input_size);
+      }
+      if (c_i) {
+        kdf_shake_get_randomness(&kdfs[1], round[round_offset].input_shares[1], input_size);
+      }
+
+      mzd_from_char_array(in_out_shares[0].s[0], round[round_offset].input_shares[0], input_size);
+      mzd_from_char_array(in_out_shares[0].s[1], round[round_offset].input_shares[1], input_size);
+
+      // compute random tapes
+      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+        kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
+        decompress_random_tape(rvec, pp, tape_bytes, j);
+      }
+
+      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+        kdf_shake_clear(&kdfs[j]);
+      }
+
+      decompress_view(views, pp, round[round_offset].communicated_bits[1], 1);
+      // perform ZKB++ LowMC evaluation
+      lowmc_verify_impl(p, views, in_out_shares, rvec, a_i);
+      compress_view(round[round_offset].communicated_bits[0], pp, views, 0);
+
+      mzd_share(in_out_shares[1].s[2], in_out_shares[1].s[0], in_out_shares[1].s[1], c);
+      // recompute commitments
+      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+        mzd_to_char_array(round[round_offset].output_shares[j], in_out_shares[1].s[j], output_size);
+      }
+      mzd_to_char_array(round[round_offset].output_shares[SC_VERIFY], in_out_shares[1].s[SC_VERIFY], output_size);
+    }
+    for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+      hash_commitment_x4(pp, round, j);
+    }
+    for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
+      const unsigned int a_i = prf->challenge[i+round_offset];
+
+      if (transform == TRANSFORM_UR) {
+        // apply Unruh G permutation
+        for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+          unruh_G(pp, round+round_offset, j, (a_i == 1 && j == 1) || (a_i == 2 && j == 0));
+        }
+      }
+    }
+  }
+#endif
+  for (; i < num_rounds; ++i, ++round) {
     const unsigned int a_i = prf->challenge[i];
     const unsigned int b_i = (a_i + 1) % 3;
     const unsigned int c_i = (a_i + 2) % 3;
