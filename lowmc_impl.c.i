@@ -52,9 +52,9 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
 #endif
 
-    MUL_Z(y, x, CONCAT(round->z, matrix_postfix));
+    MUL_Z(y, x, round->z_matrix);
     MZD_SHUFFLE(x, round->r_mask);
-    ADDMUL_R(y, x, CONCAT(round->r, matrix_postfix));
+    ADDMUL_R(y, x, round->r_matrix);
 
 #if defined(M_FIXED_10)
     BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
