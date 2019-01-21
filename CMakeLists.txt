@@ -172,7 +172,7 @@ if(WITH_LTO)
 endif()
 
 # enable -O3
-if(CC_SUPPORTS_03)
+if(CC_SUPPORTS_03 AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   add_compile_options(-O3)
 endif()
 # enable -fomit-frame-pointer
