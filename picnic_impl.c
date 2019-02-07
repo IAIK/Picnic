@@ -1012,15 +1012,15 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for AND-gates
 
   uint8_t* tape_bytes  = malloc(view_size);
+  proof_round_t* round = prf->round;
+  // use 4 parallel instances of keccak for speedup
   uint8_t* tape_bytes_x4[SC_PROOF][4];
-  for(unsigned i = 0; i < SC_PROOF; i++) {
+  for(unsigned k = 0; k < SC_PROOF; k++) {
     for(unsigned j = 0; j < 4; j++) {
-      tape_bytes_x4[i][j] = malloc(view_size);
+      tape_bytes_x4[k][j] = malloc(view_size);
     }
   }
-  proof_round_t* round = prf->round;
   unsigned int i = 0;
-#if defined(WITH_AVX2)
   for (; i < (num_rounds/4)*4; i+=4, round+=4) {
     kdf_shake_x4_t kdfs[SC_PROOF];
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -1073,7 +1073,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       }
     }
   }
-#endif
   for (; i < num_rounds; ++i, ++round) {
     kdf_shake_t kdfs[SC_PROOF];
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -1169,6 +1168,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for and-gates
   uint8_t* tape_bytes = malloc(view_size);
 
+  // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when verifying
+  // since all of this is public information, there is no leakage
 #define WITH_SORTING
 #if defined(WITH_SORTING)
   uint8_t* tape_bytes_x4[SC_VERIFY][4];
@@ -1189,7 +1190,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
     }
     unsigned int i = 0;
     sorting_helper_t* helper = sorted_rounds;
-#if defined(WITH_AVX2)
     for (; i < (num_current_rounds / 4) * 4; i += 4, helper += 4) {
       const unsigned int a_i = current_chal;
       const unsigned int b_i = (a_i + 1) % 3;
@@ -1252,7 +1252,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
         }
       }
     }
-#endif
     for (; i < num_current_rounds; ++i, ++helper) {
       const unsigned int a_i = current_chal;
       const unsigned int b_i = (a_i + 1) % 3;
@@ -1317,7 +1316,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 #else
   proof_round_t* round = prf->round;
   unsigned int i = 0;
-#if defined(WITH_AVX2)
   for (; i < (num_rounds/4)*4; i+=4, round+=4) {
     for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
       const unsigned int a_i = prf->challenge[i+round_offset];
@@ -1379,7 +1377,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       }
     }
   }
-#endif
   for (; i < num_rounds; ++i, ++round) {
     const unsigned int a_i = prf->challenge[i];
     const unsigned int b_i = (a_i + 1) % 3;

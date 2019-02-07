@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include "KeccakHash.h"
 #include "KeccakHashtimes4.h"
 

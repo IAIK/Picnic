@@ -27,10 +27,11 @@
 
 #if !defined(SUPERCOP)
 #include "sha3/KeccakHash.h"
-#include "sha3/KeccakHashtimes4.h"
 #else
 #include <libkeccak.a.headers/KeccakHash.h>
 #endif
+// TODO: this is not in SUPERCOP, so we ship it ourselves
+#include "sha3/KeccakHashtimes4.h"
 
 #include "picnic_impl.h"
 

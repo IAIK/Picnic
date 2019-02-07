@@ -899,7 +899,6 @@ size_t KeccakF1600times4_FastLoop_Absorb(void *states, unsigned int laneCount, u
         }
         return (const unsigned char *)curData0 - dataStart;
 #else
-        unsigned int i;
         const unsigned char *dataStart = data;
         const UINT64 *curData0 = (const UINT64 *)data;
         const UINT64 *curData1 = (const UINT64 *)(data+laneOffsetParallel*1*SnP_laneLengthInBytes);
@@ -946,7 +945,6 @@ size_t KeccakF1600times4_FastLoop_Absorb(void *states, unsigned int laneCount, u
 #endif
     }
     else {
-        unsigned int i;
         const unsigned char *dataStart = data;
 
         while(dataByteLen >= (laneOffsetParallel*3 + laneCount)*8) {
@@ -1001,7 +999,6 @@ size_t KeccakP1600times4_12rounds_FastLoop_Absorb(void *states, unsigned int lan
         }
         return (const unsigned char *)curData0 - dataStart;
 #else
-        unsigned int i;
         const unsigned char *dataStart = data;
         const UINT64 *curData0 = (const UINT64 *)data;
         const UINT64 *curData1 = (const UINT64 *)(data+laneOffsetParallel*1*SnP_laneLengthInBytes);

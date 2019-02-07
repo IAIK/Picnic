@@ -26,7 +26,6 @@ http://creativecommons.org/publicdomain/zero/1.0/
     } prefix##_SpongeInstance;
 
 #define KCP_DeclareSpongeFunctionstimes4(prefix) \
-    int prefix##_Sponge(unsigned int rate, unsigned int capacity, const unsigned char **input, size_t inputByteLen, unsigned char suffix, unsigned char *output, size_t outputByteLen); \
     int prefix##_SpongeInitialize(prefix##_SpongeInstance *spongeInstance, unsigned int rate, unsigned int capacity); \
     int prefix##_SpongeAbsorb(prefix##_SpongeInstance *spongeInstance, const unsigned char **data, size_t dataByteLen); \
     int prefix##_SpongeAbsorbLastFewBits(prefix##_SpongeInstance *spongeInstance, unsigned char delimitedData); \
