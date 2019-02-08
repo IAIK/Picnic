@@ -22,7 +22,7 @@ http://creativecommons.org/publicdomain/zero/1.0/
 #define PlSnP_width 1600
 #define PlSnP_Permute KeccakP1600times4_PermuteAll_24rounds
 #if defined(KeccakF1600times4_FastLoop_supported)
-//TODO: can we enable fastloop absorb?
+//can we enable fastloop absorb?
 //#define PlSnP_FastLoop_Absorb KeccakF1600times4_FastLoop_Absorb
 #endif
 #include "KeccakSpongetimes4.inc"
