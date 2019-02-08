@@ -34,38 +34,9 @@ HashReturn Keccak_HashInitializetimes4(Keccak_HashInstancetimes4 *instance, unsi
 
 HashReturn Keccak_HashUpdatetimes4(Keccak_HashInstancetimes4 *instance, const BitSequence **data, BitLength databitlen)
 {
-    if ((databitlen % 8) == 0)
-        return (HashReturn)KeccakWidth1600times4_SpongeAbsorb(&instance->sponge, data, databitlen/8);
-    else {
-        //TODO: do we need this codepath for non-full bytes?
+    if ((databitlen % 8) != 0)
         return FAIL;
-        /*
-        HashReturn ret = (HashReturn)KeccakWidth1600times4_SpongeAbsorb(&instance->sponge, data, databitlen/8);
-        if (ret == SUCCESS) {
-            // The last partial byte is assumed to be aligned on the least significant bits
-            unsigned char lastByte[4];
-            unsigned short delimitedLastBytes[4];
-            unsigned char oneByte[4][1];
-            unsigned char* oneBytePtr[4];
-            for(unsigned int instanceIndex = 0; instanceIndex < 4; instanceIndex++) {
-                lastByte[instanceIndex] = data[instanceIndex][databitlen / 8];
-                // Concatenate the last few bits provided here with those of the suffix
-                delimitedLastBytes[instanceIndex] = (unsigned short) ((unsigned short) lastByte[instanceIndex] |
-                                                                      ((unsigned short) instance->delimitedSuffix[instanceIndex]
-                                                                              << (databitlen % 8)));
-                if ((delimitedLastBytes[instanceIndex] & 0xFF00) == 0x0000) {
-                    instance->delimitedSuffix[instanceIndex] = delimitedLastBytes[instanceIndex] & 0xFF;
-                } else {
-                    oneByte[instanceIndex][0] = delimitedLastBytes[instanceIndex] & 0xFF;
-                    instance->delimitedSuffix[instanceIndex] = (delimitedLastBytes[instanceIndex] >> 8) & 0xFF;
-                }
-            }
-            //TODO: fix with if/else from above...
-            ret = (HashReturn) KeccakWidth1600times4_SpongeAbsorb(&instance->sponge, oneByte, 1);
-        }
-        return ret;
-        */
-    }
+    return (HashReturn)KeccakWidth1600times4_SpongeAbsorb(&instance->sponge, data, databitlen/8);
 }
 
 /* ---------------------------------------------------------------- */

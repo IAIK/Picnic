@@ -25,8 +25,6 @@ typedef struct {
     unsigned char delimitedSuffix;
 } Keccak_HashInstancetimes4;
 
-//TODO: fix the docstrings for this times4 implementations
-
 /**
   * Function to initialize the Keccak[r, c] sponge function instance used in sequential hashing mode.
   * @param  hashInstance    Pointer to the hash instance to be initialized.
@@ -71,11 +69,9 @@ HashReturn Keccak_HashInitializetimes4(Keccak_HashInstancetimes4 *hashInstance, 
 /**
   * Function to give input data to be absorbed.
   * @param  hashInstance    Pointer to the hash instance initialized by Keccak_HashInitialize().
-  * @param  data        Pointer to the input data.
-  *                     When @a databitLen is not a multiple of 8, the last bits of data must be
-  *                     in the least significant bits of the last byte (little-endian convention).
-  * @param  databitLen  The number of input bits provided in the input data.
-  * @pre    In the previous call to Keccak_HashUpdate(), databitlen was a multiple of 8.
+  * @param  data        Array of 4 pointers to the input data.
+  * @param  databitLen  The number of input bits provided in the input data, must be a multiple of 8.
+  * @pre    @a databitlen is a multiple of 8.
   * @return SUCCESS if successful, FAIL otherwise.
   */
 HashReturn Keccak_HashUpdatetimes4(Keccak_HashInstancetimes4 *hashInstance, const BitSequence **data, BitLength databitlen);
@@ -96,7 +92,7 @@ HashReturn Keccak_HashFinaltimes4(Keccak_HashInstancetimes4 *hashInstance, BitSe
  /**
   * Function to squeeze output data.
   * @param  hashInstance    Pointer to the hash instance initialized by Keccak_HashInitialize().
-  * @param  data        Pointer to the buffer where to store the output data.
+  * @param  data        Array of 4 pointers to the buffers where to store the output data.
   * @param  databitlen  The number of output bits desired (must be a multiple of 8).
   * @pre    Keccak_HashFinal() must have been already called.
   * @pre    @a databitlen is a multiple of 8.
