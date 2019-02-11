@@ -72,6 +72,14 @@ PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic
 PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
                                                             picnic_publickey_t* pk);
 
+// Prefix values for domain separation
+extern const uint8_t HASH_PREFIX_0; // = 0
+extern const uint8_t HASH_PREFIX_1; // = 1
+extern const uint8_t HASH_PREFIX_2; // = 2
+extern const uint8_t HASH_PREFIX_3; // = 2 // TODO: reference implementation has 2 here...
+extern const uint8_t HASH_PREFIX_4; // = 4
+extern const uint8_t HASH_PREFIX_5; // = 5
+
 #if defined(PICNIC_STATIC)
 void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* msg, size_t msglen,
                          const uint8_t* sig, size_t siglen);

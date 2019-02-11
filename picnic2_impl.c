@@ -17,13 +17,13 @@
 #include <string.h>
 #include <assert.h>
 
+#include "kdf_shake.h"
+#include "macros.h"
 #include "picnic_impl.h"
 #include "picnic2_impl.h"
 #include "picnic.h"
 #include "picnic2_lowmc_constants.h"
-#include "macros.h"
 #include "picnic2_types.h"
-#include "picnic2_hash.h"
 #include "picnic2_tree.h"
 
 #define MAX_AUX_BYTES ((LOWMC_MAX_AND_GATES + LOWMC_MAX_KEY_BITS) / 8 + 1)
@@ -119,20 +119,22 @@ uint32_t ceil_log2(uint32_t x)
 
 static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* salt, size_t t, const picnic_instance_t* params)
 {
-    HashInstance ctx;
+    Keccak_HashInstance ctx;
 
     size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
 
     allocateRandomTape(tapes, params);
     for (size_t i = 0; i < params->num_MPC_parties; i++) {
-        HashInit(&ctx, params, HASH_PREFIX_NONE);
-        HashUpdate(&ctx, seeds[i], params->seed_size);
-        HashUpdate(&ctx, salt, params->seed_size);
-        HashUpdateIntLE(&ctx, t);
-        HashUpdateIntLE(&ctx, i);
-        HashFinal(&ctx);
+        hash_init(&ctx, params);
+        hash_update(&ctx, seeds[i], params->seed_size);
+        hash_update(&ctx, salt, params->seed_size);
+        uint16_t tLE = htole16((uint16_t)t);
+        hash_update(&ctx, (uint8_t*)&tLE, sizeof(uint16_t));
+        uint16_t iLE = htole16((uint16_t)i);
+        hash_update(&ctx, (uint8_t*)&iLE, sizeof(uint16_t));
+        hash_final(&ctx);
 
-        HashSqueeze(&ctx, tapes->tape[i], tapeSizeBytes);
+        hash_squeeze(&ctx, tapes->tape[i], tapeSizeBytes);
     }
 }
 
@@ -321,46 +323,48 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
 static void commit(uint8_t* digest, uint8_t* seed, uint8_t* aux, uint8_t* salt, size_t t, size_t j, const picnic_instance_t* params)
 {
     /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
-    HashInstance ctx;
+    Keccak_HashInstance ctx;
 
-    HashInit(&ctx, params, HASH_PREFIX_NONE);
-    HashUpdate(&ctx, seed, params->seed_size);
+    hash_init(&ctx, params);
+    hash_update(&ctx, seed, params->seed_size);
     if (aux != NULL) {
         size_t tapeLenBytes = params->view_size;
-        HashUpdate(&ctx, aux, tapeLenBytes);
+        hash_update(&ctx, aux, tapeLenBytes);
     }
-    HashUpdate(&ctx, salt, params->seed_size);
-    HashUpdateIntLE(&ctx, t);
-    HashUpdateIntLE(&ctx, j);
-    HashFinal(&ctx);
-    HashSqueeze(&ctx, digest, params->digest_size);
+    hash_update(&ctx, salt, params->seed_size);
+    uint16_t tLE = htole16((uint16_t)t);
+    hash_update(&ctx, (uint8_t*)&tLE, sizeof(uint16_t));
+    uint16_t jLE = htole16((uint16_t)j);
+    hash_update(&ctx, (uint8_t*)&jLE, sizeof(uint16_t));
+    hash_final(&ctx);
+    hash_squeeze(&ctx, digest, params->digest_size);
 }
 
 static void commit_h(uint8_t* digest, commitments_t* C, const picnic_instance_t* params)
 {
-    HashInstance ctx;
+    Keccak_HashInstance ctx;
 
-    HashInit(&ctx, params, HASH_PREFIX_NONE);
+    hash_init(&ctx, params);
     for (size_t i = 0; i < params->num_MPC_parties; i++) {
-        HashUpdate(&ctx, C->hashes[i], params->seed_size);
+        hash_update(&ctx, C->hashes[i], params->seed_size);
     }
-    HashFinal(&ctx);
-    HashSqueeze(&ctx, digest, params->digest_size);
+    hash_final(&ctx);
+    hash_squeeze(&ctx, digest, params->digest_size);
 }
 
 // Commit to the views for one parallel rep
 static void commit_v(uint8_t* digest, uint8_t* input, msgs_t* msgs, const picnic_instance_t* params)
 {
-    HashInstance ctx;
+    Keccak_HashInstance ctx;
 
-    HashInit(&ctx, params, HASH_PREFIX_NONE);
-    HashUpdate(&ctx, input, params->input_size);
+    hash_init(&ctx, params);
+    hash_update(&ctx, input, params->input_size);
     for (size_t i = 0; i < params->num_MPC_parties; i++) {
         size_t msgs_size = numBytes(msgs->pos);
-        HashUpdate(&ctx, msgs->msgs[i], msgs_size);
+        hash_update(&ctx, msgs->msgs[i], msgs_size);
     }
-    HashFinal(&ctx);
-    HashSqueeze(&ctx, digest, params->digest_size);
+    hash_final(&ctx);
+    hash_squeeze(&ctx, digest, params->digest_size);
 }
 
 static void reconstructShares(uint32_t* output, shares_t* shares)
@@ -635,7 +639,7 @@ static size_t bitsToChunks(size_t chunkLenBits, const uint8_t* input, size_t inp
             chunks[i] += getBit(input, i * chunkLenBits + j) << j;
             assert(chunks[i] < (1 << chunkLenBits));
         }
-        chunks[i] = fromLittleEndian(chunks[i]);
+        chunks[i] = le16toh(chunks[i]);
     }
 
     return chunkCount;
@@ -661,7 +665,7 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
                 uint8_t* hCv, uint8_t* salt, const uint32_t* pubKey, const uint32_t* plaintext, const uint8_t* message,
                 size_t messageByteLength, const picnic_instance_t* params)
 {
-    HashInstance ctx;
+    Keccak_HashInstance ctx;
     uint8_t h[MAX_DIGEST_SIZE] = { 0 };
 
     assert(params->num_opened_rounds < params->num_rounds);
@@ -684,18 +688,18 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
 
 #endif
 
-    HashInit(&ctx, params, HASH_PREFIX_NONE);
+    hash_init(&ctx, params);
     for (size_t t = 0; t < params->num_rounds; t++) {
-        HashUpdate(&ctx, Ch->hashes[t], params->digest_size);
+        hash_update(&ctx, Ch->hashes[t], params->digest_size);
     }
 
-    HashUpdate(&ctx, hCv, params->digest_size);
-    HashUpdate(&ctx, salt, params->seed_size);
-    HashUpdate(&ctx, (uint8_t*)pubKey, params->input_size);
-    HashUpdate(&ctx, (uint8_t*)plaintext, params->input_size);
-    HashUpdate(&ctx, message, messageByteLength);
-    HashFinal(&ctx);
-    HashSqueeze(&ctx, h, params->digest_size);
+    hash_update(&ctx, hCv, params->digest_size);
+    hash_update(&ctx, salt, params->seed_size);
+    hash_update(&ctx, (uint8_t*)pubKey, params->input_size);
+    hash_update(&ctx, (uint8_t*)plaintext, params->input_size);
+    hash_update(&ctx, message, messageByteLength);
+    hash_final(&ctx);
+    hash_squeeze(&ctx, h, params->digest_size);
 
     // Populate C
     uint32_t bitsPerChunkC = ceil_log2(params->num_rounds);
@@ -714,10 +718,10 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
             }
         }
 
-        HashInit(&ctx, params, HASH_PREFIX_1);
-        HashUpdate(&ctx, h, params->digest_size);
-        HashFinal(&ctx);
-        HashSqueeze(&ctx, h, params->digest_size);
+        hash_init_prefix(&ctx, params, HASH_PREFIX_1);
+        hash_update(&ctx, h, params->digest_size);
+        hash_final(&ctx);
+        hash_squeeze(&ctx, h, params->digest_size);
     }
 
     // Note that we always compute h = H(h) after setting C
@@ -735,10 +739,10 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
             }
         }
 
-        HashInit(&ctx, params, HASH_PREFIX_1);
-        HashUpdate(&ctx, h, params->digest_size);
-        HashFinal(&ctx);
-        HashSqueeze(&ctx, h, params->digest_size);
+        hash_init_prefix(&ctx, params, HASH_PREFIX_1);
+        hash_update(&ctx, h, params->digest_size);
+        hash_final(&ctx);
+        hash_squeeze(&ctx, h, params->digest_size);
     }
 
 #if 0   // Print challenge when debugging
@@ -944,16 +948,17 @@ Exit:
 static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLength, uint32_t* privateKey, uint32_t* pubKey,
                                    uint32_t* plaintext, const uint8_t* message, size_t messageByteLength, const picnic_instance_t* params)
 {
-    HashInstance ctx;
+    Keccak_HashInstance ctx;
 
-    HashInit(&ctx, params, HASH_PREFIX_NONE);
-    HashUpdate(&ctx, (uint8_t*)privateKey, params->input_size);
-    HashUpdate(&ctx, message, messageByteLength);
-    HashUpdate(&ctx, (uint8_t*)pubKey, params->input_size);
-    HashUpdate(&ctx, (uint8_t*)plaintext, params->input_size);
-    HashUpdateIntLE(&ctx, params->lowmc->n);
-    HashFinal(&ctx);
-    HashSqueeze(&ctx, saltAndRoot, saltAndRootLength);
+    hash_init(&ctx, params);
+    hash_update(&ctx, (uint8_t*)privateKey, params->input_size);
+    hash_update(&ctx, message, messageByteLength);
+    hash_update(&ctx, (uint8_t*)pubKey, params->input_size);
+    hash_update(&ctx, (uint8_t*)plaintext, params->input_size);
+    uint16_t stateSizeLE = htole16((uint16_t) params->lowmc->n);
+    hash_update(&ctx, (uint8_t*)&stateSizeLE, sizeof(uint16_t));
+    hash_final(&ctx);
+    hash_squeeze(&ctx, saltAndRoot, saltAndRootLength);
 }
 
 int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, const uint8_t* message,
@@ -1157,8 +1162,8 @@ int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sig
     sigBytes += params->seed_size;
 
     for (size_t i = 0; i < params->num_opened_rounds; i++) {
-        sig->challengeC[i] = fromLittleEndian(sig->challengeC[i]);
-        sig->challengeP[i] = fromLittleEndian(sig->challengeP[i]);
+        sig->challengeC[i] = le16toh(sig->challengeC[i]);
+        sig->challengeP[i] = le16toh(sig->challengeP[i]);
     }
 
     if (!inRange(sig->challengeC, params->num_opened_rounds, 0, params->num_rounds - 1)) {
@@ -1288,8 +1293,8 @@ int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBy
     sigBytes += params->seed_size;
 
     for (size_t i = 0; i < params->num_opened_rounds; i++) {
-        challengeC[i] = fromLittleEndian(sig->challengeC[i]);
-        challengeP[i] = fromLittleEndian(sig->challengeP[i]);
+        challengeC[i] = le16toh(sig->challengeC[i]);
+        challengeP[i] = le16toh(sig->challengeP[i]);
     }
 
     memcpy(sigBytes, sig->iSeedInfo, sig->iSeedInfoLen);
