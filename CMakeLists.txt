@@ -201,10 +201,6 @@ elseif(${SHA3_IMPL} STREQUAL "opt64")
   list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
   #the times4 variant of Keccack using fallback on opt64
   list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-times4-on1.c)
-elseif(${SHA3_IMPL} STREQUAL "ref")
-  list(APPEND SHA3_SOURCES sha3/ref/KeccakP-1600-reference.c)
-  #the times4 variant of Keccack using fallback on ref
-  list(APPEND SHA3_SOURCES sha3/ref/KeccakP-1600-times4-on1.c)
 elseif(${SHA3_IMPL} STREQUAL "armv8a-neon")
   list(APPEND SHA3_SOURCES sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s)
   set_property(SOURCE sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s PROPERTY LANGUAGE C)
