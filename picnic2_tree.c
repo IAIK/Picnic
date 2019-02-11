@@ -13,13 +13,15 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
 
-#include "picnic2_types.h"
+#include "endian_compat.h"
 #include "kdf_shake.h"
 #include "picnic.h"
 #include "picnic_impl.h"
 #include "picnic2_tree.h"
+#include "picnic2_types.h"
 
 static int contains(size_t* list, size_t len, size_t value)
 {
