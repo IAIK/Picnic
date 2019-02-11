@@ -24,7 +24,9 @@ typedef struct {
 
   uint32_t digest_size; /* bytes */
   uint32_t seed_size;   /* bytes */
-  uint32_t num_rounds;
+  uint32_t num_rounds;        // T
+  uint32_t num_opened_rounds; // u
+  uint32_t num_MPC_parties;   // N
 
   uint32_t input_size;      /* bytes */
   uint32_t output_size;     /* bytes */

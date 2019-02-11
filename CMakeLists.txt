@@ -225,6 +225,13 @@ list(APPEND PICNIC_SOURCES
      picnic.c
      picnic_impl.c
      randomness.c)
+# picnic2 sources
+list(APPEND PICNIC_SOURCES
+    picnic2_impl.c
+    picnic2_types.c
+    picnic2_lowmc_constants.c
+    picnic2_hash.c
+    picnic2_tree.c)
 if(WITH_LOWMC_M1)
   list(APPEND PICNIC_SOURCES
        lowmc_128_128_182.c

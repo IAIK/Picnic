@@ -1496,30 +1496,38 @@ static const lowmc_t* const lowmc_instances[6] = {
 #define NULL_FNS {NULL, NULL, NULL, NULL, NULL}
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
-    {NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PARAMETER_SET_INVALID, TRANSFORM_FS, NULL_FNS},
-    {LOWMC_L1_OR_NULL, 32, 16, 219, 16, 16, 75, 30, 55, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L1_FS,
+    {NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PARAMETER_SET_INVALID, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L1_OR_NULL, 32, 16, 219, 219, 3, 16, 16, 75, 30, 55, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L1_FS,
      Picnic_L1_FS, TRANSFORM_FS, NULL_FNS},
-    {LOWMC_L1_OR_NULL, 32, 16, 219, 16, 16, 75, 30, 55, 91, 107, PICNIC_SIGNATURE_SIZE_Picnic_L1_UR,
+    {LOWMC_L1_OR_NULL, 32, 16, 219, 219, 3, 16, 16, 75, 30, 55, 91, 107, PICNIC_SIGNATURE_SIZE_Picnic_L1_UR,
      Picnic_L1_UR, TRANSFORM_UR, NULL_FNS},
-    {LOWMC_L3_OR_NULL, 48, 24, 329, 24, 24, 113, 30, 83, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L3_FS,
+    {LOWMC_L3_OR_NULL, 48, 24, 329, 329, 3, 24, 24, 113, 30, 83, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L3_FS,
      Picnic_L3_FS, TRANSFORM_FS, NULL_FNS},
-    {LOWMC_L3_OR_NULL, 48, 24, 329, 24, 24, 113, 30, 83, 137, 161,
+    {LOWMC_L3_OR_NULL, 48, 24, 329, 329, 3, 24, 24, 113, 30, 83, 137, 161,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_UR, Picnic_L3_UR, TRANSFORM_UR, NULL_FNS},
-    {LOWMC_L5_OR_NULL, 64, 32, 438, 32, 32, 143, 30, 110, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L5_FS,
+    {LOWMC_L5_OR_NULL, 64, 32, 438, 438, 3, 32, 32, 143, 30, 110, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L5_FS,
      Picnic_L5_FS, TRANSFORM_FS, NULL_FNS},
-    {LOWMC_L5_OR_NULL, 64, 32, 438, 32, 32, 143, 30, 110, 175, 207,
+    {LOWMC_L5_OR_NULL, 64, 32, 438, 438, 3, 32, 32, 143, 30, 110, 175, 207,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR, NULL_FNS},
-    {LOWMC_L1_1_OR_NULL, 32, 16, 219, 16, 16, 69, 3, 55, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L1_1_FS,
+    // Picnic2 params TODO: add/fix fields necessary for PICNIC2
+    {LOWMC_L1_OR_NULL, 32, 16, 343, 27, 64, 16, 16, 75, 30, 55, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic2_L1_FS,
+                                                Picnic2_L1_FS, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L3_OR_NULL, 48, 24, 570, 39, 64, 24, 24, 113, 30, 83, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic2_L3_FS,
+                                                Picnic2_L3_FS, TRANSFORM_FS, NULL_FNS},
+    {LOWMC_L5_OR_NULL, 64, 32, 803, 50, 64, 32, 32, 143, 30, 110, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic2_L5_FS,
+                                                Picnic2_L5_FS, TRANSFORM_FS, NULL_FNS},
+    // Picnic with LowMC with m=1
+    {LOWMC_L1_1_OR_NULL, 32, 16, 219, 219, 3, 16, 16, 69, 3, 55, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic_L1_1_FS,
      Picnic_L1_1_FS, TRANSFORM_FS, NULL_FNS},
-    {LOWMC_L1_1_OR_NULL, 32, 16, 219, 16, 16, 69, 3, 55, 87, 103,
+    {LOWMC_L1_1_OR_NULL, 32, 16, 219, 219, 3, 16, 16, 69, 3, 55, 87, 103,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_1_UR, Picnic_L1_1_UR, TRANSFORM_UR, NULL_FNS},
-    {LOWMC_L3_1_OR_NULL, 48, 24, 329, 24, 24, 107, 3, 83, 0, 0,
+    {LOWMC_L3_1_OR_NULL, 48, 24, 329, 329, 3, 24, 24, 107, 3, 83, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_1_FS, Picnic_L3_1_FS, TRANSFORM_FS, NULL_FNS},
-    {LOWMC_L3_1_OR_NULL, 48, 24, 329, 24, 24, 107, 3, 83, 131, 155,
+    {LOWMC_L3_1_OR_NULL, 48, 24, 329, 329, 3, 24, 24, 107, 3, 83, 131, 155,
      PICNIC_SIGNATURE_SIZE_Picnic_L3_1_UR, Picnic_L3_1_UR, TRANSFORM_UR, NULL_FNS},
-    {LOWMC_L5_1_OR_NULL, 64, 32, 438, 32, 32, 137, 3, 110, 0, 0,
+    {LOWMC_L5_1_OR_NULL, 64, 32, 438, 438, 3, 32, 32, 137, 3, 110, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_1_FS, Picnic_L5_1_FS, TRANSFORM_FS, NULL_FNS},
-    {LOWMC_L5_1_OR_NULL, 64, 32, 438, 32, 32, 137, 3, 110, 169, 201,
+    {LOWMC_L5_1_OR_NULL, 64, 32, 438, 438, 3, 32, 32, 137, 3, 110, 169, 201,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_1_UR, Picnic_L5_1_UR, TRANSFORM_UR, NULL_FNS}};
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
@@ -1551,16 +1559,19 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
   switch (param) {
   case Picnic_L1_FS:
   case Picnic_L1_UR:
+  case Picnic2_L1_FS:
     lowmc_instance = lowmc_get_instance(0);
     break;
 
   case Picnic_L3_FS:
   case Picnic_L3_UR:
+  case Picnic2_L3_FS:
     lowmc_instance = lowmc_get_instance(1);
     break;
 
   case Picnic_L5_FS:
   case Picnic_L5_UR:
+  case Picnic2_L5_FS:
     lowmc_instance = lowmc_get_instance(2);
     break;
 
@@ -1587,6 +1598,7 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
     return false;
   }
 
+  // TODO: implementation for PICNIC2 parameter set
   pp->impls.lowmc              = lowmc_get_implementation(pp->lowmc);
   pp->impls.lowmc_store        = lowmc_store_get_implementation(pp->lowmc);
   pp->impls.zkbpp_lowmc        = get_zkbpp_lowmc_implementation(pp->lowmc);
