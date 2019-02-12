@@ -22,10 +22,12 @@
 #include "picnic_impl.h"
 #include "picnic2_impl.h"
 #include "picnic.h"
-#include "picnic2_lowmc_constants.h"
 #include "picnic2_types.h"
 #include "picnic2_tree.h"
 
+#define LOWMC_MAX_STATE_SIZE 64
+#define LOWMC_MAX_KEY_BITS 256
+#define LOWMC_MAX_AND_GATES (3*38*10 + 4)   /* Rounded to nearest byte */
 #define MAX_AUX_BYTES ((LOWMC_MAX_AND_GATES + LOWMC_MAX_KEY_BITS) / 8 + 1)
 
 /* Number of leading zeroes of x.
@@ -175,6 +177,13 @@ void xor_array(uint32_t* out, const uint32_t * in1, const uint32_t * in2, uint32
     }
 }
 
+void xor_array_RC(uint8_t* out, const uint8_t * in1, const uint8_t * in2, uint32_t length)
+{
+    for (uint32_t i = 0; i < length; i++) {
+        out[i] = in1[i] ^ in2[length-1-i];
+    }
+}
+
 /* For an input bit b = 0 or 1, return the word of all b bits, i.e.,
  * extend(1) = 0xFFFFFFFFFFFFFFFF
  * extend(0) = 0x0000000000000000
@@ -244,20 +253,21 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b)
 
 static void aux_matrix_mul(shares_t* output, const shares_t* vec, const uint32_t* matrix, shares_t* tmp_output, const picnic_instance_t* params)
 {
+    const uint32_t rowstride = ((params->lowmc->n+127)/128*128)/8;
     for (size_t i = 0; i < params->lowmc->n; i++) {
         tmp_output->shares[i] = 0;
     }
     for (size_t i = 0; i < params->lowmc->n; i++) {
         for (uint32_t j = 0; j < params->lowmc->n; j+=8) {
-            uint8_t matrix_byte = ((uint8_t*)matrix)[(params->lowmc->n - 1 - i) * ((params->lowmc->n+127)/128*128)/8 + (params->lowmc->n -1 -j)/8];
-            tmp_output->shares[j+0] ^= vec->shares[i] & extend((matrix_byte >> 7) & 1);
-            tmp_output->shares[j+1] ^= vec->shares[i] & extend((matrix_byte >> 6) & 1);
-            tmp_output->shares[j+2] ^= vec->shares[i] & extend((matrix_byte >> 5) & 1);
-            tmp_output->shares[j+3] ^= vec->shares[i] & extend((matrix_byte >> 4) & 1);
-            tmp_output->shares[j+4] ^= vec->shares[i] & extend((matrix_byte >> 3) & 1);
-            tmp_output->shares[j+5] ^= vec->shares[i] & extend((matrix_byte >> 2) & 1);
-            tmp_output->shares[j+6] ^= vec->shares[i] & extend((matrix_byte >> 1) & 1);
-            tmp_output->shares[j+7] ^= vec->shares[i] & extend((matrix_byte >> 0) & 1);
+            uint8_t matrix_byte = ((uint8_t*)matrix)[i * rowstride + (params->lowmc->n -1 - j) / 8];
+            tmp_output->shares[j+0] ^= vec->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 7) & 1);
+            tmp_output->shares[j+1] ^= vec->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 6) & 1);
+            tmp_output->shares[j+2] ^= vec->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 5) & 1);
+            tmp_output->shares[j+3] ^= vec->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 4) & 1);
+            tmp_output->shares[j+4] ^= vec->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 3) & 1);
+            tmp_output->shares[j+5] ^= vec->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 2) & 1);
+            tmp_output->shares[j+6] ^= vec->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 1) & 1);
+            tmp_output->shares[j+7] ^= vec->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 0) & 1);
         }
     }
 
@@ -440,39 +450,36 @@ static void broadcast(shares_t* shares, msgs_t* msgs, const picnic_instance_t* p
 
 static void mpc_matrix_mul(uint32_t* output, const uint32_t* vec, const uint32_t* matrix, shares_t* mask_shares, const picnic_instance_t* params)
 {
-    uint32_t prod[LOWMC_MAX_STATE_SIZE];
-    uint32_t temp[LOWMC_MAX_STATE_SIZE];
+    uint8_t temp[LOWMC_MAX_STATE_SIZE] = {0, };
 
+    const uint32_t rowstride = ((params->lowmc->n+127)/128*128)/8;
     shares_t* tmp_mask = allocateShares(mask_shares->numWords);
 
     for (size_t i = 0; i < params->lowmc->n; i++) {
-        tmp_mask->shares[i] = 0;
-        for (uint32_t j = 0; j < params->lowmc->n / 8; j++) {
-            uint8_t matrix_byte = ((uint8_t*)matrix)[(i * params->lowmc->n) / 8 + j];
-            uint8_t vec_byte = ((uint8_t*)vec)[j];
+        uint8_t vec_bit = extend(getBit(vec, params->lowmc->n - 1 - i))  & 0xFF;
 
-            ((uint8_t*)prod)[j] = matrix_byte & vec_byte;
+        for (uint32_t j = 0; j < params->lowmc->n; j+=8) {
+            uint8_t matrix_byte = ((uint8_t*)matrix)[(i * rowstride) + (params->lowmc->n - 1 - j) / 8];
+            temp[j/8] ^= matrix_byte & vec_bit;
 
-            tmp_mask->shares[i] ^= mask_shares->shares[j * 8] & extend((matrix_byte >> 7) & 1);
-            tmp_mask->shares[i] ^= mask_shares->shares[j * 8 + 1] & extend((matrix_byte >> 6) & 1);
-            tmp_mask->shares[i] ^= mask_shares->shares[j * 8 + 2] & extend((matrix_byte >> 5) & 1);
-            tmp_mask->shares[i] ^= mask_shares->shares[j * 8 + 3] & extend((matrix_byte >> 4) & 1);
-            tmp_mask->shares[i] ^= mask_shares->shares[j * 8 + 4] & extend((matrix_byte >> 3) & 1);
-            tmp_mask->shares[i] ^= mask_shares->shares[j * 8 + 5] & extend((matrix_byte >> 2) & 1);
-            tmp_mask->shares[i] ^= mask_shares->shares[j * 8 + 6] & extend((matrix_byte >> 1) & 1);
-            tmp_mask->shares[i] ^= mask_shares->shares[j * 8 + 7] & extend(matrix_byte & 1);
+            tmp_mask->shares[j+0] ^= mask_shares->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 7) & 1);
+            tmp_mask->shares[j+1] ^= mask_shares->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 6) & 1);
+            tmp_mask->shares[j+2] ^= mask_shares->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 5) & 1);
+            tmp_mask->shares[j+3] ^= mask_shares->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 4) & 1);
+            tmp_mask->shares[j+4] ^= mask_shares->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 3) & 1);
+            tmp_mask->shares[j+5] ^= mask_shares->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 2) & 1);
+            tmp_mask->shares[j+6] ^= mask_shares->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 1) & 1);
+            tmp_mask->shares[j+7] ^= mask_shares->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 0) & 1);
 
         }
-        uint8_t output_bit_i = parity(&prod[0], (params->input_size / 4));
-        setBit((uint8_t*)temp, i, output_bit_i);
     }
+    memcpy(output, temp, params->lowmc->n/8);
 
-    memcpy(output, &temp, params->input_size);
     copyShares(mask_shares, tmp_mask);
     freeShares(tmp_mask);
 }
 
-#if 0
+#if 1
 /* Alternative, simpler implementation of mpc_matrix_mul, closer to the description in the spec */
 static void mpc_matrix_mul_simple(uint32_t* output, const uint32_t* vec, const uint32_t* matrix, shares_t* mask_shares, const picnic_instance_t* params)
 {
@@ -579,17 +586,17 @@ static int simulateOnline(uint32_t* maskedKey, shares_t* mask_shares, randomTape
 
     copyShares(key_masks, mask_shares);
 
-    mpc_matrix_mul(roundKey, maskedKey, KMatrix(0, params), mask_shares, params);       // roundKey = maskedKey * KMatrix[0]
+    mpc_matrix_mul(roundKey, maskedKey, params->lowmc->k0_matrix->w64, mask_shares, params);       // roundKey = maskedKey * KMatrix[0]
     xor_array(state, roundKey, plaintext, (params->input_size / 4));                      // state = plaintext + roundKey
 
     shares_t* round_key_masks = allocateShares(mask_shares->numWords);
-    for (uint32_t r = 1; r <= params->lowmc->r; r++) {
+    for (uint32_t r = 0; r < params->lowmc->r; r++) {
         copyShares(round_key_masks, key_masks);
-        mpc_matrix_mul(roundKey, maskedKey, KMatrix(r, params), round_key_masks, params);
+        mpc_matrix_mul(roundKey, maskedKey, params->lowmc->rounds[r].k_matrix->w64, round_key_masks, params);
 
         mpc_sbox(state, mask_shares, tapes, msgs, params);
-        mpc_matrix_mul(state, state, LMatrix(r - 1, params), mask_shares, params);              // state = state * LMatrix (r-1)
-        xor_array(state, state, RConstant(r - 1, params), (params->input_size / 4));              // state += RConstant
+        mpc_matrix_mul(state, state, params->lowmc->rounds[r].l_matrix->w64, mask_shares, params);              // state = state * LMatrix (r-1)
+        xor_array_RC(state, state, params->lowmc->rounds[r].constant->w64, params->input_size);              // state += RConstant
         mpc_xor2(state, mask_shares, roundKey, round_key_masks, state, mask_shares, params);    // state += roundKey
     }
     freeShares(round_key_masks);

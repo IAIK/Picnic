@@ -229,7 +229,6 @@ list(APPEND PICNIC_SOURCES
 list(APPEND PICNIC_SOURCES
     picnic2_impl.c
     picnic2_types.c
-    picnic2_lowmc_constants.c
     picnic2_tree.c)
 if(WITH_LOWMC_M1)
   list(APPEND PICNIC_SOURCES
