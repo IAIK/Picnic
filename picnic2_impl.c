@@ -245,19 +245,20 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b)
 static void aux_matrix_mul(shares_t* output, const shares_t* vec, const uint32_t* matrix, shares_t* tmp_output, const picnic_instance_t* params)
 {
     for (size_t i = 0; i < params->lowmc->n; i++) {
-        uint64_t new_mask_i = 0;
-        for (uint32_t j = 0; j < params->lowmc->n / 8; j++) {
-            uint8_t matrix_byte = ((uint8_t*)matrix)[i * (params->lowmc->n / 8) + j];
-            new_mask_i ^= vec->shares[j * 8] & extend((matrix_byte >> 7) & 1);
-            new_mask_i ^= vec->shares[j * 8 + 1] & extend((matrix_byte >> 6) & 1);
-            new_mask_i ^= vec->shares[j * 8 + 2] & extend((matrix_byte >> 5) & 1);
-            new_mask_i ^= vec->shares[j * 8 + 3] & extend((matrix_byte >> 4) & 1);
-            new_mask_i ^= vec->shares[j * 8 + 4] & extend((matrix_byte >> 3) & 1);
-            new_mask_i ^= vec->shares[j * 8 + 5] & extend((matrix_byte >> 2) & 1);
-            new_mask_i ^= vec->shares[j * 8 + 6] & extend((matrix_byte >> 1) & 1);
-            new_mask_i ^= vec->shares[j * 8 + 7] & extend(matrix_byte & 1);
+        tmp_output->shares[i] = 0;
+    }
+    for (size_t i = 0; i < params->lowmc->n; i++) {
+        for (uint32_t j = 0; j < params->lowmc->n; j+=8) {
+            uint8_t matrix_byte = ((uint8_t*)matrix)[(params->lowmc->n - 1 - i) * ((params->lowmc->n+127)/128*128)/8 + (params->lowmc->n -1 -j)/8];
+            tmp_output->shares[j+0] ^= vec->shares[i] & extend((matrix_byte >> 7) & 1);
+            tmp_output->shares[j+1] ^= vec->shares[i] & extend((matrix_byte >> 6) & 1);
+            tmp_output->shares[j+2] ^= vec->shares[i] & extend((matrix_byte >> 5) & 1);
+            tmp_output->shares[j+3] ^= vec->shares[i] & extend((matrix_byte >> 4) & 1);
+            tmp_output->shares[j+4] ^= vec->shares[i] & extend((matrix_byte >> 3) & 1);
+            tmp_output->shares[j+5] ^= vec->shares[i] & extend((matrix_byte >> 2) & 1);
+            tmp_output->shares[j+6] ^= vec->shares[i] & extend((matrix_byte >> 1) & 1);
+            tmp_output->shares[j+7] ^= vec->shares[i] & extend((matrix_byte >> 0) & 1);
         }
-        tmp_output->shares[i] = new_mask_i;
     }
 
     copyShares(output, tmp_output);
@@ -300,12 +301,12 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
     // a constant is a NOP during preprocssing.
     // roundKey = key * KMatrix[0]
     // state = roundKey + plaintext
-    aux_matrix_mul(state, key, KMatrix(0, params), tmp1, params);
+    aux_matrix_mul(state, key, params->lowmc->k0_matrix->w64, tmp1, params);
 
-    for (uint32_t r = 1; r <= params->lowmc->r; r++) {
-        aux_matrix_mul(roundKey, key, KMatrix(r, params), tmp1, params);    // roundKey = key * KMatrix(r)
+    for (uint32_t r = 0; r < params->lowmc->r; r++) {
+        aux_matrix_mul(roundKey, key, params->lowmc->rounds[r].k_matrix->w64, tmp1, params);    // roundKey = key * KMatrix(r)
         aux_mpc_sbox(state, tapes, params);
-        aux_matrix_mul(state, state, LMatrix(r - 1, params), tmp1, params); // state = state * LMatrix(r-1)
+        aux_matrix_mul(state, state, params->lowmc->rounds[r].l_matrix->w64, tmp1, params); // state = state * LMatrix(r-1)
         // NOP: state =  state XOR RConstant(r - 1)
         mpc_xor_masks(state, state, roundKey);
     }
