@@ -76,7 +76,7 @@ PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_private
 extern const uint8_t HASH_PREFIX_0; // = 0
 extern const uint8_t HASH_PREFIX_1; // = 1
 extern const uint8_t HASH_PREFIX_2; // = 2
-extern const uint8_t HASH_PREFIX_3; // = 2 // TODO: reference implementation has 2 here...
+extern const uint8_t HASH_PREFIX_3; // = 3
 extern const uint8_t HASH_PREFIX_4; // = 4
 extern const uint8_t HASH_PREFIX_5; // = 5
 

@@ -49,7 +49,7 @@ typedef struct {
 const uint8_t HASH_PREFIX_0 = 0;
 const uint8_t HASH_PREFIX_1 = 1;
 const uint8_t HASH_PREFIX_2 = 2;
-const uint8_t HASH_PREFIX_3 = 2;
+const uint8_t HASH_PREFIX_3 = 3;
 const uint8_t HASH_PREFIX_4 = 4;
 const uint8_t HASH_PREFIX_5 = 5;
 
