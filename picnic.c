@@ -215,36 +215,8 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
   const uint8_t* sk_c  = SK_C(sk);
   const uint8_t* sk_pt = SK_PT(sk);
 
-  if(param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS) {
-    int ret;
-    signature2_t* sig = (signature2_t*)malloc(sizeof(signature2_t));
-    allocateSignature2(sig, instance);
-    if (sig == NULL) {
-      return -1;
-    }
-    ret = sign_picnic2((uint32_t*)sk_sk, (uint32_t*)sk_c, (uint32_t*)sk_pt, message,
-                       message_len, sig, instance);
-    if (ret != EXIT_SUCCESS) {
-      fprintf(stderr, "Failed to create signature\n");
-      fflush(stderr);
-      freeSignature2(sig, instance);
-      free(sig);
-      return -1;
-    }
-    ret = serializeSignature2(sig, signature, *signature_len, instance);
-    if (ret == -1) {
-      fprintf(stderr, "Failed to serialize signature\n");
-      fflush(stderr);
-      freeSignature2(sig, instance);
-      free(sig);
-      return -1;
-    }
-    *signature_len = ret;
-
-    freeSignature2(sig, instance);
-    free(sig);
-    return 0;
-  }
+  if(param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS)
+    return impl_sign_picnic2(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len);
   else
     return impl_sign(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len);
 }
@@ -267,36 +239,8 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
   const uint8_t* pk_c  = PK_C(pk);
   const uint8_t* pk_pt = PK_PT(pk);
 
-  if(param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS) {
-    int ret;
-    signature2_t* sig = (signature2_t*)malloc(sizeof(signature2_t));
-    allocateSignature2(sig, instance);
-    if (sig == NULL) {
-      return -1;
-    }
-
-    ret = deserializeSignature2(sig, signature, signature_len, instance);
-    if (ret != EXIT_SUCCESS) {
-      fprintf(stderr, "Failed to deserialize signature\n");
-      fflush(stderr);
-      freeSignature2(sig, instance);
-      free(sig);
-      return -1;
-    }
-
-    ret = verify_picnic2(sig, (uint32_t*)pk_c,
-                         (uint32_t*)pk_pt, message, message_len, instance);
-    if (ret != EXIT_SUCCESS) {
-      /* Signature is invalid, or verify function failed */
-      freeSignature2(sig, instance);
-      free(sig);
-      return -1;
-    }
-
-    freeSignature2(sig, instance);
-    free(sig);
-    return 0;
-  }
+  if(param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS)
+    return impl_verify_picnic2(instance, pk_pt, pk_c, message, message_len, signature, signature_len);
   else
     return impl_verify(instance, pk_pt, pk_c, message, message_len, signature, signature_len);
 }

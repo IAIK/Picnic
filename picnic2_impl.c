@@ -1337,3 +1337,67 @@ int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBy
     return (int)(sigBytes - sigBytesBase);
 }
 
+int impl_sign_picnic2(const picnic_instance_t* instance, const uint8_t* plaintext, const uint8_t* private_key,
+                      const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* signature,
+                      size_t* signature_len) {
+    int ret;
+    signature2_t* sig = (signature2_t*)malloc(sizeof(signature2_t));
+    allocateSignature2(sig, instance);
+    if (sig == NULL) {
+        return -1;
+    }
+    ret = sign_picnic2((uint32_t*)private_key, (uint32_t*)public_key, (uint32_t*)plaintext, msg,
+                       msglen, sig, instance);
+    if (ret != EXIT_SUCCESS) {
+        fprintf(stderr, "Failed to create signature\n");
+        fflush(stderr);
+        freeSignature2(sig, instance);
+        free(sig);
+        return -1;
+    }
+    ret = serializeSignature2(sig, signature, *signature_len, instance);
+    if (ret == -1) {
+        fprintf(stderr, "Failed to serialize signature\n");
+        fflush(stderr);
+        freeSignature2(sig, instance);
+        free(sig);
+        return -1;
+    }
+    *signature_len = ret;
+
+    freeSignature2(sig, instance);
+    free(sig);
+    return 0;
+}
+
+int impl_verify_picnic2(const picnic_instance_t* instance, const uint8_t* plaintext, const uint8_t* public_key,
+                const uint8_t* msg, size_t msglen, const uint8_t* signature, size_t signature_len) {
+    int ret;
+    signature2_t* sig = (signature2_t*)malloc(sizeof(signature2_t));
+    allocateSignature2(sig, instance);
+    if (sig == NULL) {
+        return -1;
+    }
+
+    ret = deserializeSignature2(sig, signature, signature_len, instance);
+    if (ret != EXIT_SUCCESS) {
+        fprintf(stderr, "Failed to deserialize signature\n");
+        fflush(stderr);
+        freeSignature2(sig, instance);
+        free(sig);
+        return -1;
+    }
+
+    ret = verify_picnic2(sig, (uint32_t*)public_key,
+                         (uint32_t*)plaintext, msg, msglen, instance);
+    if (ret != EXIT_SUCCESS) {
+        /* Signature is invalid, or verify function failed */
+        freeSignature2(sig, instance);
+        free(sig);
+        return -1;
+    }
+
+    freeSignature2(sig, instance);
+    free(sig);
+    return 0;
+}

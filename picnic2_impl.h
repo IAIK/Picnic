@@ -38,6 +38,12 @@ typedef struct signature2_t {
     proof2_t* proofs;           // One proof for each online execution the verifier checks
 } signature2_t;
 
+int impl_sign_picnic2(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
+              const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
+              size_t* siglen);
+int impl_verify_picnic2(const picnic_instance_t* instance, const uint8_t* plaintext, const uint8_t* public_key,
+                        const uint8_t* msg, size_t msglen, const uint8_t* signature, size_t signature_len);
+
 int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, const uint8_t* message, size_t messageByteLength, signature2_t* sig, const picnic_instance_t* params);
 int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* plaintext, const uint8_t* message, size_t messageByteLength, const picnic_instance_t* params);
 
