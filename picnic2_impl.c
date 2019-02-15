@@ -367,6 +367,7 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
     freeShares(key);
     freeShares(roundKey);
     freeShares(state);
+    freeShares(nl_part);
 }
 
 static void commit(uint8_t* digest, uint8_t* seed, uint8_t* aux, uint8_t* salt, size_t t, size_t j, const picnic_instance_t* params)
