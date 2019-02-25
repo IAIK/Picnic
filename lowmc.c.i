@@ -26,6 +26,14 @@
 #define RECORD_STATE
 #include "lowmc_impl.c.i"
 
+#undef N_LOWMC
+#undef RECORD_STATE
+#undef SBOX
+#define SBOX(x, tapes) sbox_layer_10_uint64_aux(&BLOCK(x, 0)->w64[(LOWMC_N / (sizeof(word) * 8)) - 1], tapes)
+#define N_LOWMC CONCAT(LOWMC, compute_aux_10)
+#define PICNIC2_AUX_COMPUTATION
+#include "lowmc_impl.c.i"
+
 #undef LOWMC_INSTANCE
 #undef LOWMC_M
 #undef LOWMC_R
@@ -36,6 +44,7 @@
 #undef M_FIXED_10
 #undef N_LOWMC
 #undef RECORD_STATE
+#undef PICNIC2_AUX_COMPUTATION
 #undef SBOX
 #undef XOR_MC
 #endif
@@ -59,6 +68,14 @@
 #define RECORD_STATE
 #include "lowmc_impl.c.i"
 
+#undef N_LOWMC
+#undef RECORD_STATE
+#undef SBOX
+#define SBOX(x, tapes) sbox_layer_10_uint64_aux(&BLOCK(x, 0)->w64[(LOWMC_N / (sizeof(word) * 8)) - 1], tapes)
+#define N_LOWMC CONCAT(LOWMC, compute_aux_1)
+#define PICNIC2_AUX_COMPUTATION
+#include "lowmc_impl.c.i"
+
 #undef LOWMC_INSTANCE
 #undef LOWMC_M
 #undef LOWMC_R
@@ -69,6 +86,7 @@
 #undef M_FIXED_1
 #undef N_LOWMC
 #undef RECORD_STATE
+#undef PICNIC2_AUX_COMPUTATION
 #undef SBOX
 #undef XOR_MC
 #endif

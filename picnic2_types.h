@@ -13,7 +13,6 @@
 #ifndef PICNIC_TYPES_H
 #define PICNIC_TYPES_H
 
-#include "picnic_impl.h"
 #include "picnic2_impl.h"
 
 /* Type definitions */

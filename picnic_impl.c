@@ -1599,9 +1599,9 @@ static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
     return false;
   }
 
-  // TODO: implementation for PICNIC2 parameter set
   pp->impls.lowmc              = lowmc_get_implementation(pp->lowmc);
   pp->impls.lowmc_store        = lowmc_store_get_implementation(pp->lowmc);
+  pp->impls.lowmc_aux          = lowmc_compute_aux_get_implementation(pp->lowmc);
   pp->impls.zkbpp_lowmc        = get_zkbpp_lowmc_implementation(pp->lowmc);
   pp->impls.zkbpp_lowmc_verify = get_zkbpp_lowmc_verify_implementation(pp->lowmc);
   pp->impls.mzd_share          = get_zkbpp_share_implentation(pp->lowmc);

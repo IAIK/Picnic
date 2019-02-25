@@ -24,6 +24,7 @@
 #include "picnic.h"
 #include "picnic2_types.h"
 #include "picnic2_tree.h"
+#include "io.h"
 
 #define LOWMC_MAX_STATE_SIZE 64
 #define LOWMC_MAX_KEY_BITS 256
@@ -207,7 +208,7 @@ static uint64_t parity64(uint64_t x)
     return y & 1;
 }
 
-static uint64_t aux_mpc_AND(uint64_t a, uint64_t b, randomTape_t* tapes, const picnic_instance_t* params)
+static uint64_t aux_mpc_AND(uint64_t a, uint64_t b, randomTape_t* tapes)
 {
     uint64_t mask_a = parity64(a);
     uint64_t mask_b = parity64(b);
@@ -217,7 +218,7 @@ static uint64_t aux_mpc_AND(uint64_t a, uint64_t b, randomTape_t* tapes, const p
 
     /* Zero the last party's share of the helper value, compute it based on the
      * input masks; then update the tape. */
-    setBit((uint8_t*)&and_helper, params->num_MPC_parties - 1, 0);
+    setBit((uint8_t*)&and_helper, 63, 0);
     uint64_t aux_bit = (mask_a & mask_b) ^ parity64(and_helper);
     size_t lastParty = tapes->nTapes - 1;
     setBit(tapes->tape[lastParty], tapes->pos - 1, (uint8_t)aux_bit);
@@ -232,14 +233,35 @@ static void aux_mpc_sbox(shares_t* state, randomTape_t* tapes, const picnic_inst
         uint64_t b = state->shares[i + 1];
         uint64_t c = state->shares[i];
 
-        uint64_t ab = aux_mpc_AND(a, b, tapes, params);
-        uint64_t bc = aux_mpc_AND(b, c, tapes, params);
-        uint64_t ca = aux_mpc_AND(c, a, tapes, params);
+        uint64_t ab = aux_mpc_AND(a, b, tapes);
+        uint64_t bc = aux_mpc_AND(b, c, tapes);
+        uint64_t ca = aux_mpc_AND(c, a, tapes);
 
         state->shares[i + 2] = a ^ bc;
         state->shares[i + 1] = a ^ b ^ ca;
         state->shares[i] = a ^ b ^ c ^ ab;
     }
+}
+
+/**
+ * S-box for m = 10, for Picnic2 aux computation
+ */
+void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
+    *d = __bswap_64(*d);
+    for (size_t i = 0; i < 30; i += 3) {
+        uint64_t a = getBit(d, i+2);
+        uint64_t b = getBit(d, i+1);
+        uint64_t c = getBit(d, i+0);
+
+        uint64_t ab = parity64(aux_mpc_AND(a, b, tapes));
+        uint64_t bc = parity64(aux_mpc_AND(b, c, tapes));
+        uint64_t ca = parity64(aux_mpc_AND(c, a, tapes));
+
+        setBit(d, i+2, a ^ bc);
+        setBit(d, i+1, a ^ b ^ ca);
+        setBit(d, i+0, a ^ b ^ c ^ ab);
+    }
+    *d = __bswap_64(*d);
 }
 
 static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b)
@@ -462,6 +484,33 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
     freeShares(nl_part);
 }
 
+static void computeAuxTape2(randomTape_t* tapes, const picnic_instance_t* params) {
+    shares_t *key = allocateShares(params->lowmc->n);
+    mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc->n, 1, true);
+    mzd_local_t* pt = mzd_local_init_ex(params->lowmc->n, 1, true);
+
+    tapesToWords(key, tapes);
+
+    uint8_t temp[32] = {0,};
+    // combine into key shares and calculate lowmc evaluation in plain
+    for(uint32_t i = 0; i < params->lowmc->n; i++) {
+        uint8_t key_bit = parity64(key->shares[i]);
+        setBit(temp, i, key_bit);
+    }
+    mzd_from_char_array(lowmc_key, temp, params->lowmc->n/8);
+
+    lowmc_compute_aux_implementation_f lowmc_aux_impl = params->impls.lowmc_aux;
+    // Perform LowMC evaluation and record state before AND gates
+    lowmc_aux_impl(lowmc_key, tapes);
+
+    // Reset the random tape counter so that the online execution uses the
+    // same random bits as when computing the aux shares
+    tapes->pos = 0;
+
+    freeShares(key);
+    mzd_local_free(lowmc_key);
+}
+
 static void commit(uint8_t* digest, uint8_t* seed, uint8_t* aux, uint8_t* salt, size_t t, size_t j, const picnic_instance_t* params)
 {
     /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
@@ -633,6 +682,7 @@ static void mpc_matrix_mul_z(uint32_t* state2, const uint32_t* state, shares_t* 
             new_mask_i ^= mask_shares->shares[j * 8 + 6] & extend((matrix_byte >> 1) & 1);
             new_mask_i ^= mask_shares->shares[j * 8 + 7] & extend((matrix_byte >> 0) & 1);
         }
+        //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
         uint8_t parity = (((prod * 0x0101010101010101ULL) & 0x8040201008040201ULL) % 0x1FF) & 1;
         setBit((uint8_t*)state2, params->lowmc->m*3-1-i, parity);
         mask2_shares->shares[params->lowmc->m*3-1-i] = new_mask_i;
@@ -1139,7 +1189,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
 
         if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
             /* We're given iSeed, have expanded the seeds, compute aux from scratch so we can comnpte Com[t] */
-            computeAuxTape(&tapes[t], params);
+            computeAuxTape2(&tapes[t], params);
             for (size_t j = 0; j < last; j++) {
                 commit(C[t].hashes[j], getLeaf(seeds[t], j), NULL, sig->salt, t, j, params);
             }
@@ -1287,7 +1337,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
     /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
     uint8_t auxBits[MAX_AUX_BYTES];
     for (size_t t = 0; t < params->num_rounds; t++) {
-        computeAuxTape(&tapes[t], params);
+        computeAuxTape2(&tapes[t], params);
     }
 
     /* Commit to seeds and aux bits */

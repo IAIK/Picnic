@@ -14,10 +14,14 @@
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
+#if defined(PICNIC2_AUX_COMPUTATION)
+static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
+#else
 #if defined(RECORD_STATE)
 static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, recorded_state_t* state) {
 #else
 static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) {
+#endif
 #endif
   mzd_local_t x[((LOWMC_N) + 255) / 256];
   mzd_local_t y[((LOWMC_N) + 255) / 256];
@@ -29,10 +33,15 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #endif
 
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
+#if defined(PICNIC2_AUX_COMPUTATION)
+  MUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
+  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
+#else
   XOR(x, p, LOWMC_INSTANCE.precomputed_constant_linear);
   ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
   MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
   XOR_MC(nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear);
+#endif
 
   //multiply non-linear part of state with Z0 matrix
 
@@ -41,7 +50,12 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #if defined(RECORD_STATE)
     COPY(state->state[i], x);
 #endif
+#if defined(PICNIC2_AUX_COMPUTATION)
+    SBOX(x, tapes);
+#else
     SBOX(x);
+#endif
+
 
 #if defined(M_FIXED_10)
     const word nl = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
@@ -66,7 +80,11 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #if defined(RECORD_STATE)
   COPY(state->state[LOWMC_R-1], x);
 #endif
-  SBOX(x);
+#if defined(PICNIC2_AUX_COMPUTATION)
+    SBOX(x, tapes);
+#else
+    SBOX(x);
+#endif
 
   unsigned int i = (LOWMC_R-1);
 #if defined(M_FIXED_10)
@@ -123,12 +141,14 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   }
 #endif
 
+#if !defined(PICNIC2_AUX_COMPUTATION)
 #if defined(RECORD_STATE)
   COPY(state->state[LOWMC_R], x);
 #else
   mzd_local_t* res = mzd_local_init_ex(1, LOWMC_N, false);
   COPY(res, x);
   return res;
+#endif
 #endif
 }
 

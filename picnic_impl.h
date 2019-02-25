@@ -44,6 +44,7 @@ typedef struct {
   struct {
     lowmc_implementation_f lowmc;
     lowmc_store_implementation_f lowmc_store;
+    lowmc_compute_aux_implementation_f lowmc_aux;
     zkbpp_lowmc_implementation_f zkbpp_lowmc;
     zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify;
     zkbpp_share_implementation_f mzd_share;
