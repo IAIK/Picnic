@@ -1494,7 +1494,7 @@ static const lowmc_t* const lowmc_instances[6] = {
     LOWMC_L1_OR_NULL,   LOWMC_L3_OR_NULL,   LOWMC_L5_OR_NULL,
     LOWMC_L1_1_OR_NULL, LOWMC_L3_1_OR_NULL, LOWMC_L5_1_OR_NULL};
 
-#define NULL_FNS {NULL, NULL, NULL, NULL, NULL}
+#define NULL_FNS {NULL, NULL, NULL, NULL, NULL, NULL}
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
     {NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PARAMETER_SET_INVALID, TRANSFORM_FS, NULL_FNS},
@@ -1510,7 +1510,7 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
      Picnic_L5_FS, TRANSFORM_FS, NULL_FNS},
     {LOWMC_L5_OR_NULL, 64, 32, 438, 438, 3, 32, 32, 143, 30, 110, 175, 207,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR, NULL_FNS},
-    // Picnic2 params TODO: add/fix fields necessary for PICNIC2
+    // Picnic2 params
     {LOWMC_L1_OR_NULL, 32, 16, 343, 27, 64, 16, 16, 75, 30, 55, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic2_L1_FS,
                                                 Picnic2_L1_FS, TRANSFORM_FS, NULL_FNS},
     {LOWMC_L3_OR_NULL, 48, 24, 570, 39, 64, 24, 24, 113, 30, 83, 0, 0, PICNIC_SIGNATURE_SIZE_Picnic2_L3_FS,

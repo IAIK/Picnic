@@ -226,40 +226,25 @@ static uint64_t aux_mpc_AND(uint64_t a, uint64_t b, randomTape_t* tapes)
     return fresh_output_mask;
 }
 
-static void aux_mpc_sbox(shares_t* state, randomTape_t* tapes, const picnic_instance_t* params)
-{
-    for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
-        uint64_t a = state->shares[i + 2];
-        uint64_t b = state->shares[i + 1];
-        uint64_t c = state->shares[i];
-
-        uint64_t ab = aux_mpc_AND(a, b, tapes);
-        uint64_t bc = aux_mpc_AND(b, c, tapes);
-        uint64_t ca = aux_mpc_AND(c, a, tapes);
-
-        state->shares[i + 2] = a ^ bc;
-        state->shares[i + 1] = a ^ b ^ ca;
-        state->shares[i] = a ^ b ^ c ^ ab;
-    }
-}
 
 /**
  * S-box for m = 10, for Picnic2 aux computation
  */
 void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
     *d = __bswap_64(*d);
-    for (size_t i = 0; i < 30; i += 3) {
-        uint64_t a = getBit(d, i+2);
-        uint64_t b = getBit(d, i+1);
-        uint64_t c = getBit(d, i+0);
+    uint8_t* state = (uint8_t*)d;
+    for (uint32_t i = 0; i < 30; i += 3) {
+        uint8_t a = getBit(state, i+2);
+        uint8_t b = getBit(state, i+1);
+        uint8_t c = getBit(state, i+0);
 
-        uint64_t ab = parity64(aux_mpc_AND(a, b, tapes));
-        uint64_t bc = parity64(aux_mpc_AND(b, c, tapes));
-        uint64_t ca = parity64(aux_mpc_AND(c, a, tapes));
+        uint8_t ab = parity64(aux_mpc_AND(a, b, tapes));
+        uint8_t bc = parity64(aux_mpc_AND(b, c, tapes));
+        uint8_t ca = parity64(aux_mpc_AND(c, a, tapes));
 
-        setBit(d, i+2, a ^ bc);
-        setBit(d, i+1, a ^ b ^ ca);
-        setBit(d, i+0, a ^ b ^ c ^ ab);
+        setBit(state, i+2, a ^ bc);
+        setBit(state, i+1, a ^ b ^ ca);
+        setBit(state, i+0, a ^ b ^ c ^ ab);
     }
     *d = __bswap_64(*d);
 }
@@ -277,6 +262,25 @@ static void mpc_xor_masks_nl(shares_t* out, const shares_t* a, const shares_t* b
 {
     for (size_t i = 0; i < num; i++) {
         out->shares[i] = a->shares[i] ^ b->shares[index + num - 1 - i];
+    }
+}
+
+#if 0
+
+static void aux_mpc_sbox(shares_t* state, randomTape_t* tapes, const picnic_instance_t* params)
+{
+    for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
+        uint64_t a = state->shares[i + 2];
+        uint64_t b = state->shares[i + 1];
+        uint64_t c = state->shares[i];
+
+        uint64_t ab = aux_mpc_AND(a, b, tapes);
+        uint64_t bc = aux_mpc_AND(b, c, tapes);
+        uint64_t ca = aux_mpc_AND(c, a, tapes);
+
+        state->shares[i + 2] = a ^ bc;
+        state->shares[i + 1] = a ^ b ^ ca;
+        state->shares[i] = a ^ b ^ c ^ ab;
     }
 }
 
@@ -409,7 +413,6 @@ static void aux_matrix_mul_simple(shares_t* output, const shares_t* vec, const u
  * AND gates, and computes the N-th party's share such that the AND gate invariant
  * holds on the mask values.
  */
-#if 0
 static void computeAuxTapeSimple(randomTape_t* tapes, const picnic_instance_t* params)
 {
     shares_t* state = allocateShares(params->lowmc->n);
@@ -642,7 +645,7 @@ static void mpc_matrix_mul(uint32_t* output, const uint32_t* vec, const uint64_t
     shares_t* tmp_mask = allocateShares(mask_shares->numWords);
 
     for (size_t i = 0; i < params->lowmc->n; i++) {
-        uint8_t vec_bit = extend(getBit(vec, params->lowmc->n - 1 - i))  & 0xFF;
+        uint8_t vec_bit = extend(getBit((uint8_t*)vec, params->lowmc->n - 1 - i))  & 0xFF;
 
         for (uint32_t j = 0; j < params->lowmc->n; j+=8) {
             uint8_t matrix_byte = ((uint8_t*)matrix)[(i * rowstride) + (params->lowmc->n - 1 - j) / 8];
@@ -730,7 +733,7 @@ static void mpc_matrix_addmul_r(uint32_t* state2, const uint32_t* state, shares_
     copyShares(tmp_mask, mask2_shares);
 
     for (size_t i = 0; i < params->lowmc->m*3; i++) {
-        uint8_t vec_bit = extend(getBit(state, params->lowmc->m*3 - 1 - i))  & 0xFF;
+        uint8_t vec_bit = extend(getBit((uint8_t*)state, params->lowmc->m*3 - 1 - i))  & 0xFF;
 
         for (uint32_t j = 0; j < params->lowmc->n; j+=8) {
             uint8_t matrix_byte = ((uint8_t*)matrix)[(i * rowstride) + (params->lowmc->n - 1 - j) / 8];
@@ -763,7 +766,7 @@ static void mpc_matrix_mul_nl_part(uint32_t* nl_part, const uint32_t* key, const
     uint8_t temp[rowstride];
     memset(temp, 0, rowstride);
     for (size_t i = 0; i < params->lowmc->n; i++) {
-        uint8_t key_bit = extend(getBit(key, params->lowmc->n - 1 - i))  & 0xFF;
+        uint8_t key_bit = extend(getBit((uint8_t*)key, params->lowmc->n - 1 - i))  & 0xFF;
         for (uint32_t j = 0; j < params->lowmc->r * 32; j+=8) {
 
             uint8_t matrix_byte = ((uint8_t*)precomputed_nl_matrix)[i * rowstride + j/ 8];
@@ -779,7 +782,7 @@ static void mpc_matrix_mul_nl_part(uint32_t* nl_part, const uint32_t* key, const
             nl_part_masks->shares[j+7] ^= key_masks->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 7) & 1);
         }
     }
-    xor_array(nl_part, temp, precomputed_constant_nl, params->lowmc->r);
+    xor_array(nl_part, (uint32_t*)temp, (uint32_t*)precomputed_constant_nl, params->lowmc->r);
 }
 
 #if 0
@@ -818,9 +821,9 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 
 static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t* x,
                      const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
-                     size_t index, size_t num, const picnic_instance_t* params)
+                     size_t index, size_t num)
 {
-    xor_array_RC(output, x, &y[index/32], 4);
+    xor_array_RC((uint8_t*)output, (uint8_t*)x, (uint8_t*)&y[index/32], 4);
     //xor masks
     mpc_xor_masks_nl(output_masks, x_masks, y_masks, index, num);
 }
@@ -905,25 +908,25 @@ static int simulateOnline(uint32_t* maskedKey, shares_t* mask_shares, randomTape
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
     mpc_matrix_mul(state, maskedKey, params->lowmc->k0_matrix->w64, mask_shares, params);       // roundKey = maskedKey * KMatrix[0]
     xor_array(state, state, plaintext, (params->input_size / 4));                                // state = plaintext + roundKey
-    xor_array_RC(state, state, params->lowmc->precomputed_constant_linear, params->input_size);  // state = state + precomp_const
-    mpc_matrix_mul_nl_part(nl_part, maskedKey, params->lowmc->precomputed_non_linear_part_matrix,
-            params->lowmc->precomputed_constant_non_linear, nl_part_masks, key_masks, params);
+    xor_array_RC((uint8_t*)state, (uint8_t*)state, (uint8_t*)params->lowmc->precomputed_constant_linear, params->input_size);  // state = state + precomp_const
+    mpc_matrix_mul_nl_part(nl_part, maskedKey, params->lowmc->precomputed_non_linear_part_matrix->w64,
+            params->lowmc->precomputed_constant_non_linear->w64, nl_part_masks, key_masks, params);
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     for (uint32_t r = 0; r < params->lowmc->r-1; r++) {
         mpc_sbox(state, mask_shares, tapes, msgs, params);
-        mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, r*32+2, 30, params);    // state += roundKey
+        mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, r*32+2, 30);    // state += roundKey
         //mpc_matrix_mul(state, state, params->lowmc->rounds[r].l_matrix->w64, mask_shares, params);              // state = state * LMatrix (r-1)
         mpc_matrix_mul_z(state2, state, mask2_shares, mask_shares, params->lowmc->rounds[r].z_matrix->w64, params);
-        mpc_shuffle(state, mask_shares, params->lowmc->rounds[r].r_mask);
+        mpc_shuffle((uint8_t*)state, mask_shares, params->lowmc->rounds[r].r_mask);
         mpc_matrix_addmul_r(state2, state, mask2_shares, mask_shares, params->lowmc->rounds[r].r_matrix->w64, params);
         for(uint32_t i = 0; i < params->lowmc->m*3; i++) {
             mask_shares->shares[i] = 0;
-            setBit(state, i, 0);
+            setBit((uint8_t*)state, i, 0);
         }
         mpc_xor2(state, mask_shares, state, mask_shares, state2, mask2_shares, params);
     }
     mpc_sbox(state, mask_shares, tapes, msgs, params);
-    mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, (params->lowmc->r-1)*32+2, 30, params);    // state += roundKey
+    mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, (params->lowmc->r-1)*32+2, 30);    // state += roundKey
     mpc_matrix_mul(state, state, params->lowmc->zr_matrix->w64, mask_shares, params);              // state = state * LMatrix (r-1)
 #else
     for (uint32_t r = 0; r < params->lowmc->r; r++) {
