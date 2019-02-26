@@ -409,7 +409,8 @@ static void aux_matrix_mul_simple(shares_t* output, const shares_t* vec, const u
  * AND gates, and computes the N-th party's share such that the AND gate invariant
  * holds on the mask values.
  */
-static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
+#if 0
+static void computeAuxTapeSimple(randomTape_t* tapes, const picnic_instance_t* params)
 {
     shares_t* state = allocateShares(params->lowmc->n);
     shares_t* state2 = allocateShares(params->lowmc->n);
@@ -483,11 +484,16 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
     freeShares(state2);
     freeShares(nl_part);
 }
+#endif
 
-static void computeAuxTape2(randomTape_t* tapes, const picnic_instance_t* params) {
+/* Input is the tapes for one parallel repitition; i.e., tapes[t]
+ * Updates the random tapes of all players with the mask values for the output of
+ * AND gates, and computes the N-th party's share such that the AND gate invariant
+ * holds on the mask values.
+ */
+static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params) {
     shares_t *key = allocateShares(params->lowmc->n);
     mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc->n, 1, true);
-    mzd_local_t* pt = mzd_local_init_ex(params->lowmc->n, 1, true);
 
     tapesToWords(key, tapes);
 
@@ -1189,7 +1195,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
 
         if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
             /* We're given iSeed, have expanded the seeds, compute aux from scratch so we can comnpte Com[t] */
-            computeAuxTape2(&tapes[t], params);
+            computeAuxTape(&tapes[t], params);
             for (size_t j = 0; j < last; j++) {
                 commit(C[t].hashes[j], getLeaf(seeds[t], j), NULL, sig->salt, t, j, params);
             }
@@ -1337,7 +1343,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
     /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
     uint8_t auxBits[MAX_AUX_BYTES];
     for (size_t t = 0; t < params->num_rounds; t++) {
-        computeAuxTape2(&tapes[t], params);
+        computeAuxTape(&tapes[t], params);
     }
 
     /* Commit to seeds and aux bits */
