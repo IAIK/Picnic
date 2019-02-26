@@ -11,6 +11,8 @@
 #error "OLLE is only implemented for 1 or 10 Sboxes"
 #endif
 
+//TODO: fix PICNIC2_AUX_COMPUTATION for OFF & ORKC
+
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
@@ -32,7 +34,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   mzd_local_t nl_part[(((LOWMC_R + 20) / 21) * 64 + 255) / 256];
 #endif
 
-#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION) // LOWMC_OPT=OLLE
 #if defined(PICNIC2_AUX_COMPUTATION)
   MUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
   MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
@@ -84,7 +86,6 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     SBOX(x, tapes);
 #else
     SBOX(x);
-#endif
 
   unsigned int i = (LOWMC_R-1);
 #if defined(M_FIXED_10)
@@ -98,7 +99,8 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #endif
   MUL(y, x, CONCAT(LOWMC_INSTANCE.zr, matrix_postfix));
   COPY(x, y);
-#else
+#endif
+#else // LOWMC_OPT=ORKC
   XOR(x, p, LOWMC_INSTANCE.precomputed_constant_linear);
   ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
   MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
@@ -124,7 +126,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     COPY(x, y);
   }
 #endif
-#else
+#else // LOWMC_OPT=OFF
   COPY(x, p);
   ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
 

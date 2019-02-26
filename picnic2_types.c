@@ -35,6 +35,7 @@ void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params)
     tape->nTapes = params->num_MPC_parties;
     tape->tape = malloc(tape->nTapes * sizeof(uint8_t*));
     size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
+    tapeSizeBytes = ((tapeSizeBytes + 7) / 8) * 8;
     uint8_t* slab = calloc(1, tape->nTapes * tapeSizeBytes);
     for (uint8_t i = 0; i < tape->nTapes; i++) {
         tape->tape[i] = slab;
@@ -99,50 +100,6 @@ void freeSignature2(signature2_t* sig, const picnic_instance_t* params)
         freeProof2(&sig->proofs[i]);
     }
     free(sig->proofs);
-}
-
-seeds_t* allocateSeeds(const picnic_instance_t* params)
-{
-    seeds_t* seeds = malloc((params->num_rounds + 1) * sizeof(seeds_t));
-    size_t nSeeds = params->num_MPC_parties;
-    uint8_t* slab1 = malloc((params->num_rounds * nSeeds + 1) * params->seed_size);                                                       // Seeds
-    uint8_t* slab2 = malloc(params->num_rounds * nSeeds * sizeof(uint8_t*) + sizeof(uint8_t*) + params->num_rounds * sizeof(uint8_t*) );    // pointers to seeds
-    uint8_t* slab3 = malloc((params->num_rounds + 1) * params->seed_size);                                                                // iSeeds, used to derive seeds
-
-    // We need multiple slabs here, because the seeds are generated with one call to the KDF;
-    // they must be stored contiguously
-
-    for (uint32_t i = 0; i < params->num_rounds; i++) {
-        seeds[i].seed = (uint8_t**)slab2;
-        slab2 += nSeeds * sizeof(uint8_t*);
-        seeds[i].iSeed = slab3;
-        slab3 += params->seed_size;
-
-        for (uint32_t j = 0; j < nSeeds; j++) {
-            seeds[i].seed[j] = slab1;
-            slab1 += params->seed_size;
-        }
-    }
-
-    // The salt is the last seed value
-    // Accessed by seeds[params->num_rounds].iSeed
-    seeds[params->num_rounds].seed = NULL;
-    if (params->num_MPC_parties == 3) {
-        seeds[params->num_rounds].iSeed = slab1;      // For ZKB parameter sets, the salt must be derived with the seeds
-    }
-    else {
-        seeds[params->num_rounds].iSeed = slab3;      // For Pincic2 paramter sets, the salt is dervied with the initial seeds
-    }
-
-    return seeds;
-}
-
-void freeSeeds(seeds_t* seeds)
-{
-    free(seeds[0].seed[0]); // Frees slab1
-    free(seeds[0].iSeed);   // Frees slab3
-    free(seeds[0].seed);    // frees slab2
-    free(seeds);
 }
 
 commitments_t* allocateCommitments(const picnic_instance_t* params, size_t numCommitments)
@@ -222,7 +179,7 @@ msgs_t* allocateMsgs(const picnic_instance_t* params)
 {
     msgs_t* msgs = malloc(params->num_rounds * sizeof(msgs_t));
 
-    uint8_t* slab = calloc(1, params->num_rounds * (params->num_MPC_parties * (params->view_size + params->input_size) +
+    uint8_t* slab = calloc(1, params->num_rounds * (params->num_MPC_parties * ((params->view_size + params->input_size + 7)/8*8) +
                                                       params->num_MPC_parties * sizeof(uint8_t*)));
 
     for (uint32_t i = 0; i < params->num_rounds; i++) {
@@ -233,7 +190,7 @@ msgs_t* allocateMsgs(const picnic_instance_t* params)
 
         for (uint32_t j = 0; j < params->num_MPC_parties; j++) {
             msgs[i].msgs[j] = slab;
-            slab += params->view_size + params->input_size;
+            slab += (params->view_size + params->input_size + 7)/8*8;
         }
     }
 

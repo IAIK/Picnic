@@ -141,7 +141,8 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
     }
 }
 
-static uint64_t tapesToWord(randomTape_t* tapes)
+#if 0
+static uint64_t tapesToWordSimple(randomTape_t* tapes)
 {
     uint64_t shares;
 
@@ -149,6 +150,50 @@ static uint64_t tapesToWord(randomTape_t* tapes)
         uint8_t bit = getBit(tapes->tape[i], tapes->pos);
         setBit((uint8_t*)&shares, i, bit);
     }
+    tapes->pos++;
+    return shares;
+}
+#endif
+
+// TODO: hide behind architecture defines
+#include <emmintrin.h>
+void sse_trans_64_64(uint64_t const *inp, uint64_t *out) {
+    const int nrows = 64;
+    const int ncols = 64;
+    const uint8_t* I = (uint8_t*) inp;
+    uint8_t* O = (uint8_t*) out;
+#   define INP(x, y) I[(x)*ncols/8 + (y)/8]
+#   define OUT(x, y) O[(y)*nrows/8 + (x)/8]
+    int rr, cc, i;
+    union {
+        __m128i x;
+        uint8_t b[16];
+    } tmp;
+
+    // Do the main body in 16x8 blocks:
+    for (rr = 0; rr <= nrows - 16; rr += 16) {
+        for (cc = 0; cc < ncols; cc += 8) {
+            for (i = 0; i < 16; ++i)
+                tmp.b[i] = INP(rr + i, cc);
+            for (i = 8; --i >= 0; tmp.x = _mm_slli_epi64(tmp.x, 1))
+                *(uint16_t *) &OUT(rr, cc + i) = _mm_movemask_epi8(tmp.x);
+        }
+    }
+}
+
+static uint64_t tapesToWord(randomTape_t* tapes)
+{
+    uint64_t shares;
+
+    if(tapes->pos % 64 == 0) {
+        uint64_t buffer[64];
+        for(size_t i = 0; i < 64; i++) {
+            buffer[i/8*8 + 7 - i%8] = ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
+        }
+        sse_trans_64_64(buffer, tapes->buffer);
+    }
+
+    shares = tapes->buffer[(tapes->pos % 64)/8*8 + 7 - (tapes->pos%64)%8];
     tapes->pos++;
     return shares;
 }
@@ -191,27 +236,15 @@ void xor_array_RC(uint8_t* out, const uint8_t * in1, const uint8_t * in2, uint32
  * Assumes inputs are always 0 or 1.  If this doesn't hold, add "& 1" to the
  * input.
  */
-static uint64_t extend(uint8_t bit)
+ATTR_ALWAYS_INLINE inline uint64_t extend(uint8_t bit)
 {
     return ~(bit - 1);
 }
 
-static uint64_t parity64(uint64_t x)
-{
-    uint64_t y = x ^ (x >> 1);
-
-    y ^= (y >> 2);
-    y ^= (y >> 4);
-    y ^= (y >> 8);
-    y ^= (y >> 16);
-    y ^= (y >> 32);
-    return y & 1;
-}
-
 static uint64_t aux_mpc_AND(uint64_t a, uint64_t b, randomTape_t* tapes)
 {
-    uint64_t mask_a = parity64(a);
-    uint64_t mask_b = parity64(b);
+    uint64_t mask_a = parity64_uint64(a);
+    uint64_t mask_b = parity64_uint64(b);
     uint64_t fresh_output_mask = tapesToWord(tapes);
 
     uint64_t and_helper = tapesToWord(tapes);
@@ -219,7 +252,7 @@ static uint64_t aux_mpc_AND(uint64_t a, uint64_t b, randomTape_t* tapes)
     /* Zero the last party's share of the helper value, compute it based on the
      * input masks; then update the tape. */
     setBit((uint8_t*)&and_helper, 63, 0);
-    uint64_t aux_bit = (mask_a & mask_b) ^ parity64(and_helper);
+    uint64_t aux_bit = (mask_a & mask_b) ^ parity64_uint64(and_helper);
     size_t lastParty = tapes->nTapes - 1;
     setBit(tapes->tape[lastParty], tapes->pos - 1, (uint8_t)aux_bit);
 
@@ -238,9 +271,9 @@ void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
         uint8_t b = getBit(state, i+1);
         uint8_t c = getBit(state, i+0);
 
-        uint8_t ab = parity64(aux_mpc_AND(a, b, tapes));
-        uint8_t bc = parity64(aux_mpc_AND(b, c, tapes));
-        uint8_t ca = parity64(aux_mpc_AND(c, a, tapes));
+        uint8_t ab = parity64_uint64(aux_mpc_AND(a, b, tapes));
+        uint8_t bc = parity64_uint64(aux_mpc_AND(b, c, tapes));
+        uint8_t ca = parity64_uint64(aux_mpc_AND(c, a, tapes));
 
         setBit(state, i+2, a ^ bc);
         setBit(state, i+1, a ^ b ^ ca);
@@ -503,7 +536,7 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
     uint8_t temp[32] = {0,};
     // combine into key shares and calculate lowmc evaluation in plain
     for(uint32_t i = 0; i < params->lowmc->n; i++) {
-        uint8_t key_bit = parity64(key->shares[i]);
+        uint8_t key_bit = parity64_uint64(key->shares[i]);
         setBit(temp, i, key_bit);
     }
     mzd_from_char_array(lowmc_key, temp, params->lowmc->n/8);
@@ -570,39 +603,72 @@ static void commit_v(uint8_t* digest, uint8_t* input, msgs_t* msgs, const picnic
 static void reconstructShares(uint32_t* output, shares_t* shares)
 {
     for (size_t i = 0; i < shares->numWords; i++) {
-        setBitInWordArray(output, i, parity64(shares->shares[i]));
+        setBitInWordArray(output, i, parity64_uint64(shares->shares[i]));
     }
 }
 
-static void wordToMsgs(uint64_t w, msgs_t* msgs, const picnic_instance_t* params)
+static void wordToMsgsNoTranspose(uint64_t w, msgs_t* msgs)
 {
-    for (size_t i = 0; i < params->num_MPC_parties; i++) {
+    ((uint64_t*)msgs->msgs[msgs->pos % 64])[msgs->pos / 64] = w;
+    msgs->pos++;
+}
+
+static void msgsTranspose(msgs_t* msgs)
+{
+    uint64_t buffer_in[64];
+    uint64_t buffer_out[64];
+    size_t pos;
+    for(pos = 0; pos < msgs->pos/64; pos++) {
+        for(size_t i = 0; i < 64; i++) {
+            buffer_in[i/8*8 + 7 - i%8] = ((uint64_t*)msgs->msgs[i])[pos];
+        }
+        sse_trans_64_64(buffer_in, buffer_out);
+        for(size_t i = 0; i < 64; i++) {
+            ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[(i)/8*8 + 7 - (i)%8];
+        }
+    }
+    memset(&buffer_in, 0, 64*sizeof(uint64_t));
+    for(size_t i = 0; i < msgs->pos%64; i++) {
+        buffer_in[i/8*8 + 7 - i%8] = ((uint64_t*)msgs->msgs[i])[pos];
+    }
+    sse_trans_64_64(buffer_in, buffer_out);
+    for(size_t i = 0; i < 64; i++) {
+        ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[(i)/8*8 + 7 - (i)%8];
+    }
+}
+
+#if 0
+static void wordToMsgs(uint64_t w, msgs_t* msgs)
+{
+    for (size_t i = 0; i < 64; i++) {
         uint8_t w_i = getBit((uint8_t*)&w, i);
         setBit(msgs->msgs[i], msgs->pos, w_i);
     }
     msgs->pos++;
 }
+#endif
 
-static uint8_t mpc_AND(uint8_t a, uint8_t b, uint64_t mask_a, uint64_t mask_b, randomTape_t* tapes, msgs_t* msgs, uint64_t* out, const picnic_instance_t* params)
+static uint8_t mpc_AND(uint8_t a, uint8_t b, uint64_t mask_a, uint64_t mask_b, randomTape_t* tapes, msgs_t* msgs,
+        uint64_t* out, uint8_t* unopened_msg)
 {
     uint64_t output_mask = tapesToWord(tapes); // A fresh random mask to hide the result
 
     *out = output_mask;
-    uint64_t and_helper = tapesToWord(tapes);   // The special mask value setup during preprocessing for eahc AND gate
+    uint64_t and_helper = tapesToWord(tapes);   // The special mask value setup during preprocessing for each AND gate
     uint64_t s_shares = (extend(a) & mask_b) ^ (extend(b) & mask_a) ^ and_helper ^ output_mask;
 
     if (msgs->unopened >= 0) {
-        uint8_t unopenedPartyBit = getBit(msgs->msgs[msgs->unopened], msgs->pos);
+        uint8_t unopenedPartyBit = getBit(unopened_msg, msgs->pos);
         setBit((uint8_t*)&s_shares, msgs->unopened, unopenedPartyBit);
     }
 
     // Broadcast each share of s
-    wordToMsgs(s_shares, msgs, params);
+    wordToMsgsNoTranspose(s_shares, msgs);
 
-    return (uint8_t)(parity64(s_shares) ^ (a & b));
+    return (uint8_t)(parity64_uint64(s_shares) ^ (a & b));
 }
 
-static void mpc_sbox(uint32_t* state, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs, const picnic_instance_t* params)
+static void mpc_sbox(uint32_t* state, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs, uint8_t* unopenened_msg, const picnic_instance_t* params)
 {
     for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
         uint8_t a = getBitFromWordArray(state, i + 2);
@@ -616,9 +682,9 @@ static void mpc_sbox(uint32_t* state, shares_t* state_masks, randomTape_t* tapes
 
         uint64_t bc_mask, ab_mask, ca_mask; // Fresh output masks used for the AND gate
 
-        uint8_t ab = mpc_AND(a, b, mask_a, mask_b, tapes, msgs, &ab_mask, params);
-        uint8_t bc = mpc_AND(b, c, mask_b, mask_c, tapes, msgs, &bc_mask, params);
-        uint8_t ca = mpc_AND(c, a, mask_c, mask_a, tapes, msgs, &ca_mask, params);
+        uint8_t ab = mpc_AND(a, b, mask_a, mask_b, tapes, msgs, &ab_mask, unopenened_msg);
+        uint8_t bc = mpc_AND(b, c, mask_b, mask_c, tapes, msgs, &bc_mask, unopenened_msg);
+        uint8_t ca = mpc_AND(c, a, mask_c, mask_a, tapes, msgs, &ca_mask, unopenened_msg);
 
         setBitInWordArray(state, i + 2, a ^ bc);
         state_masks->shares[i + 2] = mask_a ^ bc_mask;
@@ -630,10 +696,10 @@ static void mpc_sbox(uint32_t* state, shares_t* state_masks, randomTape_t* tapes
 }
 
 /* For each word in shares; write player i's share to their stream of msgs */
-static void broadcast(shares_t* shares, msgs_t* msgs, const picnic_instance_t* params)
+static void broadcast(shares_t* shares, msgs_t* msgs)
 {
     for (size_t w = 0; w < shares->numWords; w++) {
-        wordToMsgs(shares->shares[w], msgs, params);
+        wordToMsgsNoTranspose(shares->shares[w], msgs);
     }
 }
 
@@ -902,6 +968,12 @@ static int simulateOnline(uint32_t* maskedKey, shares_t* mask_shares, randomTape
     shares_t* nl_part_masks = allocateShares(params->lowmc->r * 32);
     shares_t* key_masks = allocateShares(mask_shares->numWords);    // Make a copy to use when computing each round key
     shares_t* mask2_shares = allocateShares(mask_shares->numWords);
+    uint8_t* unopened_msgs = NULL;
+
+    if(msgs->unopened >= 0) { //We are in verify, save the unopenend parties msgs
+        unopened_msgs = malloc(params->view_size + params->input_size);
+        memcpy(unopened_msgs, msgs->msgs[msgs->unopened], params->view_size + params->input_size);
+    }
 
     copyShares(key_masks, mask_shares);
 
@@ -913,7 +985,7 @@ static int simulateOnline(uint32_t* maskedKey, shares_t* mask_shares, randomTape
             params->lowmc->precomputed_constant_non_linear->w64, nl_part_masks, key_masks, params);
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
     for (uint32_t r = 0; r < params->lowmc->r-1; r++) {
-        mpc_sbox(state, mask_shares, tapes, msgs, params);
+        mpc_sbox(state, mask_shares, tapes, msgs, unopened_msgs, params);
         mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, r*32+2, 30);    // state += roundKey
         //mpc_matrix_mul(state, state, params->lowmc->rounds[r].l_matrix->w64, mask_shares, params);              // state = state * LMatrix (r-1)
         mpc_matrix_mul_z(state2, state, mask2_shares, mask_shares, params->lowmc->rounds[r].z_matrix->w64, params);
@@ -925,7 +997,7 @@ static int simulateOnline(uint32_t* maskedKey, shares_t* mask_shares, randomTape
         }
         mpc_xor2(state, mask_shares, state, mask_shares, state2, mask2_shares, params);
     }
-    mpc_sbox(state, mask_shares, tapes, msgs, params);
+    mpc_sbox(state, mask_shares, tapes, msgs, unopened_msgs, params);
     mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, (params->lowmc->r-1)*32+2, 30);    // state += roundKey
     mpc_matrix_mul(state, state, params->lowmc->zr_matrix->w64, mask_shares, params);              // state = state * LMatrix (r-1)
 #else
@@ -957,7 +1029,7 @@ static int simulateOnline(uint32_t* maskedKey, shares_t* mask_shares, randomTape
         /* During signature verification we have the shares of the output for
          * the unopened party already in msgs, but not in mask_shares. */
         for (size_t i = 0; i < params->lowmc->n; i++) {
-            uint8_t share = getBit(msgs->msgs[msgs->unopened], msgs->pos + i);
+            uint8_t share = getBit(unopened_msgs, msgs->pos + i);
             setBit((uint8_t*)&mask_shares->shares[i],  msgs->unopened, share);
         }
 
@@ -974,8 +1046,10 @@ static int simulateOnline(uint32_t* maskedKey, shares_t* mask_shares, randomTape
         goto Exit;
     }
 
-    broadcast(mask_shares, msgs, params);
+    broadcast(mask_shares, msgs);
+    msgsTranspose(msgs);
 
+    free(unopened_msgs);
     free(state);
     free(state2);
     free(roundKey);

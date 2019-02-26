@@ -20,6 +20,7 @@ typedef struct randomTape_t {
     uint8_t** tape;
     uint32_t pos;
     size_t nTapes;
+    uint64_t buffer[64];
 } randomTape_t;
 
 typedef struct commitments_t {
@@ -34,15 +35,6 @@ typedef struct msgs_t {
     size_t pos;
     int unopened;           // Index of the unopened party, or -1 if all parties opened (when signing)
 } msgs_t;
-
-typedef struct g_commitments_t {
-    uint8_t* G[3];
-}g_commitments_t;
-
-typedef struct seeds_t {
-    uint8_t** seed;
-    uint8_t* iSeed;
-} seeds_t;
 
 typedef struct shares_t {
     uint64_t* shares;
@@ -67,9 +59,6 @@ void freeCommitments2(commitments_t* commitments);
 
 inputs_t allocateInputs(const picnic_instance_t* params);
 void freeInputs(inputs_t inputs);
-
-seeds_t* allocateSeeds(const picnic_instance_t* params);
-void freeSeeds(seeds_t* seeds);
 
 msgs_t* allocateMsgs(const picnic_instance_t* params);
 void freeMsgs(msgs_t* msgs);
