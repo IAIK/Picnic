@@ -122,22 +122,33 @@ uint32_t ceil_log2(uint32_t x)
 
 static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* salt, size_t t, const picnic_instance_t* params)
 {
-    Keccak_HashInstance ctx;
+    Keccak_HashInstancetimes4 ctx;
+
 
     size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
 
     allocateRandomTape(tapes, params);
-    for (size_t i = 0; i < params->num_MPC_parties; i++) {
-        hash_init(&ctx, params);
-        hash_update(&ctx, seeds[i], params->seed_size);
-        hash_update(&ctx, salt, params->seed_size);
-        uint16_t tLE = htole16((uint16_t)t);
-        hash_update(&ctx, (uint8_t*)&tLE, sizeof(uint16_t));
-        uint16_t iLE = htole16((uint16_t)i);
-        hash_update(&ctx, (uint8_t*)&iLE, sizeof(uint16_t));
-        hash_final(&ctx);
+    assert(params->num_MPC_parties % 4 == 0);
+    for (size_t i = 0; i < params->num_MPC_parties; i+=4) {
+        hash_init_x4(&ctx, params);
 
-        hash_squeeze(&ctx, tapes->tape[i], tapeSizeBytes);
+        const uint8_t* seeds_ptr[4] = {seeds[i], seeds[i+1], seeds[i+2], seeds[i+3]};
+        hash_update_x4(&ctx, seeds_ptr, params->seed_size);
+        const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
+        hash_update_x4(&ctx, salt_ptr, params->seed_size);
+        uint16_t tLE = htole16((uint16_t)t);
+        const uint8_t* tLE_ptr[4] = {(uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE};
+        hash_update_x4(&ctx, tLE_ptr, sizeof(uint16_t));
+        uint16_t iLE0 = htole16((uint16_t)(i+0));
+        uint16_t iLE1 = htole16((uint16_t)(i+1));
+        uint16_t iLE2 = htole16((uint16_t)(i+2));
+        uint16_t iLE3 = htole16((uint16_t)(i+3));
+        const uint8_t* iLE_ptr[4] = {(uint8_t*)&iLE0, (uint8_t*)&iLE1, (uint8_t*)&iLE2, (uint8_t*)&iLE3};
+        hash_update_x4(&ctx, iLE_ptr, sizeof(uint16_t));
+        hash_final_x4(&ctx);
+
+        uint8_t* out_ptr[4] = {tapes->tape[i], tapes->tape[i+1], tapes->tape[i+2], tapes->tape[i+3]};
+        hash_squeeze_x4(&ctx, out_ptr, tapeSizeBytes);
     }
 }
 
