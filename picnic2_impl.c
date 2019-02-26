@@ -167,6 +167,8 @@ static uint64_t tapesToWordSimple(randomTape_t* tapes)
 #endif
 
 // TODO: hide behind architecture defines
+// TODO: this is taken from https://mischasan.wordpress.com/2011/10/03/the-full-sse2-bit-matrix-transpose-routine/
+//       and modified, what about LICENCE?
 #include <emmintrin.h>
 void sse_trans_64_64(uint64_t const *inp, uint64_t *out) {
     const int nrows = 64;
@@ -582,6 +584,28 @@ static void commit(uint8_t* digest, uint8_t* seed, uint8_t* aux, uint8_t* salt, 
     hash_update(&ctx, (uint8_t*)&jLE, sizeof(uint16_t));
     hash_final(&ctx);
     hash_squeeze(&ctx, digest, params->digest_size);
+}
+
+static void commit_x4(uint8_t** digest, const uint8_t** seed, uint8_t* salt, size_t t, size_t j, const picnic_instance_t* params)
+{
+    /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
+    Keccak_HashInstancetimes4 ctx;
+
+    hash_init_x4(&ctx, params);
+    hash_update_x4(&ctx, seed, params->seed_size);
+    const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
+    hash_update_x4(&ctx, salt_ptr, params->seed_size);
+    uint16_t tLE = htole16((uint16_t)t);
+    const uint8_t* tLE_ptr[4] = {(uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE};
+    hash_update_x4(&ctx, tLE_ptr, sizeof(uint16_t));
+    uint16_t jLE0 = htole16((uint16_t)(j+0));
+    uint16_t jLE1 = htole16((uint16_t)(j+1));
+    uint16_t jLE2 = htole16((uint16_t)(j+2));
+    uint16_t jLE3 = htole16((uint16_t)(j+3));
+    const uint8_t* jLE_ptr[4] = {(uint8_t*)&jLE0, (uint8_t*)&jLE1, (uint8_t*)&jLE2, (uint8_t*)&jLE3};
+    hash_update_x4(&ctx, jLE_ptr, sizeof(uint16_t));
+    hash_final_x4(&ctx);
+    hash_squeeze_x4(&ctx, digest, params->digest_size);
 }
 
 static void commit_h(uint8_t* digest, commitments_t* C, const picnic_instance_t* params)
@@ -1284,8 +1308,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
         if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
             /* We're given iSeed, have expanded the seeds, compute aux from scratch so we can comnpte Com[t] */
             computeAuxTape(&tapes[t], params);
-            for (size_t j = 0; j < last; j++) {
-                commit(C[t].hashes[j], getLeaf(seeds[t], j), NULL, sig->salt, t, j, params);
+            for (size_t j = 0; j < params->num_MPC_parties; j+=4) {
+                const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j+0), getLeaf(seeds[t], j+1), getLeaf(seeds[t], j+2), getLeaf(seeds[t], j+3)};
+                commit_x4(C[t].hashes+j, seed_ptr, sig->salt, t, j, params);
             }
             getAuxBits(auxBits, &tapes[t], params);
             commit(C[t].hashes[last], getLeaf(seeds[t], last), auxBits, sig->salt, t, last, params);
@@ -1294,10 +1319,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
             /* We're given all seeds and aux bits, execpt for the unopened 
              * party, we get their commitment */
             size_t unopened = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
-            for (size_t j = 0; j < last; j++) {
-                if (j != unopened) {
-                    commit(C[t].hashes[j], getLeaf(seeds[t], j), NULL, sig->salt, t, j, params);
-                }
+            for (size_t j = 0; j < params->num_MPC_parties; j+=4) {
+                const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j+0), getLeaf(seeds[t], j+1), getLeaf(seeds[t], j+2), getLeaf(seeds[t], j+3)};
+                commit_x4(C[t].hashes+j, seed_ptr, sig->salt, t, j, params);
             }
             if (last != unopened) {
                 commit(C[t].hashes[last], getLeaf(seeds[t], last), sig->proofs[t].aux, sig->salt, t, last, params);
@@ -1437,8 +1461,10 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
     /* Commit to seeds and aux bits */
     commitments_t* C = allocateCommitments(params, 0);
     for (size_t t = 0; t < params->num_rounds; t++) {
-        for (size_t j = 0; j < params->num_MPC_parties - 1; j++) {
-            commit(C[t].hashes[j], getLeaf(seeds[t], j), NULL, sig->salt, t, j, params);
+        assert(params->num_MPC_parties % 4 == 0);
+        for (size_t j = 0; j < params->num_MPC_parties; j+=4) {
+            const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j+0), getLeaf(seeds[t], j+1), getLeaf(seeds[t], j+2), getLeaf(seeds[t], j+3)};
+            commit_x4(C[t].hashes+j, seed_ptr, sig->salt, t, j, params);
         }
         size_t last = params->num_MPC_parties - 1;
         getAuxBits(auxBits, &tapes[t], params);
