@@ -166,6 +166,51 @@ static uint64_t tapesToWordSimple(randomTape_t* tapes)
 }
 #endif
 
+
+/* transpose a 64x64 bit matrix using Eklundh's algorithm */
+void transpose_64_64(const uint64_t *in, uint64_t *out) {
+    static const uint64_t TRANSPOSE_MASKS64[6] = {
+        0x00000000FFFFFFFF,
+        0x0000FFFF0000FFFF,
+        0x00FF00FF00FF00FF,
+        0x0F0F0F0F0F0F0F0F,
+        0x3333333333333333,
+        0x5555555555555555
+    };
+
+    uint32_t width = 32, nswaps = 1;
+    const uint32_t logn = 6;
+
+    // copy in to out and transpose in-place
+    memcpy(out, in, 64*sizeof(uint64_t));
+
+    for (uint32_t i = 0; i < logn; i++)
+    {
+        uint64_t mask = TRANSPOSE_MASKS64[i];
+        uint64_t inv_mask = ~mask;
+
+        for (uint32_t j = 0; j < nswaps; j++)
+        {
+            for (uint32_t k = 0; k < width; k++)
+            {
+                uint32_t i1 = k + 2*width*j;
+                uint32_t i2 = k + width + 2*width*j;
+
+                uint64_t t1 = out[i1];
+                uint64_t t2 = out[i2];
+
+                out[i1] = (t1 & mask) ^ ((t2 & mask) << width);
+                out[i2] = (t2 & inv_mask) ^ ((t1 & inv_mask) >> width);
+
+            }
+        }
+        nswaps *= 2;
+        width /= 2;
+    }
+}
+
+#if 0
+// TODO: this code is actually slower for the 64x64 bit matrix, can we speed it up?
 // TODO: hide behind architecture defines
 // TODO: this is taken from https://mischasan.wordpress.com/2011/10/03/the-full-sse2-bit-matrix-transpose-routine/
 //       and modified, what about LICENCE?
@@ -193,6 +238,7 @@ void sse_trans_64_64(uint64_t const *inp, uint64_t *out) {
         }
     }
 }
+#endif
 
 static uint64_t tapesToWord(randomTape_t* tapes)
 {
@@ -203,7 +249,7 @@ static uint64_t tapesToWord(randomTape_t* tapes)
         for(size_t i = 0; i < 64; i++) {
             buffer[i/8*8 + 7 - i%8] = ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
         }
-        sse_trans_64_64(buffer, tapes->buffer);
+        transpose_64_64(buffer, tapes->buffer);
     }
 
     shares = tapes->buffer[(tapes->pos % 64)/8*8 + 7 - (tapes->pos%64)%8];
@@ -657,7 +703,7 @@ static void msgsTranspose(msgs_t* msgs)
         for(size_t i = 0; i < 64; i++) {
             buffer_in[i/8*8 + 7 - i%8] = ((uint64_t*)msgs->msgs[i])[pos];
         }
-        sse_trans_64_64(buffer_in, buffer_out);
+        transpose_64_64(buffer_in, buffer_out);
         for(size_t i = 0; i < 64; i++) {
             ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[(i)/8*8 + 7 - (i)%8];
         }
@@ -666,7 +712,7 @@ static void msgsTranspose(msgs_t* msgs)
     for(size_t i = 0; i < msgs->pos%64; i++) {
         buffer_in[i/8*8 + 7 - i%8] = ((uint64_t*)msgs->msgs[i])[pos];
     }
-    sse_trans_64_64(buffer_in, buffer_out);
+    transpose_64_64(buffer_in, buffer_out);
     for(size_t i = 0; i < 64; i++) {
         ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[(i)/8*8 + 7 - (i)%8];
     }
@@ -860,7 +906,7 @@ static void mpc_matrix_addmul_r(uint32_t* state2, const uint32_t* state, shares_
 }
 
 static void mpc_matrix_mul_nl_part(uint32_t* nl_part, const uint32_t* key, const uint64_t* precomputed_nl_matrix,
-        const uint64_t* precomputed_constant_nl, const shares_t* nl_part_masks, const shares_t* key_masks, const picnic_instance_t* params)
+        const uint64_t* precomputed_constant_nl, shares_t* nl_part_masks, const shares_t* key_masks, const picnic_instance_t* params)
 {
 
     const uint32_t rowstride = ((params->lowmc->r*32+255)/256*256)/8;
