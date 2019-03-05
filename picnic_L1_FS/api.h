@@ -1,10 +1,10 @@
-#ifndef L3_FS_API_H
-#define L3_FS_API_H
+#ifndef PICNIC_L1_FS_API_H
+#define PICNIC_L1_FS_API_H
 
-#define CRYPTO_SECRETKEYBYTES (1 + 2 * 24 + 24)
-#define CRYPTO_PUBLICKEYBYTES (1 + 2 * 24)
-#define CRYPTO_BYTES (4 + 76764)
-#define CRYPTO_ALGNAME "picnicl3fs"
+#define CRYPTO_SECRETKEYBYTES (1 + 2 * 16 + 16)
+#define CRYPTO_PUBLICKEYBYTES (1 + 2 * 16)
+#define CRYPTO_BYTES (4 + 34016)
+#define CRYPTO_ALGNAME "picnicl1fs"
 
 int crypto_sign_keypair(unsigned char* pk, unsigned char* sk);
 int crypto_sign(unsigned char* sm, unsigned long long* smlen, const unsigned char* m,

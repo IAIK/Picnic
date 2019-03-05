@@ -52,10 +52,11 @@ if(NOT WITH_EXTRA_RANDOMNESS AND HAVE_GETLINE)
 endif()
 
 if(NOT MSVC)
-  foreach(target IN ITEMS L1_FS L1_UR L3_FS L3_UR L5_FS L5_UR)
+  foreach(target IN ITEMS picnic_L1_FS picnic_L1_UR picnic_L3_FS picnic_L3_UR picnic_L5_FS picnic_L5_UR
+                          picnic2_L1_FS picnic2_L3_FS picnic2_L5_FS)
     add_executable("api_${target}_test" "api_test.c")
     apply_base_options("api_${target}_test")
-    target_link_libraries("api_${target}_test" "picnic_${target}")
+    target_link_libraries("api_${target}_test" "${target}")
     target_include_directories("api_${target}_test" PRIVATE
       "${CMAKE_CURRENT_SOURCE_DIR}/../${target}")
 

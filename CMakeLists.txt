@@ -364,10 +364,11 @@ add_executable(example tools/example.c)
 target_link_libraries(example picnic)
 apply_base_options(example)
 
-foreach(target IN ITEMS L1_FS L1_UR L3_FS L3_UR L5_FS L5_UR)
-  add_library("picnic_${target}" STATIC "${target}/sign.c")
-  target_include_directories("picnic_${target}" PRIVATE "${target}")
-  target_link_libraries("picnic_${target}" picnic)
+foreach(target IN ITEMS picnic_L1_FS picnic_L1_UR picnic_L3_FS picnic_L3_UR picnic_L5_FS picnic_L5_UR
+                        picnic2_L1_FS picnic2_L3_FS picnic2_L5_FS)
+  add_library("${target}" STATIC "${target}/sign.c")
+  target_include_directories("${target}" PRIVATE "${target}")
+  target_link_libraries("${target}" picnic)
 endforeach(target)
 
 # tests
