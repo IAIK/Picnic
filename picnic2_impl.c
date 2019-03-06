@@ -839,14 +839,14 @@ static void mpc_matrix_mul_z(uint32_t* state2, const uint32_t* state, shares_t* 
             new_mask_i ^= mask_shares->shares[j * 8 + 7] & extend((matrix_byte >> 0) & 1);
         }
         //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-        uint8_t parity = (((prod * 0x0101010101010101ULL) & 0x8040201008040201ULL) % 0x1FF) & 1;
+        uint8_t parity = (((prod * UINT64_C(0x0101010101010101) & UINT64_C(0x8040201008040201) % 0x1FF) & 1;
         setBit((uint8_t*)state2, params->lowmc->m*3-1-i, parity);
         mask2_shares->shares[params->lowmc->m*3-1-i] = new_mask_i;
     }
 }
 
 static void mpc_shuffle(uint8_t* state, shares_t* mask_shares, uint64_t r_mask) {
-    for(int i = 63; i >= 0 && r_mask != 0xFFFFFFFC00000000ULL; i--) {
+    for(int i = 63; i >= 0 && r_mask != UINT64_C(0xFFFFFFFC00000000); i--) {
         if(!((r_mask >> i) & 1)) { // bit is not set
             //find next 1 and swap all entries until then
             for(int j = i-1; j >= 0; j--) {
@@ -860,8 +860,8 @@ static void mpc_shuffle(uint8_t* state, shares_t* mask_shares, uint64_t r_mask) 
                         setBit(state, 63-k, getBit(state, 63-k-1));
                         setBit(state, 63-k-1, bit);
                     }
-                    r_mask |= (1ULL << i);  // set bit i
-                    r_mask &= ~(1ULL << j); // clear bit j
+                    r_mask |= (UINT64_C(1) << i);  // set bit i
+                    r_mask &= ~(UINT64_C(1) << j); // clear bit j
                     break;
                 }
             }
@@ -894,7 +894,6 @@ static void mpc_matrix_addmul_r(uint32_t* state2, const uint32_t* state, shares_
             tmp_mask->shares[j+6] ^= mask_shares->shares[params->lowmc->m*3 - 1 - i] & extend((matrix_byte >> 1) & 1);
             tmp_mask->shares[j+7] ^= mask_shares->shares[params->lowmc->m*3 - 1 - i] & extend((matrix_byte >> 0) & 1);
 
-            //matrix_byte = ((matrix_byte * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;
             temp[j/8] ^= matrix_byte & vec_bit;
 
         }
