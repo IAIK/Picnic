@@ -295,7 +295,7 @@ void xor_array_RC(uint8_t* out, const uint8_t * in1, const uint8_t * in2, uint32
  * Assumes inputs are always 0 or 1.  If this doesn't hold, add "& 1" to the
  * input.
  */
-ATTR_ALWAYS_INLINE uint64_t extend(uint8_t bit)
+uint64_t extend(uint64_t bit)
 {
     return ~(bit - 1);
 }
@@ -839,7 +839,7 @@ static void mpc_matrix_mul_z(uint32_t* state2, const uint32_t* state, shares_t* 
             new_mask_i ^= mask_shares->shares[j * 8 + 7] & extend((matrix_byte >> 0) & 1);
         }
         //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-        uint8_t parity = (((prod * UINT64_C(0x0101010101010101) & UINT64_C(0x8040201008040201) % 0x1FF) & 1;
+        uint8_t parity = (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
         setBit((uint8_t*)state2, params->lowmc->m*3-1-i, parity);
         mask2_shares->shares[params->lowmc->m*3-1-i] = new_mask_i;
     }
