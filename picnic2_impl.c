@@ -295,7 +295,7 @@ void xor_array_RC(uint8_t* out, const uint8_t * in1, const uint8_t * in2, uint32
  * Assumes inputs are always 0 or 1.  If this doesn't hold, add "& 1" to the
  * input.
  */
-ATTR_ALWAYS_INLINE inline uint64_t extend(uint8_t bit)
+ATTR_ALWAYS_INLINE uint64_t extend(uint8_t bit)
 {
     return ~(bit - 1);
 }
