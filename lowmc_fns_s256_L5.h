@@ -13,7 +13,7 @@
 #define MUL SELECT_V_VL(mzd_mul_v_s256_256, mzd_mul_vl_s256_256)
 #define SHUFFLE mzd_shuffle_pext_256
 #define XOR mzd_xor_s256_256
-#define COPY mzd_copy_s256_128
+#define COPY mzd_copy_s256_256
 
 #define MUL_MC_1 SELECT_V_VL(mzd_mul_v_s256_256_1280, mzd_mul_vl_s256_256_1280)
 #define MUL_MC_10 SELECT_V_VL(mzd_mul_v_s256_256_1280, mzd_mul_vl_s256_256_1280)
