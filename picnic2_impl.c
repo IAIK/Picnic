@@ -1397,7 +1397,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
             msgs[t].unopened = unopened;
 
             tapesToWords(mask_shares, &tapes[t]);
-            int ret = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], &msgs[t], plaintext, pubKey, params);
+            ret = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], &msgs[t], plaintext, pubKey, params);
             if (ret != 0) {
                 printf("MPC simulation failed for round %lu, signature invalid\n", t);
                 ret = -1;
