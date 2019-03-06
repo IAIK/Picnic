@@ -846,7 +846,7 @@ static void mpc_matrix_mul_z(uint32_t* state2, const uint32_t* state, shares_t* 
 }
 
 static void mpc_shuffle(uint8_t* state, shares_t* mask_shares, uint64_t r_mask) {
-    for(int i = 63; i >= 0 && r_mask != 0xFFFFFFFC00000000UL; i--) {
+    for(int i = 63; i >= 0 && r_mask != 0xFFFFFFFC00000000ULL; i--) {
         if(!((r_mask >> i) & 1)) { // bit is not set
             //find next 1 and swap all entries until then
             for(int j = i-1; j >= 0; j--) {
@@ -860,8 +860,8 @@ static void mpc_shuffle(uint8_t* state, shares_t* mask_shares, uint64_t r_mask) 
                         setBit(state, 63-k, getBit(state, 63-k-1));
                         setBit(state, 63-k-1, bit);
                     }
-                    r_mask |= (1UL << i);  // set bit i
-                    r_mask &= ~(1UL << j); // clear bit j
+                    r_mask |= (1ULL << i);  // set bit i
+                    r_mask &= ~(1ULL << j); // clear bit j
                     break;
                 }
             }
