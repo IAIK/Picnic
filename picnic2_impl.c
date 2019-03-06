@@ -323,7 +323,7 @@ static uint64_t aux_mpc_AND(uint64_t a, uint64_t b, randomTape_t* tapes)
  * S-box for m = 10, for Picnic2 aux computation
  */
 void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
-    *d = __bswap_64(*d);
+    *d = htobe64(*d);
     uint8_t* state = (uint8_t*)d;
     for (uint32_t i = 0; i < 30; i += 3) {
         uint8_t a = getBit(state, i+2);
@@ -338,7 +338,7 @@ void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
         setBit(state, i+1, a ^ b ^ ca);
         setBit(state, i+0, a ^ b ^ c ^ ab);
     }
-    *d = __bswap_64(*d);
+    *d = be64toh(*d);
 }
 
 static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b)
@@ -1067,7 +1067,6 @@ static int simulateOnline(uint32_t* maskedKey, shares_t* mask_shares, randomTape
     for (uint32_t r = 0; r < params->lowmc->r-1; r++) {
         mpc_sbox(state, mask_shares, tapes, msgs, unopened_msgs, params);
         mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, r*32+2, 30);    // state += roundKey
-        //mpc_matrix_mul(state, state, params->lowmc->rounds[r].l_matrix->w64, mask_shares, params);              // state = state * LMatrix (r-1)
         mpc_matrix_mul_z(state2, state, mask2_shares, mask_shares, params->lowmc->rounds[r].z_matrix->w64, params);
         mpc_shuffle((uint8_t*)state, mask_shares, params->lowmc->rounds[r].r_mask);
         mpc_matrix_addmul_r(state2, state, mask2_shares, mask_shares, params->lowmc->rounds[r].r_matrix->w64, params);
