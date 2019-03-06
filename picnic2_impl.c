@@ -910,14 +910,13 @@ static void mpc_matrix_mul_nl_part(uint32_t* nl_part, const uint32_t* key, const
 {
 
     const uint32_t rowstride = ((params->lowmc->r*32+255)/256*256)/8;
-    uint8_t temp[rowstride];
-    memset(temp, 0, rowstride);
+    memset(nl_part, 0, params->lowmc->r*sizeof(uint32_t));
     for (size_t i = 0; i < params->lowmc->n; i++) {
         uint8_t key_bit = extend(getBit((uint8_t*)key, params->lowmc->n - 1 - i))  & 0xFF;
         for (uint32_t j = 0; j < params->lowmc->r * 32; j+=8) {
 
             uint8_t matrix_byte = ((uint8_t*)precomputed_nl_matrix)[i * rowstride + j/ 8];
-            temp[j/8] ^= matrix_byte & key_bit;
+            ((uint8_t*)nl_part)[j/8] ^= matrix_byte & key_bit;
 
             nl_part_masks->shares[j+0] ^= key_masks->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 0) & 1);
             nl_part_masks->shares[j+1] ^= key_masks->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 1) & 1);
@@ -929,7 +928,7 @@ static void mpc_matrix_mul_nl_part(uint32_t* nl_part, const uint32_t* key, const
             nl_part_masks->shares[j+7] ^= key_masks->shares[params->lowmc->n - 1 - i] & extend((matrix_byte >> 7) & 1);
         }
     }
-    xor_array(nl_part, (uint32_t*)temp, (uint32_t*)precomputed_constant_nl, params->lowmc->r);
+    xor_array(nl_part, nl_part, (uint32_t*)precomputed_constant_nl, params->lowmc->r);
 }
 
 #if 0
