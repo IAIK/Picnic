@@ -187,11 +187,10 @@ static inline uint64_t parity64_uint64(uint64_t in) {
 #else
 ATTR_CONST
 static inline uint64_t parity64_uint64(uint64_t in) {
-  in ^= in >> 32;
-  in ^= in >> 16;
-  in ^= in >> 8;
-  in ^= in >> 4;
-  return (0x6996 >> (in & 0xf)) & 1;
+  in ^= in >> 1;
+  in ^= in >> 2;
+  in = (in & 0x1111111111111111) * 0x1111111111111111;
+  return (in >> 60) & 1;
 }
 #endif
 
