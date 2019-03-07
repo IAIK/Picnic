@@ -10,6 +10,8 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#ifndef PICNIC2_TREE_H
+#define PICNIC2_TREE_H
 /*
  * Represents a (nearly) complete binary tree, stored in memory as an array.
  * The root is at nodes[0], and the left child of node k is 2k + 1, the right
@@ -63,3 +65,4 @@ size_t openMerkleTreeSize(size_t numNodes, uint16_t* notMissingLeaves, size_t no
 int addMerkleNodes(tree_t* tree, uint16_t* missingLeaves, size_t missingLeavesSize, uint8_t* input, size_t inputSize);
 int verifyMerkleTree(tree_t* tree, uint8_t** leafData, uint8_t* salt, const picnic_instance_t* params);
 
+#endif
