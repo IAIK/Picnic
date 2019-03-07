@@ -226,6 +226,8 @@ list(APPEND PICNIC_SOURCES
 # picnic2 sources
 list(APPEND PICNIC_SOURCES
     picnic2_impl.c
+    picnic2_simulate.c
+    picnic2_simulate_mul.c
     picnic2_types.c
     picnic2_tree.c)
 if(WITH_LOWMC_M1)

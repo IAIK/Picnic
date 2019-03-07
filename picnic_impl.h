@@ -12,6 +12,7 @@
 
 #include "lowmc.h"
 #include "mpc_lowmc.h"
+#include "picnic2_simulate.h"
 #include "picnic.h"
 
 #define MAX_DIGEST_SIZE 64
@@ -19,7 +20,7 @@
 
 typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 
-typedef struct {
+typedef struct picnic_instance_t{
   const lowmc_t* lowmc;
 
   uint32_t digest_size; /* bytes */
@@ -44,10 +45,11 @@ typedef struct {
   struct {
     lowmc_implementation_f lowmc;
     lowmc_store_implementation_f lowmc_store;
-    lowmc_compute_aux_implementation_f lowmc_aux;
     zkbpp_lowmc_implementation_f zkbpp_lowmc;
     zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify;
     zkbpp_share_implementation_f mzd_share;
+    lowmc_compute_aux_implementation_f lowmc_aux;
+    lowmc_simulate_online_f lowmc_simulate_online;
   } impls;
 } picnic_instance_t;
 
