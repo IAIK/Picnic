@@ -37,7 +37,7 @@ void mpc_matrix_mul_nl_part_256(uint32_t* nl_part, const uint32_t* key, const ui
 void copyShares(shares_t* dst, shares_t* src);
 uint8_t getBit(const uint8_t* array, uint32_t bitNumber);
 void setBit(uint8_t* bytes, uint32_t bitNumber, uint8_t val);
-void xor_array(uint32_t* out, const uint32_t * in1, const uint32_t * in2, uint32_t length);
+void xor_word_array(uint32_t *out, const uint32_t *in1, const uint32_t *in2, uint32_t length);
 void xor_array_RC(uint8_t* out, const uint8_t * in1, const uint8_t * in2, uint32_t length);
 uint64_t tapesToWord(randomTape_t* tapes);
 void reconstructShares(uint32_t* output, shares_t* shares);

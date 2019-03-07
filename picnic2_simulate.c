@@ -153,7 +153,7 @@ static void mpc_xor_masks_nl(shares_t* out, const shares_t* a, const shares_t* b
 static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x,
                      const shares_t* x_masks,  const uint32_t* y, const shares_t* y_masks, const picnic_instance_t* params)
 {
-    xor_array(output, x, y, (params->input_size / 4));
+    xor_word_array(output, x, y, (params->input_size / 4));
     mpc_xor_masks(output_masks, x_masks, y_masks);
 }
 

@@ -666,7 +666,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
 
         tapesToWords(mask_shares, &tapes[t]);
         reconstructShares(maskedKey, mask_shares);                                      // maskedKey = masks
-        xor_array(maskedKey, maskedKey, privateKey, (params->input_size / 4));            // maskedKey += privateKey
+        xor_word_array(maskedKey, maskedKey, privateKey, (params->input_size / 4));            // maskedKey += privateKey
 
         int rv = simulateOnline(maskedKey, mask_shares, &tapes[t], &msgs[t], plaintext, pubKey, params);
         if (rv != 0) {

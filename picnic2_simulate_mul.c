@@ -78,7 +78,7 @@ void reconstructShares(uint32_t* output, shares_t* shares)
     }
 }
 
-void xor_array(uint32_t* out, const uint32_t * in1, const uint32_t * in2, uint32_t length)
+void xor_word_array(uint32_t *out, const uint32_t *in1, const uint32_t *in2, uint32_t length)
 {
     for (uint32_t i = 0; i < length; i++) {
         out[i] = in1[i] ^ in2[i];
@@ -428,7 +428,7 @@ void mpc_matrix_mul_nl_part_128(uint32_t* nl_part, const uint32_t* key, const ui
             nl_part_masks->shares[j+7] ^= key_masks->shares[128 - 1 - i] & extend((matrix_byte >> 7) & 1);
         }
     }
-    xor_array(nl_part, nl_part, (uint32_t*)precomputed_constant_nl, 20);
+    xor_word_array(nl_part, nl_part, (uint32_t *) precomputed_constant_nl, 20);
 }
 void mpc_matrix_mul_nl_part_192(uint32_t* nl_part, const uint32_t* key, const uint64_t* precomputed_nl_matrix,
                             const uint64_t* precomputed_constant_nl, shares_t* nl_part_masks, const shares_t* key_masks)
@@ -453,7 +453,7 @@ void mpc_matrix_mul_nl_part_192(uint32_t* nl_part, const uint32_t* key, const ui
             nl_part_masks->shares[j+7] ^= key_masks->shares[192 - 1 - i] & extend((matrix_byte >> 7) & 1);
         }
     }
-    xor_array(nl_part, nl_part, (uint32_t*)precomputed_constant_nl, 30);
+    xor_word_array(nl_part, nl_part, (uint32_t *) precomputed_constant_nl, 30);
 }
 void mpc_matrix_mul_nl_part_256(uint32_t* nl_part, const uint32_t* key, const uint64_t* precomputed_nl_matrix,
                             const uint64_t* precomputed_constant_nl, shares_t* nl_part_masks, const shares_t* key_masks)
@@ -478,5 +478,5 @@ void mpc_matrix_mul_nl_part_256(uint32_t* nl_part, const uint32_t* key, const ui
             nl_part_masks->shares[j+7] ^= key_masks->shares[256 - 1 - i] & extend((matrix_byte >> 7) & 1);
         }
     }
-    xor_array(nl_part, nl_part, (uint32_t*)precomputed_constant_nl, 38);
+    xor_word_array(nl_part, nl_part, (uint32_t *) precomputed_constant_nl, 38);
 }

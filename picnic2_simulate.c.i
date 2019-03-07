@@ -49,7 +49,7 @@ static int SIM_ONLINE(uint32_t* maskedKey, shares_t* mask_shares, randomTape_t*
 
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
     MPC_MUL(state, maskedKey, LOWMC_INSTANCE.k0_matrix->w64, mask_shares);       // roundKey = maskedKey * KMatrix[0]
-    xor_array(state, state, plaintext, (LOWMC_N / 32));                                // state = plaintext + roundKey
+    xor_word_array(state, state, plaintext, (LOWMC_N / 32));                                // state = plaintext + roundKey
     xor_array_RC((uint8_t*)state, (uint8_t*)state, (uint8_t*)LOWMC_INSTANCE.precomputed_constant_linear, LOWMC_N / 8);  // state = state + precomp_const
     MPC_MUL_MC(nl_part, maskedKey, LOWMC_INSTANCE.precomputed_non_linear_part_matrix->w64,
             LOWMC_INSTANCE.precomputed_constant_non_linear->w64, nl_part_masks, key_masks);
@@ -105,7 +105,7 @@ static int SIM_ONLINE(uint32_t* maskedKey, shares_t* mask_shares, randomTape_t*
     }
     uint32_t output[LOWMC_N / 8];
     reconstructShares(output, mask_shares);
-    xor_array(output, output, state, (LOWMC_N / 32));
+    xor_word_array(output, output, state, (LOWMC_N / 32));
 
     if (memcmp(output, pubKey, LOWMC_N / 8) != 0) {
         printf("%s: output does not match pubKey\n", __func__);
