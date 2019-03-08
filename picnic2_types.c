@@ -11,6 +11,7 @@
  */
 
 #include "picnic2_types.h"
+#include "compat.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,13 +21,14 @@ shares_t* allocateShares(size_t count)
 {
     shares_t* shares = malloc(sizeof(shares_t));
 
-    shares->shares = calloc(count, sizeof(uint64_t));
+    shares->shares = aligned_alloc(32, count * sizeof(uint64_t));
+    memset(shares->shares, 0, count * sizeof(uint64_t));
     shares->numWords = count;
     return shares;
 }
 void freeShares(shares_t* shares)
 {
-    free(shares->shares);
+    aligned_free(shares->shares);
     free(shares);
 }
 
