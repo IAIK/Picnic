@@ -168,10 +168,10 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 
 
 /* PICNIC2_L1_FS */
-#define MPC_MUL mpc_matrix_mul_128
-#define MPC_MUL_MC mpc_matrix_mul_nl_part_128
-#define MPC_ADDMUL_R mpc_matrix_addmul_r_128
-#define MPC_MUL_Z mpc_matrix_mul_z_128
+#define MPC_MUL mpc_matrix_mul_uint64_128
+#define MPC_MUL_MC mpc_matrix_mul_nl_part_uint64_128
+#define MPC_ADDMUL_R mpc_matrix_addmul_r_uint64_128
+#define MPC_MUL_Z mpc_matrix_mul_z_uint64_128
 
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R LOWMC_L1_R
@@ -191,10 +191,10 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 #undef SIM_ONLINE
 
 /* PICNIC2_L3_FS */
-#define MPC_MUL mpc_matrix_mul_192
-#define MPC_MUL_MC mpc_matrix_mul_nl_part_192
-#define MPC_ADDMUL_R mpc_matrix_addmul_r_192
-#define MPC_MUL_Z mpc_matrix_mul_z_192
+#define MPC_MUL mpc_matrix_mul_uint64_192
+#define MPC_MUL_MC mpc_matrix_mul_nl_part_uint64_192
+#define MPC_ADDMUL_R mpc_matrix_addmul_r_uint64_192
+#define MPC_MUL_Z mpc_matrix_mul_z_uint64_192
 
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R LOWMC_L3_R
@@ -214,10 +214,10 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 #undef SIM_ONLINE
 
 /* PICNIC2_L3_FS */
-#define MPC_MUL mpc_matrix_mul_256
-#define MPC_MUL_MC mpc_matrix_mul_nl_part_256
-#define MPC_ADDMUL_R mpc_matrix_addmul_r_256
-#define MPC_MUL_Z mpc_matrix_mul_z_256
+#define MPC_MUL mpc_matrix_mul_uint64_256
+#define MPC_MUL_MC mpc_matrix_mul_nl_part_uint64_256
+#define MPC_ADDMUL_R mpc_matrix_addmul_r_uint64_256
+#define MPC_MUL_Z mpc_matrix_mul_z_uint64_256
 
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R LOWMC_L5_R
