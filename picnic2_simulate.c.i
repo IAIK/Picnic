@@ -27,6 +27,9 @@
 #include "io.h"
 
 
+#if defined(FN_ATTR)
+FN_ATTR
+#endif
 static int SIM_ONLINE(uint32_t* maskedKey, shares_t* mask_shares, randomTape_t*
                           tapes, msgs_t* msgs, const uint32_t* plaintext, const uint32_t* pubKey, const picnic_instance_t* params)
 {
