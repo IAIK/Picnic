@@ -25,6 +25,12 @@ void mpc_matrix_mul_s256_256(uint32_t* output, const uint32_t* vec, const uint64
 void mpc_matrix_mul_z_uint64_128(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
 void mpc_matrix_mul_z_uint64_192(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
 void mpc_matrix_mul_z_uint64_256(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
+void mpc_matrix_mul_z_s128_128(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
+void mpc_matrix_mul_z_s128_192(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
+void mpc_matrix_mul_z_s128_256(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
+void mpc_matrix_mul_z_s256_128(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
+void mpc_matrix_mul_z_s256_192(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
+void mpc_matrix_mul_z_s256_256(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix);
 
 void mpc_matrix_addmul_r_uint64_128(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, shares_t* mask_shares, const uint64_t* matrix);
 void mpc_matrix_addmul_r_uint64_192(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, shares_t* mask_shares, const uint64_t* matrix);

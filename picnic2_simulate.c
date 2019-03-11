@@ -245,7 +245,7 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 #define MPC_MUL mpc_matrix_mul_s128_128
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s128_128
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s128_128
-#define MPC_MUL_Z mpc_matrix_mul_z_uint64_128
+#define MPC_MUL_Z mpc_matrix_mul_z_s128_128
 
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R LOWMC_L1_R
@@ -268,7 +268,7 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 #define MPC_MUL mpc_matrix_mul_s128_192
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s128_192
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s128_192
-#define MPC_MUL_Z mpc_matrix_mul_z_uint64_192
+#define MPC_MUL_Z mpc_matrix_mul_z_s128_192
 
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R LOWMC_L3_R
@@ -291,7 +291,7 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 #define MPC_MUL mpc_matrix_mul_s128_256
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s128_256
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s128_256
-#define MPC_MUL_Z mpc_matrix_mul_z_uint64_256
+#define MPC_MUL_Z mpc_matrix_mul_z_s128_256
 
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R LOWMC_L5_R
@@ -319,7 +319,7 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 #define MPC_MUL mpc_matrix_mul_s256_128
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s256_128
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s256_128
-#define MPC_MUL_Z mpc_matrix_mul_z_uint64_128
+#define MPC_MUL_Z mpc_matrix_mul_z_s256_128
 
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R LOWMC_L1_R
@@ -342,7 +342,7 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 #define MPC_MUL mpc_matrix_mul_s256_192
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s256_192
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s256_192
-#define MPC_MUL_Z mpc_matrix_mul_z_uint64_192
+#define MPC_MUL_Z mpc_matrix_mul_z_s256_192
 
 #define LOWMC_N LOWMC_L3_N
 #define LOWMC_R LOWMC_L3_R
@@ -365,7 +365,7 @@ static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t
 #define MPC_MUL mpc_matrix_mul_s256_256
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s256_256
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s256_256
-#define MPC_MUL_Z mpc_matrix_mul_z_uint64_256
+#define MPC_MUL_Z mpc_matrix_mul_z_s256_256
 
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R LOWMC_L5_R

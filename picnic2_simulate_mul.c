@@ -671,6 +671,94 @@ void mpc_matrix_mul_s128_256(uint32_t* output, const uint32_t* vec, const uint64
     freeShares(tmp_mask);
 }
 
+void mpc_matrix_mul_z_s128_128(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix)
+{
+    const uint32_t rowstride = (128)/8;
+    memset(mask2_shares->shares, 0, sizeof(uint64_t) * 128);
+    memset(state2, 0, 128/8);
+    for (size_t i = 0; i < 30; i++) {
+        uint8_t prod = 0;
+        block_t new_mask_i = {{0, 0, 0, 0}};
+        word128* tmp_mask_block = (word128*) mask_shares->shares;
+        for (uint32_t j = 0; j < 128 / 8; j++, tmp_mask_block+=4) {
+            uint8_t matrix_byte = ((uint8_t*)matrix)[i * rowstride + (128/8) - 1 - j];
+            uint8_t vec_byte = ((uint8_t*)state)[j];
+
+            prod ^= matrix_byte & vec_byte;
+
+            block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
+            block_t* mask2 = &block_masks[(matrix_byte >> 0) & 0xF];
+
+            new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[0], mask1->w128[0]);
+            new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[1], mask1->w128[1]);
+            new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[2], mask2->w128[0]);
+            new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[3], mask2->w128[1]);
+        }
+        //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
+        uint8_t parity = (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+        setBit((uint8_t*)state2, 30-1-i, parity);
+        mask2_shares->shares[30-1-i] = new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
+    }
+}
+void mpc_matrix_mul_z_s128_192(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix)
+{
+    const uint32_t rowstride = (256)/8;
+    memset(mask2_shares->shares, 0, sizeof(uint64_t) * 192);
+    memset(state2, 0, 192/8);
+    for (size_t i = 0; i < 30; i++) {
+        uint8_t prod = 0;
+        block_t new_mask_i = {{0, 0, 0, 0}};
+        word128* tmp_mask_block = (word128*) mask_shares->shares;
+        for (uint32_t j = 0; j < 192 / 8; j++, tmp_mask_block+=4) {
+            uint8_t matrix_byte = ((uint8_t*)matrix)[i * rowstride + (192/8) - 1 - j];
+            uint8_t vec_byte = ((uint8_t*)state)[j];
+
+            prod ^= matrix_byte & vec_byte;
+
+            block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
+            block_t* mask2 = &block_masks[(matrix_byte >> 0) & 0xF];
+
+            new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[0], mask1->w128[0]);
+            new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[1], mask1->w128[1]);
+            new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[2], mask2->w128[0]);
+            new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[3], mask2->w128[1]);
+        }
+        //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
+        uint8_t parity = (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+        setBit((uint8_t*)state2, 30-1-i, parity);
+        mask2_shares->shares[30-1-i] = new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
+    }
+}
+void mpc_matrix_mul_z_s128_256(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix)
+{
+    const uint32_t rowstride = (256)/8;
+    memset(mask2_shares->shares, 0, sizeof(uint64_t) * 256);
+    memset(state2, 0, 256/8);
+    for (size_t i = 0; i < 30; i++) {
+        uint8_t prod = 0;
+        block_t new_mask_i = {{0, 0, 0, 0}};
+        word128* tmp_mask_block = (word128*) mask_shares->shares;
+        for (uint32_t j = 0; j < 256 / 8; j++, tmp_mask_block+=4) {
+            uint8_t matrix_byte = ((uint8_t*)matrix)[i * rowstride + (256/8) - 1 - j];
+            uint8_t vec_byte = ((uint8_t*)state)[j];
+
+            prod ^= matrix_byte & vec_byte;
+
+            block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
+            block_t* mask2 = &block_masks[(matrix_byte >> 0) & 0xF];
+
+            new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[0], mask1->w128[0]);
+            new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[1], mask1->w128[1]);
+            new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[2], mask2->w128[0]);
+            new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[3], mask2->w128[1]);
+        }
+        //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
+        uint8_t parity = (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+        setBit((uint8_t*)state2, 30-1-i, parity);
+        mask2_shares->shares[30-1-i] = new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
+    }
+}
+
 void mpc_matrix_addmul_r_s128_128(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares,
                                     shares_t* mask_shares, const uint64_t* matrix)
 {
@@ -974,6 +1062,88 @@ void mpc_matrix_mul_s256_256(uint32_t* output, const uint32_t* vec, const uint64
 
     copyShares(mask_shares, tmp_mask);
     freeShares(tmp_mask);
+}
+
+void mpc_matrix_mul_z_s256_128(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix)
+{
+    const uint32_t rowstride = (128)/8;
+    memset(mask2_shares->shares, 0, sizeof(uint64_t) * 128);
+    memset(state2, 0, 128/8);
+    for (size_t i = 0; i < 30; i++) {
+        uint8_t prod = 0;
+        block_t new_mask_i = {{0, 0, 0, 0}};
+        word256* tmp_mask_block = (word256*) mask_shares->shares;
+        for (uint32_t j = 0; j < 128 / 8; j++, tmp_mask_block+=2) {
+            uint8_t matrix_byte = ((uint8_t*)matrix)[i * rowstride + (128/8) - 1 - j];
+            uint8_t vec_byte = ((uint8_t*)state)[j];
+
+            prod ^= matrix_byte & vec_byte;
+
+            block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
+            block_t* mask2 = &block_masks[(matrix_byte >> 0) & 0xF];
+
+            new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[0], mask1->w256);
+            new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[1], mask2->w256);
+        }
+        //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
+        uint8_t parity = (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+        setBit((uint8_t*)state2, 30-1-i, parity);
+        mask2_shares->shares[30-1-i] = new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
+    }
+}
+void mpc_matrix_mul_z_s256_192(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix)
+{
+    const uint32_t rowstride = (256)/8;
+    memset(mask2_shares->shares, 0, sizeof(uint64_t) * 192);
+    memset(state2, 0, 192/8);
+    for (size_t i = 0; i < 30; i++) {
+        uint8_t prod = 0;
+        block_t new_mask_i = {{0, 0, 0, 0}};
+        word256* tmp_mask_block = (word256*) mask_shares->shares;
+        for (uint32_t j = 0; j < 192 / 8; j++, tmp_mask_block+=2) {
+            uint8_t matrix_byte = ((uint8_t*)matrix)[i * rowstride + (192/8) - 1 - j];
+            uint8_t vec_byte = ((uint8_t*)state)[j];
+
+            prod ^= matrix_byte & vec_byte;
+
+            block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
+            block_t* mask2 = &block_masks[(matrix_byte >> 0) & 0xF];
+
+            new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[0], mask1->w256);
+            new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[1], mask2->w256);
+        }
+        //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
+        uint8_t parity = (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+        setBit((uint8_t*)state2, 30-1-i, parity);
+        mask2_shares->shares[30-1-i] = new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
+    }
+}
+void mpc_matrix_mul_z_s256_256(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares, const shares_t* mask_shares, const uint64_t* matrix)
+{
+    const uint32_t rowstride = (256)/8;
+    memset(mask2_shares->shares, 0, sizeof(uint64_t) * 256);
+    memset(state2, 0, 256/8);
+    for (size_t i = 0; i < 30; i++) {
+        uint8_t prod = 0;
+        block_t new_mask_i = {{0, 0, 0, 0}};
+        word256* tmp_mask_block = (word256*) mask_shares->shares;
+        for (uint32_t j = 0; j < 256 / 8; j++, tmp_mask_block+=2) {
+            uint8_t matrix_byte = ((uint8_t*)matrix)[i * rowstride + (256/8) - 1 - j];
+            uint8_t vec_byte = ((uint8_t*)state)[j];
+
+            prod ^= matrix_byte & vec_byte;
+
+            block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
+            block_t* mask2 = &block_masks[(matrix_byte >> 0) & 0xF];
+
+            new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[0], mask1->w256);
+            new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[1], mask2->w256);
+        }
+        //byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
+        uint8_t parity = (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+        setBit((uint8_t*)state2, 30-1-i, parity);
+        mask2_shares->shares[30-1-i] = new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
+    }
 }
 
 void mpc_matrix_addmul_r_s256_128(uint32_t* state2, const uint32_t* state, shares_t* mask2_shares,
