@@ -74,23 +74,23 @@ static int SIM_ONLINE(uint32_t* maskedKey, shares_t* mask_shares, randomTape_t*
     MPC_MUL(state, state, LOWMC_INSTANCE.zr_matrix->w64, mask_shares);              // state = state * LMatrix (r-1)
 #else
     for (uint32_t r = 0; r < LOWMC_R; r++) {
-        mpc_sbox(state, mask_shares, tapes, msgs, params);
-        mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, r*32+2, 30, params);    // state += roundKey
+        mpc_sbox(state, mask_shares, tapes, msgs, unopened_msgs, params);
+        mpc_xor2_nl(state, mask_shares, state, mask_shares, nl_part, nl_part_masks, r*32+2, 30);    // state += roundKey
         MPC_MUL(state, state, LOWMC_INSTANCE.rounds[r].l_matrix->w64, mask_shares);              // state = state * LMatrix (r-1)
     }
 #endif
 #else
     MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.k0_matrix->w64, mask_shares);       // roundKey = maskedKey * KMatrix[0]
-    xor_array(state, roundKey, plaintext, (LOWMC_N / 32));                      // state = plaintext + roundKey
+    xor_word_array(state, roundKey, plaintext, (LOWMC_N / 32));                      // state = plaintext + roundKey
 
     shares_t* round_key_masks = allocateShares(mask_shares->numWords);
-    for (uint32_t r = 0; r < LOWMC_INSTANCE.r; r++) {
+    for (uint32_t r = 0; r < LOWMC_R; r++) {
         copyShares(round_key_masks, key_masks);
-        MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix->w64, round_key_masks, params);
+        MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix->w64, round_key_masks);
 
-        mpc_sbox(state, mask_shares, tapes, msgs, params);
+        mpc_sbox(state, mask_shares, tapes, msgs, unopened_msgs, params);
         MPC_MUL(state, state, LOWMC_INSTANCE.rounds[r].l_matrix->w64, mask_shares);              // state = state * LMatrix (r-1)
-        xor_array_RC(state, state, (const uint8_t*)LOWMC_INSTANCE.rounds[r].constant->w64, LOWMC_N / 8);              // state += RConstant
+        xor_array_RC((uint8_t*)state, (uint8_t*)state, (const uint8_t*)(LOWMC_INSTANCE.rounds[r].constant->w64), LOWMC_N / 8);              // state += RConstant
         mpc_xor2(state, mask_shares, roundKey, round_key_masks, state, mask_shares, params);    // state += roundKey
     }
     freeShares(round_key_masks);

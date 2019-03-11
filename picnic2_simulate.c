@@ -110,6 +110,26 @@ static void mpc_sbox(uint32_t* state, shares_t* state_masks, randomTape_t* tapes
     }
 }
 
+#if defined(REDUCED_ROUND_KEY_COMPUTATION)
+static void mpc_xor_masks_nl(shares_t* out, const shares_t* a, const shares_t* b, size_t index, size_t num)
+{
+    for (size_t i = 0; i < num; i++) {
+        out->shares[i] = a->shares[i] ^ b->shares[index + num - 1 - i];
+    }
+}
+
+
+static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t* x,
+                        const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
+                        size_t index, size_t num)
+{
+    xor_array_RC((uint8_t*)output, (uint8_t*)x, (uint8_t*)&y[index/32], 4);
+    //xor masks
+    mpc_xor_masks_nl(output_masks, x_masks, y_masks, index, num);
+}
+#endif
+
+#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 static void mpc_shuffle(uint8_t* state, shares_t* mask_shares, uint64_t r_mask) {
     for(int i = 63; i >= 0 && r_mask != UINT64_C(0xFFFFFFFC00000000); i--) {
         if(!((r_mask >> i) & 1)) { // bit is not set
@@ -133,7 +153,9 @@ static void mpc_shuffle(uint8_t* state, shares_t* mask_shares, uint64_t r_mask) 
         }
     }
 }
+#endif
 
+#if !defined(REDUCED_ROUND_KEY_COMPUTATION) || defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b)
 {
     assert(out->numWords == a->numWords && a->numWords == b->numWords);
@@ -143,28 +165,13 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b)
     }
 }
 
-static void mpc_xor_masks_nl(shares_t* out, const shares_t* a, const shares_t* b, size_t index, size_t num)
-{
-    for (size_t i = 0; i < num; i++) {
-        out->shares[i] = a->shares[i] ^ b->shares[index + num - 1 - i];
-    }
-}
-
 static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x,
                      const shares_t* x_masks,  const uint32_t* y, const shares_t* y_masks, const picnic_instance_t* params)
 {
     xor_word_array(output, x, y, (params->input_size / 4));
     mpc_xor_masks(output_masks, x_masks, y_masks);
 }
-
-static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t* x,
-                        const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
-                        size_t index, size_t num)
-{
-    xor_array_RC((uint8_t*)output, (uint8_t*)x, (uint8_t*)&y[index/32], 4);
-    //xor masks
-    mpc_xor_masks_nl(output_masks, x_masks, y_masks, index, num);
-}
+#endif
 
 
 /* PICNIC2_L1_FS */

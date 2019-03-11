@@ -101,17 +101,26 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   COPY(x, y);
 #endif
 #else // LOWMC_OPT=ORKC
+#if defined(PICNIC2_AUX_COMPUTATION)
+  MUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
+  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
+#else
   XOR(x, p, LOWMC_INSTANCE.precomputed_constant_linear);
   ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
   MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
   XOR_MC(nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear);
+#endif
 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
 #if defined(RECORD_STATE)
     COPY(state->state[i], x);
 #endif
+#if defined(PICNIC2_AUX_COMPUTATION)
+    SBOX(x, tapes);
+#else
     SBOX(x);
+#endif
 
 #if defined(M_FIXED_10)
     const word nl = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
@@ -127,15 +136,23 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   }
 #endif
 #else // LOWMC_OPT=OFF
+#if defined(PICNIC2_AUX_COMPUTATION)
+  MUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
+#else
   COPY(x, p);
   ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
+#endif
 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
 #if defined(RECORD_STATE)
     COPY(state->state[i], x);
 #endif
+#if defined(PICNIC2_AUX_COMPUTATION)
+    SBOX(x, tapes);
+#else
     SBOX(x);
+#endif
 
     MUL(y, x, CONCAT(round->l, matrix_postfix));
     XOR(x, y, round->constant);
