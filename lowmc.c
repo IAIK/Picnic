@@ -407,9 +407,8 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 }
 
 lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_t* lowmc) {
-    ASSUME(lowmc->m == 10 || lowmc->m == 1);
+    ASSUME(lowmc->m == 10);
     ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
-
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
     if (CPU_SUPPORTS_AVX2) {
@@ -429,24 +428,6 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 #endif
             }
         }
-#if defined(WITH_LOWMC_M1)
-        if (lowmc->m == 1) {
-            switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-                case 128:
-                    return lowmc_s256_128_compute_aux_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-                case 192:
-                    return lowmc_s256_192_compute_aux_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-                case 256:
-                    return lowmc_s256_256_compute_aux_1;
-#endif
-            }
-        }
-#endif
     }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -467,24 +448,6 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 #endif
             }
         }
-#if defined(WITH_LOWMC_M1)
-        if (lowmc->m == 1) {
-            switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-                case 128:
-                    return lowmc_s128_128_compute_aux_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-                case 192:
-                    return lowmc_s128_192_compute_aux_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-                case 256:
-                    return lowmc_s128_256_compute_aux_1;
-#endif
-            }
-        }
-#endif
     }
 #endif
 #endif
@@ -505,25 +468,6 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 #endif
         }
     }
-
-#if defined(WITH_LOWMC_M1)
-    if (lowmc->m == 1) {
-        switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-            case 128:
-                return lowmc_uint64_128_compute_aux_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-            case 192:
-                return lowmc_uint64_192_compute_aux_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-            case 256:
-                return lowmc_uint64_256_compute_aux_1;
-#endif
-        }
-    }
-#endif
 
     return NULL;
 }
