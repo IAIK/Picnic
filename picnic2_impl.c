@@ -120,10 +120,10 @@ void tapesToWords(shares_t* shares, randomTape_t* tapes)
     }
 }
 
-static uint64_t aux_mpc_AND(uint64_t a, uint64_t b, randomTape_t* tapes)
+static uint64_t aux_mpc_AND(uint64_t mask_a, uint64_t mask_b, randomTape_t* tapes)
 {
-    uint64_t mask_a = parity64_uint64(a);
-    uint64_t mask_b = parity64_uint64(b);
+//    uint64_t mask_a = parity64_uint64(a); //inputs are already parity
+//    uint64_t mask_b = parity64_uint64(b); //inputs are already parity
     uint64_t fresh_output_mask = tapesToWord(tapes);
 
     uint64_t and_helper = tapesToWord(tapes);
