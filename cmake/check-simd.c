@@ -15,7 +15,9 @@ ATTRIBUTE_TARGET("sse2") void test(void) {
 
 #if defined(AVX2)
 ATTRIBUTE_TARGET("avx2") void test(void) {
-  (void)_mm256_setzero_si256();
+  __m256i a = _mm256_setzero_si256();
+  a = _mm256_xor_si256(a,a);
+  (void)a;
 }
 #endif
 
