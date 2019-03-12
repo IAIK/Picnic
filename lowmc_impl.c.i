@@ -155,7 +155,11 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #endif
 
     MUL(y, x, CONCAT(round->l, matrix_postfix));
+#if !defined(PICNIC2_AUX_COMPUTATION)
     XOR(x, y, round->constant);
+#else
+    COPY(x, y);
+#endif
     ADDMUL(x, lowmc_key, CONCAT(round->k, matrix_postfix));
   }
 #endif
