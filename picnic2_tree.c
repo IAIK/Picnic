@@ -128,7 +128,7 @@ void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, uint8_t 
 
     hash_init_prefix(&ctx, params, hashPrefix);
     hash_update(&ctx, inputSeed, params->seed_size);
-    hash_update(&ctx, salt, params->seed_size);
+    hash_update(&ctx, salt, SALT_SIZE);
     uint16_t repIndexLE = htole16((uint16_t)repIndex);
     hash_update(&ctx, (uint8_t*)&repIndexLE, sizeof(uint16_t));
     uint16_t nodeIndexLE = htole16((uint16_t)nodeIndex);
@@ -384,7 +384,7 @@ static void computeParentHash(tree_t* tree, size_t child, uint8_t* salt, const p
         hash_update(&ctx, tree->nodes[2 * parent + 2], params->digest_size);
     }
 
-    hash_update(&ctx, salt, params->seed_size);
+    hash_update(&ctx, salt, SALT_SIZE);
     uint16_t parentLE = htole16((uint16_t)parent);
     hash_update(&ctx, (uint8_t*)&parentLE, sizeof(uint16_t));
     hash_final(&ctx);

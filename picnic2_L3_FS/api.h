@@ -3,7 +3,7 @@
 
 #define CRYPTO_SECRETKEYBYTES (1 + 2 * 24 + 24)
 #define CRYPTO_PUBLICKEYBYTES (1 + 2 * 24)
-#define CRYPTO_BYTES (4 + 29742)
+#define CRYPTO_BYTES (4 + 29750)
 #define CRYPTO_ALGNAME "picnic2l3fs"
 
 int crypto_sign_keypair(unsigned char* pk, unsigned char* sk);

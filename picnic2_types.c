@@ -80,7 +80,6 @@ void freeProof2(proof2_t* proof)
 
 void allocateSignature2(signature2_t* sig, const picnic_instance_t* params)
 {
-    sig->salt = (uint8_t*)malloc(params->seed_size);
     sig->iSeedInfo = NULL;
     sig->iSeedInfoLen = 0;
     sig->cvInfo = NULL;       // Sign/verify code sets it
@@ -93,7 +92,6 @@ void allocateSignature2(signature2_t* sig, const picnic_instance_t* params)
 
 void freeSignature2(signature2_t* sig, const picnic_instance_t* params)
 {
-    free(sig->salt);
     free(sig->iSeedInfo);
     free(sig->cvInfo);
     free(sig->challengeC);

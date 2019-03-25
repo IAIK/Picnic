@@ -130,7 +130,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   // Since seeds size, commitment size, input share size and output share size are all divisible by
   // the alignment of uint64_t, this means, that up to the memory of the Gs, everything is
   // uint64_t-aligned.
-  uint8_t* slab  = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds) + seed_size);
+  uint8_t* slab  = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds) + SALT_SIZE);
   prf->challenge = slab;
   slab += ALIGNU64T(num_rounds);
 
@@ -141,7 +141,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
     }
   }
   prf->salt = slab;
-  slab += seed_size;
+  slab += SALT_SIZE;
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_PROOF; ++i) {
@@ -191,7 +191,6 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   const size_t input_size                  = pp->input_size;
   const size_t output_size                 = pp->output_size;
   const size_t view_size                   = ALIGNU64T(pp->view_size);
-  const size_t seed_size                   = pp->seed_size;
   const size_t unruh_with_input_bytes_size = pp->unruh_with_input_bytes_size;
 
   sig_proof_t* proof = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
@@ -203,12 +202,12 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   }
   per_round_mem += SC_VERIFY * input_size + SC_PROOF * output_size + view_size;
 
-  uint8_t* slab    = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds) + seed_size);
+  uint8_t* slab    = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds) + SALT_SIZE);
   proof->challenge = slab;
   slab += ALIGNU64T(num_rounds);
 
   proof->salt = slab;
-  slab += seed_size;
+  slab += SALT_SIZE;
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_VERIFY; ++i) {
@@ -285,7 +284,7 @@ static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const uint
   // Initialize KDF with H_2(seed) || salt || round_number || player_number || output_size.
   kdf_shake_init(kdf, pp);
   kdf_shake_update_key(kdf, tmp, pp->digest_size);
-  kdf_shake_update_key(kdf, salt, pp->seed_size);
+  kdf_shake_update_key(kdf, salt, SALT_SIZE);
   kdf_shake_update_key_intLE(kdf, round_number);
   kdf_shake_update_key_intLE(kdf, player_number);
   kdf_shake_update_key_intLE(kdf, pp->view_size + (include_input_size ? pp->input_size : 0));
@@ -310,7 +309,7 @@ static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, con
   kdf_shake_x4_init(kdf, pp);
   kdf_shake_x4_update_key(kdf, tmpptr_const, pp->digest_size);
   const uint8_t* saltptr[4] = {salt, salt, salt, salt};
-  kdf_shake_x4_update_key(kdf, saltptr, pp->seed_size);
+  kdf_shake_x4_update_key(kdf, saltptr, SALT_SIZE);
   kdf_shake_x4_update_key_intLE_round(kdf, round_number);
   kdf_shake_x4_update_key_intLE(kdf, player_number);
   kdf_shake_x4_update_key_intLE(kdf, pp->view_size + (include_input_size ? pp->input_size : 0));
@@ -529,7 +528,7 @@ static void H3_public_key_message(hash_context* ctx, const picnic_instance_t* pp
   hash_update(ctx, circuit_output, pp->output_size);
   hash_update(ctx, circuit_input, pp->input_size);
   // hash salt
-  hash_update(ctx, salt, pp->seed_size);
+  hash_update(ctx, salt, SALT_SIZE);
   // hash message
   hash_update(ctx, m, m_len);
 }
@@ -796,8 +795,8 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
   tmp += challenge_size;
 
   // write salt
-  memcpy(tmp, prf->salt, pp->seed_size);
-  tmp += seed_size;
+  memcpy(tmp, prf->salt, SALT_SIZE);
+  tmp += SALT_SIZE;
 
   const proof_round_t* round = prf->round;
   for (unsigned i = 0; i < num_rounds; ++i, ++round) {
@@ -869,11 +868,11 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   tmp += challenge_size;
 
   // read salt
-  if (sub_overflow_size_t(remaining_len, seed_size, &remaining_len)) {
+  if (sub_overflow_size_t(remaining_len, SALT_SIZE, &remaining_len)) {
     goto err;
   }
-  memcpy(proof->salt, tmp, seed_size);
-  tmp += seed_size;
+  memcpy(proof->salt, tmp, SALT_SIZE);
+  tmp += SALT_SIZE;
 
   const size_t base_size = digest_size + view_size + 2 * seed_size;
   proof_round_t* round   = proof->round;
@@ -968,7 +967,7 @@ static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_k
 
   // Generate seeds and salt
   kdf_shake_get_randomness(&ctx, seeds, seed_size * num_rounds * SC_PROOF);
-  kdf_shake_get_randomness(&ctx, salt, seed_size);
+  kdf_shake_get_randomness(&ctx, salt, SALT_SIZE);
   kdf_shake_clear(&ctx);
 }
 
@@ -1388,7 +1387,7 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
   fprintf(out, "\n\n");
 
   fprintf(out, "salt: ");
-  print_hex(out, proof->salt, seed_size);
+  print_hex(out, proof->salt, SALT_SIZE);
   fprintf(out, "\n\n");
 
   proof_round_t* round = proof->round;

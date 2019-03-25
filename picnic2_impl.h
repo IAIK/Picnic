@@ -28,7 +28,7 @@ typedef struct proof2_t {
 } proof2_t;
 
 typedef struct signature2_t {
-    uint8_t* salt;
+    uint8_t salt[SALT_SIZE];
     uint8_t* iSeedInfo;         // Info required to recompute the tree of all initial seeds
     size_t iSeedInfoLen;
     uint8_t* cvInfo;            // Info required to check commitments to views (reconstruct Merkle tree)

@@ -91,7 +91,7 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
         const uint8_t* seeds_ptr[4] = {seeds[i], seeds[i+1], seeds[i+2], seeds[i+3]};
         hash_update_x4(&ctx, seeds_ptr, params->seed_size);
         const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
-        hash_update_x4(&ctx, salt_ptr, params->seed_size);
+        hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
         uint16_t tLE = htole16((uint16_t)t);
         const uint8_t* tLE_ptr[4] = {(uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE};
         hash_update_x4(&ctx, tLE_ptr, sizeof(uint16_t));
@@ -204,7 +204,7 @@ static void commit(uint8_t* digest, uint8_t* seed, uint8_t* aux, uint8_t* salt, 
         size_t tapeLenBytes = params->view_size;
         hash_update(&ctx, aux, tapeLenBytes);
     }
-    hash_update(&ctx, salt, params->seed_size);
+    hash_update(&ctx, salt, SALT_SIZE);
     uint16_t tLE = htole16((uint16_t)t);
     hash_update(&ctx, (uint8_t*)&tLE, sizeof(uint16_t));
     uint16_t jLE = htole16((uint16_t)j);
@@ -221,7 +221,7 @@ static void commit_x4(uint8_t** digest, const uint8_t** seed, uint8_t* salt, siz
     hash_init_x4(&ctx, params);
     hash_update_x4(&ctx, seed, params->seed_size);
     const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
-    hash_update_x4(&ctx, salt_ptr, params->seed_size);
+    hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
     uint16_t tLE = htole16((uint16_t)t);
     const uint8_t* tLE_ptr[4] = {(uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE};
     hash_update_x4(&ctx, tLE_ptr, sizeof(uint16_t));
@@ -364,7 +364,7 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
     }
 
     hash_update(&ctx, hCv, params->digest_size);
-    hash_update(&ctx, salt, params->seed_size);
+    hash_update(&ctx, salt, SALT_SIZE);
     hash_update(&ctx, (uint8_t*)pubKey, params->input_size);
     hash_update(&ctx, (uint8_t*)plaintext, params->input_size);
     hash_update(&ctx, message, messageByteLength);
@@ -622,11 +622,11 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
                  size_t messageByteLength, signature2_t* sig, const picnic_instance_t* params)
 {
     int ret = 0;
-    uint8_t* saltAndRoot = malloc(params->seed_size * 2);
+    uint8_t* saltAndRoot = malloc(params->seed_size + SALT_SIZE);
 
-    computeSaltAndRootSeed(saltAndRoot, params->seed_size * 2, privateKey, pubKey, plaintext, message, messageByteLength, params);
-    memcpy(sig->salt, saltAndRoot, params->seed_size);
-    tree_t* iSeedsTree = generateSeeds(params->num_rounds, saltAndRoot + params->seed_size, sig->salt, 0, params);
+    computeSaltAndRootSeed(saltAndRoot, params->seed_size + SALT_SIZE, privateKey, pubKey, plaintext, message, messageByteLength, params);
+    memcpy(sig->salt, saltAndRoot, SALT_SIZE);
+    tree_t* iSeedsTree = generateSeeds(params->num_rounds, saltAndRoot + SALT_SIZE, sig->salt, 0, params);
     uint8_t** iSeeds = getLeaves(iSeedsTree);
     free(saltAndRoot);
 
@@ -794,7 +794,7 @@ static int arePaddingBitsZero(uint8_t* data, size_t byteLength, size_t bitLength
 int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params)
 {
     /* Read the challenge and salt */
-    size_t bytesRequired = 4 * params->num_opened_rounds + params->seed_size;
+    size_t bytesRequired = 4 * params->num_opened_rounds + SALT_SIZE;
 
     if (sigBytesLen < bytesRequired) {
         return EXIT_FAILURE;
@@ -804,8 +804,8 @@ int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sig
     sigBytes += 2 * params->num_opened_rounds;
     memcpy(sig->challengeP, sigBytes, 2 * params->num_opened_rounds);
     sigBytes += 2 * params->num_opened_rounds;
-    memcpy(sig->salt, sigBytes, params->seed_size);
-    sigBytes += params->seed_size;
+    memcpy(sig->salt, sigBytes, SALT_SIZE);
+    sigBytes += SALT_SIZE;
 
     for (size_t i = 0; i < params->num_opened_rounds; i++) {
         sig->challengeC[i] = le16toh(sig->challengeC[i]);
@@ -907,7 +907,7 @@ int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBy
     uint8_t* sigBytesBase = sigBytes;
 
     /* Compute the number of bytes required for the signature */
-    size_t bytesRequired = 4 * params->num_opened_rounds + params->seed_size; /* challenge and salt */
+    size_t bytesRequired = 4 * params->num_opened_rounds + SALT_SIZE; /* challenge and salt */
 
     bytesRequired += sig->iSeedInfoLen;                                         /* Encode only iSeedInfo, the length will be recomputed by deserialize */
     bytesRequired += sig->cvInfoLen;
@@ -935,8 +935,8 @@ int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBy
     memcpy(sigBytes, sig->challengeP, 2 * params->num_opened_rounds);
     uint16_t* challengeP = (uint16_t*)sigBytes;
     sigBytes += 2 * params->num_opened_rounds;
-    memcpy(sigBytes, sig->salt, params->seed_size);
-    sigBytes += params->seed_size;
+    memcpy(sigBytes, sig->salt, SALT_SIZE);
+    sigBytes += SALT_SIZE;
 
     for (size_t i = 0; i < params->num_opened_rounds; i++) {
         challengeC[i] = le16toh(sig->challengeC[i]);
@@ -961,7 +961,7 @@ int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBy
                 sigBytes += params->view_size;
             }
 
-            memcpy(sigBytes, sig->proofs[t].input, params->seed_size);
+            memcpy(sigBytes, sig->proofs[t].input, params->input_size);
             sigBytes += params->input_size;
 
             memcpy(sigBytes, sig->proofs[t].msgs, params->input_size + params->view_size);
