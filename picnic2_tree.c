@@ -134,11 +134,13 @@ void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, uint8_t 
     uint16_t nodeIndexLE = htole16((uint16_t)nodeIndex);
     hash_update(&ctx, (uint8_t*)&nodeIndexLE, sizeof(uint16_t));
     hash_final(&ctx);
-    hash_squeeze(&ctx, digest, params->seed_size);
+    hash_squeeze(&ctx, digest, 2 * params->seed_size);
 }
 
 void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex, const picnic_instance_t* params)
 {
+    uint8_t tmp[2*MAX_SEED_SIZE_BYTES];
+
     /* Walk the tree, expanding seeds where possible. Compute children of
      * non-leaf nodes. */
     size_t lastNonLeaf = getParent(tree->numNodes - 1);
@@ -148,18 +150,21 @@ void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex, const picnic_inst
             continue;
         }
 
+        hashSeed(tmp, tree->nodes[i], salt, HASH_PREFIX_1, repIndex, i, params);
+
         if (!tree->haveNode[2 * i + 1]) {
-            /* left child = H1(seed_i || salt || t || 2*i + 1) */
-            hashSeed(tree->nodes[2 * i + 1], tree->nodes[i], salt, HASH_PREFIX_1, repIndex, 2 * i + 1, params);
+            /* left child = H_left(seed_i || salt || t || i) */
+            memcpy(tree->nodes[2 * i + 1], tmp, params->seed_size);
             tree->haveNode[2 * i + 1] = 1;
         }
 
         /* The last non-leaf node will only have a left child when there are an odd number of leaves */
         if (exists(tree, 2 * i + 2) && !tree->haveNode[2 * i + 2]) {
-            /* right child = H2(seed_i || salt || t || 2*i + 2)  */
-            hashSeed(tree->nodes[2 * i + 2], tree->nodes[i], salt, HASH_PREFIX_2, repIndex, 2 * i + 2, params);
+            /* right child = H_right(seed_i || salt || t || i)  */
+            memcpy(tree->nodes[2 * i + 2], tmp + params->seed_size, params->seed_size);
             tree->haveNode[2 * i + 2] = 1;
         }
+
     }
 
 }
