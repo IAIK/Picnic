@@ -11,12 +11,10 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 
 #include "endian_compat.h"
-#include "io.h"
 #include "kdf_shake.h"
 #include "picnic.h"
 #include "picnic_impl.h"
@@ -214,23 +212,6 @@ static size_t getSibling(tree_t* tree, size_t node)
     else {
         return node - 1;
     }
-}
-
-static void printSeeds(uint8_t* seedsBuf, size_t seedLen, size_t numSeeds)
-{
-    for (size_t i = 0; i < numSeeds; i++) {
-        printf("seed %lu: ", i);
-        print_hex(stdout, seedsBuf, seedLen);
-        printf("\n");
-        seedsBuf += seedLen;
-    }
-}
-
-void printLeaves(tree_t* tree)
-{
-    size_t firstLeaf = tree->numNodes - tree->numLeaves;
-
-    printSeeds(tree->nodes[firstLeaf], tree->dataSize, tree->numLeaves);
 }
 
 /* Returns the number of bytes written to output */

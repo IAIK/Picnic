@@ -35,7 +35,6 @@ void freeTree(tree_t* tree);
 uint8_t** getLeaves(tree_t* tree);
 /* Get one leaf, leafIndex must be in [0, tree->numLeaves -1] */
 uint8_t* getLeaf(tree_t* tree, size_t leafIndex);
-void printLeaves(tree_t* tree);
 
 /* Functions for trees used to derive seeds.
  *    Signer's usage:   generateSeeds -> revealSeeds -> freeTree
