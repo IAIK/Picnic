@@ -194,4 +194,45 @@ static inline uint64_t parity64_uint64(uint64_t in) {
 }
 #endif
 
+/* helper functions to ocmpute number of leading zeroes */
+#if GNUC_CHECK(4, 7) || __has_builtin(__builtin_clz)
+ATTR_CONST
+static inline uint32_t clz(uint32_t x) {
+  return __builtin_clz(x);
+}
+#else
+/* Number of leading zeroes of x.
+ * From the book
+ * H.S. Warren, *Hacker's Delight*, Pearson Education, 2003.
+ * http://www.hackersdelight.org/hdcodetxt/nlz.c.txt
+ */
+ATTR_CONST
+static inline uint32_t clz(uint32_t x) {
+  if (!x) {
+    return 32;
+  }
+
+  uint32_t n = 1;
+  if (!(x >> 16)) {
+    n = n + 16;
+    x = x << 16;
+  }
+  if (!(x >> 24)) {
+    n = n + 8;
+    x = x << 8;
+  }
+  if (!(x >> 28)) {
+    n = n + 4;
+    x = x << 4;
+  }
+  if (!(x >> 30)) {
+    n = n + 2;
+    x = x << 2;
+  }
+  n = n - (x >> 31);
+
+  return n;
+}
+#endif
+
 #endif
