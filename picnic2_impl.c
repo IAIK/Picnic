@@ -33,9 +33,10 @@
 
 /* Helper functions */
 
-uint32_t numBytes(uint32_t numBits)
+ATTR_CONST
+static uint32_t numBytes(uint32_t numBits)
 {
-    return (numBits == 0) ? 0 : ((numBits - 1) / 8 + 1);
+  return (numBits + 7) >> 3;
 }
 
 uint32_t ceil_log2(uint32_t x)
