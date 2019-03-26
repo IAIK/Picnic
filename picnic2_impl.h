@@ -57,7 +57,6 @@ int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sig
 
 /* Helper functions */
 
-void printHex(const char* s, uint8_t* data, size_t len);
 uint32_t ceil_log2(uint32_t x);
 
 void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes);

@@ -33,16 +33,6 @@
 
 /* Helper functions */
 
-void printHex(const char* s, uint8_t* data, size_t len)
-{
-    printf("%s: ", s);
-    for (size_t i = 0; i < len; i++) {
-        printf("%02X", data[i]);
-    }
-    printf("\n");
-}
-
-
 uint32_t numBytes(uint32_t numBits)
 {
     return (numBits == 0) ? 0 : ((numBits - 1) / 8 + 1);

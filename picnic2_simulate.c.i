@@ -112,8 +112,11 @@ static int SIM_ONLINE(uint32_t* maskedKey, shares_t* mask_shares, randomTape_t*
 
     if (memcmp(output, pubKey, LOWMC_N / 8) != 0) {
         printf("%s: output does not match pubKey\n", __func__);
-        printHex("pubKey", (uint8_t*)pubKey, LOWMC_N / 8);
-        printHex("output", (uint8_t*)output, LOWMC_N / 8);
+        printf("pubKey: ");
+        print_hex(stdout, (uint8_t*)pubKey, LOWMC_N / 8);
+        printf("\noutput: ");
+        print_hex(stdout, (uint8_t*)output, LOWMC_N / 8);
+        printf("\n");
         ret = -1;
         goto Exit;
     }

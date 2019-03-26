@@ -17,6 +17,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "io.h"
 #include "picnic2_simulate.h"
 #include "picnic2_simulate_mul.h"
 

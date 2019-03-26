@@ -16,6 +16,7 @@
 #include <limits.h>
 
 #include "endian_compat.h"
+#include "io.h"
 #include "kdf_shake.h"
 #include "picnic.h"
 #include "picnic_impl.h"
@@ -218,8 +219,9 @@ static size_t getSibling(tree_t* tree, size_t node)
 static void printSeeds(uint8_t* seedsBuf, size_t seedLen, size_t numSeeds)
 {
     for (size_t i = 0; i < numSeeds; i++) {
-        printf("seed %lu", i);
-        printHex("", seedsBuf, seedLen);
+        printf("seed %lu: ", i);
+        print_hex(stdout, seedsBuf, seedLen);
+        printf("\n");
         seedsBuf += seedLen;
     }
 }
