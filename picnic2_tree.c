@@ -10,7 +10,6 @@
  *  SPDX-License-Identifier: MIT
  */
 
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,7 +32,7 @@ static int contains(size_t* list, size_t len, size_t value)
     return 0;
 }
 
-int exists(tree_t* tree, size_t i)
+static int exists(tree_t* tree, size_t i)
 {
     if (i >= tree->numNodes) {
         return 0;
@@ -86,21 +85,19 @@ void freeTree(tree_t* tree)
         free(tree);
     }
 }
-int isLeftChild(size_t node)
+
+static int isLeftChild(size_t node)
 {
     assert(node != 0);
     return(node % 2 == 1);
 }
 
-int hasRightChild(tree_t* tree, size_t node)
+static int hasRightChild(tree_t* tree, size_t node)
 {
     return(2 * node + 2 < tree->numNodes && exists(tree, node));
 }
-int hasLeftChild(tree_t* tree, size_t node)
-{
-    return(2 * node + 1 < tree->numNodes);
-}
-size_t getParent(size_t node)
+
+static size_t getParent(size_t node)
 {
     assert(node != 0);
 
@@ -122,7 +119,7 @@ uint8_t* getLeaf(tree_t* tree, size_t leafIndex)
     return tree->nodes[firstLeaf + leafIndex];
 }
 
-void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, uint8_t hashPrefix, size_t repIndex, size_t nodeIndex, const picnic_instance_t* params)
+static void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, uint8_t hashPrefix, size_t repIndex, size_t nodeIndex, const picnic_instance_t* params)
 {
     Keccak_HashInstance ctx;
 
@@ -137,7 +134,7 @@ void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, uint8_t 
     hash_squeeze(&ctx, digest, 2 * params->seed_size);
 }
 
-void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex, const picnic_instance_t* params)
+static void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex, const picnic_instance_t* params)
 {
     uint8_t tmp[2*MAX_SEED_SIZE_BYTES];
 
@@ -180,12 +177,12 @@ tree_t* generateSeeds(size_t nSeeds, uint8_t* rootSeed, uint8_t* salt, size_t re
     return tree;
 }
 
-int isLeafNode(tree_t* tree, size_t node)
+static int isLeafNode(tree_t* tree, size_t node)
 {
     return (2 * node + 1 >= tree->numNodes);
 }
 
-int hasSibling(tree_t* tree, size_t node)
+static int hasSibling(tree_t* tree, size_t node)
 {
     if (!exists(tree, node)) {
         return 0;
@@ -198,7 +195,7 @@ int hasSibling(tree_t* tree, size_t node)
     return 1;
 }
 
-size_t getSibling(tree_t* tree, size_t node)
+static size_t getSibling(tree_t* tree, size_t node)
 {
     assert(node < tree->numNodes);
     assert(node != 0);
@@ -218,7 +215,7 @@ size_t getSibling(tree_t* tree, size_t node)
     }
 }
 
-void printSeeds(uint8_t* seedsBuf, size_t seedLen, size_t numSeeds)
+static void printSeeds(uint8_t* seedsBuf, size_t seedLen, size_t numSeeds)
 {
     for (size_t i = 0; i < numSeeds; i++) {
         printf("seed %lu", i);
@@ -232,7 +229,6 @@ void printLeaves(tree_t* tree)
     size_t firstLeaf = tree->numNodes - tree->numLeaves;
 
     printSeeds(tree->nodes[firstLeaf], tree->dataSize, tree->numLeaves);
-
 }
 
 /* Returns the number of bytes written to output */
@@ -314,7 +310,6 @@ size_t revealSeeds(tree_t* tree, uint16_t* hideList, size_t hideListSize, uint8_
     }
     int outLen = (int)outputSize;
 
-
     size_t* revealed = getRevealedNodes(tree, hideList, hideListSize, &revealedSize);
     for (size_t i = 0; i < revealedSize; i++) {
         outLen -= params->seed_size;
@@ -326,7 +321,6 @@ size_t revealSeeds(tree_t* tree, uint16_t* hideList, size_t hideListSize, uint8_
         memcpy(output, tree->nodes[revealed[i]], params->seed_size);
         output += params->seed_size;
     }
-
 
     free(revealed);
     return output - outputBase;
@@ -583,6 +577,3 @@ int verifyMerkleTree(tree_t* tree, /* uint16_t* missingLeaves, size_t missingLea
 
     return 0;
 }
-
-
-
