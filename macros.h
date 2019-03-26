@@ -198,7 +198,7 @@ static inline uint64_t parity64_uint64(uint64_t in) {
 #if GNUC_CHECK(4, 7) || __has_builtin(__builtin_clz)
 ATTR_CONST
 static inline uint32_t clz(uint32_t x) {
-  return __builtin_clz(x);
+  return x ? __builtin_clz(x) : 32;
 }
 #else
 /* Number of leading zeroes of x.
