@@ -178,7 +178,7 @@ static inline bool sub_overflow_size_t(const size_t x, const size_t y, size_t* d
 
 #include <stdint.h>
 
-/* parity */
+/* helper functions for parity computations */
 #if GNUC_CHECK(4, 9) || __has_builtin(__builtin_parity)
 ATTR_CONST
 static inline uint64_t parity64_uint64(uint64_t in) {
