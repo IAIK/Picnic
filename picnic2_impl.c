@@ -39,14 +39,6 @@ static uint32_t numBytes(uint32_t numBits)
   return (numBits + 7) >> 3;
 }
 
-uint32_t ceil_log2(uint32_t x)
-{
-    if (x == 0) {
-        return 0;
-    }
-    return 32 - clz(x - 1);
-}
-
 static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* salt, size_t t, const picnic_instance_t* params)
 {
     Keccak_HashInstancetimes4 ctx;

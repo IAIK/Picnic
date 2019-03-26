@@ -235,4 +235,12 @@ static inline uint32_t clz(uint32_t x) {
 }
 #endif
 
+ATTR_CONST
+static inline uint32_t ceil_log2(uint32_t x) {
+  if (!x) {
+    return 0;
+  }
+  return 32 - clz(x - 1);
+}
+
 #endif
