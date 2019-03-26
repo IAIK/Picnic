@@ -111,12 +111,14 @@ static int SIM_ONLINE(uint32_t* maskedKey, shares_t* mask_shares, randomTape_t*
     xor_word_array(output, output, state, (LOWMC_N / 32));
 
     if (memcmp(output, pubKey, LOWMC_N / 8) != 0) {
+#if !defined(NDEBUG)
         printf("%s: output does not match pubKey\n", __func__);
         printf("pubKey: ");
         print_hex(stdout, (uint8_t*)pubKey, LOWMC_N / 8);
         printf("\noutput: ");
         print_hex(stdout, (uint8_t*)output, LOWMC_N / 8);
         printf("\n");
+#endif
         ret = -1;
         goto Exit;
     }

@@ -437,7 +437,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
                                    sig->proofs[t].seedInfo, sig->proofs[t].seedInfoLen,
                                    sig->salt, t, params);
             if (ret != 0) {
+#if !defined(NDEBUG)
                 printf("Failed to reconstruct seeds for round %lu\n", t);
+#endif
                 ret = -1;
                 goto Exit;
             }
@@ -504,7 +506,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
             tapesToWords(mask_shares, &tapes[t]);
             ret = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], &msgs[t], plaintext, pubKey, params);
             if (ret != 0) {
+#if !defined(NDEBUG)
                 printf("MPC simulation failed for round %lu, signature invalid\n", t);
+#endif
                 ret = -1;
                 freeShares(mask_shares);
                 goto Exit;
@@ -538,7 +542,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
     /* Compare to challenge from signature */
     if ( memcmp(sig->challengeC, challengeC, challengeSizeBytes) != 0 ||
          memcmp(sig->challengeP, challengeP, challengeSizeBytes) != 0 ) {
+#if !defined(NDEBUG)
         printf("Challenge does not match, signature invalid\n");
+#endif
         ret = -1;
         goto Exit;
     }
@@ -633,7 +639,9 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext, co
 
         int rv = simulateOnline(maskedKey, mask_shares, &tapes[t], &msgs[t], plaintext, pubKey, params);
         if (rv != 0) {
+#if !defined(NDEBUG)
             printf("MPC simulation failed, aborting signature\n");
+#endif
             ret = -1;
         }
     }
@@ -814,7 +822,9 @@ int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sig
 
     /* Fail if the signature does not have the exact number of bytes we expect */
     if (sigBytesLen != bytesRequired) {
+#if !defined(NDEBUG)
         printf("%s: sigBytesLen = %lu, expected bytesRequired = %lu\n", __func__, sigBytesLen, bytesRequired);
+#endif
         return EXIT_FAILURE;
     }
 
@@ -840,7 +850,9 @@ int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sig
                 memcpy(sig->proofs[t].aux, sigBytes, params->view_size);
                 sigBytes += params->view_size;
                 if (!arePaddingBitsZero(sig->proofs[t].aux, params->view_size, 3 * params->lowmc->r * params->lowmc->m)) {
+#if !defined(NDEBUG)
                     printf("%s: failed while deserializing aux bits\n", __func__);
+#endif
                     return -1;
                 }
             }
@@ -853,7 +865,9 @@ int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sig
             sigBytes += msgsByteLength;
             size_t msgsBitLength = params->lowmc->n + 3 * params->lowmc->r * params->lowmc->m;
             if (!arePaddingBitsZero(sig->proofs[t].msgs, msgsByteLength, msgsBitLength)) {
+#if !defined(NDEBUG)
                 printf("%s: failed while deserializing msgs bits\n", __func__);
+#endif
                 return -1;
             }
 
@@ -950,16 +964,20 @@ int impl_sign_picnic2(const picnic_instance_t* instance, const uint8_t* plaintex
     ret = sign_picnic2((uint32_t*)private_key, (uint32_t*)public_key, (uint32_t*)plaintext, msg,
                        msglen, sig, instance);
     if (ret != EXIT_SUCCESS) {
+#if !defined(NDEBUG)
         fprintf(stderr, "Failed to create signature\n");
         fflush(stderr);
+#endif
         freeSignature2(sig, instance);
         free(sig);
         return -1;
     }
     ret = serializeSignature2(sig, signature, *signature_len, instance);
     if (ret == -1) {
+#if !defined(NDEBUG)
         fprintf(stderr, "Failed to serialize signature\n");
         fflush(stderr);
+#endif
         freeSignature2(sig, instance);
         free(sig);
         return -1;
@@ -982,8 +1000,10 @@ int impl_verify_picnic2(const picnic_instance_t* instance, const uint8_t* plaint
 
     ret = deserializeSignature2(sig, signature, signature_len, instance);
     if (ret != EXIT_SUCCESS) {
+#if !defined(NDEBUG)
         fprintf(stderr, "Failed to deserialize signature\n");
         fflush(stderr);
+#endif
         freeSignature2(sig, instance);
         free(sig);
         return -1;
