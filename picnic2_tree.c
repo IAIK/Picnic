@@ -182,7 +182,7 @@ tree_t* generateSeeds(size_t nSeeds, uint8_t* rootSeed, uint8_t* salt, size_t re
 
 int isLeafNode(tree_t* tree, size_t node)
 {
-    return (2 * node + 1 > tree->numNodes);
+    return (2 * node + 1 >= tree->numNodes);
 }
 
 int hasSibling(tree_t* tree, size_t node)
@@ -273,7 +273,11 @@ static size_t* getRevealedNodes(tree_t* tree, uint16_t* hideList, size_t hideLis
             }
             size_t sibling = getSibling(tree, pathSets[d][i]);
             if (!contains(pathSets[d], hideListSize, sibling )) {
-                // Reveal the seed if we haven't done so already
+                // Determine the seed to reveal
+                while(!hasRightChild(tree, sibling) && !isLeafNode(tree, sibling)) {
+                    sibling = 2 * sibling + 1; // sibling = leftChild(sibling)
+                }
+                // Only reveal if we haven't already
                 if (!contains(revealed, revealedPos, sibling)) {
                     revealed[revealedPos] = sibling;
                     revealedPos++;
