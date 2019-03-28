@@ -101,7 +101,8 @@ static size_t getParent(size_t node)
     assert(node != 0);
 
     if (isLeftChild(node)) {
-        return (node - 1) / 2;
+        /* (node - 1) / 2, but since node % 2 == 1, that's the same as node / 2 */
+        return node >> 1;
     }
     return (node - 2) / 2;
 }
