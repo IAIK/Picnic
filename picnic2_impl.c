@@ -762,6 +762,18 @@ static int arePaddingBitsZero(uint8_t* data, size_t byteLength, size_t bitLength
     return 1;
 }
 
+static void deserialize_u16(uint16_t* dst, const uint8_t* src, size_t size) {
+#if defined(PICNIC_IS_LITTLE_ENDIAN)
+  memcpy(dst, src, sizeof(uint16_t) * size);
+#else
+  for (size_t s = size; s; --s, ++dst, src += 2) {
+    uint16_t t;
+    memcpy(&t, src, sizeof(t));
+    *dst = le16toh(t);
+  }
+#endif
+}
+
 static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params)
 {
     /* Read the challenge and salt */
@@ -771,17 +783,12 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
         return EXIT_FAILURE;
     }
 
-    memcpy(sig->challengeC, sigBytes, 2 * params->num_opened_rounds);
+    deserialize_u16(sig->challengeC, sigBytes, params->num_opened_rounds);
     sigBytes += 2 * params->num_opened_rounds;
-    memcpy(sig->challengeP, sigBytes, 2 * params->num_opened_rounds);
+    deserialize_u16(sig->challengeP, sigBytes, params->num_opened_rounds);
     sigBytes += 2 * params->num_opened_rounds;
     memcpy(sig->salt, sigBytes, SALT_SIZE);
     sigBytes += SALT_SIZE;
-
-    for (size_t i = 0; i < params->num_opened_rounds; i++) {
-        sig->challengeC[i] = le16toh(sig->challengeC[i]);
-        sig->challengeP[i] = le16toh(sig->challengeP[i]);
-    }
 
     if (!inRange(sig->challengeC, params->num_opened_rounds, 0, params->num_rounds - 1)) {
         return EXIT_FAILURE;
@@ -879,6 +886,17 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
     return EXIT_SUCCESS;
 }
 
+static void serialize_u16(uint8_t* dst, const uint16_t* src, size_t size) {
+#if defined(PICNIC_IS_LITTLE_ENDIAN)
+  memcpy(dst, src, sizeof(uint16_t) * size);
+#else
+  for (size_t s = size; s; --s, ++src, dst += 2) {
+    const uint16_t t = htole16(*src);
+    memcpy(dst, &t, sizeof(t));
+  }
+#endif
+}
+
 static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params)
 {
     uint8_t* sigBytesBase = sigBytes;
@@ -906,19 +924,13 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
         return -1;
     }
 
-    memcpy(sigBytes, sig->challengeC, 2 * params->num_opened_rounds);
-    uint16_t* challengeC = (uint16_t*)sigBytes;
+    serialize_u16(sigBytes, sig->challengeC, params->num_opened_rounds);
     sigBytes += 2 * params->num_opened_rounds;
-    memcpy(sigBytes, sig->challengeP, 2 * params->num_opened_rounds);
-    uint16_t* challengeP = (uint16_t*)sigBytes;
+    serialize_u16(sigBytes, sig->challengeP, params->num_opened_rounds);
     sigBytes += 2 * params->num_opened_rounds;
+
     memcpy(sigBytes, sig->salt, SALT_SIZE);
     sigBytes += SALT_SIZE;
-
-    for (size_t i = 0; i < params->num_opened_rounds; i++) {
-        challengeC[i] = le16toh(sig->challengeC[i]);
-        challengeP[i] = le16toh(sig->challengeP[i]);
-    }
 
     memcpy(sigBytes, sig->iSeedInfo, sig->iSeedInfoLen);
     sigBytes += sig->iSeedInfoLen;
