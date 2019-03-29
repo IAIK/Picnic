@@ -50,13 +50,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
 void allocateSignature2(signature2_t* sig, const picnic_instance_t* params);
 void freeSignature2(signature2_t* sig, const picnic_instance_t* params);
 
-/* Returns the number of bytes written on success, or -1 on error */
-int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params);
-/* Returns EXIT_SUCCESS on success or EXIT_FAILURE on error */
-int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params);
-
 /* Helper functions */
-
 void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes);
 
 #endif /* PICNIC2_IMPL_H */

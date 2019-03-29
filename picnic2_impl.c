@@ -762,7 +762,7 @@ static int arePaddingBitsZero(uint8_t* data, size_t byteLength, size_t bitLength
     return 1;
 }
 
-int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params)
+static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params)
 {
     /* Read the challenge and salt */
     size_t bytesRequired = 4 * params->num_opened_rounds + SALT_SIZE;
@@ -879,7 +879,7 @@ int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sig
     return EXIT_SUCCESS;
 }
 
-int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params)
+static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBytesLen, const picnic_instance_t* params)
 {
     uint8_t* sigBytesBase = sigBytes;
 
