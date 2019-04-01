@@ -76,7 +76,7 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
  * an output word.  In the current implementation N is 64 so the words are
  * uint64_t. The return value must be freed with freeShares().
  */
-void tapesToWords(shares_t* shares, randomTape_t* tapes) {
+static void tapesToWords(shares_t* shares, randomTape_t* tapes) {
   for (size_t w = 0; w < shares->numWords; w++) {
     shares->shares[w] = tapesToWord(tapes);
   }
