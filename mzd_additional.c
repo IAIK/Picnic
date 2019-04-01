@@ -96,8 +96,7 @@ void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_
   }
 
   for (size_t s = 0; s < n; ++s, full_buffer += size_per_elem) {
-    unsigned char* buffer = full_buffer;
-    dst[s]                = (mzd_local_t*)buffer;
+    dst[s] = (mzd_local_t*)full_buffer;
   }
 }
 
