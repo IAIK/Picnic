@@ -54,14 +54,14 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
     const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
     hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
     uint16_t tLE              = htole16((uint16_t)t);
-    const uint8_t* tLE_ptr[4] = {(uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE};
+    const uint8_t* tLE_ptr[4] = {(const uint8_t*)&tLE, (const uint8_t*)&tLE, (const uint8_t*)&tLE, (const uint8_t*)&tLE};
     hash_update_x4(&ctx, tLE_ptr, sizeof(uint16_t));
     uint16_t iLE0             = htole16((uint16_t)(i + 0));
     uint16_t iLE1             = htole16((uint16_t)(i + 1));
     uint16_t iLE2             = htole16((uint16_t)(i + 2));
     uint16_t iLE3             = htole16((uint16_t)(i + 3));
-    const uint8_t* iLE_ptr[4] = {(uint8_t*)&iLE0, (uint8_t*)&iLE1, (uint8_t*)&iLE2,
-                                 (uint8_t*)&iLE3};
+    const uint8_t* iLE_ptr[4] = {(const uint8_t*)&iLE0, (const uint8_t*)&iLE1, (const uint8_t*)&iLE2,
+                                 (const uint8_t*)&iLE3};
     hash_update_x4(&ctx, iLE_ptr, sizeof(uint16_t));
     hash_final_x4(&ctx);
 
@@ -158,8 +158,8 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
   mzd_local_free(lowmc_key);
 }
 
-static void commit(uint8_t* digest, uint8_t* seed, uint8_t* aux, uint8_t* salt, size_t t, size_t j,
-                   const picnic_instance_t* params) {
+static void commit(uint8_t* digest, const uint8_t* seed, const uint8_t* aux, const uint8_t* salt,
+                   size_t t, size_t j, const picnic_instance_t* params) {
   /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
   Keccak_HashInstance ctx;
 
@@ -178,7 +178,7 @@ static void commit(uint8_t* digest, uint8_t* seed, uint8_t* aux, uint8_t* salt, 
   hash_squeeze(&ctx, digest, params->digest_size);
 }
 
-static void commit_x4(uint8_t** digest, const uint8_t** seed, uint8_t* salt, size_t t, size_t j,
+static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* salt, size_t t, size_t j,
                       const picnic_instance_t* params) {
   /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
   Keccak_HashInstancetimes4 ctx;
@@ -202,7 +202,7 @@ static void commit_x4(uint8_t** digest, const uint8_t** seed, uint8_t* salt, siz
   hash_squeeze_x4(&ctx, digest, params->digest_size);
 }
 
-static void commit_h(uint8_t* digest, commitments_t* C, const picnic_instance_t* params) {
+static void commit_h(uint8_t* digest, const commitments_t* C, const picnic_instance_t* params) {
   Keccak_HashInstance ctx;
 
   hash_init(&ctx, params);
@@ -214,7 +214,7 @@ static void commit_h(uint8_t* digest, commitments_t* C, const picnic_instance_t*
 }
 
 // Commit to the views for one parallel rep
-static void commit_v(uint8_t* digest, uint8_t* input, msgs_t* msgs,
+static void commit_v(uint8_t* digest, const uint8_t* input, const msgs_t* msgs,
                      const picnic_instance_t* params) {
   Keccak_HashInstance ctx;
 
@@ -227,7 +227,7 @@ static void commit_v(uint8_t* digest, uint8_t* input, msgs_t* msgs,
   hash_squeeze(&ctx, digest, params->digest_size);
 }
 
-static int contains(uint16_t* list, size_t len, size_t value) {
+static int contains(const uint16_t* list, size_t len, uint16_t value) {
   for (size_t i = 0; i < len; i++) {
     if (list[i] == value) {
       return 1;
@@ -236,7 +236,7 @@ static int contains(uint16_t* list, size_t len, size_t value) {
   return 0;
 }
 
-static int indexOf(uint16_t* list, size_t len, size_t value) {
+static int indexOf(const uint16_t* list, size_t len, uint16_t value) {
   for (size_t i = 0; i < len; i++) {
     if (list[i] == value) {
       return i;
