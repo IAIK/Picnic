@@ -29,7 +29,8 @@
 #undef N_LOWMC
 #undef RECORD_STATE
 #undef SBOX
-#define SBOX(x, tapes) sbox_layer_10_uint64_aux(&BLOCK(x, 0)->w64[(LOWMC_N / (sizeof(word) * 8)) - 1], tapes)
+#define SBOX(x, tapes)                                                                             \
+  sbox_layer_10_uint64_aux(&BLOCK(x, 0)->w64[(LOWMC_N / (sizeof(word) * 8)) - 1], tapes)
 #define N_LOWMC CONCAT(LOWMC, compute_aux_10)
 #define PICNIC2_AUX_COMPUTATION
 #include "lowmc_impl.c.i"

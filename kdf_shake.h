@@ -88,7 +88,7 @@ static inline void hash_update_x4(hash_context_x4* ctx, const uint8_t** data, si
 }
 
 static inline void hash_init_prefix_x4(hash_context_x4* ctx, const picnic_instance_t* pp,
-                                    const uint8_t prefix) {
+                                       const uint8_t prefix) {
   hash_init_x4(ctx, pp);
   const uint8_t* prefixes[] = {&prefix, &prefix, &prefix, &prefix};
   hash_update_x4(ctx, prefixes, sizeof(prefix));

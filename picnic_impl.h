@@ -20,11 +20,11 @@
 
 typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 
-typedef struct picnic_instance_t{
+typedef struct picnic_instance_t {
   const lowmc_t* lowmc;
 
-  uint32_t digest_size; /* bytes */
-  uint32_t seed_size;   /* bytes */
+  uint32_t digest_size;       /* bytes */
+  uint32_t seed_size;         /* bytes */
   uint32_t num_rounds;        // T
   uint32_t num_opened_rounds; // u
   uint32_t num_MPC_parties;   // N

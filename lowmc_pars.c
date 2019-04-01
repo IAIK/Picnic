@@ -33,9 +33,11 @@ bool lowmc_init(lowmc_t* lowmc) {
       mzd_precompute_matrix_lookup(lowmc->precomputed_non_linear_part_matrix, lowmc->n, cols);
 #endif
   for (unsigned int i = 0; i < lowmc->r; ++i) {
-    lowmc->rounds[i].l_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].l_matrix, lowmc->n, lowmc->n);
+    lowmc->rounds[i].l_lookup =
+        mzd_precompute_matrix_lookup(lowmc->rounds[i].l_matrix, lowmc->n, lowmc->n);
 #if !defined(REDUCED_ROUND_KEY_COMPUTATION)
-    lowmc->rounds[i].k_lookup = mzd_precompute_matrix_lookup(lowmc->rounds[i].k_matrix, lowmc->n, lowmc->n);
+    lowmc->rounds[i].k_lookup =
+        mzd_precompute_matrix_lookup(lowmc->rounds[i].k_matrix, lowmc->n, lowmc->n);
 #endif
   }
 

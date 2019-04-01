@@ -17,31 +17,29 @@
 
 /* Type definitions */
 typedef struct randomTape_t {
-    uint8_t** tape;
-    uint32_t pos;
-    size_t nTapes;
-    uint64_t buffer[64];
+  uint8_t** tape;
+  uint32_t pos;
+  size_t nTapes;
+  uint64_t buffer[64];
 } randomTape_t;
 
 typedef struct commitments_t {
-    uint8_t** hashes;
-    size_t nCommitments;
+  uint8_t** hashes;
+  size_t nCommitments;
 } commitments_t;
 
 typedef uint8_t** inputs_t;
 
 typedef struct msgs_t {
-    uint8_t** msgs;         // One for each player
-    size_t pos;
-    int unopened;           // Index of the unopened party, or -1 if all parties opened (when signing)
+  uint8_t** msgs; // One for each player
+  size_t pos;
+  int unopened; // Index of the unopened party, or -1 if all parties opened (when signing)
 } msgs_t;
 
 typedef struct shares_t {
-    uint64_t* shares;
-    size_t numWords;
+  uint64_t* shares;
+  size_t numWords;
 } shares_t;
-
-
 
 #define UNUSED_PARAMETER(x) (void)(x)
 
@@ -54,7 +52,8 @@ void freeProof2(proof2_t* proof);
 commitments_t* allocateCommitments(const picnic_instance_t* params, size_t nCommitments);
 void freeCommitments(commitments_t* commitments);
 
-void allocateCommitments2(commitments_t* commitments, const picnic_instance_t* params, size_t nCommitments);
+void allocateCommitments2(commitments_t* commitments, const picnic_instance_t* params,
+                          size_t nCommitments);
 void freeCommitments2(commitments_t* commitments);
 
 inputs_t allocateInputs(const picnic_instance_t* params);

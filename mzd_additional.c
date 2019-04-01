@@ -66,7 +66,7 @@ mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) {
   const uint32_t rowstride = calculate_rowstride(width);
 
   const size_t buffer_size = r * rowstride * sizeof(word);
-  const size_t alloc_size = (buffer_size + 31) & ~31;
+  const size_t alloc_size  = (buffer_size + 31) & ~31;
 
   /* We always align mzd_local_ts to 32 bytes. Thus the first row is always
    * aligned to 32 bytes as well. For 128 bit and SSE all other rows are then
@@ -97,7 +97,7 @@ void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_
 
   for (size_t s = 0; s < n; ++s, full_buffer += size_per_elem) {
     unsigned char* buffer = full_buffer;
-    dst[s] = (mzd_local_t*)buffer;
+    dst[s]                = (mzd_local_t*)buffer;
   }
 }
 
@@ -109,7 +109,7 @@ void mzd_local_free_multiple(mzd_local_t** vs) {
 
 void mzd_copy_uint64_128(mzd_local_t* dst, mzd_local_t const* src) {
   const block_t* sblock = CONST_BLOCK(src, 0);
-  block_t* dblock = BLOCK(dst, 0);
+  block_t* dblock       = BLOCK(dst, 0);
 
   for (unsigned int i = 0; i < 2; ++i) {
     dblock->w64[i] = sblock->w64[i];
@@ -118,7 +118,7 @@ void mzd_copy_uint64_128(mzd_local_t* dst, mzd_local_t const* src) {
 
 void mzd_copy_uint64_192(mzd_local_t* dst, mzd_local_t const* src) {
   const block_t* sblock = CONST_BLOCK(src, 0);
-  block_t* dblock = BLOCK(dst, 0);
+  block_t* dblock       = BLOCK(dst, 0);
 
   for (unsigned int i = 0; i < 3; ++i) {
     dblock->w64[i] = sblock->w64[i];
@@ -127,7 +127,7 @@ void mzd_copy_uint64_192(mzd_local_t* dst, mzd_local_t const* src) {
 
 void mzd_copy_uint64_256(mzd_local_t* dst, mzd_local_t const* src) {
   const block_t* sblock = CONST_BLOCK(src, 0);
-  block_t* dblock = BLOCK(dst, 0);
+  block_t* dblock       = BLOCK(dst, 0);
 
   for (unsigned int i = 0; i < 4; ++i) {
     dblock->w64[i] = sblock->w64[i];
@@ -265,7 +265,7 @@ static void mzd_xor_uint64_block(block_t* rblock, const block_t* fblock, const b
 }
 
 static void mzd_xor_uint64_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                                 const unsigned int len) {
+                                  const unsigned int len) {
   for (unsigned int i = len; i; --i, ++rblock, ++fblock, ++sblock) {
     mzd_xor_uint64_block(rblock, fblock, sblock, 4);
   }
@@ -1140,10 +1140,11 @@ static void xor_comb_128(block_t* Bblock, const unsigned int boffset, mzd_local_
 /**
  * Pre-compute matrices for faster mzd_addmul_v computions.
  */
-mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A, unsigned int rows, unsigned int cols) {
+mzd_local_t* mzd_precompute_matrix_lookup(mzd_local_t const* A, unsigned int rows,
+                                          unsigned int cols) {
   mzd_local_t* B = mzd_local_init_ex(32 * rows, cols, true);
 
-  const unsigned int len = calculate_width(cols);
+  const unsigned int len       = calculate_width(cols);
   const unsigned int rowstride = calculate_rowstride(len);
 
   for (unsigned int r = 0; r < 32 * rows; ++r) {

@@ -135,7 +135,6 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #undef FN_ATTR
 #endif
 
-
 #if defined(WITH_AVX2)
 #define FN_ATTR ATTR_TARGET_AVX2
 
@@ -407,67 +406,67 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 }
 
 lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_t* lowmc) {
-    ASSUME(lowmc->m == 10);
-    ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+  ASSUME(lowmc->m == 10);
+  ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
-    if (CPU_SUPPORTS_AVX2) {
-        if (lowmc->m == 10) {
-            switch (lowmc->n) {
+  if (CPU_SUPPORTS_AVX2) {
+    if (lowmc->m == 10) {
+      switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
-                case 128:
-                    return lowmc_s256_128_compute_aux_10;
+      case 128:
+        return lowmc_s256_128_compute_aux_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
-                case 192:
-                    return lowmc_s256_192_compute_aux_10;
+      case 192:
+        return lowmc_s256_192_compute_aux_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
-                case 256:
-                    return lowmc_s256_256_compute_aux_10;
+      case 256:
+        return lowmc_s256_256_compute_aux_10;
 #endif
-            }
-        }
+      }
     }
+  }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
-    if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
-        if (lowmc->m == 10) {
-            switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
-                case 128:
-                    return lowmc_s128_128_compute_aux_10;
-#endif
-#if defined(WITH_LOWMC_192_192_30)
-                case 192:
-                    return lowmc_s128_192_compute_aux_10;
-#endif
-#if defined(WITH_LOWMC_256_256_38)
-                case 256:
-                    return lowmc_s128_256_compute_aux_10;
-#endif
-            }
-        }
-    }
-#endif
-#endif
-
+  if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
-        switch (lowmc->n) {
+      switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
-            case 128:
-                return lowmc_uint64_128_compute_aux_10;
+      case 128:
+        return lowmc_s128_128_compute_aux_10;
 #endif
 #if defined(WITH_LOWMC_192_192_30)
-            case 192:
-                return lowmc_uint64_192_compute_aux_10;
+      case 192:
+        return lowmc_s128_192_compute_aux_10;
 #endif
 #if defined(WITH_LOWMC_256_256_38)
-            case 256:
-                return lowmc_uint64_256_compute_aux_10;
+      case 256:
+        return lowmc_s128_256_compute_aux_10;
 #endif
-        }
+      }
     }
+  }
+#endif
+#endif
 
-    return NULL;
+  if (lowmc->m == 10) {
+    switch (lowmc->n) {
+#if defined(WITH_LOWMC_128_128_20)
+    case 128:
+      return lowmc_uint64_128_compute_aux_10;
+#endif
+#if defined(WITH_LOWMC_192_192_30)
+    case 192:
+      return lowmc_uint64_192_compute_aux_10;
+#endif
+#if defined(WITH_LOWMC_256_256_38)
+    case 256:
+      return lowmc_uint64_256_compute_aux_10;
+#endif
+    }
+  }
+
+  return NULL;
 }

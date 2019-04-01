@@ -11,7 +11,7 @@
 #error "OLLE is only implemented for 1 or 10 Sboxes"
 #endif
 
-//TODO: fix PICNIC2_AUX_COMPUTATION for OFF & ORKC
+// TODO: fix PICNIC2_AUX_COMPUTATION for OFF & ORKC
 
 #if defined(FN_ATTR)
 FN_ATTR
@@ -45,10 +45,10 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
   XOR_MC(nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear);
 #endif
 
-  //multiply non-linear part of state with Z0 matrix
+  // multiply non-linear part of state with Z0 matrix
 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
-  for (unsigned i = 0; i < LOWMC_R-1; ++i, ++round) {
+  for (unsigned i = 0; i < LOWMC_R - 1; ++i, ++round) {
 #if defined(RECORD_STATE)
     COPY(state->state[i], x);
 #endif
@@ -58,14 +58,14 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     SBOX(x);
 #endif
 
-
 #if defined(M_FIXED_10)
     const word nl = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
     BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
         (nl << (1 - (i & 1)) * 32) & WORD_C(0xFFFFFFFF00000000);
 #elif defined(M_FIXED_1)
     const word nl = CONST_BLOCK(nl_part, i / (4 * 21))->w64[(i % (4 * 21)) / 21];
-    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^= (nl << ((20-(i%21))*3)) & WORD_C(0xE000000000000000);
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
+        (nl << ((20 - (i % 21)) * 3)) & WORD_C(0xE000000000000000);
 #endif
 
     MUL_Z(y, x, round->z_matrix);
@@ -73,23 +73,25 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
     ADDMUL_R(y, x, round->r_matrix);
 
 #if defined(M_FIXED_10)
-    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x00000003FFFFFFFF); //clear nl part
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &=
+        WORD_C(0x00000003FFFFFFFF); // clear nl part
 #elif defined(M_FIXED_1)
-    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &= WORD_C(0x1FFFFFFFFFFFFFFF); //clear nl part
+    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] &=
+        WORD_C(0x1FFFFFFFFFFFFFFF); // clear nl part
 #endif
     XOR(x, y, x);
   }
 #if defined(RECORD_STATE)
-  COPY(state->state[LOWMC_R-1], x);
+  COPY(state->state[LOWMC_R - 1], x);
 #endif
 #if defined(PICNIC2_AUX_COMPUTATION)
-    SBOX(x, tapes);
+  SBOX(x, tapes);
 #else
-    SBOX(x);
+  SBOX(x);
 
-  unsigned int i = (LOWMC_R-1);
+  unsigned int i = (LOWMC_R - 1);
 #if defined(M_FIXED_10)
-  const word nl = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
+  const word nl  = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
   BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
       (nl << (1 - (i & 1)) * 32) & WORD_C(0xFFFFFFFF00000000);
 #elif defined(M_FIXED_1)

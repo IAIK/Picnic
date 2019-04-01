@@ -215,8 +215,9 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
   const uint8_t* sk_c  = SK_C(sk);
   const uint8_t* sk_pt = SK_PT(sk);
 
-  if(param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS)
-    return impl_sign_picnic2(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len);
+  if (param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS)
+    return impl_sign_picnic2(instance, sk_pt, sk_sk, sk_c, message, message_len, signature,
+                             signature_len);
   else
     return impl_sign(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len);
 }
@@ -239,8 +240,9 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
   const uint8_t* pk_c  = PK_C(pk);
   const uint8_t* pk_pt = PK_PT(pk);
 
-  if(param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS)
-    return impl_verify_picnic2(instance, pk_pt, pk_c, message, message_len, signature, signature_len);
+  if (param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS)
+    return impl_verify_picnic2(instance, pk_pt, pk_c, message, message_len, signature,
+                               signature_len);
   else
     return impl_verify(instance, pk_pt, pk_c, message, message_len, signature, signature_len);
 }

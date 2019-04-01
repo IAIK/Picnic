@@ -303,7 +303,6 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #undef FN_ATTR
 #endif
 
-
 #if defined(WITH_AVX2)
 #define FN_ATTR ATTR_TARGET_AVX2
 
@@ -633,13 +632,13 @@ static void mzd_share_uint64_256(mzd_local_t* r, const mzd_local_t* v1, const mz
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
 static void mzd_share_s128_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
-                              const mzd_local_t* v3) {
+                               const mzd_local_t* v3) {
   mzd_xor_s128_128(r, v1, v2);
   mzd_xor_s128_128(r, r, v3);
 }
 
 static void mzd_share_s128_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
-                              const mzd_local_t* v3) {
+                               const mzd_local_t* v3) {
   mzd_xor_s128_256(r, v1, v2);
   mzd_xor_s128_256(r, r, v3);
 }
@@ -647,13 +646,13 @@ static void mzd_share_s128_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_
 
 #if defined(WITH_AVX2)
 static void mzd_share_s256_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
-                              const mzd_local_t* v3) {
+                               const mzd_local_t* v3) {
   mzd_xor_s256_128(r, v1, v2);
   mzd_xor_s256_128(r, r, v3);
 }
 
 static void mzd_share_s256_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
-                              const mzd_local_t* v3) {
+                               const mzd_local_t* v3) {
   mzd_xor_s256_256(r, v1, v2);
   mzd_xor_s256_256(r, r, v3);
 }

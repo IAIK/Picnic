@@ -14,7 +14,7 @@
  * of GCC (tested with 5.4).  So we use __func__ in all source and define it on
  * Windows.
  */
-#if defined (__WINDOWS__)
+#if defined(__WINDOWS__)
 #define __func__ __FUNCTION__
 #endif
 
@@ -45,7 +45,9 @@
 
 /* assume */
 #if GNUC_CHECK(4, 5) || __has_builtin(__builtin_unreachable)
-#define ASSUME(p) if (!(p)) __builtin_unreachable()
+#define ASSUME(p)                                                                                  \
+  if (!(p))                                                                                        \
+  __builtin_unreachable()
 #elif defined(_MSC_VER)
 #define ASSUME(p) __assume(p)
 #else
