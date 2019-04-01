@@ -868,8 +868,8 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   tmp += challenge_size;
 
   // read salt
-  if(sub_overflow_size_t(remaining_len, seed_size, &remaining_len)) {
-      goto err;
+  if (sub_overflow_size_t(remaining_len, seed_size, &remaining_len)) {
+    goto err;
   }
   memcpy(proof->salt, tmp, seed_size);
   tmp += seed_size;
@@ -1004,7 +1004,8 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
 
   // Generate seeds
-  generate_seeds(pp, private_key, plaintext, public_key, m, m_len, prf->round[0].seeds[0], prf->salt);
+  generate_seeds(pp, private_key, plaintext, public_key, m, m_len, prf->round[0].seeds[0],
+                 prf->salt);
 
   mzd_local_t* shared_key[SC_PROOF];
   mzd_local_init_multiple(shared_key, SC_PROOF, 1, lowmc_k);
@@ -1170,8 +1171,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
   // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when verifying
   // since all of this is public information, there is no leakage
-#define WITH_SORTING
-#if defined(WITH_SORTING)
   uint8_t* tape_bytes_x4[SC_VERIFY][4];
   for(unsigned i = 0; i < SC_VERIFY; i++) {
     for(unsigned j = 0; j < 4; j++) {
@@ -1307,136 +1306,17 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       }
     }
   }
+  unsigned char challenge[MAX_NUM_ROUNDS] = {0};
+  H3_verify(pp, prf, ciphertext, plaintext, m, m_len, challenge);
+  const int success_status = memcmp(challenge, prf->challenge, pp->num_rounds);
+
+  // clean up
   free(sorted_rounds);
   for(unsigned i = 0; i < SC_VERIFY; i++) {
     for(unsigned j = 0; j < 4; j++) {
       free(tape_bytes_x4[i][j]);
     }
   }
-#else
-  proof_round_t* round = prf->round;
-  unsigned int i = 0;
-  for (; i < (num_rounds/4)*4; i+=4, round+=4) {
-    for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
-      const unsigned int a_i = prf->challenge[i+round_offset];
-      const unsigned int b_i = (a_i + 1) % 3;
-      const unsigned int c_i = (a_i + 2) % 3;
-
-      kdf_shake_t kdfs[SC_VERIFY];
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        const bool include_input_size = (j == 0 && b_i) || (j == 1 && c_i);
-        const unsigned int player_number = (j == 0) ? a_i : b_i;
-        kdf_init_from_seed(&kdfs[j], round[round_offset].seeds[j], prf->salt, i+round_offset, player_number, include_input_size,
-                           pp);
-      }
-
-      // compute input shares if necessary
-      if (b_i) {
-        kdf_shake_get_randomness(&kdfs[0], round[round_offset].input_shares[0], input_size);
-      }
-      if (c_i) {
-        kdf_shake_get_randomness(&kdfs[1], round[round_offset].input_shares[1], input_size);
-      }
-
-      mzd_from_char_array(in_out_shares[0].s[0], round[round_offset].input_shares[0], input_size);
-      mzd_from_char_array(in_out_shares[0].s[1], round[round_offset].input_shares[1], input_size);
-
-      // compute random tapes
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
-        decompress_random_tape(rvec, pp, tape_bytes, j);
-      }
-
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        kdf_shake_clear(&kdfs[j]);
-      }
-
-      decompress_view(views, pp, round[round_offset].communicated_bits[1], 1);
-      // perform ZKB++ LowMC evaluation
-      lowmc_verify_impl(p, views, in_out_shares, rvec, a_i);
-      compress_view(round[round_offset].communicated_bits[0], pp, views, 0);
-
-      mzd_share(in_out_shares[1].s[2], in_out_shares[1].s[0], in_out_shares[1].s[1], c);
-      // recompute commitments
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        mzd_to_char_array(round[round_offset].output_shares[j], in_out_shares[1].s[j], output_size);
-      }
-      mzd_to_char_array(round[round_offset].output_shares[SC_VERIFY], in_out_shares[1].s[SC_VERIFY], output_size);
-    }
-    for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-      hash_commitment_x4(pp, round, j);
-    }
-    for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
-      const unsigned int a_i = prf->challenge[i+round_offset];
-
-      if (transform == TRANSFORM_UR) {
-        // apply Unruh G permutation
-        for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-          unruh_G(pp, round+round_offset, j, (a_i == 1 && j == 1) || (a_i == 2 && j == 0));
-        }
-      }
-    }
-  }
-  for (; i < num_rounds; ++i, ++round) {
-    const unsigned int a_i = prf->challenge[i];
-    const unsigned int b_i = (a_i + 1) % 3;
-    const unsigned int c_i = (a_i + 2) % 3;
-
-    kdf_shake_t kdfs[SC_VERIFY];
-    for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-      const bool include_input_size = (j == 0 && b_i) || (j == 1 && c_i);
-      const unsigned int player_number = (j == 0) ? a_i : b_i;
-      kdf_init_from_seed(&kdfs[j], round->seeds[j], prf->salt, i, player_number, include_input_size, pp);
-    }
-
-    // compute input shares if necessary
-    if (b_i) {
-      kdf_shake_get_randomness(&kdfs[0], round->input_shares[0], input_size);
-    }
-    if (c_i) {
-      kdf_shake_get_randomness(&kdfs[1], round->input_shares[1], input_size);
-    }
-
-    mzd_from_char_array(in_out_shares[0].s[0], round->input_shares[0], input_size);
-    mzd_from_char_array(in_out_shares[0].s[1], round->input_shares[1], input_size);
-
-    // compute random tapes
-    for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-      kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
-      decompress_random_tape(rvec, pp, tape_bytes, j);
-    }
-
-    for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-      kdf_shake_clear(&kdfs[j]);
-    }
-
-    decompress_view(views, pp, round->communicated_bits[1], 1);
-    // perform ZKB++ LowMC evaluation
-    lowmc_verify_impl(p, views, in_out_shares, rvec, a_i);
-    compress_view(round->communicated_bits[0], pp, views, 0);
-
-    mzd_share(in_out_shares[1].s[2], in_out_shares[1].s[0], in_out_shares[1].s[1], c);
-    // recompute commitments
-    for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-      mzd_to_char_array(round->output_shares[j], in_out_shares[1].s[j], output_size);
-      hash_commitment(pp, round, j);
-    }
-    mzd_to_char_array(round->output_shares[SC_VERIFY], in_out_shares[1].s[SC_VERIFY], output_size);
-
-    if (transform == TRANSFORM_UR) {
-      // apply Unruh G permutation
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        unruh_G(pp, round, j, (a_i == 1 && j == 1) || (a_i == 2 && j == 0));
-      }
-    }
-  }
-#endif
-
-  unsigned char challenge[MAX_NUM_ROUNDS] = {0};
-  H3_verify(pp, prf, ciphertext, plaintext, m, m_len, challenge);
-  const int success_status = memcmp(challenge, prf->challenge, pp->num_rounds);
-
-  // clean up
   free(tape_bytes);
   free(rvec);
   free(views);
