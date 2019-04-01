@@ -166,10 +166,10 @@ static void commit(uint8_t* digest, uint8_t* seed, uint8_t* aux, uint8_t* salt, 
     hash_update(&ctx, aux, tapeLenBytes);
   }
   hash_update(&ctx, salt, SALT_SIZE);
-  uint16_t tLE = htole16((uint16_t)t);
-  hash_update(&ctx, (uint8_t*)&tLE, sizeof(uint16_t));
-  uint16_t jLE = htole16((uint16_t)j);
-  hash_update(&ctx, (uint8_t*)&jLE, sizeof(uint16_t));
+  const uint16_t tLE = htole16((uint16_t)t);
+  hash_update(&ctx, (const uint8_t*)&tLE, sizeof(uint16_t));
+  const uint16_t jLE = htole16((uint16_t)j);
+  hash_update(&ctx, (const uint8_t*)&jLE, sizeof(uint16_t));
   hash_final(&ctx);
   hash_squeeze(&ctx, digest, params->digest_size);
 }
@@ -183,14 +183,16 @@ static void commit_x4(uint8_t** digest, const uint8_t** seed, uint8_t* salt, siz
   hash_update_x4(&ctx, seed, params->seed_size);
   const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
   hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
-  uint16_t tLE              = htole16((uint16_t)t);
-  const uint8_t* tLE_ptr[4] = {(uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE, (uint8_t*)&tLE};
+  const uint16_t tLE        = htole16((uint16_t)t);
+  const uint8_t* tLE_ptr[4] = {(const uint8_t*)&tLE, (const uint8_t*)&tLE, (const uint8_t*)&tLE,
+                               (const uint8_t*)&tLE};
   hash_update_x4(&ctx, tLE_ptr, sizeof(uint16_t));
-  uint16_t jLE0             = htole16((uint16_t)(j + 0));
-  uint16_t jLE1             = htole16((uint16_t)(j + 1));
-  uint16_t jLE2             = htole16((uint16_t)(j + 2));
-  uint16_t jLE3             = htole16((uint16_t)(j + 3));
-  const uint8_t* jLE_ptr[4] = {(uint8_t*)&jLE0, (uint8_t*)&jLE1, (uint8_t*)&jLE2, (uint8_t*)&jLE3};
+  const uint16_t jLE0       = htole16((uint16_t)(j + 0));
+  const uint16_t jLE1       = htole16((uint16_t)(j + 1));
+  const uint16_t jLE2       = htole16((uint16_t)(j + 2));
+  const uint16_t jLE3       = htole16((uint16_t)(j + 3));
+  const uint8_t* jLE_ptr[4] = {(const uint8_t*)&jLE0, (const uint8_t*)&jLE1, (const uint8_t*)&jLE2,
+                               (const uint8_t*)&jLE3};
   hash_update_x4(&ctx, jLE_ptr, sizeof(uint16_t));
   hash_final_x4(&ctx);
   hash_squeeze_x4(&ctx, digest, params->digest_size);
@@ -215,8 +217,7 @@ static void commit_v(uint8_t* digest, uint8_t* input, msgs_t* msgs,
   hash_init(&ctx, params);
   hash_update(&ctx, input, params->input_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
-    size_t msgs_size = numBytes(msgs->pos);
-    hash_update(&ctx, msgs->msgs[i], msgs_size);
+    hash_update(&ctx, msgs->msgs[i], numBytes(msgs->pos));
   }
   hash_final(&ctx);
   hash_squeeze(&ctx, digest, params->digest_size);
@@ -317,8 +318,8 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
 
   hash_update(&ctx, hCv, params->digest_size);
   hash_update(&ctx, salt, SALT_SIZE);
-  hash_update(&ctx, (uint8_t*)pubKey, params->input_size);
-  hash_update(&ctx, (uint8_t*)plaintext, params->input_size);
+  hash_update(&ctx, (const uint8_t*)pubKey, params->input_size);
+  hash_update(&ctx, (const uint8_t*)plaintext, params->input_size);
   hash_update(&ctx, message, messageByteLength);
   hash_final(&ctx);
   hash_squeeze(&ctx, h, params->digest_size);
@@ -569,12 +570,12 @@ static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLengt
   Keccak_HashInstance ctx;
 
   hash_init(&ctx, params);
-  hash_update(&ctx, (uint8_t*)privateKey, params->input_size);
+  hash_update(&ctx, (const uint8_t*)privateKey, params->input_size);
   hash_update(&ctx, message, messageByteLength);
-  hash_update(&ctx, (uint8_t*)pubKey, params->input_size);
-  hash_update(&ctx, (uint8_t*)plaintext, params->input_size);
-  uint16_t stateSizeLE = htole16((uint16_t)params->lowmc->n);
-  hash_update(&ctx, (uint8_t*)&stateSizeLE, sizeof(uint16_t));
+  hash_update(&ctx, (const uint8_t*)pubKey, params->input_size);
+  hash_update(&ctx, (const uint8_t*)plaintext, params->input_size);
+  const uint16_t stateSizeLE = htole16((uint16_t)params->lowmc->n);
+  hash_update(&ctx, (const uint8_t*)&stateSizeLE, sizeof(uint16_t));
   hash_final(&ctx);
   hash_squeeze(&ctx, saltAndRoot, saltAndRootLength);
 }
