@@ -103,22 +103,26 @@ static uint64_t aux_mpc_AND(uint64_t mask_a, uint64_t mask_b, randomTape_t* tape
  * S-box for m = 10, for Picnic2 aux computation
  */
 void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
-  *d             = htobe64(*d);
-  uint8_t* state = (uint8_t*)d;
-  for (uint32_t i = 0; i < 30; i += 3) {
-    uint8_t a = getBit(state, i + 2);
-    uint8_t b = getBit(state, i + 1);
-    uint8_t c = getBit(state, i + 0);
+  uint64_t dBE = htobe64(*d);
+  uint8_t state[sizeof(dBE)];
+  memcpy(state, &dBE, sizeof(dBE));
 
-    uint8_t ab = parity64_uint64(aux_mpc_AND(a, b, tapes));
-    uint8_t bc = parity64_uint64(aux_mpc_AND(b, c, tapes));
-    uint8_t ca = parity64_uint64(aux_mpc_AND(c, a, tapes));
+  for (uint32_t i = 0; i < 30; i += 3) {
+    const uint8_t a = getBit(state, i + 2);
+    const uint8_t b = getBit(state, i + 1);
+    const uint8_t c = getBit(state, i + 0);
+
+    const uint8_t ab = parity64_uint64(aux_mpc_AND(a, b, tapes));
+    const uint8_t bc = parity64_uint64(aux_mpc_AND(b, c, tapes));
+    const uint8_t ca = parity64_uint64(aux_mpc_AND(c, a, tapes));
 
     setBit(state, i + 2, a ^ bc);
     setBit(state, i + 1, a ^ b ^ ca);
     setBit(state, i + 0, a ^ b ^ c ^ ab);
   }
-  *d = be64toh(*d);
+
+  memcpy(&dBE, state, sizeof(dBE));
+  *d = be64toh(dBE);
 }
 
 /* Input is the tapes for one parallel repitition; i.e., tapes[t]
