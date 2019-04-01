@@ -183,10 +183,21 @@ static inline bool sub_overflow_size_t(const size_t x, const size_t y, size_t* d
 /* helper functions for parity computations */
 #if GNUC_CHECK(4, 9) || __has_builtin(__builtin_parity)
 ATTR_CONST
+static inline uint8_t parity64_uint8(uint8_t in) {
+  return __builtin_parity(in);
+}
+
+ATTR_CONST
 static inline uint64_t parity64_uint64(uint64_t in) {
   return __builtin_parityll(in);
 }
 #else
+ATTR_CONST
+static inline uint8_t parity64_uint8(uint8_t in) {
+  /* byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits */
+  return (((in * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+}
+
 ATTR_CONST
 static inline uint64_t parity64_uint64(uint64_t in) {
   in ^= in >> 1;

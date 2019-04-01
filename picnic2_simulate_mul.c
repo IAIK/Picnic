@@ -440,9 +440,7 @@ void mpc_matrix_mul_z_uint64_128(uint32_t* state2, const uint32_t* state, shares
       new_mask_i ^= mask_shares->shares[j * 8 + 6] & mask2->w64[2];
       new_mask_i ^= mask_shares->shares[j * 8 + 7] & mask2->w64[3];
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] = new_mask_i;
   }
@@ -474,9 +472,7 @@ void mpc_matrix_mul_z_uint64_192(uint32_t* state2, const uint32_t* state, shares
       new_mask_i ^= mask_shares->shares[j * 8 + 6] & mask2->w64[2];
       new_mask_i ^= mask_shares->shares[j * 8 + 7] & mask2->w64[3];
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] = new_mask_i;
   }
@@ -508,9 +504,7 @@ void mpc_matrix_mul_z_uint64_256(uint32_t* state2, const uint32_t* state, shares
       new_mask_i ^= mask_shares->shares[j * 8 + 6] & mask2->w64[2];
       new_mask_i ^= mask_shares->shares[j * 8 + 7] & mask2->w64[3];
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] = new_mask_i;
   }
@@ -869,9 +863,7 @@ void mpc_matrix_mul_z_s128_128(uint32_t* state2, const uint32_t* state, shares_t
       new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[2], mask2->w128[0]);
       new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[3], mask2->w128[1]);
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] =
         new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
@@ -902,9 +894,7 @@ void mpc_matrix_mul_z_s128_192(uint32_t* state2, const uint32_t* state, shares_t
       new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[2], mask2->w128[0]);
       new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[3], mask2->w128[1]);
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] =
         new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
@@ -935,9 +925,7 @@ void mpc_matrix_mul_z_s128_256(uint32_t* state2, const uint32_t* state, shares_t
       new_mask_i.w128[0] = mm128_xor_mask(new_mask_i.w128[0], tmp_mask_block[2], mask2->w128[0]);
       new_mask_i.w128[1] = mm128_xor_mask(new_mask_i.w128[1], tmp_mask_block[3], mask2->w128[1]);
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] =
         new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
@@ -1098,7 +1086,7 @@ void mpc_matrix_mul_nl_part_s128_128(uint32_t* nl_part, const uint32_t* key,
       tmp_mask_block[3] = mm128_xor_mask(tmp_mask_block[3], mask_share2.w128[0], mask4);
     }
   }
-  xor_word_array(nl_part, nl_part, (uint32_t*)precomputed_constant_nl, 20);
+  xor_word_array(nl_part, nl_part, (const uint32_t*)precomputed_constant_nl, 20);
 }
 
 ATTR_TARGET_S128
@@ -1295,9 +1283,7 @@ void mpc_matrix_mul_z_s256_128(uint32_t* state2, const uint32_t* state, shares_t
       new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[0], mask1->w256);
       new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[1], mask2->w256);
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] =
         new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
@@ -1326,9 +1312,7 @@ void mpc_matrix_mul_z_s256_192(uint32_t* state2, const uint32_t* state, shares_t
       new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[0], mask1->w256);
       new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[1], mask2->w256);
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] =
         new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
@@ -1357,9 +1341,7 @@ void mpc_matrix_mul_z_s256_256(uint32_t* state2, const uint32_t* state, shares_t
       new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[0], mask1->w256);
       new_mask_i.w256 = mm256_xor_mask(new_mask_i.w256, tmp_mask_block[1], mask2->w256);
     }
-    // byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits
-    uint8_t parity =
-        (((prod * UINT64_C(0x0101010101010101)) & UINT64_C(0x8040201008040201)) % 0x1FF) & 1;
+    const uint8_t parity = parity64_uint8(prod);
     setBit((uint8_t*)state2, 30 - 1 - i, parity);
     mask2_shares->shares[30 - 1 - i] =
         new_mask_i.w64[0] ^ new_mask_i.w64[1] ^ new_mask_i.w64[2] ^ new_mask_i.w64[3];
