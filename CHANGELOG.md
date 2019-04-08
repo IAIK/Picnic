@@ -1,3 +1,10 @@
+Version 2.0 -- 2019-04-08
+-------------------------
+
+* Implement Picnic 2.
+* Use 4-times parallel SHAKE3 for faster PRF evaluation, commitment generation, etc.
+* Fix size of salts to 32 bytes.
+
 Version 1.3.1 -- 2018-12-21
 ---------------------------
 
