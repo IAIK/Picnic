@@ -34,14 +34,11 @@ static int lowmc_enc_str(const picnic_params_t param, const char* key, const cha
   mzd_local_t* skl = mzd_convert(sk);
   mzd_local_t* ptl = mzd_convert(pt);
   mzd_local_t* ctl = mzd_convert(ct);
+  mzd_local_t* ctr = mzd_local_init(1, lowmc->n);
 
-  int ret          = 0;
-  mzd_local_t* ctr = pp->impls.lowmc(skl, ptl);
-  if (!ctr) {
-    ret = 1;
-    goto end;
-  }
+  pp->impls.lowmc(skl, ptl, ctr);
 
+  int ret = 0;
   if (!mzd_local_equal(ctr, ctl, 1, lowmc->n)) {
     ret = 2;
   }

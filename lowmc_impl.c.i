@@ -22,7 +22,7 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
 #if defined(RECORD_STATE)
 static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, recorded_state_t* state) {
 #else
-static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) {
+static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_local_t* c) {
 #endif
 #endif
   mzd_local_t x[((LOWMC_N) + 255) / 256];
@@ -170,9 +170,7 @@ static mzd_local_t* N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p) 
 #if defined(RECORD_STATE)
   COPY(state->state[LOWMC_R], x);
 #else
-  mzd_local_t* res = mzd_local_init_ex(1, LOWMC_N, false);
-  COPY(res, x);
-  return res;
+  COPY(c, x);
 #endif
 #endif
 }
