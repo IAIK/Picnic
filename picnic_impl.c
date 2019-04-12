@@ -53,8 +53,6 @@ const uint8_t HASH_PREFIX_3 = 3;
 const uint8_t HASH_PREFIX_4 = 4;
 const uint8_t HASH_PREFIX_5 = 5;
 
-#define LOWMC_UNSPECFIED_ARG UINT32_MAX
-
 /**
  * Collapse challenge from one char per challenge to bit array.
  */
