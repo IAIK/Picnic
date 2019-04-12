@@ -43,7 +43,6 @@ static int lowmc_enc_str(const picnic_params_t param, const char* key, const cha
     ret = 2;
   }
 
-end:
   mzd_local_free(ctr);
   mzd_local_free(ctl);
   mzd_local_free(ptl);
