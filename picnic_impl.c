@@ -1532,12 +1532,7 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 #define LOWMC_L5_1_OR_NULL NULL
 #endif
 
-#if defined(MUL_M4RI)
-static bool lowmc_instances_initialized[6];
-static lowmc_t* const lowmc_instances[6] = {
-#else
 static const lowmc_t* const lowmc_instances[6] = {
-#endif
     LOWMC_L1_OR_NULL,   LOWMC_L3_OR_NULL,   LOWMC_L5_OR_NULL,
     LOWMC_L1_1_OR_NULL, LOWMC_L3_1_OR_NULL, LOWMC_L5_1_OR_NULL};
 
@@ -1581,26 +1576,8 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
 static const lowmc_t* lowmc_get_instance(unsigned int idx) {
-#if defined(MUL_M4RI)
-  if (!lowmc_instances_initialized[idx]) {
-    if (lowmc_init(lowmc_instances[idx])) {
-      lowmc_instances_initialized[idx] = true;
-      return lowmc_instances[idx];
-    }
-    return NULL;
-  }
-#endif
   return lowmc_instances[idx];
 }
-
-#if defined(MUL_M4RI)
-static void clear_lowmc_instance(unsigned int idx) {
-  if (lowmc_instances_initialized[idx]) {
-    lowmc_clear(lowmc_instances[idx]);
-    lowmc_instances_initialized[idx] = false;
-  }
-}
-#endif
 
 static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
   const lowmc_t* lowmc_instance = NULL;
@@ -1679,11 +1656,4 @@ ATTR_DTOR static void clear_instances(void) {
       instance_initialized[p] = false;
     }
   }
-
-#if defined(MUL_M4RI)
-  for (unsigned int i = 0;
-       i < sizeof(lowmc_instances_initialized) / sizeof(lowmc_instances_initialized[0]); ++i) {
-    clear_lowmc_instance(i);
-  }
-#endif
 }

@@ -208,56 +208,6 @@ static int test_mzd_addmul_uint64_256(void) {
   return test_mzd_mul_f("addmul uint64 256", 256, 256, mzd_addmul_v_uint64_256, true);
 }
 
-#if defined(MUL_M4RI)
-static int test_mzd_mull_uint64_128(void) {
-  return test_mzd_mul_l_f("mull uint64 128", 128, 128, mzd_mul_vl_uint64_128, false);
-}
-
-static int test_mzd_mull_uint64_192(void) {
-  return test_mzd_mul_l_f("mull uint64 192", 192, 192, mzd_mul_vl_uint64_192, false);
-}
-
-static int test_mzd_mull_uint64_256(void) {
-  return test_mzd_mul_l_f("mull uint64 256", 256, 256, mzd_mul_vl_uint64_256, false);
-}
-
-static int test_mzd_mull_uint64_128_576(void) {
-  return test_mzd_mul_l_f("mull uint64 128 576", 128, 576, mzd_mul_vl_uint64_128_576, false);
-}
-
-static int test_mzd_mull_uint64_128_640(void) {
-  return test_mzd_mul_l_f("mull uint64 128 640", 128, 640, mzd_mul_vl_uint64_128_640, false);
-}
-
-static int test_mzd_mull_uint64_192_896(void) {
-  return test_mzd_mul_l_f("mull uint64 192 896", 192, 896, mzd_mul_vl_uint64_192_896, false);
-}
-
-static int test_mzd_mull_uint64_192_960(void) {
-  return test_mzd_mul_l_f("mull uint64 192 960", 192, 960, mzd_mul_vl_uint64_192_960, false);
-}
-
-static int test_mzd_mull_uint64_256_1152(void) {
-  return test_mzd_mul_l_f("mull uint64 256 1152", 256, 1152, mzd_mul_vl_uint64_256_1152, false);
-}
-
-static int test_mzd_mull_uint64_256_1216(void) {
-  return test_mzd_mul_l_f("mull uint64 256 1216", 256, 1216, mzd_mul_vl_uint64_256_1216, false);
-}
-
-static int test_mzd_addmull_uint64_128(void) {
-  return test_mzd_mul_l_f("addmull uint64 128", 128, 128, mzd_addmul_vl_uint64_128, true);
-}
-
-static int test_mzd_addmull_uint64_192(void) {
-  return test_mzd_mul_l_f("addmull uint64 192", 192, 192, mzd_addmul_vl_uint64_192, true);
-}
-
-static int test_mzd_addmull_uint64_256(void) {
-  return test_mzd_mul_l_f("addmull uint64 256", 256, 256, mzd_addmul_vl_uint64_256, true);
-}
-#endif
-
 #if defined(WITH_AVX2)
 static int test_mzd_mul_s256_128(void) {
   return test_mzd_mul_f("mul s256 128", 128, 128, mzd_mul_v_s256_128, false);
@@ -282,44 +232,6 @@ static int test_mzd_addmul_s256_192(void) {
 static int test_mzd_addmul_s256_256(void) {
   return test_mzd_mul_f("addmul s256 256", 256, 256, mzd_addmul_v_s256_256, true);
 }
-
-#if defined(MUL_M4RI)
-static int test_mzd_mull_s256_128(void) {
-  return test_mzd_mul_l_f("mull s256 128", 128, 128, mzd_mul_vl_s256_128, false);
-}
-
-static int test_mzd_mull_s256_128_768(void) {
-  return test_mzd_mul_l_f("mull s256 128 768", 128, 768, mzd_mul_vl_s256_128_768, false);
-}
-
-static int test_mzd_mull_s256_192(void) {
-  return test_mzd_mul_l_f("mull s256 192", 192, 192, mzd_mul_vl_s256_192, false);
-}
-
-static int test_mzd_mull_s256_192_1024(void) {
-  return test_mzd_mul_l_f("mull s256 1024", 192, 1024, mzd_mul_vl_s256_192_1024, false);
-}
-
-static int test_mzd_mull_s256_256(void) {
-  return test_mzd_mul_l_f("mull s256 256", 256, 256, mzd_mul_vl_s256_256, false);
-}
-
-static int test_mzd_mull_s256_256_1280(void) {
-  return test_mzd_mul_l_f("mull s256 256 1280", 256, 1280, mzd_mul_vl_s256_256_1280, false);
-}
-
-static int test_mzd_addmull_s256_128(void) {
-  return test_mzd_mul_l_f("addmull s256 128", 128, 128, mzd_addmul_vl_s256_128, true);
-}
-
-static int test_mzd_addmull_s256_192(void) {
-  return test_mzd_mul_l_f("addmull s256 192", 192, 192, mzd_addmul_vl_s256_192, true);
-}
-
-static int test_mzd_addmull_s256_256(void) {
-  return test_mzd_mul_l_f("addmull s256 256", 256, 256, mzd_addmul_vl_s256_256, true);
-}
-#endif
 #endif
 
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -366,52 +278,6 @@ static int test_mzd_addmul_s128_192(void) {
 static int test_mzd_addmul_s128_256(void) {
   return test_mzd_mul_f("addmul s128 256", 256, 256, mzd_addmul_v_s128_256, true);
 }
-
-#if defined(MUL_M4RI)
-static int test_mzd_mull_s128_128(void) {
-  return test_mzd_mul_l_f("mull s128 128", 128, 128, mzd_mul_vl_s128_128, false);
-}
-
-static int test_mzd_mull_s128_192(void) {
-  return test_mzd_mul_l_f("mull s128 192", 192, 192, mzd_mul_vl_s128_192, false);
-}
-
-static int test_mzd_mull_s128_256(void) {
-  return test_mzd_mul_l_f("mull s128 256", 256, 256, mzd_mul_vl_s128_256, false);
-}
-
-static int test_mzd_mull_s128_128_640(void) {
-  return test_mzd_mul_l_f("mull s128 128 640", 128, 640, mzd_mul_vl_s128_128_640, false);
-}
-
-static int test_mzd_mull_s128_192_896(void) {
-  return test_mzd_mul_l_f("mull s128 192 896", 192, 896, mzd_mul_vl_s128_192_896, false);
-}
-
-static int test_mzd_mull_s128_192_1024(void) {
-  return test_mzd_mul_l_f("mull s128 192 1024", 192, 1024, mzd_mul_vl_s128_192_1024, false);
-}
-
-static int test_mzd_mull_s128_256_1152(void) {
-  return test_mzd_mul_l_f("mull s128 256 1152", 256, 1152, mzd_mul_vl_s128_256_1152, false);
-}
-
-static int test_mzd_mull_s128_256_1280(void) {
-  return test_mzd_mul_l_f("mull s128 256 1280", 256, 1280, mzd_mul_vl_s128_256_1280, false);
-}
-
-static int test_mzd_addmull_s128_128(void) {
-  return test_mzd_mul_l_f("addmull s128 128", 128, 128, mzd_addmul_vl_s128_128, true);
-}
-
-static int test_mzd_addmull_s128_192(void) {
-  return test_mzd_mul_l_f("addmull s128 192", 192, 192, mzd_addmul_vl_s128_192, true);
-}
-
-static int test_mzd_addmull_s128_256(void) {
-  return test_mzd_mul_l_f("addmull s128 256", 256, 256, mzd_addmul_vl_s128_256, true);
-}
-#endif
 #endif
 
 int main(void) {
@@ -430,20 +296,6 @@ int main(void) {
   ret |= test_mzd_addmul_uint64_128();
   ret |= test_mzd_addmul_uint64_192();
   ret |= test_mzd_addmul_uint64_256();
-#if defined(MUL_M4RI)
-  ret |= test_mzd_mull_uint64_128();
-  ret |= test_mzd_mull_uint64_192();
-  ret |= test_mzd_mull_uint64_256();
-  ret |= test_mzd_mull_uint64_128_576();
-  ret |= test_mzd_mull_uint64_128_640();
-  ret |= test_mzd_mull_uint64_192_896();
-  ret |= test_mzd_mull_uint64_192_960();
-  ret |= test_mzd_mull_uint64_256_1152();
-  ret |= test_mzd_mull_uint64_256_1216();
-  ret |= test_mzd_addmull_uint64_128();
-  ret |= test_mzd_addmull_uint64_192();
-  ret |= test_mzd_addmull_uint64_256();
-#endif
 #ifdef WITH_AVX2
   if (CPU_SUPPORTS_AVX2) {
     ret |= test_mzd_mul_s256_128();
@@ -452,17 +304,6 @@ int main(void) {
     ret |= test_mzd_addmul_s256_128();
     ret |= test_mzd_addmul_s256_192();
     ret |= test_mzd_addmul_s256_256();
-#if defined(MUL_M4RI)
-    ret |= test_mzd_mull_s256_128();
-    ret |= test_mzd_mull_s256_128_768();
-    ret |= test_mzd_mull_s256_192();
-    ret |= test_mzd_mull_s256_192_1024();
-    ret |= test_mzd_mull_s256_256();
-    ret |= test_mzd_mull_s256_256_1280();
-    ret |= test_mzd_addmull_s256_128();
-    ret |= test_mzd_addmull_s256_192();
-    ret |= test_mzd_addmull_s256_256();
-#endif
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -478,19 +319,6 @@ int main(void) {
     ret |= test_mzd_addmul_s128_128();
     ret |= test_mzd_addmul_s128_192();
     ret |= test_mzd_addmul_s128_256();
-#if defined(MUL_M4RI)
-    ret |= test_mzd_mull_s128_128();
-    ret |= test_mzd_mull_s128_128_640();
-    ret |= test_mzd_mull_s128_192();
-    ret |= test_mzd_mull_s128_192_896();
-    ret |= test_mzd_mull_s128_192_1024();
-    ret |= test_mzd_mull_s128_256();
-    ret |= test_mzd_mull_s128_256_1152();
-    ret |= test_mzd_mull_s128_256_1280();
-    ret |= test_mzd_addmull_s128_128();
-    ret |= test_mzd_addmull_s128_192();
-    ret |= test_mzd_addmull_s128_256();
-#endif
   }
 #endif
   return ret;

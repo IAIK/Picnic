@@ -84,7 +84,6 @@ set(WITH_SSE2 ON CACHE BOOL "Use SSE2 if available.")
 set(WITH_NEON ON CACHE BOOL "Use NEON if available.")
 set(WITH_MARCH_NATIVE ${DEFAULT_WITH_MARCH_NATIVE} CACHE BOOL "Build with -march=native -mtune=native (if supported).")
 set(WITH_LTO ON CACHE BOOL "Enable link-time optimization (if supported).")
-set(WITH_MUL_M4RI OFF CACHE BOOL "Use method of four russians for matrix multiplication.")
 set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
 set(WITH_LOWMC_OPT "OLLE" CACHE STRING "Enable LowMC optimizations.")
 set_property(CACHE WITH_LOWMC_OPT PROPERTY STRINGS "OFF" "ORKC" "OLLE")
@@ -93,10 +92,6 @@ set(WITH_EXTRA_RANDOMNESS OFF CACHE BOOL "Feed extra random bytes to KDF (fault 
 set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h.")
 if(MSVC)
   set(USE_STATIC_RUNTIME OFF CACHE BOOL "Use MSVC's static runtime for the static library.")
-endif()
-
-if(WITH_MUL_M4RI AND WITH_LOWMC_OPT STREQUAL "OLLE")
-  message(FATAL_ERROR "M4RI combined with OLLE is currently not implemented.")
 endif()
 
 # do not build with -rdynamic
@@ -214,7 +209,6 @@ list(APPEND PICNIC_SOURCES
      cpu.c
      io.c
      lowmc.c
-     lowmc_pars.c
      lowmc_128_128_20.c
      lowmc_192_192_30.c
      lowmc_256_256_38.c
@@ -260,9 +254,6 @@ function(apply_base_options lib)
     target_compile_definitions(${lib} PRIVATE REDUCED_ROUND_KEY_COMPUTATION)
   elseif(WITH_LOWMC_OPT STREQUAL "OLLE")
     target_compile_definitions(${lib} PRIVATE REDUCED_ROUND_KEY_COMPUTATION OPTIMIZED_LINEAR_LAYER_EVALUATION)
-  endif()
-  if(WITH_MUL_M4RI)
-    target_compile_definitions(${lib} PRIVATE MUL_M4RI)
   endif()
 endfunction()
 
