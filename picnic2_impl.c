@@ -207,7 +207,7 @@ static void commit_h(uint8_t* digest, const commitments_t* C, const picnic_insta
 
   hash_init(&ctx, params);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
-    hash_update(&ctx, C->hashes[i], params->seed_size);
+    hash_update(&ctx, C->hashes[i], params->digest_size);
   }
   hash_final(&ctx);
   hash_squeeze(&ctx, digest, params->digest_size);
