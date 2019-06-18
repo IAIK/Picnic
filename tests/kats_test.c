@@ -61,7 +61,8 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
   bool expect_data = false;
 
   while ((nread = getline(&line, &len, file)) != -1) {
-    if (nread <= 1 || line[0] == '#') {
+    if (nread <= 1 || line[0] == '#' ||
+		(nread == 2 && line[0] == '\r' && line[1] == '\n')) { // also handle potential windows line endings
       if (expect_data) {
         printf("Expected data.\n");
         goto err;
