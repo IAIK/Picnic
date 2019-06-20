@@ -139,7 +139,7 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #define FN_ATTR ATTR_TARGET_AVX2
 
 // L1 using AVX2
-#include "lowmc_fns_s128_L1.h"
+#include "lowmc_fns_s256_L1.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_128
 #include "lowmc.c.i"

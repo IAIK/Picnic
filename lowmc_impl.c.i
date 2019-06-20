@@ -11,8 +11,6 @@
 #error "OLLE is only implemented for 1 or 10 Sboxes"
 #endif
 
-// TODO: fix PICNIC2_AUX_COMPUTATION for OFF & ORKC
-
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
