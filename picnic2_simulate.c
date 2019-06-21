@@ -32,20 +32,20 @@ static void msgsTranspose(msgs_t* msgs) {
   size_t pos;
   for (pos = 0; pos < msgs->pos / 64; pos++) {
     for (size_t i = 0; i < 64; i++) {
-      buffer_in[i / 8 * 8 + 7 - i % 8] = ((uint64_t*)msgs->msgs[i])[pos];
+      buffer_in[i] = ((uint64_t*)msgs->msgs[i])[pos];
     }
-    transpose_64_64_old(buffer_in, buffer_out);
+    transpose_64_64(buffer_in, buffer_out);
     for (size_t i = 0; i < 64; i++) {
-      ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[(i) / 8 * 8 + 7 - (i) % 8];
+      ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[i];
     }
   }
   memset(&buffer_in, 0, 64 * sizeof(uint64_t));
   for (size_t i = 0; i < msgs->pos % 64; i++) {
-    buffer_in[i / 8 * 8 + 7 - i % 8] = ((uint64_t*)msgs->msgs[i])[pos];
+    buffer_in[i] = ((uint64_t*)msgs->msgs[i])[pos];
   }
-  transpose_64_64_old(buffer_in, buffer_out);
+  transpose_64_64(buffer_in, buffer_out);
   for (size_t i = 0; i < 64; i++) {
-    ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[(i) / 8 * 8 + 7 - (i) % 8];
+    ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[i];
   }
 }
 

@@ -295,12 +295,12 @@ uint64_t tapesToWord(randomTape_t* tapes) {
   if (tapes->pos % 64 == 0) {
     uint64_t buffer[64];
     for (size_t i = 0; i < 64; i++) {
-      buffer[i / 8 * 8 + 7 - i % 8] = ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
+      buffer[i] = ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
     }
-    transpose_64_64_old(buffer, tapes->buffer);
+    transpose_64_64(buffer, tapes->buffer);
   }
 
-  shares = tapes->buffer[(tapes->pos % 64) / 8 * 8 + 7 - (tapes->pos % 64) % 8];
+  shares = tapes->buffer[(tapes->pos % 64)];
   tapes->pos++;
   return shares;
 }
