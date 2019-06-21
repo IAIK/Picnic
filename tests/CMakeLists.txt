@@ -14,7 +14,7 @@ if(M4RI_FOUND)
   endforeach(target)
 endif()
 
-list(APPEND test_static_targets bitstream kdf_shake256 shake lowmc)
+list(APPEND test_static_targets bitstream kdf_shake256 shake lowmc transpose)
 if(NOT MSVC)
   list(APPEND test_targets picnic extended_picnic)
 else()

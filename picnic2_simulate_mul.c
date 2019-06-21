@@ -11,6 +11,7 @@
 #include <assert.h>
 
 #include "picnic2_simulate_mul.h"
+#include "endian_compat.h"
 
 #if defined(WITH_SSE2)
 #define ATTR_TARGET_S128 ATTR_TARGET_SSE2
@@ -217,7 +218,7 @@ static block_t nl_part_block_masks[] = {
 };
 
 /* transpose a 64x64 bit matrix using Eklundh's algorithm */
-void transpose_64_64(const uint64_t* in, uint64_t* out) {
+void transpose_64_64_old(const uint64_t* in, uint64_t* out) {
   static const uint64_t TRANSPOSE_MASKS64[6] = {
       UINT64_C(0x00000000FFFFFFFF), UINT64_C(0x0000FFFF0000FFFF), UINT64_C(0x00FF00FF00FF00FF),
       UINT64_C(0x0F0F0F0F0F0F0F0F), UINT64_C(0x3333333333333333), UINT64_C(0x5555555555555555)};
@@ -249,6 +250,45 @@ void transpose_64_64(const uint64_t* in, uint64_t* out) {
   }
 }
 
+/* transpose a 64x64 bit matrix using Eklundh's algorithm */
+void transpose_64_64(const uint64_t* in, uint64_t* out) {
+  static const uint64_t TRANSPOSE_MASKS64[6] = {
+      UINT64_C(0xFFFFFFFF00000000), UINT64_C(0xFFFF0000FFFF0000), UINT64_C(0xFF00FF00FF00FF00),
+      UINT64_C(0xF0F0F0F0F0F0F0F0), UINT64_C(0xCCCCCCCCCCCCCCCC), UINT64_C(0xAAAAAAAAAAAAAAAA)};
+
+  uint32_t width = 32, nswaps = 1;
+  const uint32_t logn = 6;
+
+  // copy in to out and transpose in-place
+  memcpy(out, in, 64 * sizeof(uint64_t));
+  for (uint32_t i = 0; i < 64; i++) {
+    out[i] = bswap64(out[i]);
+  }
+
+  for (uint32_t i = 0; i < logn; i++) {
+    uint64_t mask     = TRANSPOSE_MASKS64[i];
+    uint64_t inv_mask = ~mask;
+
+    for (uint32_t j = 0; j < nswaps; j++) {
+      for (uint32_t k = 0; k < width; k++) {
+        uint32_t i1 = k + 2 * width * j;
+        uint32_t i2 = k + width + 2 * width * j;
+
+        uint64_t t1 = out[i1];
+        uint64_t t2 = out[i2];
+
+        out[i1] = (t1 & mask) ^ ((t2 & mask) >> width);
+        out[i2] = (t2 & inv_mask) ^ ((t1 & inv_mask) << width);
+      }
+    }
+    nswaps *= 2;
+    width /= 2;
+  }
+  for (uint32_t i = 0; i < 64; i++) {
+    out[i] = bswap64(out[i]);
+  }
+}
+
 uint64_t tapesToWord(randomTape_t* tapes) {
   uint64_t shares;
 
@@ -257,7 +297,7 @@ uint64_t tapesToWord(randomTape_t* tapes) {
     for (size_t i = 0; i < 64; i++) {
       buffer[i / 8 * 8 + 7 - i % 8] = ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
     }
-    transpose_64_64(buffer, tapes->buffer);
+    transpose_64_64_old(buffer, tapes->buffer);
   }
 
   shares = tapes->buffer[(tapes->pos % 64) / 8 * 8 + 7 - (tapes->pos % 64) % 8];
