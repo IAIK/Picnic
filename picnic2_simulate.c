@@ -20,6 +20,7 @@
 #include "io.h"
 #include "picnic2_simulate.h"
 #include "picnic2_simulate_mul.h"
+#include "compat.h"
 
 static void wordToMsgsNoTranspose(uint64_t w, msgs_t* msgs) {
   ((uint64_t*)msgs->msgs[msgs->pos % 64])[msgs->pos / 64] = w;
@@ -27,26 +28,26 @@ static void wordToMsgsNoTranspose(uint64_t w, msgs_t* msgs) {
 }
 
 static void msgsTranspose(msgs_t* msgs) {
-  uint64_t buffer_in[64];
-  uint64_t buffer_out[64];
+  uint64_t* buffer = aligned_alloc(32, 64 * sizeof(uint64_t));
   size_t pos;
   for (pos = 0; pos < msgs->pos / 64; pos++) {
     for (size_t i = 0; i < 64; i++) {
-      buffer_in[i] = ((uint64_t*)msgs->msgs[i])[pos];
+      buffer[i] = ((uint64_t*)msgs->msgs[i])[pos];
     }
-    transpose_64_64(buffer_in, buffer_out);
+    transpose_64_64_s256(buffer, buffer);
     for (size_t i = 0; i < 64; i++) {
-      ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[i];
+      ((uint64_t*)msgs->msgs[i])[pos] = buffer[i];
     }
   }
-  memset(&buffer_in, 0, 64 * sizeof(uint64_t));
+  memset(buffer, 0, 64 * sizeof(uint64_t));
   for (size_t i = 0; i < msgs->pos % 64; i++) {
-    buffer_in[i] = ((uint64_t*)msgs->msgs[i])[pos];
+    buffer[i] = ((uint64_t*)msgs->msgs[i])[pos];
   }
-  transpose_64_64(buffer_in, buffer_out);
+  transpose_64_64_s256(buffer, buffer);
   for (size_t i = 0; i < 64; i++) {
-    ((uint64_t*)msgs->msgs[i])[pos] = buffer_out[i];
+    ((uint64_t*)msgs->msgs[i])[pos] = buffer[i];
   }
+  aligned_free(buffer);
 }
 
 /* For each word in shares; write player i's share to their stream of msgs */

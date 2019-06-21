@@ -312,7 +312,7 @@ int main(void) {
 		setBit((uint8_t*)&matrix[i/8*8 + 7 - i%8], j, test_matrix[i][j]);
 	}
   }
-  transpose_64_64_old(matrix, matrix);
+  transpose_64_64_lsb(matrix, matrix);
   for (int i = 0; i < 64; i++) {
     for (int j = 0; j < 64; j++) {
       if (getBit((uint8_t*)&matrix[i/8*8+7-i%8], j) != test_matrix_trans[i][j]) {
