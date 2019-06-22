@@ -213,6 +213,23 @@ static void commit_h(uint8_t* digest, const commitments_t* C, const picnic_insta
   hash_squeeze(&ctx, digest, params->digest_size);
 }
 
+static void commit_h_x4(uint8_t** digest, const commitments_t* C, const picnic_instance_t* params) {
+  Keccak_HashInstancetimes4 ctx;
+
+  hash_init_x4(&ctx, params);
+  for (size_t i = 0; i < params->num_MPC_parties; i++) {
+    const uint8_t* data[4] = {
+        C[0].hashes[i],
+        C[1].hashes[i],
+        C[2].hashes[i],
+        C[3].hashes[i],
+    };
+    hash_update_x4(&ctx, data, params->digest_size);
+  }
+  hash_final_x4(&ctx);
+  hash_squeeze_x4(&ctx, digest, params->digest_size);
+}
+
 // Commit to the views for one parallel rep
 static void commit_v(uint8_t* digest, const uint8_t* input, const msgs_t* msgs,
                      const picnic_instance_t* params) {
@@ -478,8 +495,14 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
 
   /* Commit to the commitments */
   allocateCommitments2(&Ch, params, params->num_rounds);
-  for (size_t t = 0; t < params->num_rounds; t++) {
-    commit_h(Ch.hashes[t], &C[t], params);
+  {
+    size_t t = 0;
+	for (; t < params->num_rounds / 4 * 4; t+=4) {
+	  commit_h_x4(&Ch.hashes[t], &C[t], params);
+	}
+	for (; t < params->num_rounds; t++) {
+	  commit_h(Ch.hashes[t], &C[t], params);
+	}
   }
 
   /* Commit to the views */
@@ -653,8 +676,17 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   allocateCommitments2(&Ch, params, params->num_rounds);
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
+  {
+    size_t t = 0;
+	for (; t < params->num_rounds / 4 * 4; t+=4) {
+	  commit_h_x4(&Ch.hashes[t], &C[t], params);
+	}
+	for (; t < params->num_rounds; t++) {
+	  commit_h(Ch.hashes[t], &C[t], params);
+	}
+  }
+
   for (size_t t = 0; t < params->num_rounds; t++) {
-    commit_h(Ch.hashes[t], &C[t], params);
     commit_v(Cv.hashes[t], inputs[t], &msgs[t], params);
   }
 
