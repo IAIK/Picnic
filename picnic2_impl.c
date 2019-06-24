@@ -244,6 +244,26 @@ static void commit_v(uint8_t* digest, const uint8_t* input, const msgs_t* msgs,
   hash_squeeze(&ctx, digest, params->digest_size);
 }
 
+static void commit_v_x4(uint8_t** digest, const uint8_t** input, const msgs_t* msgs,
+                     const picnic_instance_t* params) {
+  Keccak_HashInstancetimes4 ctx;
+
+  hash_init_x4(&ctx, params);
+  hash_update_x4(&ctx, input, params->input_size);
+  for (size_t i = 0; i < params->num_MPC_parties; i++) {
+    assert(msgs[0].pos == msgs[1].pos && msgs[2].pos == msgs[3].pos && msgs[0].pos == msgs[2].pos);
+    const uint8_t* data[4] = {
+        msgs[0].msgs[i],
+        msgs[1].msgs[i],
+        msgs[2].msgs[i],
+        msgs[3].msgs[i],
+    };
+    hash_update_x4(&ctx, data, numBytes(msgs->pos));
+  }
+  hash_final_x4(&ctx);
+  hash_squeeze_x4(&ctx, digest, params->digest_size);
+}
+
 static int contains(const uint16_t* list, size_t len, uint16_t value) {
   for (size_t i = 0; i < len; i++) {
     if (list[i] == value) {
@@ -680,14 +700,12 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
     size_t t = 0;
 	for (; t < params->num_rounds / 4 * 4; t+=4) {
 	  commit_h_x4(&Ch.hashes[t], &C[t], params);
+      commit_v_x4(&Cv.hashes[t], (const uint8_t**) &inputs[t], &msgs[t], params);
 	}
 	for (; t < params->num_rounds; t++) {
 	  commit_h(Ch.hashes[t], &C[t], params);
+      commit_v(Cv.hashes[t], inputs[t], &msgs[t], params);
 	}
-  }
-
-  for (size_t t = 0; t < params->num_rounds; t++) {
-    commit_v(Cv.hashes[t], inputs[t], &msgs[t], params);
   }
 
   /* Create a Merkle tree with Cv as the leaves */
