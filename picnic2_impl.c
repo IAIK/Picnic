@@ -93,8 +93,8 @@ static uint64_t aux_mpc_AND(uint64_t mask_a, uint64_t mask_b, randomTape_t* tape
    * input masks; then update the tape. */
   setBit((uint8_t*)&and_helper, 63, 0);
   uint64_t aux_bit = (mask_a & mask_b) ^ parity64_uint64(and_helper);
-  size_t lastParty = tapes->nTapes - 1;
-  setBit(tapes->tape[lastParty], tapes->pos - 1, (uint8_t)aux_bit);
+  setBit(tapes->tape[63], tapes->pos - 1, (uint8_t)aux_bit);
+  setBit((uint8_t*)&tapes->buffer[tapes->pos - 1], 63, (uint8_t)aux_bit);
 
   return fresh_output_mask;
 }
@@ -652,6 +652,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   uint8_t auxBits[MAX_AUX_BYTES];
   for (size_t t = 0; t < params->num_rounds; t++) {
     computeAuxTape(&tapes[t], params);
+    tapes[t].transpose_done = 1;
   }
 
   /* Commit to seeds and aux bits */
@@ -667,6 +668,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
     getAuxBits(auxBits, &tapes[t], params);
     commit(C[t].hashes[last], getLeaf(seeds[t], last), auxBits, sig->salt, t, last, params);
   }
+
 
   /* Simulate the online phase of the MPC */
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;

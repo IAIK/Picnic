@@ -33,15 +33,16 @@ void freeShares(shares_t* shares) {
 void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->nTapes         = params->num_MPC_parties;
   tape->tape           = malloc(tape->nTapes * sizeof(uint8_t*));
-  tape->buffer         = aligned_alloc(32, params->num_MPC_parties * sizeof(uint64_t));
   size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
-  tapeSizeBytes        = ((tapeSizeBytes + 7) / 8) * 8;
+  tapeSizeBytes        = ((tapeSizeBytes + 7) / 8) * 8; // round up to multiple of 64 bit for transpose
+  tape->buffer         = aligned_alloc(32, tape->nTapes * tapeSizeBytes);
   uint8_t* slab        = calloc(1, tape->nTapes * tapeSizeBytes);
   for (uint8_t i = 0; i < tape->nTapes; i++) {
     tape->tape[i] = slab;
     slab += tapeSizeBytes;
   }
   tape->pos = 0;
+  tape->transpose_done = 0;
 }
 
 void freeRandomTape(randomTape_t* tape) {
