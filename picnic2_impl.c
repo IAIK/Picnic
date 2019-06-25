@@ -10,22 +10,22 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
+#include "io.h"
 #include "kdf_shake.h"
 #include "macros.h"
-#include "picnic_impl.h"
-#include "picnic2_impl.h"
 #include "picnic.h"
-#include "picnic2_types.h"
-#include "picnic2_tree.h"
+#include "picnic2_impl.h"
 #include "picnic2_simulate_mul.h"
-#include "io.h"
+#include "picnic2_tree.h"
+#include "picnic2_types.h"
+#include "picnic_impl.h"
 
 #define LOWMC_MAX_KEY_BITS 256
 #define LOWMC_MAX_AND_GATES (3 * 38 * 10 + 4) /* Rounded to nearest byte */
@@ -54,14 +54,15 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
     const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
     hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
     uint16_t tLE              = htole16((uint16_t)t);
-    const uint8_t* tLE_ptr[4] = {(const uint8_t*)&tLE, (const uint8_t*)&tLE, (const uint8_t*)&tLE, (const uint8_t*)&tLE};
+    const uint8_t* tLE_ptr[4] = {(const uint8_t*)&tLE, (const uint8_t*)&tLE, (const uint8_t*)&tLE,
+                                 (const uint8_t*)&tLE};
     hash_update_x4(&ctx, tLE_ptr, sizeof(uint16_t));
     uint16_t iLE0             = htole16((uint16_t)(i + 0));
     uint16_t iLE1             = htole16((uint16_t)(i + 1));
     uint16_t iLE2             = htole16((uint16_t)(i + 2));
     uint16_t iLE3             = htole16((uint16_t)(i + 3));
-    const uint8_t* iLE_ptr[4] = {(const uint8_t*)&iLE0, (const uint8_t*)&iLE1, (const uint8_t*)&iLE2,
-                                 (const uint8_t*)&iLE3};
+    const uint8_t* iLE_ptr[4] = {(const uint8_t*)&iLE0, (const uint8_t*)&iLE1,
+                                 (const uint8_t*)&iLE2, (const uint8_t*)&iLE3};
     hash_update_x4(&ctx, iLE_ptr, sizeof(uint16_t));
     hash_final_x4(&ctx);
 
@@ -82,47 +83,62 @@ static void tapesToWords(shares_t* shares, randomTape_t* tapes) {
   }
 }
 
-static uint64_t aux_mpc_AND(uint64_t mask_a, uint64_t mask_b, randomTape_t* tapes) {
-  //    uint64_t mask_a = parity64_uint64(a); //inputs are already parity
-  //    uint64_t mask_b = parity64_uint64(b); //inputs are already parity
-  uint64_t fresh_output_mask = tapesToWord(tapes);
+static void aux_mpc_AND_bitsliced(uint64_t mask_a, uint64_t mask_b, uint64_t mask_c, uint64_t* ab,
+                                  uint64_t* bc, uint64_t* ca, randomTape_t* tapes) {
 
-  uint64_t and_helper = tapesToWord(tapes);
+  for (int i = 0; i < 10; i++) {
+    uint64_t fresh_output_maks_ab = tapesToWord(tapes);
+    uint64_t and_helper_ab        = tapesToWord(tapes) & UINT64_C(0xFEFFFFFFFFFFFFFF);
+    uint64_t fresh_output_maks_bc = tapesToWord(tapes);
+    uint64_t and_helper_bc        = tapesToWord(tapes) & UINT64_C(0xFEFFFFFFFFFFFFFF);
+    uint64_t fresh_output_maks_ca = tapesToWord(tapes);
+    uint64_t and_helper_ca        = tapesToWord(tapes) & UINT64_C(0xFEFFFFFFFFFFFFFF);
 
-  /* Zero the last party's share of the helper value, compute it based on the
-   * input masks; then update the tape. */
-  setBit((uint8_t*)&and_helper, 63, 0);
-  uint64_t aux_bit = (mask_a & mask_b) ^ parity64_uint64(and_helper);
-  setBit(tapes->tape[63], tapes->pos - 1, (uint8_t)aux_bit);
-  setBit((uint8_t*)&tapes->buffer[tapes->pos - 1], 63, (uint8_t)aux_bit);
+    uint64_t aux_bit_ab =
+        (((mask_a & mask_b) >> (63 - 3 * i)) & 1) ^ parity64_uint64(and_helper_ab);
+    uint64_t aux_bit_bc =
+        (((mask_b & mask_c) >> (63 - 3 * i)) & 1) ^ parity64_uint64(and_helper_bc);
+    uint64_t aux_bit_ca =
+        (((mask_c & mask_a) >> (63 - 3 * i)) & 1) ^ parity64_uint64(and_helper_ca);
 
-  return fresh_output_mask;
+    setBit(tapes->tape[63], tapes->pos - 5, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[63], tapes->pos - 3, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[63], tapes->pos - 1, (uint8_t)aux_bit_ca);
+
+    *ab <<= 3;
+    *ab |= parity64_uint64(fresh_output_maks_ab);
+    *bc <<= 3;
+    *bc |= parity64_uint64(fresh_output_maks_bc);
+    *ca <<= 3;
+    *ca |= parity64_uint64(fresh_output_maks_ca);
+  }
+  *ab <<= 36;
+  *bc <<= 36;
+  *ca <<= 36;
 }
 
 /**
- * S-box for m = 10, for Picnic2 aux computation
+ * S-box for m = 10, for Picnic2 aux computation, as bitsliced as possible
  */
 void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
-  uint64_t dBE = htobe64(*d);
-  uint8_t state[sizeof(dBE)];
-  memcpy(state, &dBE, sizeof(dBE));
+  uint64_t in = *d;
 
-  for (uint32_t i = 0; i < 30; i += 3) {
-    const uint8_t a = getBit(state, i + 2);
-    const uint8_t b = getBit(state, i + 1);
-    const uint8_t c = getBit(state, i + 0);
+  // a, b, c
+  const uint64_t x0s = (in & MASK_X0I) << 2;
+  const uint64_t x1s = (in & MASK_X1I) << 1;
+  const uint64_t x2m = in & MASK_X2I;
 
-    const uint8_t ab = parity64_uint64(aux_mpc_AND(a, b, tapes));
-    const uint8_t bc = parity64_uint64(aux_mpc_AND(b, c, tapes));
-    const uint8_t ca = parity64_uint64(aux_mpc_AND(c, a, tapes));
+  uint64_t ab, bc, ca = 0;
+  aux_mpc_AND_bitsliced(x0s, x1s, x2m, &ab, &bc, &ca, tapes);
 
-    setBit(state, i + 2, a ^ bc);
-    setBit(state, i + 1, a ^ b ^ ca);
-    setBit(state, i + 0, a ^ b ^ c ^ ab);
-  }
+  // (b & c) ^ a
+  const uint64_t t0 = (bc) ^ x0s;
+  // (c & a) ^ a ^ b
+  const uint64_t t1 = (ca) ^ x0s ^ x1s;
+  // (a & b) ^ a ^ b ^c
+  const uint64_t t2 = (ab) ^ x0s ^ x1s ^ x2m;
 
-  memcpy(&dBE, state, sizeof(dBE));
-  *d = be64toh(dBE);
+  *d = (in & MASK_MASK) ^ (t0 >> 2) ^ (t1 >> 1) ^ t2;
 }
 
 /* Input is the tapes for one parallel repitition; i.e., tapes[t]
@@ -178,8 +194,8 @@ static void commit(uint8_t* digest, const uint8_t* seed, const uint8_t* aux, con
   hash_squeeze(&ctx, digest, params->digest_size);
 }
 
-static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* salt, size_t t, size_t j,
-                      const picnic_instance_t* params) {
+static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* salt, size_t t,
+                      size_t j, const picnic_instance_t* params) {
   /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
   hash_context_x4 ctx;
 
@@ -245,7 +261,7 @@ static void commit_v(uint8_t* digest, const uint8_t* input, const msgs_t* msgs,
 }
 
 static void commit_v_x4(uint8_t** digest, const uint8_t** input, const msgs_t* msgs,
-                     const picnic_instance_t* params) {
+                        const picnic_instance_t* params) {
   Keccak_HashInstancetimes4 ctx;
 
   hash_init_x4(&ctx, params);
@@ -517,12 +533,12 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   allocateCommitments2(&Ch, params, params->num_rounds);
   {
     size_t t = 0;
-	for (; t < params->num_rounds / 4 * 4; t+=4) {
-	  commit_h_x4(&Ch.hashes[t], &C[t], params);
-	}
-	for (; t < params->num_rounds; t++) {
-	  commit_h(Ch.hashes[t], &C[t], params);
-	}
+    for (; t < params->num_rounds / 4 * 4; t += 4) {
+      commit_h_x4(&Ch.hashes[t], &C[t], params);
+    }
+    for (; t < params->num_rounds; t++) {
+      commit_h(Ch.hashes[t], &C[t], params);
+    }
   }
 
   /* Commit to the views */
@@ -652,7 +668,6 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   uint8_t auxBits[MAX_AUX_BYTES];
   for (size_t t = 0; t < params->num_rounds; t++) {
     computeAuxTape(&tapes[t], params);
-    tapes[t].transpose_done = 1;
   }
 
   /* Commit to seeds and aux bits */
@@ -668,7 +683,6 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
     getAuxBits(auxBits, &tapes[t], params);
     commit(C[t].hashes[last], getLeaf(seeds[t], last), auxBits, sig->salt, t, last, params);
   }
-
 
   /* Simulate the online phase of the MPC */
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
@@ -700,14 +714,14 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   allocateCommitments2(&Cv, params, params->num_rounds);
   {
     size_t t = 0;
-	for (; t < params->num_rounds / 4 * 4; t+=4) {
-	  commit_h_x4(&Ch.hashes[t], &C[t], params);
-      commit_v_x4(&Cv.hashes[t], (const uint8_t**) &inputs[t], &msgs[t], params);
-	}
-	for (; t < params->num_rounds; t++) {
-	  commit_h(Ch.hashes[t], &C[t], params);
+    for (; t < params->num_rounds / 4 * 4; t += 4) {
+      commit_h_x4(&Ch.hashes[t], &C[t], params);
+      commit_v_x4(&Cv.hashes[t], (const uint8_t**)&inputs[t], &msgs[t], params);
+    }
+    for (; t < params->num_rounds; t++) {
+      commit_h(Ch.hashes[t], &C[t], params);
       commit_v(Cv.hashes[t], inputs[t], &msgs[t], params);
-	}
+    }
   }
 
   /* Create a Merkle tree with Cv as the leaves */

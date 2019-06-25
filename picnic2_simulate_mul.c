@@ -449,14 +449,14 @@ void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
 uint64_t tapesToWord(randomTape_t* tapes) {
   uint64_t shares;
 
-  if (tapes->transpose_done == 0 && tapes->pos % 64 == 0) {
+  if (tapes->pos % 64 == 0) {
     for (size_t i = 0; i < 64; i++) {
-      tapes->buffer[tapes->pos + i] = ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
+      tapes->buffer[i] = ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
     }
-    transpose_64_64_s256(&tapes->buffer[tapes->pos], &tapes->buffer[tapes->pos]);
+    transpose_64_64_s256(tapes->buffer, tapes->buffer);
   }
 
-  shares = tapes->buffer[tapes->pos];
+  shares = tapes->buffer[tapes->pos % 64];
   tapes->pos++;
   return shares;
 }

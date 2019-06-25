@@ -20,7 +20,6 @@ typedef struct randomTape_t {
   uint8_t** tape;
   uint32_t pos;
   size_t nTapes;
-  uint8_t transpose_done;
   uint64_t* buffer;
 } randomTape_t;
 
