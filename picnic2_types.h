@@ -18,7 +18,9 @@
 /* Type definitions */
 typedef struct randomTape_t {
   uint8_t** tape;
+  uint8_t* aux_bits;
   uint32_t pos;
+  uint32_t aux_pos;
   size_t nTapes;
   uint64_t* buffer;
 } randomTape_t;

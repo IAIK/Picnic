@@ -104,6 +104,9 @@ static void aux_mpc_AND_bitsliced(uint64_t mask_a, uint64_t mask_b, uint64_t mas
     setBit(tapes->tape[63], tapes->pos - 5, (uint8_t)aux_bit_ab);
     setBit(tapes->tape[63], tapes->pos - 3, (uint8_t)aux_bit_bc);
     setBit(tapes->tape[63], tapes->pos - 1, (uint8_t)aux_bit_ca);
+    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
+    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
+    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
 
     *ab <<= 3;
     *ab |= parity64_uint64(fresh_output_maks_ab);
@@ -299,20 +302,6 @@ static int indexOf(const uint16_t* list, size_t len, uint16_t value) {
   return -1;
 }
 
-static void getAuxBits(uint8_t* output, randomTape_t* tapes, const picnic_instance_t* params) {
-  size_t firstAuxIndex = params->lowmc->n + 1;
-  size_t last          = params->num_MPC_parties - 1;
-  size_t pos           = 0;
-
-  memset(output, 0, params->view_size);
-  size_t andSizeBits = 3 * params->lowmc->r * params->lowmc->m;
-  for (size_t i = 0; i < andSizeBits * 2; i += 2) {
-    uint8_t auxBit = getBit(tapes->tape[last], firstAuxIndex + i);
-    setBit(output, pos, auxBit);
-    pos++;
-  }
-}
-
 static void setAuxBits(randomTape_t* tapes, uint8_t* input, const picnic_instance_t* params) {
   size_t firstAuxIndex = params->lowmc->n + 1;
   size_t last          = params->num_MPC_parties - 1;
@@ -493,7 +482,6 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
 
   /* Commit */
   size_t last = params->num_MPC_parties - 1;
-  uint8_t auxBits[MAX_AUX_BYTES];
   for (size_t t = 0; t < params->num_rounds; t++) {
     /* Compute random tapes for all parties.  One party for each repitition
      * challengeC will have a bogus seed; but we won't use that party's
@@ -509,8 +497,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
                                       getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
         commit_x4(C[t].hashes + j, seed_ptr, sig->salt, t, j, params);
       }
-      getAuxBits(auxBits, &tapes[t], params);
-      commit(C[t].hashes[last], getLeaf(seeds[t], last), auxBits, sig->salt, t, last, params);
+      commit(C[t].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last, params);
     } else {
       /* We're given all seeds and aux bits, execpt for the unopened
        * party, we get their commitment */
@@ -665,7 +652,6 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   }
 
   /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
-  uint8_t auxBits[MAX_AUX_BYTES];
   for (size_t t = 0; t < params->num_rounds; t++) {
     computeAuxTape(&tapes[t], params);
   }
@@ -680,8 +666,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
       commit_x4(C[t].hashes + j, seed_ptr, sig->salt, t, j, params);
     }
     size_t last = params->num_MPC_parties - 1;
-    getAuxBits(auxBits, &tapes[t], params);
-    commit(C[t].hashes[last], getLeaf(seeds[t], last), auxBits, sig->salt, t, last, params);
+    commit(C[t].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last, params);
   }
 
   /* Simulate the online phase of the MPC */
@@ -767,7 +752,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
 
       size_t last = params->num_MPC_parties - 1;
       if (challengeP[P_index] != last) {
-        getAuxBits(proofs[t].aux, &tapes[t], params);
+        memcpy(proofs[t].aux, tapes[t].aux_bits, params->view_size);
       }
 
       memcpy(proofs[t].input, inputs[t], params->input_size);
