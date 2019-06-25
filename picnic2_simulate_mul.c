@@ -404,7 +404,7 @@ void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
     width /= 2;
   }
   {
-    word128* out128 = (word128*)out;
+    word128* out128  = (word128*)out;
     word128 mask     = _mm_set1_epi64x(TRANSPOSE_MASKS64[4]);
     word128 inv_mask = mm128_xor(mask, _mm_set1_epi64x(UINT64_C(0xFFFFFFFFFFFFFFFF)));
 
@@ -445,6 +445,23 @@ void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
 }
 #endif
 #endif
+
+uint64_t tapesToParityOfWord(randomTape_t* tapes, uint8_t without_last) {
+  uint64_t shares;
+
+  if (tapes->pos % 64 == 0) {
+    tapes->buffer[0] = 0;
+    for (size_t i = 0; i < 63; i++) {
+      tapes->buffer[0] ^= ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
+    }
+    tapes->buffer[1] = tapes->buffer[0];
+    tapes->buffer[0] ^= ((uint64_t*)tapes->tape[63])[tapes->pos / 64];
+  }
+
+  shares = getBit((uint8_t*)&tapes->buffer[without_last ? 1 : 0], tapes->pos % 64);
+  tapes->pos++;
+  return shares;
+}
 
 uint64_t tapesToWord(randomTape_t* tapes) {
   uint64_t shares;

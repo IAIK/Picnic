@@ -87,19 +87,19 @@ static void aux_mpc_AND_bitsliced(uint64_t mask_a, uint64_t mask_b, uint64_t mas
                                   uint64_t* bc, uint64_t* ca, randomTape_t* tapes) {
 
   for (int i = 0; i < 10; i++) {
-    uint64_t fresh_output_maks_ab = tapesToWord(tapes);
-    uint64_t and_helper_ab        = tapesToWord(tapes) & UINT64_C(0xFEFFFFFFFFFFFFFF);
-    uint64_t fresh_output_maks_bc = tapesToWord(tapes);
-    uint64_t and_helper_bc        = tapesToWord(tapes) & UINT64_C(0xFEFFFFFFFFFFFFFF);
-    uint64_t fresh_output_maks_ca = tapesToWord(tapes);
-    uint64_t and_helper_ca        = tapesToWord(tapes) & UINT64_C(0xFEFFFFFFFFFFFFFF);
+    uint64_t fresh_output_maks_ab = tapesToParityOfWord(tapes,0);
+    uint64_t and_helper_ab        = tapesToParityOfWord(tapes,1);
+    uint64_t fresh_output_maks_bc = tapesToParityOfWord(tapes,0);
+    uint64_t and_helper_bc        = tapesToParityOfWord(tapes,1);
+    uint64_t fresh_output_maks_ca = tapesToParityOfWord(tapes,0);
+    uint64_t and_helper_ca        = tapesToParityOfWord(tapes,1);
 
     uint64_t aux_bit_ab =
-        (((mask_a & mask_b) >> (63 - 3 * i)) & 1) ^ parity64_uint64(and_helper_ab);
+        (((mask_a & mask_b) >> (63 - 3 * i)) & 1) ^ and_helper_ab;
     uint64_t aux_bit_bc =
-        (((mask_b & mask_c) >> (63 - 3 * i)) & 1) ^ parity64_uint64(and_helper_bc);
+        (((mask_b & mask_c) >> (63 - 3 * i)) & 1) ^ and_helper_bc;
     uint64_t aux_bit_ca =
-        (((mask_c & mask_a) >> (63 - 3 * i)) & 1) ^ parity64_uint64(and_helper_ca);
+        (((mask_c & mask_a) >> (63 - 3 * i)) & 1) ^ and_helper_ca;
 
     setBit(tapes->tape[63], tapes->pos - 5, (uint8_t)aux_bit_ab);
     setBit(tapes->tape[63], tapes->pos - 3, (uint8_t)aux_bit_bc);
@@ -109,11 +109,11 @@ static void aux_mpc_AND_bitsliced(uint64_t mask_a, uint64_t mask_b, uint64_t mas
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
 
     *ab <<= 3;
-    *ab |= parity64_uint64(fresh_output_maks_ab);
+    *ab |= fresh_output_maks_ab;
     *bc <<= 3;
-    *bc |= parity64_uint64(fresh_output_maks_bc);
+    *bc |= fresh_output_maks_bc;
     *ca <<= 3;
-    *ca |= parity64_uint64(fresh_output_maks_ca);
+    *ca |= fresh_output_maks_ca;
   }
   *ab <<= 36;
   *bc <<= 36;
@@ -150,30 +150,30 @@ void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
  * holds on the mask values.
  */
 static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params) {
-  shares_t* key          = allocateShares(params->lowmc->n);
   mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc->n, 1, true);
 
-  tapesToWords(key, tapes);
 
   uint8_t temp[32] = {
       0,
   };
+
   // combine into key shares and calculate lowmc evaluation in plain
-  for (uint32_t i = 0; i < params->lowmc->n; i++) {
-    uint8_t key_bit = parity64_uint64(key->shares[i]);
-    setBit(temp, i, key_bit);
+  for (size_t i = 0; i < params->num_MPC_parties; i++) {
+    for (size_t j = 0; j < params->input_size; j++) {
+      temp[j] ^= tapes->tape[i][j];
+	}
   }
   mzd_from_char_array(lowmc_key, temp, params->lowmc->n / 8);
+  tapes->pos = params->lowmc->n;
 
   lowmc_compute_aux_implementation_f lowmc_aux_impl = params->impls.lowmc_aux;
-  // Perform LowMC evaluation and record state before AND gates
+  // Perform LowMC evaluation and fix AND masks for all AND gates
   lowmc_aux_impl(lowmc_key, tapes);
 
   // Reset the random tape counter so that the online execution uses the
   // same random bits as when computing the aux shares
   tapes->pos = 0;
 
-  freeShares(key);
   mzd_local_free(lowmc_key);
 }
 
