@@ -431,9 +431,11 @@ static uint16_t* getMissingLeavesList(uint16_t* challengeC, const picnic_instanc
 int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* plaintext,
                    const uint8_t* message, size_t messageByteLength,
                    const picnic_instance_t* params) {
-  commitments_t* C          = allocateCommitments(params, 0);
-  commitments_t Ch          = {0};
-  commitments_t Cv          = {0};
+  commitments_t C[4]        = {0,};
+  allocateCommitments2(&C[0], params, params->num_MPC_parties);
+  allocateCommitments2(&C[1], params, params->num_MPC_parties);
+  allocateCommitments2(&C[2], params, params->num_MPC_parties);
+  allocateCommitments2(&C[3], params, params->num_MPC_parties);
   msgs_t* msgs              = allocateMsgsVerify(params);
   tree_t* treeCv            = createTree(params->num_rounds, params->digest_size);
   size_t challengeSizeBytes = params->num_opened_rounds * sizeof(uint16_t);
@@ -476,6 +478,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
     }
   }
 
+  commitments_t Ch          = {0};
+  allocateCommitments2(&Ch, params, params->num_rounds);
+
   /* Commit */
   size_t last = params->num_MPC_parties - 1;
   for (size_t t = 0; t < params->num_rounds; t++) {
@@ -491,9 +496,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
         const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j + 0), getLeaf(seeds[t], j + 1),
                                       getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
-        commit_x4(C[t].hashes + j, seed_ptr, sig->salt, t, j, params);
+        commit_x4(C[t%4].hashes + j, seed_ptr, sig->salt, t, j, params);
       }
-      commit(C[t].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
+      commit(C[t%4].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
              params);
       /* after we have checked the tape, we do not need it anymore for this opened iteration */
       partialFreeRandomTape(&tapes[t]);
@@ -504,30 +509,30 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
         const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j + 0), getLeaf(seeds[t], j + 1),
                                       getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
-        commit_x4(C[t].hashes + j, seed_ptr, sig->salt, t, j, params);
+        commit_x4(C[t%4].hashes + j, seed_ptr, sig->salt, t, j, params);
       }
       if (last != unopened) {
-        commit(C[t].hashes[last], getLeaf(seeds[t], last), sig->proofs[t].aux, sig->salt, t, last,
+        commit(C[t%4].hashes[last], getLeaf(seeds[t], last), sig->proofs[t].aux, sig->salt, t, last,
                params);
       }
 
-      memcpy(C[t].hashes[unopened], sig->proofs[t].C, params->digest_size);
+      memcpy(C[t%4].hashes[unopened], sig->proofs[t].C, params->digest_size);
+    }
+    /* hash commitments every four iterations if possible, for the last few do single commitments */
+    if(t >= params->num_rounds / 4 * 4) {
+      commit_h(Ch.hashes[t], &C[t%4], params);
+    } else if ((t + 1) % 4 == 0) {
+      size_t t4 = t / 4 * 4;
+      commit_h_x4(&Ch.hashes[t4], &C[0], params);
     }
   }
-
-  /* Commit to the commitments */
-  allocateCommitments2(&Ch, params, params->num_rounds);
-  {
-    size_t t = 0;
-    for (; t < params->num_rounds / 4 * 4; t += 4) {
-      commit_h_x4(&Ch.hashes[t], &C[t], params);
-    }
-    for (; t < params->num_rounds; t++) {
-      commit_h(Ch.hashes[t], &C[t], params);
-    }
-  }
+  freeCommitments2(&C[0]);
+  freeCommitments2(&C[1]);
+  freeCommitments2(&C[2]);
+  freeCommitments2(&C[3]);
 
   /* Commit to the views */
+  commitments_t Cv          = {0};
   allocateCommitments2(&Cv, params, params->num_rounds);
   shares_t* mask_shares = allocateShares(params->lowmc->n);
   for (size_t t = 0; t < params->num_rounds; t++) {
@@ -599,7 +604,6 @@ Exit:
 
   free(challengeC);
   free(challengeP);
-  freeCommitments(C);
   freeCommitments2(&Cv);
   freeCommitments2(&Ch);
   freeMsgs(msgs);
