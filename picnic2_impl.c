@@ -87,19 +87,16 @@ static void aux_mpc_AND_bitsliced(uint64_t mask_a, uint64_t mask_b, uint64_t mas
                                   uint64_t* bc, uint64_t* ca, randomTape_t* tapes) {
 
   for (int i = 0; i < 10; i++) {
-    uint64_t fresh_output_maks_ab = tapesToParityOfWord(tapes,0);
-    uint64_t and_helper_ab        = tapesToParityOfWord(tapes,1);
-    uint64_t fresh_output_maks_bc = tapesToParityOfWord(tapes,0);
-    uint64_t and_helper_bc        = tapesToParityOfWord(tapes,1);
-    uint64_t fresh_output_maks_ca = tapesToParityOfWord(tapes,0);
-    uint64_t and_helper_ca        = tapesToParityOfWord(tapes,1);
+    uint64_t fresh_output_maks_ab = tapesToParityOfWord(tapes, 0);
+    uint64_t and_helper_ab        = tapesToParityOfWord(tapes, 1);
+    uint64_t fresh_output_maks_bc = tapesToParityOfWord(tapes, 0);
+    uint64_t and_helper_bc        = tapesToParityOfWord(tapes, 1);
+    uint64_t fresh_output_maks_ca = tapesToParityOfWord(tapes, 0);
+    uint64_t and_helper_ca        = tapesToParityOfWord(tapes, 1);
 
-    uint64_t aux_bit_ab =
-        (((mask_a & mask_b) >> (63 - 3 * i)) & 1) ^ and_helper_ab;
-    uint64_t aux_bit_bc =
-        (((mask_b & mask_c) >> (63 - 3 * i)) & 1) ^ and_helper_bc;
-    uint64_t aux_bit_ca =
-        (((mask_c & mask_a) >> (63 - 3 * i)) & 1) ^ and_helper_ca;
+    uint64_t aux_bit_ab = (((mask_a & mask_b) >> (63 - 3 * i)) & 1) ^ and_helper_ab;
+    uint64_t aux_bit_bc = (((mask_b & mask_c) >> (63 - 3 * i)) & 1) ^ and_helper_bc;
+    uint64_t aux_bit_ca = (((mask_c & mask_a) >> (63 - 3 * i)) & 1) ^ and_helper_ca;
 
     setBit(tapes->tape[63], tapes->pos - 5, (uint8_t)aux_bit_ab);
     setBit(tapes->tape[63], tapes->pos - 3, (uint8_t)aux_bit_bc);
@@ -152,7 +149,6 @@ void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
 static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params) {
   mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc->n, 1, true);
 
-
   uint8_t temp[32] = {
       0,
   };
@@ -161,7 +157,7 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
     for (size_t j = 0; j < params->input_size; j++) {
       temp[j] ^= tapes->tape[i][j];
-	}
+    }
   }
   mzd_from_char_array(lowmc_key, temp, params->lowmc->n / 8);
   tapes->pos = params->lowmc->n;
@@ -438,7 +434,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   commitments_t* C          = allocateCommitments(params, 0);
   commitments_t Ch          = {0};
   commitments_t Cv          = {0};
-  msgs_t* msgs              = allocateMsgs(params);
+  msgs_t* msgs              = allocateMsgsVerify(params);
   tree_t* treeCv            = createTree(params->num_rounds, params->digest_size);
   size_t challengeSizeBytes = params->num_opened_rounds * sizeof(uint16_t);
   uint16_t* challengeC      = malloc(challengeSizeBytes);
@@ -497,7 +493,10 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
                                       getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
         commit_x4(C[t].hashes + j, seed_ptr, sig->salt, t, j, params);
       }
-      commit(C[t].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last, params);
+      commit(C[t].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
+             params);
+      /* after we have checked the tape, we do not need it anymore for this opened iteration */
+      partialFreeRandomTape(&tapes[t]);
     } else {
       /* We're given all seeds and aux bits, execpt for the unopened
        * party, we get their commitment */
@@ -541,12 +540,15 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       size_t tapeLengthBytes = 2 * params->view_size + params->input_size;
       setAuxBits(&tapes[t], sig->proofs[t].aux, params);
       memset(tapes[t].tape[unopened], 0, tapeLengthBytes);
-      memcpy(msgs[t].msgs[unopened], sig->proofs[t].msgs, params->view_size + params->input_size);
-      msgs[t].unopened = unopened;
+      memcpy(msgs->msgs[unopened], sig->proofs[t].msgs, params->view_size + params->input_size);
+      msgs->pos      = 0;
+      msgs->unopened = unopened;
 
       tapesToWords(mask_shares, &tapes[t]);
-      ret = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], &msgs[t],
+      ret = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], msgs,
                            plaintext, pubKey, params);
+
+      partialFreeRandomTape(&tapes[t]);
       if (ret != 0) {
 #if !defined(NDEBUG)
         printf("MPC simulation failed for round %lu, signature invalid\n", t);
@@ -555,7 +557,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
         freeShares(mask_shares);
         goto Exit;
       }
-      commit_v(Cv.hashes[t], sig->proofs[t].input, &msgs[t], params);
+      commit_v(Cv.hashes[t], sig->proofs[t].input, msgs, params);
     } else {
       Cv.hashes[t] = NULL;
     }
@@ -604,7 +606,7 @@ Exit:
   freeTree(treeCv);
   freeTree(iSeedsTree);
   for (size_t t = 0; t < params->num_rounds; t++) {
-    freeRandomTape(&tapes[t]);
+    finalFreeRandomTape(&tapes[t]);
     freeTree(seeds[t]);
   }
   free(seeds);
@@ -646,35 +648,40 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
 
   randomTape_t* tapes = malloc(params->num_rounds * sizeof(randomTape_t));
   tree_t** seeds      = malloc(params->num_rounds * sizeof(tree_t*));
-  for (size_t t = 0; t < params->num_rounds; t++) {
-    seeds[t] = generateSeeds(params->num_MPC_parties, iSeeds[t], sig->salt, t, params);
-    createRandomTapes(&tapes[t], getLeaves(seeds[t]), sig->salt, t, params);
-  }
+  commitments_t C[4];
+  allocateCommitments2(&C[0], params, params->num_MPC_parties);
+  allocateCommitments2(&C[1], params, params->num_MPC_parties);
+  allocateCommitments2(&C[2], params, params->num_MPC_parties);
+  allocateCommitments2(&C[3], params, params->num_MPC_parties);
 
-  /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
-  for (size_t t = 0; t < params->num_rounds; t++) {
-    computeAuxTape(&tapes[t], params);
-  }
-
-  /* Commit to seeds and aux bits */
-  commitments_t* C = allocateCommitments(params, 0);
-  for (size_t t = 0; t < params->num_rounds; t++) {
-    assert(params->num_MPC_parties % 4 == 0);
-    for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
-      const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j + 0), getLeaf(seeds[t], j + 1),
-                                    getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
-      commit_x4(C[t].hashes + j, seed_ptr, sig->salt, t, j, params);
-    }
-    size_t last = params->num_MPC_parties - 1;
-    commit(C[t].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last, params);
-  }
-
-  /* Simulate the online phase of the MPC */
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
   shares_t* mask_shares                  = allocateShares(params->lowmc->n);
+
+  /* Commitments to the commitments and views */
+  commitments_t Ch;
+  allocateCommitments2(&Ch, params, params->num_rounds);
+  commitments_t Cv;
+  allocateCommitments2(&Cv, params, params->num_rounds);
+
   for (size_t t = 0; t < params->num_rounds; t++) {
+    seeds[t] = generateSeeds(params->num_MPC_parties, iSeeds[t], sig->salt, t, params);
+    createRandomTapes(&tapes[t], getLeaves(seeds[t]), sig->salt, t, params);
+    /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
+    computeAuxTape(&tapes[t], params);
+    /* Commit to seeds and aux bits */
+    assert(params->num_MPC_parties % 4 == 0);
+    for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
+      const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j + 0), getLeaf(seeds[t], j + 1),
+                                    getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
+      commit_x4(C[t%4].hashes + j, seed_ptr, sig->salt, t, j, params);
+    }
+    const size_t last = params->num_MPC_parties - 1;
+    commit(C[t%4].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
+           params);
+
+    /* Simulate the online phase of the MPC */
     uint32_t* maskedKey = (uint32_t*)inputs[t];
 
     tapesToWords(mask_shares, &tapes[t]);
@@ -689,25 +696,21 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
 #endif
       ret = -1;
     }
+    /* free the expanded random tape and associated buffers to reduce memory usage, 
+	   however, we are keeping the calculated aux bits for later (hence partial) */
+    partialFreeRandomTape(&tapes[t]);
+    /* hash commitments every four iterations if possible, for the last few do single commitments */
+    if(t >= params->num_rounds / 4 * 4) {
+      commit_h(Ch.hashes[t], &C[t%4], params);
+      commit_v(Cv.hashes[t], inputs[t], &msgs[t], params);
+    } else if ((t + 1) % 4 == 0) {
+      size_t t4 = t / 4 * 4;
+      commit_h_x4(&Ch.hashes[t4], &C[0], params);
+      commit_v_x4(&Cv.hashes[t4], (const uint8_t**)&inputs[t4], &msgs[t4], params);
+    }
+
   }
   freeShares(mask_shares);
-
-  /* Commit to the commitments and views */
-  commitments_t Ch;
-  allocateCommitments2(&Ch, params, params->num_rounds);
-  commitments_t Cv;
-  allocateCommitments2(&Cv, params, params->num_rounds);
-  {
-    size_t t = 0;
-    for (; t < params->num_rounds / 4 * 4; t += 4) {
-      commit_h_x4(&Ch.hashes[t], &C[t], params);
-      commit_v_x4(&Cv.hashes[t], (const uint8_t**)&inputs[t], &msgs[t], params);
-    }
-    for (; t < params->num_rounds; t++) {
-      commit_h(Ch.hashes[t], &C[t], params);
-      commit_v(Cv.hashes[t], inputs[t], &msgs[t], params);
-    }
-  }
 
   /* Create a Merkle tree with Cv as the leaves */
   tree_t* treeCv = createTree(params->num_rounds, params->digest_size);
@@ -758,14 +761,22 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
       memcpy(proofs[t].input, inputs[t], params->input_size);
       memcpy(proofs[t].msgs, msgs[t].msgs[challengeP[P_index]],
              params->view_size + params->input_size);
-      memcpy(proofs[t].C, C[t].hashes[proofs[t].unOpenedIndex], params->digest_size);
+
+      /* recompute commitment of unopened party since we did not store it for memory optimization */
+      if (proofs[t].unOpenedIndex == params->num_MPC_parties - 1) {
+        commit(proofs[t].C, getLeaf(seeds[t], proofs[t].unOpenedIndex),
+               tapes[t].aux_bits, sig->salt, t, proofs[t].unOpenedIndex, params);
+      } else {
+        commit(proofs[t].C, getLeaf(seeds[t], proofs[t].unOpenedIndex),
+               NULL, sig->salt, t, proofs[t].unOpenedIndex, params);
+	  }
     }
   }
 
   sig->proofs = proofs;
 
   for (size_t t = 0; t < params->num_rounds; t++) {
-    freeRandomTape(&tapes[t]);
+    finalFreeRandomTape(&tapes[t]);
     freeTree(seeds[t]);
   }
   free(tapes);
@@ -773,9 +784,12 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   freeTree(iSeedsTree);
   freeTree(treeCv);
 
-  freeCommitments(C);
   freeCommitments2(&Ch);
   freeCommitments2(&Cv);
+  freeCommitments2(&C[0]);
+  freeCommitments2(&C[1]);
+  freeCommitments2(&C[2]);
+  freeCommitments2(&C[3]);
   freeInputs(inputs);
   freeMsgs(msgs);
 

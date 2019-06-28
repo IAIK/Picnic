@@ -46,7 +46,8 @@ typedef struct shares_t {
 #define UNUSED_PARAMETER(x) (void)(x)
 
 void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params);
-void freeRandomTape(randomTape_t* tape);
+void partialFreeRandomTape(randomTape_t* tape);
+void finalFreeRandomTape(randomTape_t* tape);
 
 void allocateProof2(proof2_t* proof, const picnic_instance_t* params);
 void freeProof2(proof2_t* proof);
@@ -62,6 +63,7 @@ inputs_t allocateInputs(const picnic_instance_t* params);
 void freeInputs(inputs_t inputs);
 
 msgs_t* allocateMsgs(const picnic_instance_t* params);
+msgs_t* allocateMsgsVerify(const picnic_instance_t* params);
 void freeMsgs(msgs_t* msgs);
 
 shares_t* allocateShares(size_t count);
