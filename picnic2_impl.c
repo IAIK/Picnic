@@ -449,17 +449,16 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   const size_t last = params->num_MPC_parties - 1;
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
 
-  if (ret != 0) {
-    ret = -1;
-    goto Exit;
-  }
-
   commitments_t Ch          = {0};
   allocateCommitments2(&Ch, params, params->num_rounds);
   commitments_t Cv          = {0};
   allocateCommitments2(&Cv, params, params->num_rounds);
-
   shares_t* mask_shares = allocateShares(params->lowmc->n);
+
+  if (ret != 0) {
+    ret = -1;
+    goto Exit;
+  }
 
   /* Populate seeds with values from the signature */
   for (size_t t = 0; t < params->num_rounds; t++) {
@@ -553,7 +552,6 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
         printf("MPC simulation failed for round %lu, signature invalid\n", t);
 #endif
         ret = -1;
-        freeShares(mask_shares);
         goto Exit;
       }
       commit_v(Cv.hashes[t], sig->proofs[t].input, msgs, params);
@@ -561,7 +559,6 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       Cv.hashes[t] = NULL;
     }
   }
-  freeShares(mask_shares);
 
   size_t missingLeavesSize = params->num_rounds - params->num_opened_rounds;
   uint16_t* missingLeaves  = getMissingLeavesList(sig->challengeC, params);
@@ -596,6 +593,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
 
 Exit:
 
+  freeShares(mask_shares);
   free(challengeC);
   free(challengeP);
   freeCommitments2(&C[0]);
