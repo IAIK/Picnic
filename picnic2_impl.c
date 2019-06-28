@@ -446,12 +446,20 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   tree_t* iSeedsTree        = createTree(params->num_rounds, params->seed_size);
   int ret = reconstructSeeds(iSeedsTree, sig->challengeC, params->num_opened_rounds, sig->iSeedInfo,
                              sig->iSeedInfoLen, sig->salt, 0, params);
+  const size_t last = params->num_MPC_parties - 1;
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
 
   if (ret != 0) {
     ret = -1;
     goto Exit;
   }
+
+  commitments_t Ch          = {0};
+  allocateCommitments2(&Ch, params, params->num_rounds);
+  commitments_t Cv          = {0};
+  allocateCommitments2(&Cv, params, params->num_rounds);
+
+  shares_t* mask_shares = allocateShares(params->lowmc->n);
 
   /* Populate seeds with values from the signature */
   for (size_t t = 0; t < params->num_rounds; t++) {
@@ -476,14 +484,8 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
         goto Exit;
       }
     }
-  }
+    /* Commit */
 
-  commitments_t Ch          = {0};
-  allocateCommitments2(&Ch, params, params->num_rounds);
-
-  /* Commit */
-  size_t last = params->num_MPC_parties - 1;
-  for (size_t t = 0; t < params->num_rounds; t++) {
     /* Compute random tapes for all parties.  One party for each repitition
      * challengeC will have a bogus seed; but we won't use that party's
      * random tape. */
@@ -501,7 +503,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       commit(C[t%4].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
              params);
       /* after we have checked the tape, we do not need it anymore for this opened iteration */
-      partialFreeRandomTape(&tapes[t]);
+      freeRandomTape(&tapes[t]);
     } else {
       /* We're given all seeds and aux bits, execpt for the unopened
        * party, we get their commitment */
@@ -525,17 +527,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       size_t t4 = t / 4 * 4;
       commit_h_x4(&Ch.hashes[t4], &C[0], params);
     }
-  }
-  freeCommitments2(&C[0]);
-  freeCommitments2(&C[1]);
-  freeCommitments2(&C[2]);
-  freeCommitments2(&C[3]);
+    freeTree(seeds[t]);
 
-  /* Commit to the views */
-  commitments_t Cv          = {0};
-  allocateCommitments2(&Cv, params, params->num_rounds);
-  shares_t* mask_shares = allocateShares(params->lowmc->n);
-  for (size_t t = 0; t < params->num_rounds; t++) {
+    /* Commit to the views */
     if (contains(sig->challengeC, params->num_opened_rounds, t)) {
       /* 2. When t is in C, we have everything we need to re-compute the view, as an honest signer
        * would.
@@ -553,7 +547,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       ret = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], msgs,
                            plaintext, pubKey, params);
 
-      partialFreeRandomTape(&tapes[t]);
+      freeRandomTape(&tapes[t]);
       if (ret != 0) {
 #if !defined(NDEBUG)
         printf("MPC simulation failed for round %lu, signature invalid\n", t);
@@ -604,15 +598,15 @@ Exit:
 
   free(challengeC);
   free(challengeP);
+  freeCommitments2(&C[0]);
+  freeCommitments2(&C[1]);
+  freeCommitments2(&C[2]);
+  freeCommitments2(&C[3]);
   freeCommitments2(&Cv);
   freeCommitments2(&Ch);
   freeMsgs(msgs);
   freeTree(treeCv);
   freeTree(iSeedsTree);
-  for (size_t t = 0; t < params->num_rounds; t++) {
-    finalFreeRandomTape(&tapes[t]);
-    freeTree(seeds[t]);
-  }
   free(seeds);
   free(tapes);
 

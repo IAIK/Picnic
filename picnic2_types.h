@@ -46,6 +46,7 @@ typedef struct shares_t {
 #define UNUSED_PARAMETER(x) (void)(x)
 
 void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params);
+void freeRandomTape(randomTape_t* tape);
 void partialFreeRandomTape(randomTape_t* tape);
 void finalFreeRandomTape(randomTape_t* tape);
 

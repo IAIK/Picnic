@@ -46,6 +46,15 @@ void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->aux_pos = 0;
 }
 
+void freeRandomTape(randomTape_t* tape) {
+  if (tape != NULL) {
+    free(tape->tape[0]);
+    free(tape->tape);
+    aligned_free(tape->buffer);
+    free(tape->aux_bits);
+  }
+}
+
 void partialFreeRandomTape(randomTape_t* tape) {
   if (tape != NULL) {
     free(tape->tape[0]);
