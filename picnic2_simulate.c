@@ -81,8 +81,10 @@ static uint8_t mpc_AND(uint8_t a, uint8_t b, uint64_t mask_a, uint64_t mask_b, r
   return (uint8_t)(parity64_uint64(s_shares) ^ (a & b));
 }
 
-static void mpc_sbox(uint32_t* state, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs,
+static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs,
                      uint8_t* unopenened_msg, const picnic_instance_t* params) {
+  uint8_t state[32];
+  mzd_to_char_array(state, statein, params->lowmc->n / 8);
   for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
     uint8_t a       = getBit((uint8_t*)state, i + 2);
     uint64_t mask_a = state_masks->shares[i + 2];
@@ -106,6 +108,7 @@ static void mpc_sbox(uint32_t* state, shares_t* state_masks, randomTape_t* tapes
     setBit((uint8_t*)state, i, a ^ b ^ c ^ ab);
     state_masks->shares[i] = mask_a ^ mask_b ^ mask_c ^ ab_mask;
   }
+  mzd_from_char_array(statein, state, params->lowmc->n / 8);
 }
 
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
@@ -116,17 +119,28 @@ static void mpc_xor_masks_nl(shares_t* out, const shares_t* a, const shares_t* b
   }
 }
 
-static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t* x,
-                        const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
-                        size_t index, size_t num) {
-  xor_array_RC((uint8_t*)output, (uint8_t*)x, (uint8_t*)&y[index / 32], 4);
-  // xor masks
-  mpc_xor_masks_nl(output_masks, x_masks, y_masks, index, num);
-}
+//static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t* x,
+//                        const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
+//                        size_t index, size_t num) {
+//  xor_array_RC((uint8_t*)output, (uint8_t*)x, (uint8_t*)&y[index / 32], 4);
+//  // xor masks
+//  mpc_xor_masks_nl(output_masks, x_masks, y_masks, index, num);
+//}
 #endif
 
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-static void mpc_shuffle(uint8_t* state, shares_t* mask_shares, uint64_t r_mask) {
+static void mpc_shuffle(mzd_local_t* state, shares_t* mask_shares, uint64_t r_mask) {
+  if (mask_shares->numWords == 128) {
+    mzd_shuffle_128_30(state, r_mask);
+  }
+  else if (mask_shares->numWords == 192) {
+    mzd_shuffle_192_30(state, r_mask);
+  }
+  else if (mask_shares->numWords == 256) {
+    mzd_shuffle_256_30(state, r_mask);
+  } else {
+    assert(false && "invalid state size");
+  }
   for (int i = 63; i >= 0 && r_mask != UINT64_C(0xFFFFFFFC00000000); i--) {
     if (!((r_mask >> i) & 1)) { // bit is not set
       // find next 1 and swap all entries until then
@@ -136,10 +150,6 @@ static void mpc_shuffle(uint8_t* state, shares_t* mask_shares, uint64_t r_mask) 
             uint64_t t                      = mask_shares->shares[63 - k];
             mask_shares->shares[63 - k]     = mask_shares->shares[63 - k - 1];
             mask_shares->shares[63 - k - 1] = t;
-
-            uint8_t bit = getBit(state, 63 - k);
-            setBit(state, 63 - k, getBit(state, 63 - k - 1));
-            setBit(state, 63 - k - 1, bit);
           }
           r_mask |= (UINT64_C(1) << i);  // set bit i
           r_mask &= ~(UINT64_C(1) << j); // clear bit j
@@ -160,15 +170,16 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
   }
 }
 
-static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x,
-                     const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
-                     const picnic_instance_t* params) {
-  xor_word_array(output, x, y, (params->input_size / 4));
-  mpc_xor_masks(output_masks, x_masks, y_masks);
-}
+//static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x,
+//                     const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
+//                     const picnic_instance_t* params) {
+//  xor_word_array(output, x, y, (params->input_size / 4));
+//  mpc_xor_masks(output_masks, x_masks, y_masks);
+//}
 #endif
 
 /* PICNIC2_L1_FS */
+#define XOR mzd_xor_uint64_128
 #define MPC_MUL mpc_matrix_mul_uint64_128
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_uint64_128
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_uint64_128
@@ -182,6 +193,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_uint64_128_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R
@@ -192,6 +204,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #undef SIM_ONLINE
 
 /* PICNIC2_L3_FS */
+#define XOR mzd_xor_uint64_192
 #define MPC_MUL mpc_matrix_mul_uint64_192
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_uint64_192
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_uint64_192
@@ -205,6 +218,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_uint64_192_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R
@@ -215,6 +229,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #undef SIM_ONLINE
 
 /* PICNIC2_L5_FS */
+#define XOR mzd_xor_uint64_256
 #define MPC_MUL mpc_matrix_mul_uint64_256
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_uint64_256
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_uint64_256
@@ -228,6 +243,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_uint64_256_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R
@@ -243,6 +259,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define FN_ATTR ATTR_TARGET_SSE2
 #endif
 /* PICNIC2_L1_FS */
+#define XOR mzd_xor_s128_128
 #define MPC_MUL mpc_matrix_mul_s128_128
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s128_128
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s128_128
@@ -256,6 +273,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_s128_128_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R
@@ -266,6 +284,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #undef SIM_ONLINE
 
 /* PICNIC2_L3_FS */
+#define XOR mzd_xor_s128_256
 #define MPC_MUL mpc_matrix_mul_s128_192
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s128_192
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s128_192
@@ -279,6 +298,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_s128_192_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R
@@ -289,6 +309,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #undef SIM_ONLINE
 
 /* PICNIC2_L5_FS */
+#define XOR mzd_xor_s128_256
 #define MPC_MUL mpc_matrix_mul_s128_256
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s128_256
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s128_256
@@ -302,6 +323,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_s128_256_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R
@@ -317,6 +339,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #if defined(WITH_AVX2)
 #define FN_ATTR ATTR_TARGET_AVX2
 /* PICNIC2_L1_FS */
+#define XOR mzd_xor_s256_128
 #define MPC_MUL mpc_matrix_mul_s256_128
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s256_128
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s256_128
@@ -330,6 +353,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_s256_128_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R
@@ -340,6 +364,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #undef SIM_ONLINE
 
 /* PICNIC2_L3_FS */
+#define XOR mzd_xor_s256_256
 #define MPC_MUL mpc_matrix_mul_s256_192
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s256_192
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s256_192
@@ -353,6 +378,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_s256_192_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R
@@ -363,6 +389,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #undef SIM_ONLINE
 
 /* PICNIC2_L5_FS */
+#define XOR mzd_xor_s256_256
 #define MPC_MUL mpc_matrix_mul_s256_256
 #define MPC_MUL_MC mpc_matrix_mul_nl_part_s256_256
 #define MPC_ADDMUL_R mpc_matrix_addmul_r_s256_256
@@ -376,6 +403,7 @@ static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x
 #define SIM_ONLINE lowmc_simulate_online_s256_256_10
 #include "picnic2_simulate.c.i"
 #endif
+#undef XOR
 #undef MPC_MUL
 #undef MPC_MUL_MC
 #undef MPC_ADDMUL_R

@@ -454,6 +454,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   commitments_t Cv          = {0};
   allocateCommitments2(&Cv, params, params->num_rounds);
   shares_t* mask_shares = allocateShares(params->lowmc->n);
+  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
+  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc->k, false);
+  mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
 
   if (ret != 0) {
     ret = -1;
@@ -489,6 +492,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
      * challengeC will have a bogus seed; but we won't use that party's
      * random tape. */
     createRandomTapes(&tapes[t], getLeaves(seeds[t]), sig->salt, t, params);
+
 
     if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
       /* We're given iSeed, have expanded the seeds, compute aux from scratch so we can comnpte
@@ -543,8 +547,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       msgs->unopened = unopened;
 
       tapesToWords(mask_shares, &tapes[t]);
-      ret = simulateOnline((uint32_t*)sig->proofs[t].input, mask_shares, &tapes[t], msgs,
-                           plaintext, pubKey, params);
+      mzd_from_char_array(m_maskedKey, sig->proofs[t].input, params->input_size);
+      ret = simulateOnline(m_maskedKey, mask_shares, &tapes[t], msgs,
+                           m_plaintext, pubKey, params);
 
       freeRandomTape(&tapes[t]);
       if (ret != 0) {
@@ -661,6 +666,12 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
 
+  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
+  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc->k, false);
+
+  mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
+
+
   for (size_t t = 0; t < params->num_rounds; t++) {
     seeds[t] = generateSeeds(params->num_MPC_parties, iSeeds[t], sig->salt, t, params);
     createRandomTapes(&tapes[t], getLeaves(seeds[t]), sig->salt, t, params);
@@ -684,8 +695,9 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
     reconstructShares(maskedKey, mask_shares); // maskedKey = masks
     xor_word_array(maskedKey, maskedKey, privateKey,
                    (params->input_size / 4)); // maskedKey += privateKey
+    mzd_from_char_array(m_maskedKey, (const uint8_t*)maskedKey, params->input_size);
 
-    int rv = simulateOnline(maskedKey, mask_shares, &tapes[t], &msgs[t], plaintext, pubKey, params);
+    int rv = simulateOnline(m_maskedKey, mask_shares, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
     if (rv != 0) {
 #if !defined(NDEBUG)
       printf("MPC simulation failed, aborting signature\n");
@@ -707,6 +719,8 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
 
   }
   freeShares(mask_shares);
+  mzd_local_free(m_maskedKey);
+  mzd_local_free(m_plaintext);
 
   /* Create a Merkle tree with Cv as the leaves */
   tree_t* treeCv = createTree(params->num_rounds, params->digest_size);
