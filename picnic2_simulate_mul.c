@@ -563,7 +563,9 @@ void mpc_matrix_mul_uint64_128(mzd_local_t* output, const mzd_local_t* vec, cons
       tmp_mask->shares[j + 7] ^= mask_share & mask2->w64[3];
     }
   }
-  mzd_mul_v_uint64_128(output, vec, matrix);
+  mzd_local_t tmp;
+  mzd_copy_uint64_128(&tmp, vec);
+  mzd_mul_v_uint64_128(output, &tmp, matrix);
 
   copyShares(mask_shares, tmp_mask);
   freeShares(tmp_mask);
@@ -593,7 +595,9 @@ void mpc_matrix_mul_uint64_192(mzd_local_t* output, const mzd_local_t* vec, cons
       tmp_mask->shares[j + 7] ^= mask_share & mask2->w64[3];
     }
   }
-  mzd_mul_v_uint64_192(output, vec, matrix);
+  mzd_local_t tmp;
+  mzd_copy_uint64_192(&tmp, vec);
+  mzd_mul_v_uint64_192(output, &tmp, matrix);
 
   copyShares(mask_shares, tmp_mask);
   freeShares(tmp_mask);
@@ -622,7 +626,9 @@ void mpc_matrix_mul_uint64_256(mzd_local_t* output, const mzd_local_t* vec, cons
       tmp_mask->shares[j + 7] ^= mask_share & mask2->w64[3];
     }
   }
-  mzd_mul_v_uint64_256(output, vec, matrix);
+  mzd_local_t tmp;
+  mzd_copy_uint64_256(&tmp, vec);
+  mzd_mul_v_uint64_256(output, &tmp, matrix);
 
   copyShares(mask_shares, tmp_mask);
   freeShares(tmp_mask);
@@ -716,7 +722,7 @@ void mpc_matrix_addmul_r_uint64_128(mzd_local_t* state2, const mzd_local_t* stat
     const uint64_t mask_share = mask_shares->shares[30 - 1 - i];
 
     for (uint32_t j = 0; j < 128; j += 8) {
-      uint8_t matrix_byte = ((const uint8_t*)matrix)[(i * rowstride) + (128 - 1 - j) / 8];
+      uint8_t matrix_byte = ((const uint8_t*)matrix->w64)[(i * rowstride) + (128 - 1 - j) / 8];
 
       const block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
       const block_t* mask2 = &block_masks[(matrix_byte >> 0) & 0xF];
@@ -867,7 +873,7 @@ void mpc_matrix_mul_nl_part_uint64_256(mzd_local_t* nl_part, const mzd_local_t* 
     const uint64_t key_mask = key_masks->shares[256 - 1 - i];
 
     for (uint32_t j = 0; j < 38 * 32; j += 8) {
-      uint8_t matrix_byte = ((uint8_t*)precomputed_nl_matrix)[i * rowstride + j / 8];
+      uint8_t matrix_byte = ((uint8_t*)precomputed_nl_matrix->w64)[i * rowstride + j / 8];
 
       const block_t* mask1 = &nl_part_block_masks[(matrix_byte >> 0) & 0xF];
       const block_t* mask2 = &nl_part_block_masks[(matrix_byte >> 4) & 0xF];

@@ -34,9 +34,9 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
                       const mzd_local_t* plaintext, const uint32_t* pubKey,
                       const picnic_instance_t* params) {
   int ret                 = 0;
-  mzd_local_t* state = mzd_local_init_ex(1, params->lowmc->n, false);
-  mzd_local_t* state2 = mzd_local_init_ex(1, params->lowmc->n, false);
-  mzd_local_t* roundKey = mzd_local_init_ex(1, params->lowmc->n, false);
+  mzd_local_t* state = mzd_local_init_ex(1, LOWMC_N, false);
+  mzd_local_t* state2 = mzd_local_init_ex(1, LOWMC_N, false);
+  mzd_local_t* roundKey = mzd_local_init_ex(1, LOWMC_N, false);
   mzd_local_t* nl_part = mzd_local_init_ex(1, (LOWMC_R * 32), false);
   shares_t* nl_part_masks = allocateShares(LOWMC_R * 32);
   shares_t* key_masks = allocateShares(LOWMC_N); // Make a copy to use when computing each round key
