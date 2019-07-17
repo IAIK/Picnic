@@ -40,7 +40,7 @@ static uint32_t numBytes(uint32_t numBits) {
 
 static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* salt, size_t t,
                               const picnic_instance_t* params) {
-  Keccak_HashInstancetimes4 ctx;
+  hash_context_x4 ctx;
 
   size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
 
@@ -161,7 +161,7 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
 static void commit(uint8_t* digest, const uint8_t* seed, const uint8_t* aux, const uint8_t* salt,
                    size_t t, size_t j, const picnic_instance_t* params) {
   /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
-  Keccak_HashInstance ctx;
+  hash_context ctx;
 
   hash_init(&ctx, params);
   hash_update(&ctx, seed, params->seed_size);
@@ -181,7 +181,7 @@ static void commit(uint8_t* digest, const uint8_t* seed, const uint8_t* aux, con
 static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* salt, size_t t, size_t j,
                       const picnic_instance_t* params) {
   /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
-  Keccak_HashInstancetimes4 ctx;
+  hash_context_x4 ctx;
 
   hash_init_x4(&ctx, params);
   hash_update_x4(&ctx, seed, params->seed_size);
@@ -203,7 +203,7 @@ static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* sal
 }
 
 static void commit_h(uint8_t* digest, const commitments_t* C, const picnic_instance_t* params) {
-  Keccak_HashInstance ctx;
+  hash_context ctx;
 
   hash_init(&ctx, params);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
@@ -216,7 +216,7 @@ static void commit_h(uint8_t* digest, const commitments_t* C, const picnic_insta
 // Commit to the views for one parallel rep
 static void commit_v(uint8_t* digest, const uint8_t* input, const msgs_t* msgs,
                      const picnic_instance_t* params) {
-  Keccak_HashInstance ctx;
+  hash_context ctx;
 
   hash_init(&ctx, params);
   hash_update(&ctx, input, params->input_size);
@@ -310,7 +310,7 @@ static size_t appendUnique(uint16_t* list, uint16_t value, size_t position) {
 static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, uint8_t* hCv,
                 uint8_t* salt, const uint32_t* pubKey, const uint32_t* plaintext,
                 const uint8_t* message, size_t messageByteLength, const picnic_instance_t* params) {
-  Keccak_HashInstance ctx;
+  hash_context ctx;
   uint8_t h[MAX_DIGEST_SIZE] = {0};
 
   assert(params->num_opened_rounds < params->num_rounds);
@@ -571,7 +571,7 @@ static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLengt
                                    uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
                                    const uint8_t* message, size_t messageByteLength,
                                    const picnic_instance_t* params) {
-  Keccak_HashInstance ctx;
+  hash_context ctx;
 
   hash_init(&ctx, params);
   hash_update(&ctx, (const uint8_t*)privateKey, params->input_size);
