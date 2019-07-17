@@ -115,9 +115,7 @@ void xor_array_RC(uint8_t* out, const uint8_t* in1, const uint8_t* in2, uint32_t
 uint64_t tapesToWord(randomTape_t* tapes);
 uint64_t tapesToParityOfWord(randomTape_t* tapes, uint8_t without_last);
 void reconstructShares(uint32_t* output, shares_t* shares);
-void transpose_64_64(const uint64_t* in, uint64_t* out);
 void transpose_64_64_lsb(const uint64_t* in, uint64_t* out);
-void transpose_64_64_s128(const uint64_t* in, uint64_t* out);
-void transpose_64_64_s256(const uint64_t* in, uint64_t* out);
+void transpose_64_64(const uint64_t* in, uint64_t* out);
 
 #endif

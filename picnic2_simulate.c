@@ -34,7 +34,7 @@ static void msgsTranspose(msgs_t* msgs) {
     for (size_t i = 0; i < 64; i++) {
       buffer[i] = ((uint64_t*)msgs->msgs[i])[pos];
     }
-    transpose_64_64_s256(buffer, buffer);
+    transpose_64_64(buffer, buffer);
     for (size_t i = 0; i < 64; i++) {
       ((uint64_t*)msgs->msgs[i])[pos] = buffer[i];
     }
@@ -43,7 +43,7 @@ static void msgsTranspose(msgs_t* msgs) {
   for (size_t i = 0; i < msgs->pos % 64; i++) {
     buffer[i] = ((uint64_t*)msgs->msgs[i])[pos];
   }
-  transpose_64_64_s256(buffer, buffer);
+  transpose_64_64(buffer, buffer);
   for (size_t i = 0; i < 64; i++) {
     ((uint64_t*)msgs->msgs[i])[pos] = buffer[i];
   }

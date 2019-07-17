@@ -257,7 +257,7 @@ void transpose_64_64_lsb(const uint64_t* in, uint64_t* out) {
    this variant assumes that the bit with index 0 is the msb of byte 0
    e.g., 01234567 89abcdef ...
  */
-void transpose_64_64(const uint64_t* in, uint64_t* out) {
+static void transpose_64_64_uint64(const uint64_t* in, uint64_t* out) {
   static const uint64_t TRANSPOSE_MASKS64[6] = {
       UINT64_C(0xFFFFFFFF00000000), UINT64_C(0xFFFF0000FFFF0000), UINT64_C(0xFF00FF00FF00FF00),
       UINT64_C(0xF0F0F0F0F0F0F0F0), UINT64_C(0xCCCCCCCCCCCCCCCC), UINT64_C(0xAAAAAAAAAAAAAAAA)};
@@ -302,7 +302,7 @@ void transpose_64_64(const uint64_t* in, uint64_t* out) {
    e.g., 01234567 89abcdef ...
  */
 ATTR_TARGET_S128
-void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
+static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
   static const uint64_t TRANSPOSE_MASKS64[6] = {
       UINT64_C(0xFFFFFFFF00000000), UINT64_C(0xFFFF0000FFFF0000), UINT64_C(0xFF00FF00FF00FF00),
       UINT64_C(0xF0F0F0F0F0F0F0F0), UINT64_C(0xCCCCCCCCCCCCCCCC), UINT64_C(0xAAAAAAAAAAAAAAAA)};
@@ -366,7 +366,7 @@ void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
    e.g., 01234567 89abcdef ...
  */
 ATTR_TARGET_AVX2
-void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
+static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
   static const uint64_t TRANSPOSE_MASKS64[6] = {
       UINT64_C(0xFFFFFFFF00000000), UINT64_C(0xFFFF0000FFFF0000), UINT64_C(0xFF00FF00FF00FF00),
       UINT64_C(0xF0F0F0F0F0F0F0F0), UINT64_C(0xCCCCCCCCCCCCCCCC), UINT64_C(0xAAAAAAAAAAAAAAAA)};
@@ -446,6 +446,25 @@ void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
 #endif
 #endif
 
+void transpose_64_64(const uint64_t* in, uint64_t* out) {
+
+#if defined(WITH_OPT)
+#if defined(WITH_AVX2)
+  if (CPU_SUPPORTS_AVX2) {
+    transpose_64_64_s256(in, out);
+    return;
+  }
+#endif
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+  if (CPU_SUPPORTS_NEON || CPU_SUPPORTS_SSE2) {
+    transpose_64_64_s128(in, out);
+    return;
+  }
+#endif
+#endif
+  transpose_64_64_uint64(in, out);
+}
+
 uint64_t tapesToParityOfWord(randomTape_t* tapes, uint8_t without_last) {
   uint64_t shares;
 
@@ -470,7 +489,7 @@ uint64_t tapesToWord(randomTape_t* tapes) {
     for (size_t i = 0; i < 64; i++) {
       tapes->buffer[i] = ((uint64_t*)tapes->tape[i])[tapes->pos / 64];
     }
-    transpose_64_64_s256(tapes->buffer, tapes->buffer);
+    transpose_64_64(tapes->buffer, tapes->buffer);
   }
 
   shares = tapes->buffer[tapes->pos % 64];
