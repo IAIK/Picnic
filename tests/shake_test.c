@@ -10,12 +10,15 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "KeccakHash.h"
+#if defined(WITH_KECCAK_X4)
 #include "KeccakHashtimes4.h"
+#endif
 
 int main(void) {
   const uint8_t data1[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};
   const uint8_t data2[8] = {0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10};
 
+#if defined(WITH_KECCAK_X4)
   const uint8_t* data_ptrs[4] = {data1, data2, data2, data1};
   uint8_t output1[32] = {0,};
   uint8_t output2[32] = {0,};
@@ -32,6 +35,7 @@ int main(void) {
     perror("Final 4x failed");
   if(Keccak_HashSqueezetimes4(&ctx, output_ptrs, 256))
     perror("Squeeze 4x failed");
+#endif
 
   uint8_t out1[32] = {0,};
   uint8_t out2[32] = {0,};
@@ -70,6 +74,7 @@ int main(void) {
   if(memcmp(out2, expected_output2, 32) != 0)
     return -1;
 
+#if defined(WITH_KECCAK_X4)
   if(memcmp(output1, expected_output1, 32) != 0)
     return -1;
   if(memcmp(output2, expected_output2, 32) != 0)
@@ -78,6 +83,7 @@ int main(void) {
     return -1;
   if(memcmp(output4, expected_output1, 32) != 0)
     return -1;
+#endif
 
   return 0;
 }

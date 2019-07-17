@@ -181,24 +181,21 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} sha3
 
 list(APPEND SHA3_SOURCES
      sha3/KeccakHash.c
-     sha3/KeccakSpongeWidth1600.c
-     sha3/KeccakSpongeWidth1600times4.c
-     sha3/KeccakHashtimes4.c)
+     sha3/KeccakSpongeWidth1600.c)
 
 if(${SHA3_IMPL} STREQUAL "avx2")
   list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.s)
   set_property(SOURCE sha3/avx2/KeccakP-1600-AVX2.s PROPERTY LANGUAGE C)
   # the times4 variant of Keccack using avx2
-  list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-times4-SIMD256.c)
+  list(APPEND SHA3_SOURCES
+       sha3/avx2/KeccakP-1600-times4-SIMD256.c
+       sha3/KeccakSpongeWidth1600times4.c
+       sha3/KeccakHashtimes4.c)
 elseif(${SHA3_IMPL} STREQUAL "opt64")
   list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
-  # the times4 variant of Keccack using fallback on opt64
-  list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-times4-on1.c)
 elseif(${SHA3_IMPL} STREQUAL "armv8a-neon")
   list(APPEND SHA3_SOURCES sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s)
   set_property(SOURCE sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s PROPERTY LANGUAGE C)
-  # the times4 variant of Keccack using fallback on neon
-  list(APPEND SHA3_SOURCES sha3/armv8a-neon/KeccakP-1600-times4-on1.c)
 else()
   message(FATAL_ERROR "Unknown SHA3 implementation")
 endif()
@@ -254,6 +251,9 @@ function(apply_base_options lib)
     target_compile_definitions(${lib} PRIVATE REDUCED_ROUND_KEY_COMPUTATION)
   elseif(WITH_LOWMC_OPT STREQUAL "OLLE")
     target_compile_definitions(${lib} PRIVATE REDUCED_ROUND_KEY_COMPUTATION OPTIMIZED_LINEAR_LAYER_EVALUATION)
+  endif()
+  if(${SHA3_IMPL} STREQUAL "avx2")
+    target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
   endif()
 endfunction()
 
