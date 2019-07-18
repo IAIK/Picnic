@@ -1,3 +1,10 @@
+Version 2.1 -- 2019-07-29
+-------------------------
+
+* Remove M4RM-based implementation.
+* Fix input size in Picnic2's commitment implementation.
+* Additional improvements and optimizations of the Picnic2 code.
+
 Version 2.0 -- 2019-04-08
 -------------------------
 
@@ -15,7 +22,7 @@ Version 1.3 -- 2018-12-21
 
 * Implement linear layer optimizations to speed up LowMC evaluations. Besides the runtime improvements, this optimization also greatly reduces the memory size of the LowMC instances.
 * Provide LowMC instances with m=1 to demonstrate feasibility of those instances.
-* Sligthly improve internal storage of matrices to require less memory.
+* Slightly improve internal storage of matrices to require less memory.
 * Remove unused code and support for dynamic LowMC instances.
 
 Version 1.2 -- 2018-12-05
