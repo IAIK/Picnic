@@ -118,14 +118,6 @@ static void mpc_xor_masks_nl(shares_t* out, const shares_t* a, const shares_t* b
     out->shares[i] = a->shares[i] ^ b->shares[index + num - 1 - i];
   }
 }
-
-//static void mpc_xor2_nl(uint32_t* output, shares_t* output_masks, const uint32_t* x,
-//                        const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
-//                        size_t index, size_t num) {
-//  xor_array_RC((uint8_t*)output, (uint8_t*)x, (uint8_t*)&y[index / 32], 4);
-//  // xor masks
-//  mpc_xor_masks_nl(output_masks, x_masks, y_masks, index, num);
-//}
 #endif
 
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
@@ -169,13 +161,6 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
     out->shares[i] = a->shares[i] ^ b->shares[i];
   }
 }
-
-//static void mpc_xor2(uint32_t* output, shares_t* output_masks, const uint32_t* x,
-//                     const shares_t* x_masks, const uint32_t* y, const shares_t* y_masks,
-//                     const picnic_instance_t* params) {
-//  xor_word_array(output, x, y, (params->input_size / 4));
-//  mpc_xor_masks(output_masks, x_masks, y_masks);
-//}
 #endif
 
 /* PICNIC2_L1_FS */
