@@ -115,7 +115,7 @@ uint8_t* getLeaf(tree_t* tree, size_t leafIndex) {
 
 static void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, uint8_t hashPrefix,
                      size_t repIndex, size_t nodeIndex, const picnic_instance_t* params) {
-  Keccak_HashInstance ctx;
+  hash_context ctx;
 
   hash_init_prefix(&ctx, params, hashPrefix);
   hash_update(&ctx, inputSeed, params->seed_size);
@@ -131,7 +131,7 @@ static void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, u
 static void hashSeed_x4(uint8_t** digest, const uint8_t** inputSeed, uint8_t* salt,
                         uint8_t hashPrefix, size_t repIndex, size_t nodeIndex,
                         const picnic_instance_t* params) {
-  Keccak_HashInstancetimes4 ctx;
+  hash_context_x4 ctx;
 
   hash_init_prefix_x4(&ctx, params, hashPrefix);
   hash_update_x4(&ctx, inputSeed, params->seed_size);
@@ -421,7 +421,7 @@ static void computeParentHash(tree_t* tree, size_t child, uint8_t* salt,
   }
 
   /* Compute parent data = H(left child data || [right child data] || salt || parent idx) */
-  Keccak_HashInstance ctx;
+  hash_context ctx;
 
   hash_init_prefix(&ctx, params, HASH_PREFIX_3);
   hash_update(&ctx, tree->nodes[2 * parent + 1], params->digest_size);

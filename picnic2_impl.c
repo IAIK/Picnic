@@ -229,7 +229,7 @@ static void commit_h(uint8_t* digest, const commitments_t* C, const picnic_insta
 }
 
 static void commit_h_x4(uint8_t** digest, const commitments_t* C, const picnic_instance_t* params) {
-  Keccak_HashInstancetimes4 ctx;
+  hash_context_x4 ctx;
 
   hash_init_x4(&ctx, params);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
@@ -261,7 +261,7 @@ static void commit_v(uint8_t* digest, const uint8_t* input, const msgs_t* msgs,
 
 static void commit_v_x4(uint8_t** digest, const uint8_t** input, const msgs_t* msgs,
                         const picnic_instance_t* params) {
-  Keccak_HashInstancetimes4 ctx;
+  hash_context_x4 ctx;
 
   hash_init_x4(&ctx, params);
   hash_update_x4(&ctx, input, params->input_size);
