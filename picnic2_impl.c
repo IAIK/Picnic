@@ -598,6 +598,8 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
 
 Exit:
 
+  mzd_local_free(m_plaintext);
+  mzd_local_free(m_maskedKey);
   freeShares(mask_shares);
   free(challengeC);
   free(challengeP);

@@ -285,7 +285,7 @@ void print_matrix(const char* info, uint64_t mat[]) {
 
 int main(void) {
 
-  uint64_t matrix[64] = {
+  uint64_t matrix[64]  ATTR_ALIGNED(32) = {
       0,
   };
   for (int i = 0; i < 64; i++) {
