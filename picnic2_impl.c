@@ -369,7 +369,7 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
   // Populate C
   uint32_t bitsPerChunkC = ceil_log2(params->num_rounds);
   uint32_t bitsPerChunkP = ceil_log2(params->num_MPC_parties);
-  uint16_t* chunks       = calloc(params->digest_size * 8 / bitsPerChunkP, sizeof(uint16_t));
+  uint16_t* chunks       = calloc(params->digest_size * 8 / MIN(bitsPerChunkP,bitsPerChunkC), sizeof(uint16_t));
 
   size_t countC = 0;
   while (countC < params->num_opened_rounds) {
