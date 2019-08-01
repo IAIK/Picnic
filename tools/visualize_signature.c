@@ -17,6 +17,10 @@ static int test_vector(const picnic_params_t param) {
   printf("Picnic test vectors for parameter set: %s\n", picnic_get_param_name(param));
 
   const size_t lowmc_blocksize = picnic_get_lowmc_block_size(param);
+  if (lowmc_blocksize == 0) {
+    printf("invalid parameter set\n");
+    return -1;
+  }
 
   picnic_privatekey_t sk = {0};
   sk.data[0]             = param;
