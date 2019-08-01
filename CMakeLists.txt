@@ -255,6 +255,9 @@ function(apply_base_options lib)
   if(${SHA3_IMPL} STREQUAL "avx2")
     target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
   endif()
+  if(WITH_LOWMC_M1)
+    target_compile_definitions(${lib} PRIVATE WITH_LOWMC_M1)
+  endif()
 endfunction()
 
 function(apply_opt_options lib)
@@ -283,7 +286,6 @@ function(apply_picnic_options lib)
                              WITH_LOWMC_256_256_38)
   if(WITH_LOWMC_M1)
     target_compile_definitions(${lib} PRIVATE
-                               WITH_LOWMC_M1
                                WITH_LOWMC_128_128_182
                                WITH_LOWMC_192_192_284
                                WITH_LOWMC_256_256_363)

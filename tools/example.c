@@ -134,7 +134,12 @@ int picnicExample(picnic_params_t parameters) {
 }
 
 int main(void) {
-  for (picnic_params_t params = 1; params < PARAMETER_SET_MAX_INDEX; params++) {
+#if defined(WITH_LOWMC_M1)
+  const picnic_params_t max_params = PARAMETER_SET_MAX_INDEX;
+#else
+  const picnic_params_t max_params = Picnic_L1_1_FS;
+#endif
+  for (picnic_params_t params = 1; params < max_params; params++) {
     picnicExample(params);
   }
 }
