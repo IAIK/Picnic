@@ -40,7 +40,7 @@
 
 #include "picnic_impl.h"
 
-typedef Keccak_HashInstance hash_context;
+typedef Keccak_HashInstance hash_context ATTR_ALIGNED(32);
 
 static inline void hash_init(hash_context* ctx, const picnic_instance_t* pp) {
   if (pp->digest_size == 32) {
@@ -115,7 +115,7 @@ static inline void hash_squeeze_x4(hash_context_x4* ctx, uint8_t** buffer, size_
 }
 #else
 /* Instances that work with 4 states in parallel. */
-typedef Keccak_HashInstancetimes4 hash_context_x4;
+typedef Keccak_HashInstancetimes4 hash_context_x4 ATTR_ALIGNED(32);
 
 static inline void hash_init_x4(hash_context_x4* ctx, const picnic_instance_t* pp) {
   if (pp->digest_size == 32) {
