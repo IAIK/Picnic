@@ -163,12 +163,6 @@
 #define matrix_postfix matrix
 #endif
 
-#if defined(MUL_M4RI)
-#define SELECT_V_VL(v, vl) vl
-#else
-#define SELECT_V_VL(v, vl) v
-#endif
-
 /* helper macros/functions for checked integer subtraction */
 #if GNUC_CHECK(5, 0) || __has_builtin(__builtin_add_overflow)
 #define sub_overflow_size_t(x, y, diff) __builtin_sub_overflow(x, y, diff)
