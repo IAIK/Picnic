@@ -128,7 +128,7 @@ void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
   const uint64_t x1s = (in & MASK_X1I) << 1;
   const uint64_t x2m = in & MASK_X2I;
 
-  uint64_t ab, bc, ca = 0;
+  uint64_t ab = 0, bc = 0, ca = 0;
   aux_mpc_AND_bitsliced(x0s, x1s, x2m, &ab, &bc, &ca, tapes);
 
   // (b & c) ^ a
