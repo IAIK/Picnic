@@ -87,6 +87,10 @@
 #define ATTR_ALIGNED(i)
 #endif
 
+/* round size to meet alignment requirements */
+#define ALIGNT(s, t) (((s) + sizeof(t) - 1) & ~(sizeof(t) - 1))
+#define ALIGNU64T(s) ALIGNT(s, uint64_t)
+
 /* unreachable builtin */
 #if GNUC_CHECK(4, 5) || __has_builtin(__builtin_unreachable)
 #define UNREACHABLE __builtin_unreachable()

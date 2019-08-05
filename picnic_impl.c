@@ -94,9 +94,6 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
   return true;
 }
 
-#define ALIGNT(s, t) (((s) + sizeof(t) - 1) & ~(sizeof(t) - 1))
-#define ALIGNU64T(s) ALIGNT(s, uint64_t)
-
 static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   const size_t digest_size                    = pp->digest_size;
   const size_t seed_size                      = pp->seed_size;
