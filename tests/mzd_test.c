@@ -113,52 +113,6 @@ static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, m
   return ret;
 }
 
-#if defined(MUL_M4RI)
-static int test_mzd_mul_l_f(const char* n, unsigned int rows, unsigned int cols, mul_fn f,
-                            bool is_addmul) {
-  int ret = 0;
-
-  mzd_t* A = mzd_init(rows, cols);
-  mzd_t* v = mzd_init(1, rows);
-  mzd_t* c = mzd_init(1, cols);
-
-  mzd_randomize(A);
-  mzd_randomize(v);
-  mzd_randomize(c);
-
-  mzd_local_t* Al  = mzd_convert(A);
-  mzd_local_t* All = mzd_precompute_matrix_lookup(Al, rows, cols);
-  mzd_local_t* vl  = mzd_convert(v);
-  mzd_local_t* c2  = mzd_convert(c);
-
-  for (unsigned int k = 0; k < 3; ++k) {
-    mzd_t* r = is_addmul ? mzd_addmul_naive(c, v, A) : mzd_mul_naive(c, v, A);
-    f(c2, vl, All);
-
-    mzd_local_t* rc = mzd_convert(r);
-
-    if (!mzd_local_equal(rc, c2, 1, cols)) {
-      printf("%s: fail [%u x %u]\n", n, rows, cols);
-      ret = -1;
-    } else {
-      printf("%s: ok [%u x %u]\n", n, rows, cols);
-    }
-
-    mzd_local_free(rc);
-  }
-
-  mzd_local_free(c2);
-  mzd_local_free(vl);
-  mzd_local_free(All);
-  mzd_local_free(Al);
-
-  mzd_free(c);
-  mzd_free(v);
-  mzd_free(A);
-
-  return ret;
-}
-#endif
 
 static int test_mzd_mul_uint64_128(void) {
   return test_mzd_mul_f("mul uint64 128", 128, 128, mzd_mul_v_uint64_128, false);
