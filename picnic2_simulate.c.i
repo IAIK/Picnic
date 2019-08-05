@@ -16,6 +16,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#if !defined(_MSC_VER)
+#include <stdalign.h>
+#endif
 
 #include "kdf_shake.h"
 #include "macros.h"
@@ -25,7 +28,6 @@
 #include "picnic2_types.h"
 #include "picnic2_tree.h"
 #include "io.h"
-
 
 #if defined(FN_ATTR)
 FN_ATTR
@@ -125,10 +127,10 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
     }
   }
   uint32_t output[LOWMC_N / 32];
-  uint8_t outstate[LOWMC_N / 8];
-  mzd_to_char_array(outstate, state, LOWMC_N/8);
+  uint32_t outstate[LOWMC_N / 32];
+  mzd_to_char_array((uint8_t*)outstate, state, LOWMC_N/8);
   reconstructShares(output, mask_shares);
-  xor_word_array(output, output, (uint32_t*)outstate, (LOWMC_N / 32));
+  xor_word_array(output, output, outstate, (LOWMC_N / 32));
 
   if (memcmp(output, pubKey, LOWMC_N / 8) != 0) {
 #if !defined(NDEBUG)
