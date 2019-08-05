@@ -34,12 +34,12 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_loca
 
 #if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION) // LOWMC_OPT=OLLE
 #if defined(PICNIC2_AUX_COMPUTATION)
-  MUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
-  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
+  MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
+  MUL_MC(nl_part, lowmc_key, LOWMC_INSTANCE.precomputed_non_linear_part_matrix);
 #else
   XOR(x, p, LOWMC_INSTANCE.precomputed_constant_linear);
-  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
-  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
+  ADDMUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
+  MUL_MC(nl_part, lowmc_key, LOWMC_INSTANCE.precomputed_non_linear_part_matrix);
   XOR_MC(nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear);
 #endif
 
@@ -97,17 +97,17 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_loca
   BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
       (nl << ((20 - (i % 21)) * 3)) & WORD_C(0xE000000000000000);
 #endif
-  MUL(y, x, CONCAT(LOWMC_INSTANCE.zr, matrix_postfix));
+  MUL(y, x, LOWMC_INSTANCE.zr_matrix);
   COPY(x, y);
 #endif
 #else // LOWMC_OPT=ORKC
 #if defined(PICNIC2_AUX_COMPUTATION)
-  MUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
-  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
+  MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
+  MUL_MC(nl_part, lowmc_key, LOWMC_INSTANCE.precomputed_non_linear_part_matrix);
 #else
   XOR(x, p, LOWMC_INSTANCE.precomputed_constant_linear);
-  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
-  MUL_MC(nl_part, lowmc_key, CONCAT(LOWMC_INSTANCE.precomputed_non_linear_part, matrix_postfix));
+  ADDMUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
+  MUL_MC(nl_part, lowmc_key, LOWMC_INSTANCE.precomputed_non_linear_part_matrix);
   XOR_MC(nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear);
 #endif
 
@@ -131,16 +131,16 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_loca
     BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
         (nl << ((20 - (i % 21)) * 3)) & WORD_C(0xE000000000000000);
 #endif
-    MUL(y, x, CONCAT(round->l, matrix_postfix));
+    MUL(y, x, round->l_matrix);
     COPY(x, y);
   }
 #endif
 #else // LOWMC_OPT=OFF
 #if defined(PICNIC2_AUX_COMPUTATION)
-  MUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
+  MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
 #else
   COPY(x, p);
-  ADDMUL(x, lowmc_key, CONCAT(LOWMC_INSTANCE.k0, matrix_postfix));
+  ADDMUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
 #endif
 
   lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
@@ -154,13 +154,13 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_loca
     SBOX(x);
 #endif
 
-    MUL(y, x, CONCAT(round->l, matrix_postfix));
+    MUL(y, x, round->l_matrix);
 #if !defined(PICNIC2_AUX_COMPUTATION)
     XOR(x, y, round->constant);
 #else
     COPY(x, y);
 #endif
-    ADDMUL(x, lowmc_key, CONCAT(round->k, matrix_postfix));
+    ADDMUL(x, lowmc_key, round->k_matrix);
   }
 #endif
 
