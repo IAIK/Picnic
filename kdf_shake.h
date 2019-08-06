@@ -10,7 +10,6 @@
 #ifndef KDF_SHAKE_H
 #define KDF_SHAKE_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #if !defined(KeccakP200_excluded)
