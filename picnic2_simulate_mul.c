@@ -516,15 +516,6 @@ void xor_array_RC(uint8_t* out, const uint8_t* in1, const uint8_t* in2, uint32_t
     out[i] = in1[i] ^ in2[length - 1 - i];
   }
 }
-/* For an input bit b = 0 or 1, return the word of all b bits, i.e.,
- * extend(1) = 0xFFFFFFFFFFFFFFFF
- * extend(0) = 0x0000000000000000
- * Assumes inputs are always 0 or 1.  If this doesn't hold, add "& 1" to the
- * input.
- */
-static inline uint64_t extend(uint64_t bit) {
-  return ~(bit - 1);
-}
 
 /* Get one bit from a byte array */
 uint8_t getBit(const uint8_t* array, uint32_t bitNumber) {
