@@ -80,7 +80,7 @@ typedef hash_context kdf_shake_t;
 #if !defined(WITH_KECCAK_X4)
 /* Instances that work with 4 states in parallel using the base Keccak implementation. */
 typedef struct hash_context_x4_s {
-  Keccak_HashInstance instances[4];
+  hash_context instances[4];
 } hash_context_x4;
 
 static inline void hash_init_x4(hash_context_x4* ctx, const picnic_instance_t* pp) {
