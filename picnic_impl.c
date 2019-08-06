@@ -1158,9 +1158,9 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const int ret = sig_proof_to_char_array(pp, prf, sig, siglen);
 
   // clean up
-  for (unsigned i = 0; i < SC_PROOF; i++) {
-    for (unsigned j = 0; j < 4; j++) {
-      free(tape_bytes_x4[i][j]);
+  for (unsigned int k = 0; k < SC_PROOF; ++k) {
+    for (unsigned int j = 0; j < 4; ++j) {
+      free(tape_bytes_x4[k][j]);
     }
   }
   free(tape_bytes);
