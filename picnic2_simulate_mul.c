@@ -119,7 +119,7 @@ static const block_t block_masks[] = {
 };
 
 #if defined(REDUCED_ROUND_KEY_COMPUTATION)
-static block_t nl_part_block_masks[] = {
+static const block_t nl_part_block_masks[] = {
     {{
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000),
