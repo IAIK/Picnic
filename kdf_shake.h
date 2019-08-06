@@ -32,7 +32,7 @@
 #else
 #include <libkeccak.a.headers/KeccakHash.h>
 #if defined(WITH_KECCAK_X4)
-/* Keccakx4 is not supported by SUPERCOP, so we need to ship it ourselves. */
+/* Keccakx4 is not fully supported by SUPERCOP, so we need to ship it ourselves. */
 #include "KeccakHashtimes4.h"
 #endif
 #endif
