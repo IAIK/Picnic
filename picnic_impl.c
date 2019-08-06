@@ -463,7 +463,7 @@ static void hash_commitment_x4(const picnic_instance_t* pp, proof_round_t* prf_r
 /**
  * Compute commitment to 4 views, for verification
  */
-static void hash_commitment_x4_verify(const picnic_instance_t* pp, sorting_helper_t* helper,
+static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting_helper_t* helper,
                                       const unsigned int vidx) {
   const size_t hashlen = pp->digest_size;
 
@@ -762,7 +762,7 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
 /*
  * 4x G permutation for Unruh transform, for verification
  */
-static void unruh_G_x4_verify(const picnic_instance_t* pp, sorting_helper_t* helper,
+static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_t* helper,
                               unsigned int vidx, bool include_is) {
   hash_context_x4 ctx;
 
@@ -1224,8 +1224,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
         num_current_rounds++;
       }
     }
-    unsigned int i           = 0;
-    sorting_helper_t* helper = sorted_rounds;
+    unsigned int i                 = 0;
+    const sorting_helper_t* helper = sorted_rounds;
     for (; i < (num_current_rounds / 4) * 4; i += 4, helper += 4) {
       const unsigned int a_i = current_chal;
       const unsigned int b_i = (a_i + 1) % 3;
