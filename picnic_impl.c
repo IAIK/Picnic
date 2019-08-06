@@ -1529,10 +1529,6 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 #define LOWMC_L5_1_OR_NULL NULL
 #endif
 
-static const lowmc_t* const lowmc_instances[6] = {
-    LOWMC_L1_OR_NULL,   LOWMC_L3_OR_NULL,   LOWMC_L5_OR_NULL,
-    LOWMC_L1_1_OR_NULL, LOWMC_L3_1_OR_NULL, LOWMC_L5_1_OR_NULL};
-
 #define NULL_FNS                                                                                   \
   { NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
@@ -1572,52 +1568,8 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
      PICNIC_SIGNATURE_SIZE_Picnic_L5_1_UR, Picnic_L5_1_UR, TRANSFORM_UR, NULL_FNS}};
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
-static const lowmc_t* lowmc_get_instance(unsigned int idx) {
-  return lowmc_instances[idx];
-}
-
-static bool create_instance(picnic_instance_t* pp, picnic_params_t param) {
-  const lowmc_t* lowmc_instance = NULL;
-
-  switch (param) {
-  case Picnic_L1_FS:
-  case Picnic_L1_UR:
-  case Picnic2_L1_FS:
-    lowmc_instance = lowmc_get_instance(0);
-    break;
-
-  case Picnic_L3_FS:
-  case Picnic_L3_UR:
-  case Picnic2_L3_FS:
-    lowmc_instance = lowmc_get_instance(1);
-    break;
-
-  case Picnic_L5_FS:
-  case Picnic_L5_UR:
-  case Picnic2_L5_FS:
-    lowmc_instance = lowmc_get_instance(2);
-    break;
-
-  case Picnic_L1_1_FS:
-  case Picnic_L1_1_UR:
-    lowmc_instance = lowmc_get_instance(3);
-    break;
-
-  case Picnic_L3_1_FS:
-  case Picnic_L3_1_UR:
-    lowmc_instance = lowmc_get_instance(4);
-    break;
-
-  case Picnic_L5_1_FS:
-  case Picnic_L5_1_UR:
-    lowmc_instance = lowmc_get_instance(5);
-    break;
-
-  default:
-    return false;
-  }
-
-  if (!lowmc_instance) {
+static bool create_instance(picnic_instance_t* pp) {
+  if (!pp->lowmc) {
     return false;
   }
 
@@ -1638,7 +1590,7 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
   }
 
   if (!instance_initialized[param]) {
-    if (!create_instance(&instances[param], param)) {
+    if (!create_instance(&instances[param])) {
       return NULL;
     }
     instance_initialized[param] = true;
