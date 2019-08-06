@@ -15,7 +15,11 @@ http://creativecommons.org/publicdomain/zero/1.0/
 #define _KeccakSpongeWidth1600times4_h_
 
 #include <string.h>
+#if !defined(SUPERCOP)
 #include "align.h"
+#else
+#include <libkeccak.a.headers/align.h>
+#endif
 
 #define KCP_DeclareSpongeStructuretimes4(prefix, size, alignment) \
     ALIGN(alignment) typedef struct prefix##_SpongeInstanceStruct { \
@@ -32,7 +36,11 @@ http://creativecommons.org/publicdomain/zero/1.0/
     int prefix##_SpongeSqueeze(prefix##_SpongeInstance *spongeInstance, unsigned char **data, size_t dataByteLen);
 
 #ifndef KeccakP1600times4_excluded
+#if !defined(SUPERCOP)
     #include "KeccakP-1600-times4-SnP.h"
+#else
+    #include <libkeccak.a.headers/KeccakP-1600-times4-SnP.h>
+#endif
     KCP_DeclareSpongeStructuretimes4(KeccakWidth1600times4, KeccakP1600times4_statesSizeInBytes, KeccakP1600times4_statesAlignment)
     KCP_DeclareSpongeFunctionstimes4(KeccakWidth1600times4)
 #endif

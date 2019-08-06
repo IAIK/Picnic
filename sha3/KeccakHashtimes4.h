@@ -16,7 +16,11 @@ http://creativecommons.org/publicdomain/zero/1.0/
 
 #ifndef KeccakP1600times4_excluded
 
+#if !defined(SUPERCOP)
 #include "KeccakHash.h"
+#else
+#include <libkeccak.a.headers/KeccakHash.h>
+#endif
 #include "KeccakSpongeWidth1600times4.h"
 
 typedef struct {
