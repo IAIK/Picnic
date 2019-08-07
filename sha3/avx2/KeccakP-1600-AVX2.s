@@ -18,6 +18,7 @@
 # void KeccakP1600_Initialize(void *state);
 #
 .globl  KeccakP1600_Initialize
+.hidden KeccakP1600_Initialize
 .type   KeccakP1600_Initialize,@function
 .align  32
 KeccakP1600_Initialize:
@@ -38,6 +39,7 @@ KeccakP1600_Initialize:
 #                                %rdi                 %rsi               %rdx
 #
 .globl  KeccakP1600_AddByte
+.hidden KeccakP1600_AddByte
 .type   KeccakP1600_AddByte,@function
 .align  32
 KeccakP1600_AddByte:
@@ -58,6 +60,7 @@ KeccakP1600_AddByte:
 #                                %rdi                         %rsi               %rdx                 %rcx
 #
 .globl  KeccakP1600_AddBytes
+.hidden KeccakP1600_AddBytes
 .type   KeccakP1600_AddBytes,@function
 .align  32
 KeccakP1600_AddBytes:
@@ -117,6 +120,7 @@ KeccakP1600_AddBytes_Exit:
 #                                       %rdi                        %rsi               %rdx                 %rcx
 #
 .globl  KeccakP1600_OverwriteBytes
+.hidden KeccakP1600_OverwriteBytes
 .type   KeccakP1600_OverwriteBytes,@function
 .align  32
 KeccakP1600_OverwriteBytes:
@@ -176,6 +180,7 @@ KeccakP1600_OverwriteBytes_Exit:
 #                                            %rdi                %rsi
 #
 .globl  KeccakP1600_OverwriteWithZeroes
+.hidden KeccakP1600_OverwriteWithZeroes
 .type   KeccakP1600_OverwriteWithZeroes,@function
 .align  32
 KeccakP1600_OverwriteWithZeroes:
@@ -211,6 +216,7 @@ KeccakP1600_OverwriteWithZeroes_Exit:
 #                                           %rdi                  %rsi               %rdx                 %rcx
 #
 .globl  KeccakP1600_ExtractBytes
+.hidden KeccakP1600_ExtractBytes
 .type   KeccakP1600_ExtractBytes,@function
 .align  32
 KeccakP1600_ExtractBytes:
@@ -273,6 +279,7 @@ KeccakP1600_ExtractBytes_Exit:
 #                                                 %rdi                        %rsi                  %rdx                 %rcx                  %r8
 #
 .globl  KeccakP1600_ExtractAndAddBytes
+.hidden KeccakP1600_ExtractAndAddBytes
 .type   KeccakP1600_ExtractAndAddBytes,@function
 .align  32
 KeccakP1600_ExtractAndAddBytes:
@@ -486,6 +493,7 @@ __KeccakF1600:
 
 
 .globl  KeccakP1600_Permute_24rounds
+.hidden KeccakP1600_Permute_24rounds
 .type   KeccakP1600_Permute_24rounds,@function
 .align  32
 KeccakP1600_Permute_24rounds:
@@ -515,6 +523,7 @@ KeccakP1600_Permute_24rounds:
 .size   KeccakP1600_Permute_24rounds,.-KeccakP1600_Permute_24rounds
 
 .globl  KeccakP1600_Permute_12rounds
+.hidden KeccakP1600_Permute_12rounds
 .type   KeccakP1600_Permute_12rounds,@function
 .align  32
 KeccakP1600_Permute_12rounds:
@@ -544,6 +553,7 @@ KeccakP1600_Permute_12rounds:
 .size   KeccakP1600_Permute_12rounds,.-KeccakP1600_Permute_12rounds
 
 .globl  KeccakP1600_Permute_Nrounds
+.hidden KeccakP1600_Permute_Nrounds
 .type   KeccakP1600_Permute_Nrounds,@function
 .align  32
 KeccakP1600_Permute_Nrounds:
@@ -580,6 +590,7 @@ KeccakP1600_Permute_Nrounds:
 #                                          %rdi                %rsi                            %rdx         %rcx
 #
 .globl  KeccakF1600_FastLoop_Absorb
+.hidden KeccakF1600_FastLoop_Absorb
 .type   KeccakF1600_FastLoop_Absorb,@function
 .align  32
 KeccakF1600_FastLoop_Absorb:
@@ -749,6 +760,7 @@ KeccakF1600_FastLoop_Absorb_LanesAddLoop:
 #                                          %rdi                %rsi                            %rdx         %rcx
 #
 .globl  KeccakP1600_12rounds_FastLoop_Absorb
+.hidden KeccakP1600_12rounds_FastLoop_Absorb
 .type   KeccakP1600_12rounds_FastLoop_Absorb,@function
 .align  32
 KeccakP1600_12rounds_FastLoop_Absorb:
