@@ -120,10 +120,8 @@ static void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, u
   hash_init_prefix(&ctx, params, hashPrefix);
   hash_update(&ctx, inputSeed, params->seed_size);
   hash_update(&ctx, salt, SALT_SIZE);
-  uint16_t repIndexLE = htole16((uint16_t)repIndex);
-  hash_update(&ctx, (uint8_t*)&repIndexLE, sizeof(uint16_t));
-  uint16_t nodeIndexLE = htole16((uint16_t)nodeIndex);
-  hash_update(&ctx, (uint8_t*)&nodeIndexLE, sizeof(uint16_t));
+  hash_update_uint16_le(&ctx, repIndex);
+  hash_update_uint16_le(&ctx, nodeIndex);
   hash_final(&ctx);
   hash_squeeze(&ctx, digest, 2 * params->seed_size);
 }
@@ -135,17 +133,14 @@ static void hashSeed_x4(uint8_t** digest, const uint8_t** inputSeed, uint8_t* sa
 
   hash_init_prefix_x4(&ctx, params, hashPrefix);
   hash_update_x4(&ctx, inputSeed, params->seed_size);
+
   const uint8_t* salts[4] = {salt, salt, salt, salt};
   hash_update_x4(&ctx, salts, SALT_SIZE);
-  uint16_t repIndexLE    = htole16((uint16_t)repIndex);
-  const uint8_t* reps[4] = {(uint8_t*)&repIndexLE, (uint8_t*)&repIndexLE, (uint8_t*)&repIndexLE,
-                            (uint8_t*)&repIndexLE};
-  hash_update_x4(&ctx, reps, sizeof(uint16_t));
-  uint16_t nodeIndexLE[4] = {htole16((uint16_t)nodeIndex), htole16((uint16_t)nodeIndex + 1),
-                             htole16((uint16_t)nodeIndex + 2), htole16((uint16_t)nodeIndex + 3)};
-  const uint8_t* nodes[4] = {(uint8_t*)&nodeIndexLE[0], (uint8_t*)&nodeIndexLE[1],
-                             (uint8_t*)&nodeIndexLE[2], (uint8_t*)&nodeIndexLE[3]};
-  hash_update_x4(&ctx, nodes, sizeof(uint16_t));
+  hash_update_x4_uint16_le(&ctx, repIndex);
+
+  const uint16_t nodes[4] = {nodeIndex, nodeIndex + 1, nodeIndex + 2, nodeIndex + 3};
+  hash_update_x4_uint16s_le(&ctx, nodes);
+
   hash_final_x4(&ctx);
   hash_squeeze_x4(&ctx, digest, 2 * params->seed_size);
 }
@@ -431,8 +426,7 @@ static void computeParentHash(tree_t* tree, size_t child, uint8_t* salt,
   }
 
   hash_update(&ctx, salt, SALT_SIZE);
-  uint16_t parentLE = htole16((uint16_t)parent);
-  hash_update(&ctx, (uint8_t*)&parentLE, sizeof(uint16_t));
+  hash_update_uint16_le(&ctx, parent);
   hash_final(&ctx);
   hash_squeeze(&ctx, tree->nodes[parent], params->digest_size);
   tree->haveNode[parent] = 1;
