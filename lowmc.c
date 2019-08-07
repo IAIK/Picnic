@@ -162,7 +162,11 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #endif
 
 lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
+#if defined(WITH_LOWMC_M1)
   ASSUME(lowmc->m == 10 || lowmc->m == 1);
+#else
+  ASSUME(lowmc->m == 10);
+#endif
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
 #if defined(WITH_OPT)
@@ -416,6 +420,7 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
   ASSUME(lowmc->m == 10);
 #endif
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
