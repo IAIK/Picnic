@@ -1,3 +1,8 @@
+Version 2.1.1 -- 2019-08-07
+---------------------------
+
+* Various small improvements and bug fixes.
+
 Version 2.1 -- 2019-07-29
 -------------------------
 
