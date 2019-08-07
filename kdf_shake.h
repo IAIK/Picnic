@@ -37,6 +37,7 @@
 #endif
 #endif
 
+#include "compat.h"
 #include "picnic_impl.h"
 
 typedef Keccak_HashInstance hash_context ATTR_ALIGNED(32);
@@ -51,6 +52,11 @@ static inline void hash_init(hash_context* ctx, const picnic_instance_t* pp) {
 
 static inline void hash_update(hash_context* ctx, const uint8_t* data, size_t size) {
   Keccak_HashUpdate(ctx, data, size << 3);
+}
+
+static inline void hash_update_uint16_le(hash_context* ctx, uint16_t data) {
+  const uint16_t data_le = htole16(data);
+  hash_update(ctx, (const uint8_t*)&data_le, sizeof(data_le));
 }
 
 static inline void hash_init_prefix(hash_context* ctx, const picnic_instance_t* pp,
@@ -72,6 +78,7 @@ typedef hash_context kdf_shake_t;
 #define kdf_shake_init(ctx, pp) hash_init((ctx), (pp))
 #define kdf_shake_init_prefix(ctx, pp, prefix) hash_init_prefix((ctx), (pp), (prefix))
 #define kdf_shake_update_key(ctx, key, keylen) hash_update((ctx), (key), (keylen))
+#define kdf_shake_update_key_uint16_le(ctx, key) hash_update_uint16_le((ctx), (key))
 #define kdf_shake_finalize_key(ctx) hash_final((ctx))
 #define kdf_shake_get_randomness(ctx, dst, count) hash_squeeze((ctx), (dst), (count))
 #define kdf_shake_clear(ctx)
@@ -144,11 +151,30 @@ static inline void hash_squeeze_x4(hash_context_x4* ctx, uint8_t** buffer, size_
 }
 #endif
 
+static inline void hash_update_x4_uint16_le(hash_context_x4* ctx, uint16_t data) {
+  const uint16_t data_le = htole16(data);
+  const uint8_t* ptr[4]  = {(const uint8_t*)&data_le, (const uint8_t*)&data_le,
+                           (const uint8_t*)&data_le, (const uint8_t*)&data_le};
+  hash_update_x4(ctx, ptr, sizeof(data_le));
+}
+
+static inline void hash_update_x4_uint16s_le(hash_context_x4* ctx, const uint16_t data[4]) {
+  const uint16_t data0_le = htole16(data[0]);
+  const uint16_t data1_le = htole16(data[1]);
+  const uint16_t data2_le = htole16(data[2]);
+  const uint16_t data3_le = htole16(data[3]);
+  const uint8_t* ptr[4]   = {(const uint8_t*)&data0_le, (const uint8_t*)&data1_le,
+                           (const uint8_t*)&data2_le, (const uint8_t*)&data3_le};
+  hash_update_x4(ctx, ptr, sizeof(data[0]));
+}
+
 typedef hash_context_x4 kdf_shake_x4_t;
 
 #define kdf_shake_x4_init(ctx, pp) hash_init_x4((ctx), (pp))
 #define kdf_shake_x4_init_prefix(ctx, pp, prefix) hash_init_prefix_x4((ctx), (pp), (prefix))
 #define kdf_shake_x4_update_key(ctx, key, keylen) hash_update_x4((ctx), (key), (keylen))
+#define kdf_shake_x4_update_key_uint16_le(ctx, key) hash_update_x4_uint16_le((ctx), (key))
+#define kdf_shake_x4_update_key_uint16s_le(ctx, keys) hash_update_x4_uint16s_le((ctx), (keys))
 #define kdf_shake_x4_finalize_key(ctx) hash_final_x4((ctx))
 #define kdf_shake_x4_get_randomness(ctx, dst, count) hash_squeeze_x4((ctx), (dst), (count))
 #define kdf_shake_x4_clear(ctx)

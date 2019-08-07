@@ -243,29 +243,6 @@ static void proof_free(sig_proof_t* prf) {
   free(prf);
 }
 
-static void kdf_shake_update_key_intLE(kdf_shake_t* kdf, uint16_t x) {
-  const uint16_t x_le = htole16(x);
-  kdf_shake_update_key(kdf, (const uint8_t*)&x_le, sizeof(x_le));
-}
-
-static void kdf_shake_x4_update_key_intLE(kdf_shake_x4_t* kdf, uint16_t x) {
-  const uint16_t x_le   = htole16(x);
-  const uint8_t* ptr[4] = {(const uint8_t*)&x_le, (const uint8_t*)&x_le, (const uint8_t*)&x_le,
-                           (const uint8_t*)&x_le};
-  kdf_shake_x4_update_key(kdf, ptr, sizeof(x_le));
-}
-
-static void kdf_shake_x4_update_key_intLE_round(kdf_shake_x4_t* kdf, const uint16_t x[4]) {
-
-  const uint16_t x0_le  = htole16(x[0]);
-  const uint16_t x1_le  = htole16(x[1]);
-  const uint16_t x2_le  = htole16(x[2]);
-  const uint16_t x3_le  = htole16(x[3]);
-  const uint8_t* ptr[4] = {(const uint8_t*)&x0_le, (const uint8_t*)&x1_le, (const uint8_t*)&x2_le,
-                           (const uint8_t*)&x3_le};
-  kdf_shake_x4_update_key(kdf, ptr, sizeof(x0_le));
-}
-
 static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const uint8_t* salt,
                                uint16_t round_number, uint16_t player_number,
                                bool include_input_size, const picnic_instance_t* pp) {
@@ -282,9 +259,9 @@ static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const uint
   kdf_shake_init(kdf, pp);
   kdf_shake_update_key(kdf, tmp, pp->digest_size);
   kdf_shake_update_key(kdf, salt, SALT_SIZE);
-  kdf_shake_update_key_intLE(kdf, round_number);
-  kdf_shake_update_key_intLE(kdf, player_number);
-  kdf_shake_update_key_intLE(kdf, pp->view_size + (include_input_size ? pp->input_size : 0));
+  kdf_shake_update_key_uint16_le(kdf, round_number);
+  kdf_shake_update_key_uint16_le(kdf, player_number);
+  kdf_shake_update_key_uint16_le(kdf, pp->view_size + (include_input_size ? pp->input_size : 0));
   kdf_shake_finalize_key(kdf);
 }
 
@@ -307,9 +284,9 @@ static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, con
   kdf_shake_x4_update_key(kdf, tmpptr_const, pp->digest_size);
   const uint8_t* saltptr[4] = {salt, salt, salt, salt};
   kdf_shake_x4_update_key(kdf, saltptr, SALT_SIZE);
-  kdf_shake_x4_update_key_intLE_round(kdf, round_number);
-  kdf_shake_x4_update_key_intLE(kdf, player_number);
-  kdf_shake_x4_update_key_intLE(kdf, pp->view_size + (include_input_size ? pp->input_size : 0));
+  kdf_shake_x4_update_key_uint16s_le(kdf, round_number);
+  kdf_shake_x4_update_key_uint16_le(kdf, player_number);
+  kdf_shake_x4_update_key_uint16_le(kdf, pp->view_size + (include_input_size ? pp->input_size : 0));
   kdf_shake_x4_finalize_key(kdf);
 }
 
@@ -685,7 +662,6 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
 
   const size_t outputlen =
       include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
-  const uint16_t size_le   = htole16(outputlen);
   const size_t digest_size = pp->digest_size;
   const size_t seedlen     = pp->seed_size;
 
@@ -704,7 +680,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
     hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
   }
   hash_update(&ctx, prf_round->communicated_bits[vidx], pp->view_size);
-  hash_update(&ctx, (const uint8_t*)&size_le, sizeof(uint16_t));
+  hash_update_uint16_le(&ctx, outputlen);
   hash_final(&ctx);
   hash_squeeze(&ctx, prf_round->gs[vidx], outputlen);
 }
@@ -718,7 +694,6 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
 
   const size_t outputlen =
       include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
-  const uint16_t size_le   = htole16(outputlen);
   const size_t digest_size = pp->digest_size;
   const size_t seedlen     = pp->seed_size;
 
@@ -750,9 +725,7 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
       prf_round[3].communicated_bits[vidx],
   };
   hash_update_x4(&ctx, communicated_bits, pp->view_size);
-  const uint8_t* sizes[4] = {(const uint8_t*)&size_le, (const uint8_t*)&size_le,
-                             (const uint8_t*)&size_le, (const uint8_t*)&size_le};
-  hash_update_x4(&ctx, sizes, sizeof(uint16_t));
+  hash_update_x4_uint16_le(&ctx, outputlen);
   hash_final_x4(&ctx);
   uint8_t* gs[4] = {prf_round[0].gs[vidx], prf_round[1].gs[vidx], prf_round[2].gs[vidx],
                     prf_round[3].gs[vidx]};
@@ -768,7 +741,6 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
 
   const size_t outputlen =
       include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
-  const uint16_t size_le   = htole16(outputlen);
   const size_t digest_size = pp->digest_size;
   const size_t seedlen     = pp->seed_size;
 
@@ -800,9 +772,7 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
       helper[3].round->communicated_bits[vidx],
   };
   hash_update_x4(&ctx, communicated_bits, pp->view_size);
-  const uint8_t* sizes[4] = {(const uint8_t*)&size_le, (const uint8_t*)&size_le,
-                             (const uint8_t*)&size_le, (const uint8_t*)&size_le};
-  hash_update_x4(&ctx, sizes, sizeof(uint16_t));
+  hash_update_x4_uint16_le(&ctx, outputlen);
   hash_final_x4(&ctx);
   uint8_t* gs[4] = {helper[0].round->gs[vidx], helper[1].round->gs[vidx], helper[2].round->gs[vidx],
                     helper[3].round->gs[vidx]};
@@ -989,8 +959,7 @@ static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_k
   kdf_shake_update_key(&ctx, public_key, output_size);
   kdf_shake_update_key(&ctx, plaintext, output_size);
   // N as 16 bit LE integer
-  const uint16_t size_le = htole16(lowmc_n);
-  kdf_shake_update_key(&ctx, (const uint8_t*)&size_le, sizeof(size_le));
+  kdf_shake_update_key_uint16_le(&ctx, lowmc_n);
 #if defined(WITH_EXTRA_RANDOMNESS)
   // Add extra randomn bytes for fault attack mitigation
   unsigned char buffer[2 * MAX_DIGEST_SIZE];
