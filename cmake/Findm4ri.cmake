@@ -1,13 +1,10 @@
 # - Try to find m4ri
 # Once done this will define
 #  M4RI_FOUND - System has m4ri
-#  M4RI_INCLUDE_DIRS - The m4ri include directories
-#  M4RI_LIBRARIES - The libraries needed to use m4ri
-#  M4RI_DEFINITIONS - Compiler switches required for using m4ri
+#  M4RI::m4ri - imported library
 
 find_package(PkgConfig)
 pkg_check_modules(PC_M4RI QUIET m4ri)
-set(M4RI_DEFINITIONS ${PC_M4RI_CFLAGS_OTHER})
 set(M4RI_VERSION_STRING ${PC_M4RI_VERSION})
 
 find_path(M4RI_INCLUDE_DIR m4ri.h
@@ -27,5 +24,10 @@ find_package_handle_standard_args(m4ri
 
 mark_as_advanced(M4RI_INCLUDE_DIR M4RI_LIBRARY M4RI_VERSION_STRING)
 
-set(M4RI_LIBRARIES ${M4RI_LIBRARY})
-set(M4RI_INCLUDE_DIRS ${M4RI_INCLUDE_DIR})
+if(M4RI_FOUND AND NOT TARGET M4RI::m4ri)
+  add_library(M4RI::m4ri UNKNOWN IMPORTED)
+  set_target_properties(M4RI::m4ri PROPERTIES
+    IMPORTED_LOCATION "${M4RI_LIBRARY}"
+    # INTERFACE_COMPILE_DEFINITIONS "${PC_M4RI_CFLAGS_OTHER}"
+    INTERFACE_INCLUDE_DIRECTORIES "${M4RI_INCLUDE_DIR}")
+endif()
