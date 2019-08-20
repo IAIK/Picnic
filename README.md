@@ -11,7 +11,7 @@ Research paper describing the signature scheme and the optimizations are also av
 Packages
 --------
 
-Packages for Ubuntu bionic and cosmis are available via a [PPA](https://launchpad.net/~s-ramacher/+archive/ubuntu/picnic/).
+Packages for Ubuntu bionic, disco, and eoan are available via a [PPA](https://launchpad.net/~s-ramacher/+archive/ubuntu/picnic/).
 
 Building
 --------
