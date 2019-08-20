@@ -430,11 +430,7 @@ void mzd_mul_v_parity_uint64_256_3(mzd_local_t* c, mzd_local_t const* v, mzd_loc
 #if defined(WITH_SSE2) || defined(WITH_NEON)
 ATTR_TARGET_S128 ATTR_CONST static inline word128 mm128_compute_mask(const word idx,
                                                                      const size_t bit) {
-#if defined(WITH_SSE2)
-  return _mm_set1_epi64x(-((idx >> bit) & 1));
-#else
-  return vdupq_n_u64(-((idx >> bit) & 1));
-#endif
+  return mm128_broadcast_u64(-((idx >> bit) & 1));
 }
 
 ATTR_TARGET_S128

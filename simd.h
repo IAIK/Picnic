@@ -121,6 +121,7 @@ typedef __m128i word128;
 #define mm128_zero _mm_setzero_si128()
 #define mm128_xor(l, r) _mm_xor_si128(l, r)
 #define mm128_and(l, r) _mm_and_si128(l, r)
+#define mm128_broadcast_u64(x) _mm_set1_epi64x((x))
 
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_SSE2);
 apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2);
@@ -135,6 +136,7 @@ typedef uint64x2_t word128;
 #define mm128_zero vmovq_n_u64(0)
 #define mm128_xor(l, r) veorq_u64(l, r)
 #define mm128_and(l, r) vandq_u64(l, r)
+#define mm128_broadcast_u64(x) vdupq_n_u64((x))
 
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON);
 apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON);
