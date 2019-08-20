@@ -35,6 +35,13 @@ include(CheckCCompilerFlag)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
 
+function(check_c_compiler_flag_and_add flag result)
+  check_c_compiler_flag("${flag}" ${result})
+  if(${result})
+    add_compile_options("${flag}")
+  endif()
+endfunction()
+
 # required libraries
 find_package(m4ri 20140914)
 
@@ -61,11 +68,11 @@ check_symbol_exists(getline stdio.h HAVE_GETLINE)
 check_c_compiler_flag(-march=native CC_SUPPORTS_MARCH_NATIVE)
 check_c_compiler_flag(-mtune=native CC_SUPPORTS_MTUNE_NATIVE)
 check_c_compiler_flag(-O3 CC_SUPPORTS_03)
-check_c_compiler_flag(-Wall CC_SUPPORTS_WALL)
-check_c_compiler_flag(-Wextra CC_SUPPORTS_WEXTRA)
-check_c_compiler_flag(-Wshadow CC_SUPPORTS_WSHADOW)
 check_c_compiler_flag(-fomit-frame-pointer CC_SUPPORTS_FOMIT_FRAME_POINTER)
-check_c_compiler_flag(-Werror=implicit-function-declaration CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
+check_c_compiler_flag_and_add(-Wall CC_SUPPORTS_WALL)
+check_c_compiler_flag_and_add(-Wextra CC_SUPPORTS_WEXTRA)
+check_c_compiler_flag_and_add(-Wshadow CC_SUPPORTS_WSHADOW)
+check_c_compiler_flag_and_add(-Werror=implicit-function-declaration CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
 
 # check SIMD instructions set
 check_simd(SSE2 CC_SUPPORTS_SSE2)
@@ -103,20 +110,7 @@ string(REGEX REPLACE "-rdynamic" "" CMAKE_EXE_LINKER_FLAGS
 string(REGEX REPLACE "-rdynamic" "" CMAKE_SHARED_LIBRARY_LINK_C_FLAGS
   "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS}")
 
-# build with additional flags if they are supported
-if(CC_SUPPORTS_WALL)
-  add_compile_options("-Wall")
-endif()
-if(CC_SUPPORTS_WEXTRA)
-  add_compile_options("-Wextra")
-endif()
-if(CC_SUPPORTS_WSHADOW)
-  add_compile_options("-Wshadow")
-endif()
-if(CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
-  add_compile_options("-Werror=implicit-function-declaration")
-endif()
-
+# disable some warnings on MSVC
 if(MSVC)
   # function inlining
   list(APPEND WARNINGS 4710 4711)
@@ -175,7 +169,7 @@ if(CC_SUPPORTS_03 AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   add_compile_options(-O3)
 endif()
 # enable -fomit-frame-pointer
-if(CC_SUPPORTS_FOMIT_FRAME_POINTER)
+if(CC_SUPPORTS_FOMIT_FRAME_POINTER AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   add_compile_options(-fomit-frame-pointer)
 endif()
 

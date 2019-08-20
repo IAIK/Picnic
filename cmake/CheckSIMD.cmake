@@ -1,6 +1,6 @@
 set(DIR_OF_THIS ${CMAKE_CURRENT_LIST_DIR})
 
-macro(CHECK_SIMD INS VARIABLE)
+function(CHECK_SIMD INS VARIABLE)
   if(NOT DEFINED "${VARIABLE}" OR "x${${VARIABLE}}" STREQUAL "x${VARIABLE}")
     set(MACRO_CHECK_INS_DEFINITIONS
       "-D${INS} ${CMAKE_REQUIRED_FLAGS}")
@@ -21,20 +21,19 @@ macro(CHECK_SIMD INS VARIABLE)
     endif()
 
     if(CMAKE_C_COMPILER_LOADED)
-      set(_cfe_source ${DIR_OF_THIS}/check-simd.c)
+      set(_source ${DIR_OF_THIS}/check-simd.c)
     else()
       message(FATAL_ERROR "CHECK_SIMD needs C language enabled")
     endif()
 
     try_compile(${VARIABLE}
       ${CMAKE_BINARY_DIR}
-      ${_cfe_source}
+      ${_source}
       COMPILE_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS}
       ${CHECK_INS_EXISTS_ADD_LIBRARIES}
       CMAKE_FLAGS -DCOMPILE_DEFINITIONS:STRING=${MACRO_CHECK_INS_DEFINITIONS}
       "${CHECK_INS_EXISTS_ADD_INCLUDES}"
       OUTPUT_VARIABLE OUTPUT)
-    unset(_cfe_source)
 
     if(${VARIABLE})
       set(${VARIABLE} 1 CACHE INTERNAL "Have instruction set ${INS}")
@@ -54,4 +53,4 @@ macro(CHECK_SIMD INS VARIABLE)
         "${OUTPUT}\n\n")
     endif()
   endif()
-endmacro()
+endfunction()
