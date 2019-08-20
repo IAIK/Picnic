@@ -190,7 +190,7 @@ list(APPEND SHA3_SOURCES
      sha3/KeccakHash.c
      sha3/KeccakSpongeWidth1600.c)
 
-if(${SHA3_IMPL} STREQUAL "avx2")
+if(SHA3_IMPL STREQUAL "avx2")
   list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.s)
   set_property(SOURCE sha3/avx2/KeccakP-1600-AVX2.s PROPERTY LANGUAGE C)
   # the times4 variant of Keccack using avx2
@@ -198,9 +198,9 @@ if(${SHA3_IMPL} STREQUAL "avx2")
        sha3/avx2/KeccakP-1600-times4-SIMD256.c
        sha3/KeccakSpongeWidth1600times4.c
        sha3/KeccakHashtimes4.c)
-elseif(${SHA3_IMPL} STREQUAL "opt64")
+elseif(SHA3_IMPL STREQUAL "opt64")
   list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
-elseif(${SHA3_IMPL} STREQUAL "armv8a-neon")
+elseif(SHA3_IMPL STREQUAL "armv8a-neon")
   list(APPEND SHA3_SOURCES sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s)
   set_property(SOURCE sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s PROPERTY LANGUAGE C)
 else()
@@ -220,14 +220,12 @@ list(APPEND PICNIC_SOURCES
      mzd_additional.c
      picnic.c
      picnic_impl.c
+     picnic2_impl.c
+     picnic2_simulate.c
+     picnic2_simulate_mul.c
+     picnic2_tree.c
+     picnic2_types.c
      randomness.c)
-# Picnic2 sources
-list(APPEND PICNIC_SOURCES
-    picnic2_impl.c
-    picnic2_simulate.c
-    picnic2_simulate_mul.c
-    picnic2_types.c
-    picnic2_tree.c)
 if(WITH_LOWMC_M1)
   list(APPEND PICNIC_SOURCES
        lowmc_128_128_182.c
@@ -259,7 +257,7 @@ function(apply_base_options lib)
   elseif(WITH_LOWMC_OPT STREQUAL "OLLE")
     target_compile_definitions(${lib} PRIVATE REDUCED_ROUND_KEY_COMPUTATION OPTIMIZED_LINEAR_LAYER_EVALUATION)
   endif()
-  if(${SHA3_IMPL} STREQUAL "avx2")
+  if(SHA3_IMPL STREQUAL "avx2")
     target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
   endif()
   if(WITH_LOWMC_M1)
