@@ -334,9 +334,9 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
         word128 t1 = out128[i1 / 2];
         word128 t2 = out128[i2 / 2];
 
-        out128[i1 / 2] = mm128_xor(mm128_and(t1, mask), _mm_srli_epi64(mm128_and(t2, mask), width));
+        out128[i1 / 2] = mm128_xor(mm128_and(t1, mask), mm128_sr_u64(mm128_and(t2, mask), width));
         out128[i2 / 2] =
-            mm128_xor(mm128_and(t2, inv_mask), _mm_slli_epi64(mm128_and(t1, inv_mask), width));
+            mm128_xor(mm128_and(t2, inv_mask), mm128_sl_u64(mm128_and(t1, inv_mask), width));
       }
     }
     nswaps *= 2;
@@ -418,9 +418,9 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
         word128 t1 = out128[i1 / 2];
         word128 t2 = out128[i2 / 2];
 
-        out128[i1 / 2] = mm128_xor(mm128_and(t1, mask), _mm_srli_epi64(mm128_and(t2, mask), width));
+        out128[i1 / 2] = mm128_xor(mm128_and(t1, mask), mm128_sr_u64(mm128_and(t2, mask), width));
         out128[i2 / 2] =
-            mm128_xor(mm128_and(t2, inv_mask), _mm_slli_epi64(mm128_and(t1, inv_mask), width));
+            mm128_xor(mm128_and(t2, inv_mask), mm128_sl_u64(mm128_and(t1, inv_mask), width));
       }
     }
     nswaps *= 2;
