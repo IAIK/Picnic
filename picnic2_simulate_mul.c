@@ -321,8 +321,8 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
   word128* out128 = (word128*)out;
 
   for (uint32_t i = 0; i < logn - 1; i++) {
-    word128 mask     = _mm_set1_epi64x(TRANSPOSE_MASKS64[i]);
-    word128 inv_mask = mm128_xor(mask, _mm_set1_epi64x(UINT64_C(0xFFFFFFFFFFFFFFFF)));
+    word128 mask     = mm128_broadcast_u64(TRANSPOSE_MASKS64[i]);
+    word128 inv_mask = mm128_xor(mask, mm128_broadcast_u64(UINT64_C(0xFFFFFFFFFFFFFFFF)));
 
     for (uint32_t j = 0; j < nswaps; j++) {
       for (uint32_t k = 0; k < width; k += 2) {
@@ -407,8 +407,8 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
   }
   {
     word128* out128  = (word128*)out;
-    word128 mask     = _mm_set1_epi64x(TRANSPOSE_MASKS64[4]);
-    word128 inv_mask = mm128_xor(mask, _mm_set1_epi64x(UINT64_C(0xFFFFFFFFFFFFFFFF)));
+    word128 mask     = mm128_broadcast_u64(TRANSPOSE_MASKS64[4]);
+    word128 inv_mask = mm128_xor(mask, mm128_broadcast_u64(UINT64_C(0xFFFFFFFFFFFFFFFF)));
 
     for (uint32_t j = 0; j < nswaps; j++) {
       for (uint32_t k = 0; k < width; k += 2) {
