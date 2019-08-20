@@ -26,7 +26,7 @@ static void wordToMsgsNoTranspose(uint64_t w, msgs_t* msgs) {
 }
 
 static void msgsTranspose(msgs_t* msgs) {
-  uint64_t* buffer = aligned_alloc(32, 64 * sizeof(uint64_t));
+  uint64_t buffer[64] ATTR_ALIGNED(32);
   size_t pos;
   for (pos = 0; pos < msgs->pos / 64; pos++) {
     for (size_t i = 0; i < 64; i++) {
@@ -45,7 +45,6 @@ static void msgsTranspose(msgs_t* msgs) {
   for (size_t i = 0; i < 64; i++) {
     ((uint64_t*)msgs->msgs[i])[pos] = buffer[i];
   }
-  aligned_free(buffer);
 }
 
 /* For each word in shares; write player i's share to their stream of msgs */

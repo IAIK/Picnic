@@ -363,6 +363,19 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
 #endif
 
 #if defined(WITH_AVX2)
+ATTR_TARGET_AVX2
+static inline void memcpy_bswap64_s256(word256* out, const word256* in, size_t s) {
+  const word256 shuffle = _mm256_set_epi8(
+      // two bswap64s in first lane
+      8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7,
+      // two bswap64s in second lane
+      8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7);
+
+  for (size_t i = 0; i < s; i++) {
+    out[i] = _mm256_shuffle_epi8(in[i], shuffle);
+  }
+}
+
 /* transpose a 64x64 bit matrix using Eklundh's algorithm
    this variant assumes that the bit with index 0 is the msb of byte 0
    e.g., 01234567 89abcdef ...
@@ -374,15 +387,13 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
       UINT64_C(0xF0F0F0F0F0F0F0F0), UINT64_C(0xCCCCCCCCCCCCCCCC), UINT64_C(0xAAAAAAAAAAAAAAAA)};
 
   uint32_t width = 32, nswaps = 1;
-  const uint32_t logn = 6;
+  static const uint32_t logn = 6;
 
-  // copy in to out and transpose in-place
-  memcpy(out, in, 64 * sizeof(uint64_t));
-  for (uint32_t i = 0; i < 64; i++) {
-    out[i] = bswap64(out[i]);
-  }
-
+  const word256* in256 = (const word256*)in;
   word256* out256 = (word256*)out;
+
+  // copy in to out and swap bytes
+  memcpy_bswap64_s256(out256, in256, 16);
 
   for (uint32_t i = 0; i < logn - 2; i++) {
     word256 mask     = _mm256_set1_epi64x(TRANSPOSE_MASKS64[i]);
@@ -441,9 +452,8 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
       out[i2] = (t2 & inv_mask) ^ ((t1 & inv_mask) << width);
     }
   }
-  for (uint32_t i = 0; i < 64; i++) {
-    out[i] = bswap64(out[i]);
-  }
+
+  memcpy_bswap64_s256(out256, out256, 16);
 }
 #endif
 #endif
