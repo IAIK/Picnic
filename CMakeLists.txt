@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+
+# cmake setup
+# honor visibility properties
 cmake_policy(SET CMP0063 NEW)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" VERSION_GREATER "3.8")
+  # enforce IPO if enabled
   cmake_policy(SET CMP0069 NEW)
 endif()
 
-# cmake setup
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
