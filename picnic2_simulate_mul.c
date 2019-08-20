@@ -268,9 +268,8 @@ static void transpose_64_64_uint64(const uint64_t* in, uint64_t* out) {
   const uint32_t logn = 6;
 
   // copy in to out and transpose in-place
-  memcpy(out, in, 64 * sizeof(uint64_t));
   for (uint32_t i = 0; i < 64; i++) {
-    out[i] = bswap64(out[i]);
+    out[i] = bswap64(in[i]);
   }
 
   for (uint32_t i = 0; i < logn; i++) {
@@ -313,9 +312,8 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
   const uint32_t logn = 6;
 
   // copy in to out and transpose in-place
-  memcpy(out, in, 64 * sizeof(uint64_t));
   for (uint32_t i = 0; i < 64; i++) {
-    out[i] = bswap64(out[i]);
+    out[i] = bswap64(in[i]);
   }
 
   word128* out128 = (word128*)out;
