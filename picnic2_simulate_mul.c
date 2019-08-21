@@ -362,14 +362,14 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
 
 #if defined(WITH_AVX2)
 ATTR_TARGET_AVX2
-static inline void memcpy_bswap64_s256(word256* out, const word256* in, size_t s) {
+static inline void memcpy_bswap64_64_s256(word256* out, const word256* in) {
   const word256 shuffle = _mm256_set_epi8(
       // two bswap64s in first lane
       8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7,
       // two bswap64s in second lane
       8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7);
 
-  for (size_t i = 0; i < s; i++) {
+  for (size_t i = 0; i < 16; i++) {
     out[i] = _mm256_shuffle_epi8(in[i], shuffle);
   }
 }
@@ -391,7 +391,7 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
   word256* out256 = (word256*)out;
 
   // copy in to out and swap bytes
-  memcpy_bswap64_s256(out256, in256, 16);
+  memcpy_bswap64_64_s256(out256, in256);
 
   for (uint32_t i = 0; i < logn - 2; i++) {
     word256 mask     = _mm256_set1_epi64x(TRANSPOSE_MASKS64[i]);
@@ -451,7 +451,7 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
     }
   }
 
-  memcpy_bswap64_s256(out256, out256, 16);
+  memcpy_bswap64_64_s256(out256, out256);
 }
 #endif
 #endif
