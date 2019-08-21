@@ -332,9 +332,7 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
   memcpy_bswap64_64_s128(out128, in128);
 
   for (uint32_t i = 0; i < logn - 1; i++) {
-    word128 mask     = mm128_broadcast_u64(TRANSPOSE_MASKS64[i]);
-    word128 inv_mask = mm128_xor(mask, mm128_broadcast_u64(UINT64_C(0xFFFFFFFFFFFFFFFF)));
-
+    const word128 mask = mm128_broadcast_u64(TRANSPOSE_MASKS64[i]);
     for (uint32_t j = 0; j < nswaps; j++) {
       for (uint32_t k = 0; k < width; k += 2) {
         // uint32_t i1 = k/2 + width * j;
@@ -346,15 +344,14 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
         word128 t2 = out128[i2 / 2];
 
         out128[i1 / 2] = mm128_xor(mm128_and(t1, mask), mm128_sr_u64(mm128_and(t2, mask), width));
-        out128[i2 / 2] =
-            mm128_xor(mm128_and(t2, inv_mask), mm128_sl_u64(mm128_and(t1, inv_mask), width));
+        out128[i2 / 2] = mm128_xor(mm128_nand(mask, t2), mm128_sl_u64(mm128_nand(mask, t1), width));
       }
     }
     nswaps *= 2;
     width /= 2;
   }
-  uint64_t mask     = TRANSPOSE_MASKS64[5];
-  uint64_t inv_mask = ~mask;
+  const uint64_t mask     = TRANSPOSE_MASKS64[5];
+  const uint64_t inv_mask = ~mask;
   for (uint32_t j = 0; j < nswaps; j++) {
     for (uint32_t k = 0; k < width; k++) {
       uint32_t i1 = k + 2 * width * j;
@@ -406,9 +403,7 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
   memcpy_bswap64_64_s256(out256, in256);
 
   for (uint32_t i = 0; i < logn - 2; i++) {
-    word256 mask     = _mm256_set1_epi64x(TRANSPOSE_MASKS64[i]);
-    word256 inv_mask = mm256_xor(mask, _mm256_set1_epi64x(UINT64_C(0xFFFFFFFFFFFFFFFF)));
-
+    const word256 mask = _mm256_set1_epi64x(TRANSPOSE_MASKS64[i]);
     for (uint32_t j = 0; j < nswaps; j++) {
       for (uint32_t k = 0; k < width; k += 4) {
         uint32_t i1 = k + 2 * width * j;
@@ -420,16 +415,15 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
         out256[i1 / 4] =
             mm256_xor(mm256_and(t1, mask), _mm256_srli_epi64(mm256_and(t2, mask), width));
         out256[i2 / 4] =
-            mm256_xor(mm256_and(t2, inv_mask), _mm256_slli_epi64(mm256_and(t1, inv_mask), width));
+            mm256_xor(mm256_nand(mask, t2), _mm256_slli_epi64(mm256_nand(mask, t1), width));
       }
     }
     nswaps *= 2;
     width /= 2;
   }
   {
-    word128* out128  = (word128*)out;
-    word128 mask     = mm128_broadcast_u64(TRANSPOSE_MASKS64[4]);
-    word128 inv_mask = mm128_xor(mask, mm128_broadcast_u64(UINT64_C(0xFFFFFFFFFFFFFFFF)));
+    word128* out128        = (word128*)out;
+    const word128 mask     = mm128_broadcast_u64(TRANSPOSE_MASKS64[4]);
 
     for (uint32_t j = 0; j < nswaps; j++) {
       for (uint32_t k = 0; k < width; k += 2) {
@@ -440,16 +434,15 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
         word128 t2 = out128[i2 / 2];
 
         out128[i1 / 2] = mm128_xor(mm128_and(t1, mask), mm128_sr_u64(mm128_and(t2, mask), width));
-        out128[i2 / 2] =
-            mm128_xor(mm128_and(t2, inv_mask), mm128_sl_u64(mm128_and(t1, inv_mask), width));
+        out128[i2 / 2] = mm128_xor(mm128_nand(mask, t2), mm128_sl_u64(mm128_nand(mask, t1), width));
       }
     }
     nswaps *= 2;
     width /= 2;
   }
 
-  uint64_t mask     = TRANSPOSE_MASKS64[5];
-  uint64_t inv_mask = ~mask;
+  const uint64_t mask     = TRANSPOSE_MASKS64[5];
+  const uint64_t inv_mask = ~mask;
   for (uint32_t j = 0; j < nswaps; j++) {
     for (uint32_t k = 0; k < width; k++) {
       uint32_t i1 = k + 2 * width * j;
@@ -469,7 +462,6 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
 #endif
 
 void transpose_64_64(const uint64_t* in, uint64_t* out) {
-
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {

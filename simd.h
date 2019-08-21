@@ -109,6 +109,8 @@ typedef __m256i word256;
 #define mm256_zero _mm256_setzero_si256()
 #define mm256_xor(l, r) _mm256_xor_si256((l), (r))
 #define mm256_and(l, r) _mm256_and_si256((l), (r))
+/* !l & r */
+#define mm256_nand(l, r) _mm256_andnot_si256((l), (r))
 
 apply_region(mm256_xor_region, word256, mm256_xor, FN_ATTRIBUTES_AVX2);
 apply_mask_region(mm256_xor_mask_region, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2);
@@ -121,6 +123,8 @@ typedef __m128i word128;
 #define mm128_zero _mm_setzero_si128()
 #define mm128_xor(l, r) _mm_xor_si128((l), (r))
 #define mm128_and(l, r) _mm_and_si128((l), (r))
+/* !l & r */
+#define mm128_nand(l, r) _mm_andnot_si128((l), (r))
 #define mm128_broadcast_u64(x) _mm_set1_epi64x((x))
 #define mm128_sl_u64(x, s) _mm_slli_epi64((x), (s))
 #define mm128_sr_u64(x, s) _mm_srli_epi64((x), (s))
@@ -138,6 +142,8 @@ typedef uint64x2_t word128;
 #define mm128_zero vmovq_n_u64(0)
 #define mm128_xor(l, r) veorq_u64((l), (r))
 #define mm128_and(l, r) vandq_u64((l), (r))
+/* !l & r, requires l to be an immediate */
+#define mm128_nand(l, r) vbicq_u64((r), (l))
 #define mm128_broadcast_u64(x) vdupq_n_u64((x))
 #define mm128_sl_u64(x, s) vshlq_n_u64((x), (s))
 #define mm128_sr_u64(x, s) vshrq_n_u64((x), (s))
