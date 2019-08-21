@@ -298,6 +298,21 @@ static void transpose_64_64_uint64(const uint64_t* in, uint64_t* out) {
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
+ATTR_TARGET_S128
+static inline void memcpy_bswap64_64_s128(word128* out, const word128* in) {
+#if defined(WITH_NEON)
+  for (size_t i = 0; i < 32; ++i) {
+    out[i] = vreinterpretq_u64_u8(vrev64q_u8(vreinterpretq_u8_u64(in[i])));
+  }
+#elif defined(WITH_SSE2)
+  for (size_t i = 0; i < 32; ++i) {
+    word128 tmp = _mm_or_si128(_mm_slli_epi16(in[i], 8), _mm_srli_epi16(in[i], 8));
+    tmp         = _mm_shufflelo_epi16(tmp, _MM_SHUFFLE(0, 1, 2, 3));
+    out[i]      = _mm_shufflehi_epi16(tmp, _MM_SHUFFLE(0, 1, 2, 3));
+  }
+#endif
+}
+
 /* transpose a 64x64 bit matrix using Eklundh's algorithm
    this variant assumes that the bit with index 0 is the msb of byte 0
    e.g., 01234567 89abcdef ...
@@ -312,11 +327,9 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
   const uint32_t logn = 6;
 
   // copy in to out and transpose in-place
-  for (uint32_t i = 0; i < 64; i++) {
-    out[i] = bswap64(in[i]);
-  }
-
   word128* out128 = (word128*)out;
+  const word128* in128 = (const word128*)in;
+  memcpy_bswap64_64_s128(out128, in128);
 
   for (uint32_t i = 0; i < logn - 1; i++) {
     word128 mask     = mm128_broadcast_u64(TRANSPOSE_MASKS64[i]);
@@ -354,9 +367,8 @@ static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
       out[i2] = (t2 & inv_mask) ^ ((t1 & inv_mask) << width);
     }
   }
-  for (uint32_t i = 0; i < 64; i++) {
-    out[i] = bswap64(out[i]);
-  }
+
+  memcpy_bswap64_64_s128(out128, out128);
 }
 #endif
 
