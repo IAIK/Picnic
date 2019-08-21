@@ -31,6 +31,19 @@ matrix:
             - ubuntu-toolchain-r-test
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
+            - gcc-9
+            - cmake
+      env:
+        - COMPILER=gcc-9
+    - compiler: gcc
+      os: linux
+      addons:
+        apt:
+          update: true
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ppsspp/cmake'
+          packages:
             - gcc-8
             - cmake
       env:
