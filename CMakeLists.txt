@@ -179,6 +179,7 @@ endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} sha3 "sha3/${SHA3_IMPL}")
 
+# SHAKE implementation
 list(APPEND SHA3_SOURCES
      sha3/KeccakHash.c
      sha3/KeccakSpongeWidth1600.c)
@@ -200,6 +201,7 @@ else()
   message(FATAL_ERROR "Unknown SHA3 implementation")
 endif()
 
+# Picnic implementation
 list(APPEND PICNIC_SOURCES
      aligned_alloc.c
      bitstream.c
