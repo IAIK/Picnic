@@ -1015,7 +1015,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
   rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for AND-gates
 
-  uint8_t* tape_bytes  = malloc(view_size);
   proof_round_t* round = prf->round;
   // use 4 parallel instances of keccak for speedup
   uint8_t* tape_bytes_x4[SC_PROOF][4];
@@ -1097,6 +1096,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
     // compute random tapes
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
+      uint8_t tape_bytes[MAX_VIEW_SIZE];
       kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
       decompress_random_tape(rvec, pp, tape_bytes, j);
     }
@@ -1132,7 +1132,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       free(tape_bytes_x4[k][j]);
     }
   }
-  free(tape_bytes);
   free(rvec);
   free(views);
   mzd_local_free_multiple(shared_key);
@@ -1173,7 +1172,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
   view_t* views       = calloc(sizeof(view_t), view_count);
   rvec_t* rvec        = calloc(sizeof(rvec_t), lowmc_r); // random tapes for and-gates
-  uint8_t* tape_bytes = malloc(view_size);
 
   // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when
   // verifying since all of this is public information, there is no leakage
@@ -1290,6 +1288,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
       // compute random tapes
       for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+        uint8_t tape_bytes[MAX_VIEW_SIZE];
         kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
         decompress_random_tape(rvec, pp, tape_bytes, j);
       }
@@ -1331,7 +1330,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       free(tape_bytes_x4[i][j]);
     }
   }
-  free(tape_bytes);
   free(rvec);
   free(views);
   mzd_local_free_multiple(in_out_shares[1].s);

@@ -18,6 +18,7 @@
 #define MAX_DIGEST_SIZE 64
 #define MAX_NUM_ROUNDS 438
 #define MAX_LOWMC_BLOCK_SIZE_BITS (MAX_LOWMC_BLOCK_SIZE * 8)
+#define MAX_VIEW_SIZE 143
 
 typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 
