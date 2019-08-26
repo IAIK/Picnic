@@ -1338,7 +1338,7 @@ void mzd_addmul_v_s256_30_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t 
 }
 
 ATTR_TARGET_AVX2
-static void mzd_addmul_v_s256_30_256_idx(mzd_local_t* c, mzd_local_t const* A, word idx) {
+static inline void mzd_addmul_v_s256_30_256_idx(mzd_local_t* c, mzd_local_t const* A, word idx) {
   block_t* cblock       = BLOCK(c, 0);
   const block_t* Ablock = CONST_BLOCK(A, 0);
 
@@ -1381,7 +1381,7 @@ void mzd_addmul_v_s256_3_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t c
 }
 
 ATTR_TARGET_AVX2
-static void mzd_addmul_v_s256_3_256_idx(mzd_local_t* c, mzd_local_t const* A, const word idx) {
+static inline void mzd_addmul_v_s256_3_256_idx(mzd_local_t* c, mzd_local_t const* A, const word idx) {
   block_t* cblock       = BLOCK(c, 0);
   const block_t* Ablock = CONST_BLOCK(A, 0);
 
@@ -1427,14 +1427,17 @@ static inline void mzd_shuffle_pext_30_idx(mzd_local_t* x, const word mask, unsi
   BLOCK(x, 0)->w64[idx] = a | _pext_u64(w, ~mask);
 }
 
+ATTR_TARGET_AVX2
 void mzd_shuffle_pext_128_30(mzd_local_t* x, const word mask) {
   mzd_shuffle_pext_30_idx(x, mask, 1);
 }
 
+ATTR_TARGET_AVX2
 void mzd_shuffle_pext_192_30(mzd_local_t* x, const word mask) {
   mzd_shuffle_pext_30_idx(x, mask, 2);
 }
 
+ATTR_TARGET_AVX2
 void mzd_shuffle_pext_256_30(mzd_local_t* x, const word mask) {
   mzd_shuffle_pext_30_idx(x, mask, 3);
 }
