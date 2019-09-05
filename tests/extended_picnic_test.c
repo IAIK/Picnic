@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const size_t rep = 32;
+static const size_t rep         = 32;
 static const size_t message_inc = 512;
 
 static int picnic_test_multiple_message_sizes(picnic_params_t parameters) {
@@ -36,8 +36,8 @@ static int picnic_test_multiple_message_sizes(picnic_params_t parameters) {
     return ret;
   }
 
-  uint8_t* signature   = malloc(max_signature_size);
-  uint8_t* message     = malloc(rep * message_inc);
+  uint8_t* signature = malloc(max_signature_size);
+  uint8_t* message   = malloc(rep * message_inc);
   if (!signature || !message) {
     ret = -1;
     goto end;
@@ -50,7 +50,7 @@ static int picnic_test_multiple_message_sizes(picnic_params_t parameters) {
     memset(signature, rand() & 0xFF, max_signature_size);
 
     size_t signature_len = max_signature_size;
-    ret = picnic_sign(&sk, message, message_size, signature, &signature_len);
+    ret                  = picnic_sign(&sk, message, message_size, signature, &signature_len);
     if (ret) {
       goto end;
     }
@@ -83,7 +83,6 @@ end:
   free(signature);
   return ret;
 }
-
 
 static int picnic_test_with_read_write(picnic_params_t parameters) {
   const size_t max_signature_size = picnic_signature_size(parameters);

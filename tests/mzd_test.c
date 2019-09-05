@@ -43,15 +43,15 @@ static int test_mzd_local_equal(void) {
     }
 
     switch (i) {
-      case 1:
-        mzd_xor_uint64_128(b, b, a);
-        break;
-      case 2:
-        mzd_xor_uint64_192(b, b, a);
-        break;
-      case 3:
-        mzd_xor_uint64_256(b, b, a);
-        break;
+    case 1:
+      mzd_xor_uint64_128(b, b, a);
+      break;
+    case 2:
+      mzd_xor_uint64_192(b, b, a);
+      break;
+    case 3:
+      mzd_xor_uint64_256(b, b, a);
+      break;
     }
 
     if (!mzd_local_equal(a, b, 1, cols)) {
@@ -112,7 +112,6 @@ static int test_mzd_mul_f(const char* n, unsigned int rows, unsigned int cols, m
 
   return ret;
 }
-
 
 static int test_mzd_mul_uint64_128(void) {
   return test_mzd_mul_f("mul uint64 128", 128, 128, mzd_mul_v_uint64_128, false);

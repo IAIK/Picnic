@@ -28,9 +28,9 @@ static int lowmc_enc(const picnic_params_t param, const uint8_t* key, const uint
   }
   const lowmc_t* lowmc = pp->lowmc;
 
-  mzd_local_t* sk = mzd_local_init(1, lowmc->k);
-  mzd_local_t* pt = mzd_local_init(1, lowmc->n);
-  mzd_local_t* ct = mzd_local_init(1, lowmc->n);
+  mzd_local_t* sk  = mzd_local_init(1, lowmc->k);
+  mzd_local_t* pt  = mzd_local_init(1, lowmc->n);
+  mzd_local_t* ct  = mzd_local_init(1, lowmc->n);
   mzd_local_t* ctr = mzd_local_init(1, lowmc->n);
 
   mzd_from_char_array(sk, key, pp->input_size);

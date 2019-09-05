@@ -62,7 +62,8 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
 
   while ((nread = getline(&line, &len, file)) != -1) {
     if (nread <= 1 || line[0] == '#' ||
-		(nread == 2 && line[0] == '\r' && line[1] == '\n')) { // also handle potential windows line endings
+        (nread == 2 && line[0] == '\r' &&
+         line[1] == '\n')) { // also handle potential windows line endings
       if (expect_data) {
         printf("Expected data.\n");
         goto err;
@@ -241,27 +242,29 @@ static int picnic_test_vector_L5UR(void) {
 }
 
 static int picnic2_test_vector_L1FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L1_FS),
+  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l1_fs.txt",
+                                    PICNIC_PUBLIC_KEY_SIZE(Picnic2_L1_FS),
                                     PICNIC_PRIVATE_KEY_SIZE(Picnic2_L1_FS));
 }
 
 static int picnic2_test_vector_L3FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l3_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L3_FS),
+  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l3_fs.txt",
+                                    PICNIC_PUBLIC_KEY_SIZE(Picnic2_L3_FS),
                                     PICNIC_PRIVATE_KEY_SIZE(Picnic2_L3_FS));
 }
 
 static int picnic2_test_vector_L5FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l5_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L5_FS),
+  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l5_fs.txt",
+                                    PICNIC_PUBLIC_KEY_SIZE(Picnic2_L5_FS),
                                     PICNIC_PRIVATE_KEY_SIZE(Picnic2_L5_FS));
 }
 
 typedef int (*test_fn_t)(void);
 
-static const test_fn_t tests[] = {picnic_test_vector_L1FS, picnic_test_vector_L1UR,
-                                  picnic_test_vector_L3FS, picnic_test_vector_L3UR,
-                                  picnic_test_vector_L5FS, picnic_test_vector_L5UR,
-                                  picnic2_test_vector_L1FS, picnic2_test_vector_L3FS,
-                                  picnic2_test_vector_L5FS};
+static const test_fn_t tests[] = {
+    picnic_test_vector_L1FS,  picnic_test_vector_L1UR,  picnic_test_vector_L3FS,
+    picnic_test_vector_L3UR,  picnic_test_vector_L5FS,  picnic_test_vector_L5UR,
+    picnic2_test_vector_L1FS, picnic2_test_vector_L3FS, picnic2_test_vector_L5FS};
 
 static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 
