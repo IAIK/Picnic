@@ -9,6 +9,10 @@
 #include <string.h>
 #include <stdbool.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#define strcasecmp(s1, s2) _stricmp((s1), (s2))
+#endif
+
 static inline picnic_params_t argument_to_params(const char* arg, bool support_m1) {
   for (unsigned int param = Picnic_L1_FS; param < PARAMETER_SET_MAX_INDEX; ++param) {
     if (!strcasecmp(arg, picnic_get_param_name(param))) {
