@@ -117,7 +117,7 @@ static void hashSeed(uint8_t* digest, const uint8_t* inputSeed, uint8_t* salt, u
                      size_t repIndex, size_t nodeIndex, const picnic_instance_t* params) {
   hash_context ctx;
 
-  hash_init_prefix(&ctx, params, hashPrefix);
+  hash_init_prefix(&ctx, params->digest_size, hashPrefix);
   hash_update(&ctx, inputSeed, params->seed_size);
   hash_update(&ctx, salt, SALT_SIZE);
   hash_update_uint16_le(&ctx, repIndex);
@@ -131,7 +131,7 @@ static void hashSeed_x4(uint8_t** digest, const uint8_t** inputSeed, uint8_t* sa
                         const picnic_instance_t* params) {
   hash_context_x4 ctx;
 
-  hash_init_prefix_x4(&ctx, params, hashPrefix);
+  hash_init_prefix_x4(&ctx, params->digest_size, hashPrefix);
   hash_update_x4(&ctx, inputSeed, params->seed_size);
 
   const uint8_t* salts[4] = {salt, salt, salt, salt};
@@ -418,7 +418,7 @@ static void computeParentHash(tree_t* tree, size_t child, uint8_t* salt,
   /* Compute parent data = H(left child data || [right child data] || salt || parent idx) */
   hash_context ctx;
 
-  hash_init_prefix(&ctx, params, HASH_PREFIX_3);
+  hash_init_prefix(&ctx, params->digest_size, HASH_PREFIX_3);
   hash_update(&ctx, tree->nodes[2 * parent + 1], params->digest_size);
   if (hasRightChild(tree, parent)) {
     /* One node may not have a right child when there's an odd number of leaves */

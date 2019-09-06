@@ -13,7 +13,7 @@ int main(void) {
   const uint8_t key[] = {0xab, 0xcd};
 
   kdf_shake_t ctx;
-  Keccak_HashInitialize_SHAKE256(&ctx);
+  kdf_shake_init(&ctx, 64);
   kdf_shake_update_key(&ctx, key, sizeof(key));
   kdf_shake_finalize_key(&ctx);
 

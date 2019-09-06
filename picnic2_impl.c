@@ -47,7 +47,7 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
   allocateRandomTape(tapes, params);
   assert(params->num_MPC_parties % 4 == 0);
   for (size_t i = 0; i < params->num_MPC_parties; i += 4) {
-    hash_init_x4(&ctx, params);
+    hash_init_x4(&ctx, params->digest_size);
 
     const uint8_t* seeds_ptr[4] = {seeds[i], seeds[i + 1], seeds[i + 2], seeds[i + 3]};
     hash_update_x4(&ctx, seeds_ptr, params->seed_size);
@@ -170,7 +170,7 @@ static void commit(uint8_t* digest, const uint8_t* seed, const uint8_t* aux, con
   /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
   hash_context ctx;
 
-  hash_init(&ctx, params);
+  hash_init(&ctx, params->digest_size);
   hash_update(&ctx, seed, params->seed_size);
   if (aux != NULL) {
     size_t tapeLenBytes = params->view_size;
@@ -188,7 +188,7 @@ static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* sal
   /* Compute C[t][j];  as digest = H(seed||[aux]) aux is optional */
   hash_context_x4 ctx;
 
-  hash_init_x4(&ctx, params);
+  hash_init_x4(&ctx, params->digest_size);
   hash_update_x4(&ctx, seed, params->seed_size);
   const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
   hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
@@ -202,7 +202,7 @@ static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* sal
 static void commit_h(uint8_t* digest, const commitments_t* C, const picnic_instance_t* params) {
   hash_context ctx;
 
-  hash_init(&ctx, params);
+  hash_init(&ctx, params->digest_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
     hash_update(&ctx, C->hashes[i], params->digest_size);
   }
@@ -213,7 +213,7 @@ static void commit_h(uint8_t* digest, const commitments_t* C, const picnic_insta
 static void commit_h_x4(uint8_t** digest, const commitments_t* C, const picnic_instance_t* params) {
   hash_context_x4 ctx;
 
-  hash_init_x4(&ctx, params);
+  hash_init_x4(&ctx, params->digest_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
     const uint8_t* data[4] = {
         C[0].hashes[i],
@@ -232,7 +232,7 @@ static void commit_v(uint8_t* digest, const uint8_t* input, const msgs_t* msgs,
                      const picnic_instance_t* params) {
   hash_context ctx;
 
-  hash_init(&ctx, params);
+  hash_init(&ctx, params->digest_size);
   hash_update(&ctx, input, params->input_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
     hash_update(&ctx, msgs->msgs[i], numBytes(msgs->pos));
@@ -245,7 +245,7 @@ static void commit_v_x4(uint8_t** digest, const uint8_t** input, const msgs_t* m
                         const picnic_instance_t* params) {
   hash_context_x4 ctx;
 
-  hash_init_x4(&ctx, params);
+  hash_init_x4(&ctx, params->digest_size);
   hash_update_x4(&ctx, input, params->input_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
     assert(msgs[0].pos == msgs[1].pos && msgs[2].pos == msgs[3].pos && msgs[0].pos == msgs[2].pos);
@@ -335,7 +335,7 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
 
   assert(params->num_opened_rounds < params->num_rounds);
 
-  hash_init(&ctx, params);
+  hash_init(&ctx, params->digest_size);
   for (size_t t = 0; t < params->num_rounds; t++) {
     hash_update(&ctx, Ch->hashes[t], params->digest_size);
   }
@@ -366,7 +366,7 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
       }
     }
 
-    hash_init_prefix(&ctx, params, HASH_PREFIX_1);
+    hash_init_prefix(&ctx, params->digest_size, HASH_PREFIX_1);
     hash_update(&ctx, h, params->digest_size);
     hash_final(&ctx);
     hash_squeeze(&ctx, h, params->digest_size);
@@ -387,7 +387,7 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
       }
     }
 
-    hash_init_prefix(&ctx, params, HASH_PREFIX_1);
+    hash_init_prefix(&ctx, params->digest_size, HASH_PREFIX_1);
     hash_update(&ctx, h, params->digest_size);
     hash_final(&ctx);
     hash_squeeze(&ctx, h, params->digest_size);
@@ -605,7 +605,7 @@ static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLengt
                                    const picnic_instance_t* params) {
   hash_context ctx;
 
-  hash_init(&ctx, params);
+  hash_init(&ctx, params->digest_size);
   hash_update(&ctx, (const uint8_t*)privateKey, params->input_size);
   hash_update(&ctx, message, messageByteLength);
   hash_update(&ctx, (const uint8_t*)pubKey, params->input_size);

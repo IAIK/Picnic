@@ -246,18 +246,20 @@ static void proof_free(sig_proof_t* prf) {
 static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const uint8_t* salt,
                                uint16_t round_number, uint16_t player_number,
                                bool include_input_size, const picnic_instance_t* pp) {
+  const size_t digest_size = pp->digest_size;
+
   // Hash the seed with H_2.
-  kdf_shake_init_prefix(kdf, pp, HASH_PREFIX_2);
+  kdf_shake_init_prefix(kdf, digest_size, HASH_PREFIX_2);
   kdf_shake_update_key(kdf, seed, pp->seed_size);
   kdf_shake_finalize_key(kdf);
 
   uint8_t tmp[MAX_DIGEST_SIZE];
-  kdf_shake_get_randomness(kdf, tmp, pp->digest_size);
+  kdf_shake_get_randomness(kdf, tmp, digest_size);
   kdf_shake_clear(kdf);
 
   // Initialize KDF with H_2(seed) || salt || round_number || player_number || output_size.
-  kdf_shake_init(kdf, pp);
-  kdf_shake_update_key(kdf, tmp, pp->digest_size);
+  kdf_shake_init(kdf, digest_size);
+  kdf_shake_update_key(kdf, tmp, digest_size);
   kdf_shake_update_key(kdf, salt, SALT_SIZE);
   kdf_shake_update_key_uint16_le(kdf, round_number);
   kdf_shake_update_key_uint16_le(kdf, player_number);
@@ -268,20 +270,22 @@ static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const uint
 static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, const uint8_t* salt,
                                   const uint16_t round_number[4], const uint16_t player_number,
                                   bool include_input_size, const picnic_instance_t* pp) {
+  const size_t digest_size = pp->digest_size;
+
   // Hash the seed with H_2.
-  kdf_shake_x4_init_prefix(kdf, pp, HASH_PREFIX_2);
+  kdf_shake_x4_init_prefix(kdf, digest_size, HASH_PREFIX_2);
   kdf_shake_x4_update_key(kdf, seed, pp->seed_size);
   kdf_shake_x4_finalize_key(kdf);
 
   uint8_t tmp[4][MAX_DIGEST_SIZE];
   uint8_t* tmpptr[4]             = {tmp[0], tmp[1], tmp[2], tmp[3]};
   const uint8_t* tmpptr_const[4] = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  kdf_shake_x4_get_randomness(kdf, tmpptr, pp->digest_size);
+  kdf_shake_x4_get_randomness(kdf, tmpptr, digest_size);
   kdf_shake_x4_clear(kdf);
 
   // Initialize KDF with H_2(seed) || salt || round_number || player_number || output_size.
-  kdf_shake_x4_init(kdf, pp);
-  kdf_shake_x4_update_key(kdf, tmpptr_const, pp->digest_size);
+  kdf_shake_x4_init(kdf, digest_size);
+  kdf_shake_x4_update_key(kdf, tmpptr_const, digest_size);
   const uint8_t* saltptr[4] = {salt, salt, salt, salt};
   kdf_shake_x4_update_key(kdf, saltptr, SALT_SIZE);
   kdf_shake_x4_update_key_uint16s_le(kdf, round_number);
@@ -376,14 +380,14 @@ static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_roun
 
   hash_context ctx;
   // hash the seed
-  hash_init_prefix(&ctx, pp, HASH_PREFIX_4);
+  hash_init_prefix(&ctx, hashlen, HASH_PREFIX_4);
   hash_update(&ctx, prf_round->seeds[vidx], pp->seed_size);
   hash_final(&ctx);
   uint8_t tmp[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, tmp, hashlen);
 
   // compute H_0(H_4(seed), view)
-  hash_init_prefix(&ctx, pp, HASH_PREFIX_0);
+  hash_init_prefix(&ctx, hashlen, HASH_PREFIX_0);
   hash_update(&ctx, tmp, hashlen);
   // hash input share
   hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
@@ -404,7 +408,7 @@ static void hash_commitment_x4(const picnic_instance_t* pp, proof_round_t* prf_r
 
   hash_context_x4 ctx;
   // hash the seed
-  hash_init_prefix_x4(&ctx, pp, HASH_PREFIX_4);
+  hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_4);
   const uint8_t* seeds[4] = {prf_round[0].seeds[vidx], prf_round[1].seeds[vidx],
                              prf_round[2].seeds[vidx], prf_round[3].seeds[vidx]};
   hash_update_x4(&ctx, seeds, pp->seed_size);
@@ -415,7 +419,7 @@ static void hash_commitment_x4(const picnic_instance_t* pp, proof_round_t* prf_r
   hash_squeeze_x4(&ctx, tmpptr, hashlen);
 
   // compute H_0(H_4(seed), view)
-  hash_init_prefix_x4(&ctx, pp, HASH_PREFIX_0);
+  hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_0);
   hash_update_x4(&ctx, tmpptr_const, hashlen);
   // hash input share
   const uint8_t* input_shares[4] = {
@@ -446,7 +450,7 @@ static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting
 
   hash_context_x4 ctx;
   // hash the seed
-  hash_init_prefix_x4(&ctx, pp, HASH_PREFIX_4);
+  hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_4);
   const uint8_t* seeds[4] = {helper[0].round->seeds[vidx], helper[1].round->seeds[vidx],
                              helper[2].round->seeds[vidx], helper[3].round->seeds[vidx]};
   hash_update_x4(&ctx, seeds, pp->seed_size);
@@ -457,7 +461,7 @@ static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting
   hash_squeeze_x4(&ctx, tmpptr, hashlen);
 
   // compute H_0(H_4(seed), view)
-  hash_init_prefix_x4(&ctx, pp, HASH_PREFIX_0);
+  hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_0);
   hash_update_x4(&ctx, tmpptr_const, hashlen);
   // hash input share
   const uint8_t* input_shares[4] = {
@@ -494,7 +498,7 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
   while (ch < eof) {
     if (bit_idx >= digest_size_bits) {
       hash_context ctx;
-      hash_init_prefix(&ctx, pp, HASH_PREFIX_1);
+      hash_init_prefix(&ctx, digest_size, HASH_PREFIX_1);
       hash_update(&ctx, hash, digest_size);
       hash_final(&ctx);
       hash_squeeze(&ctx, hash, digest_size);
@@ -534,7 +538,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8
   const size_t output_size = pp->output_size;
 
   hash_context ctx;
-  hash_init_prefix(&ctx, pp, HASH_PREFIX_1);
+  hash_init_prefix(&ctx, digest_size, HASH_PREFIX_1);
 
   // hash output shares
   proof_round_t* round = prf->round;
@@ -632,7 +636,7 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* cir
   const size_t num_rounds = pp->num_rounds;
 
   hash_context ctx;
-  hash_init_prefix(&ctx, pp, HASH_PREFIX_1);
+  hash_init_prefix(&ctx, pp->digest_size, HASH_PREFIX_1);
 
   // hash output shares
   hash_update(&ctx, prf->round[0].output_shares[0], pp->output_size * num_rounds * SC_PROOF);
@@ -658,15 +662,14 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* cir
  */
 static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned int vidx,
                     bool include_is) {
-  hash_context ctx;
-
   const size_t outputlen =
       include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
   const size_t digest_size = pp->digest_size;
   const size_t seedlen     = pp->seed_size;
 
   // Hash the seed with H_5, store digest in output
-  hash_init_prefix(&ctx, pp, HASH_PREFIX_5);
+  hash_context ctx;
+  hash_init_prefix(&ctx, digest_size, HASH_PREFIX_5);
   hash_update(&ctx, prf_round->seeds[vidx], seedlen);
   hash_final(&ctx);
 
@@ -674,7 +677,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   hash_squeeze(&ctx, tmp, digest_size);
 
   // Hash H_5(seed), the view, and the length
-  hash_init(&ctx, pp);
+  hash_init(&ctx, digest_size);
   hash_update(&ctx, tmp, digest_size);
   if (include_is) {
     hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
@@ -690,15 +693,14 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
  */
 static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned int vidx,
                        bool include_is) {
-  hash_context_x4 ctx;
-
   const size_t outputlen =
       include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
   const size_t digest_size = pp->digest_size;
   const size_t seedlen     = pp->seed_size;
 
   // Hash the seed with H_5, store digest in output
-  hash_init_prefix_x4(&ctx, pp, HASH_PREFIX_5);
+  hash_context_x4 ctx;
+  hash_init_prefix_x4(&ctx, digest_size, HASH_PREFIX_5);
   const uint8_t* seeds[4] = {prf_round[0].seeds[vidx], prf_round[1].seeds[vidx],
                              prf_round[2].seeds[vidx], prf_round[3].seeds[vidx]};
   hash_update_x4(&ctx, seeds, seedlen);
@@ -710,7 +712,7 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
   hash_squeeze_x4(&ctx, tmpptr, digest_size);
 
   // Hash H_5(seed), the view, and the length
-  hash_init_x4(&ctx, pp);
+  hash_init_x4(&ctx, digest_size);
   hash_update_x4(&ctx, tmpptr_const, digest_size);
   if (include_is) {
     const uint8_t* input_shares[4] = {
@@ -737,15 +739,14 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
  */
 static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_t* helper,
                               unsigned int vidx, bool include_is) {
-  hash_context_x4 ctx;
-
   const size_t outputlen =
       include_is ? pp->unruh_with_input_bytes_size : pp->unruh_without_input_bytes_size;
   const size_t digest_size = pp->digest_size;
   const size_t seedlen     = pp->seed_size;
 
   // Hash the seed with H_5, store digest in output
-  hash_init_prefix_x4(&ctx, pp, HASH_PREFIX_5);
+  hash_context_x4 ctx;
+  hash_init_prefix_x4(&ctx, digest_size, HASH_PREFIX_5);
   const uint8_t* seeds[4] = {helper[0].round->seeds[vidx], helper[1].round->seeds[vidx],
                              helper[2].round->seeds[vidx], helper[3].round->seeds[vidx]};
   hash_update_x4(&ctx, seeds, seedlen);
@@ -757,7 +758,7 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
   hash_squeeze_x4(&ctx, tmpptr, digest_size);
 
   // Hash H_5(seed), the view, and the length
-  hash_init_x4(&ctx, pp);
+  hash_init_x4(&ctx, digest_size);
   hash_update_x4(&ctx, tmpptr_const, digest_size);
   if (include_is) {
     const uint8_t* input_shares[4] = {
@@ -952,7 +953,7 @@ static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_k
   const size_t lowmc_n     = lowmc->n;
 
   kdf_shake_t ctx;
-  kdf_shake_init(&ctx, pp);
+  kdf_shake_init(&ctx, pp->digest_size);
   // sk || m || C || p
   kdf_shake_update_key(&ctx, private_key, input_size);
   kdf_shake_update_key(&ctx, m, m_len);
