@@ -13,6 +13,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 
 typedef struct {
   size_t mlen;
@@ -268,7 +270,24 @@ static const test_fn_t tests[] = {
 
 static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 
-int main(void) {
+int main(int argc, char** argv) {
+  if (argc == 2) {
+    const long idx = strtol(argv[1], NULL, 10);
+
+    if ((errno == ERANGE && (idx == LONG_MAX || idx == LONG_MIN)) || (errno != 0 && idx == 0) ||
+        idx < 1 || (size_t)idx > num_tests) {
+      printf("ERR: invalid test idx\n");
+      return 1;
+    }
+
+    const int t = tests[idx - 1]();
+    if (!t) {
+      printf("ERR: Picnic KAT test %ld FAILED (%d)\n", idx - 1, t);
+      return -1;
+    }
+    return 0;
+  }
+
   int ret = 0;
   for (size_t s = 0; s < num_tests; ++s) {
     const int t = tests[s]();
