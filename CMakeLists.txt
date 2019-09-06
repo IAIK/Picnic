@@ -142,15 +142,16 @@ endif()
 # enable LTO if supported
 if(WITH_LTO)
   if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" VERSION_LESS "3.9")
-    if(CMAKE_COMPILER_IS_GNUCC)
-      set(CMAKE_AR "gcc-ar")
-      set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
-      set(CMAKE_C_ARCHIVE_FINISH true)
-    endif()
-
     check_c_compiler_flag(-flto CC_SUPPORTS_FLTO)
     if(CC_SUPPORTS_FLTO)
       message(STATUS "IPO is supported.")
+
+      if(CMAKE_COMPILER_IS_GNUCC)
+        set(CMAKE_AR "gcc-ar")
+        set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+        set(CMAKE_C_ARCHIVE_FINISH true)
+      endif()
+
       add_compile_options(-flto)
       set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
     else()
