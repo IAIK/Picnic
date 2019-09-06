@@ -7,14 +7,15 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "picnic.h"
+#include "test_utils.h"
 
 #include <memory.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <limits.h>
 
 typedef struct {
   size_t mlen;
@@ -63,9 +64,7 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
   bool expect_data = false;
 
   while ((nread = getline(&line, &len, file)) != -1) {
-    if (nread <= 1 || line[0] == '#' ||
-        (nread == 2 && line[0] == '\r' &&
-         line[1] == '\n')) { // also handle potential windows line endings
+    if (nread <= 1 || line[0] == '#' || (nread == 2 && line[0] == '\r' && line[1] == '\n')) {
       if (expect_data) {
         printf("Expected data.\n");
         goto err;
@@ -272,17 +271,15 @@ static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 
 int main(int argc, char** argv) {
   if (argc == 2) {
-    const long idx = strtol(argv[1], NULL, 10);
-
-    if ((errno == ERANGE && (idx == LONG_MAX || idx == LONG_MIN)) || (errno != 0 && idx == 0) ||
-        idx < 1 || (size_t)idx > num_tests) {
+    const picnic_params_t param = argument_to_params(argv[1], false);
+    if (param == PARAMETER_SET_INVALID) {
       printf("ERR: invalid test idx\n");
       return 1;
     }
 
-    const int t = tests[idx - 1]();
+    const int t = tests[param - 1]();
     if (!t) {
-      printf("ERR: Picnic KAT test %ld FAILED (%d)\n", idx - 1, t);
+      printf("ERR: Picnic KAT test %u FAILED (%d)\n", param - 1, t);
       return -1;
     }
     return 0;

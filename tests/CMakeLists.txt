@@ -1,3 +1,29 @@
+function(add_picnic_tests name target m1)
+  list(APPEND ALL_PARAMS
+       picnic_L1_FS
+       picnic_L1_UR
+       picnic_L3_FS
+       picnic_L3_UR
+       picnic_L5_FS
+       picnic_L5_UR
+       picnic2_L1_FS
+       picnic2_L3_FS
+       picnic2_L5_FS)
+  if(m1 AND WITH_LOWMC_M1)
+    list(APPEND ALL_PARAMS
+         picnic_L1_1_FS
+         picnic_L1_1_UR
+         picnic_L3_1_FS
+         picnic_L3_1_UR
+         picnic_L5_1_FS
+         picnic_L5_1_UR)
+  endif()
+
+  foreach(param IN LISTS ALL_PARAMS)
+    add_test(NAME "${name}_${param}" COMMAND ${target} ${param})
+  endforeach(param)
+endfunction()
+
 if(M4RI_FOUND)
   foreach(target IN ITEMS lowmc_str mzd)
     add_executable("${target}_test" "${target}_test.c")
@@ -33,14 +59,25 @@ foreach(target IN ITEMS ${test_static_targets})
   if(WITH_LOWMC_M1)
       target_compile_definitions("${target}_test" PRIVATE WITH_LOWMC_M1)
   endif()
-  add_test(NAME ${target} COMMAND "${target}_test")
+
+  if(${target} STREQUAL picnic OR ${target} STREQUAL extended_picnic)
+    add_picnic_tests(${target} "${target}_test" ON)
+  else()
+    add_test(NAME ${target} COMMAND "${target}_test")
+  endif()
 endforeach(target)
 
 foreach(target IN ITEMS ${test_targets})
   add_executable("${target}_test" "${target}_test.c")
   target_link_libraries("${target}_test" picnic)
   apply_base_options("${target}_test")
-  add_test(NAME ${target} COMMAND "${target}_test")
+
+  if(${target} STREQUAL picnic OR ${target} STREQUAL extended_picnic)
+    add_picnic_tests(${target} "${target}_test" ON)
+  else()
+    add_test(NAME ${target} COMMAND "${target}_test")
+  endif()
+
 endforeach(target)
 
 if(NOT WITH_EXTRA_RANDOMNESS AND HAVE_GETLINE)
@@ -49,15 +86,7 @@ if(NOT WITH_EXTRA_RANDOMNESS AND HAVE_GETLINE)
   apply_base_options(kats_test)
   target_compile_definitions(kats_test PRIVATE "-DKATDIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"")
 
-  add_test(NAME kats_picnic_L1_FS COMMAND kats_test 1)
-  add_test(NAME kats_picnic_L1_UR COMMAND kats_test 2)
-  add_test(NAME kats_picnic_L3_FS COMMAND kats_test 3)
-  add_test(NAME kats_picnic_L3_UR COMMAND kats_test 4)
-  add_test(NAME kats_picnic_L5_FS COMMAND kats_test 5)
-  add_test(NAME kats_picnic_L5_UR COMMAND kats_test 6)
-  add_test(NAME kats_picnic2_L1_FS COMMAND kats_test 7)
-  add_test(NAME kats_picnic2_L3_FS COMMAND kats_test 8)
-  add_test(NAME kats_picnic2_L5_FS COMMAND kats_test 9)
+  add_picnic_tests(kats kats_test OFF)
 endif()
 
 if(NOT MSVC)

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 #include "picnic.h"
+#include "test_utils.h"
 
 static int picnic_sign_verify(const picnic_params_t param) {
   static const uint8_t m[] = "test message";
@@ -67,18 +68,37 @@ static int picnic_sign_verify(const picnic_params_t param) {
   return ret;
 }
 
-int main(void) {
+static int perform_test(const picnic_params_t param)
+{
+  printf("testing: %s ... ", picnic_get_param_name(param));
+  const int r = picnic_sign_verify(param);
+  if (r == -2) {
+    printf("SKIPPED\n");
+  } else if (r) {
+    printf("FAILED\n");
+    return -1;
+  } else {
+    printf("OK\n");
+  }
+  return 0;
+}
+
+int main(int argc, char** argv) {
+  if (argc == 2) {
+    const picnic_params_t param = argument_to_params(argv[1], true);
+    if (param == PARAMETER_SET_INVALID) {
+      printf("ERR: invalid test idx\n");
+      return 1;
+    }
+
+    return perform_test(param);
+  }
+
   int ret = 0;
   for (unsigned int param = Picnic_L1_FS; param < PARAMETER_SET_MAX_INDEX; ++param) {
-    printf("testing: %s ... ", picnic_get_param_name(param));
-    const int r = picnic_sign_verify(param);
-    if (r == -2) {
-      printf("SKIPPED\n");
-    } else if (r) {
-      printf("FAILED\n");
+    const int r = perform_test(param);
+    if (r) {
       ret = -1;
-    } else {
-      printf("OK\n");
     }
   }
 

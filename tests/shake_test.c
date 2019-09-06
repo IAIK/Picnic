@@ -7,10 +7,14 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 
-#include "kdf_shake.h"
+#include "../kdf_shake.h"
 
 int main(void) {
   const uint8_t data1[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef};

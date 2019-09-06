@@ -12,6 +12,7 @@
 #endif
 
 #include "picnic.h"
+#include "test_utils.h"
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -157,30 +158,51 @@ static int picnic_test_with_read_write(picnic_params_t parameters) {
   return 0;
 }
 
-int main(void) {
+static int perform_test(picnic_params_t param)
+{
+  printf("testing with read/write: %s ... ", picnic_get_param_name(param));
   int ret = 0;
-  for (picnic_params_t params = 1; params < PARAMETER_SET_MAX_INDEX; params++) {
-    printf("testing with read/write: %s ... ", picnic_get_param_name(params));
-    int r = picnic_test_with_read_write(params);
-    if (r == -2) {
-      printf("SKIPPED\n");
-    } else if (r) {
-      printf("FAILED\n");
-      ret = -1;
-    } else {
-      printf("OK\n");
+  int r   = picnic_test_with_read_write(param);
+  if (r == -2) {
+    printf("SKIPPED\n");
+  } else if (r) {
+    printf("FAILED\n");
+    ret = -1;
+  } else {
+    printf("OK\n");
+  }
+
+  printf("testing multiple message sizes: %s ... ", picnic_get_param_name(param));
+  r = picnic_test_multiple_message_sizes(param);
+  if (r == -2) {
+    printf("SKIPPED\n");
+  } else if (r) {
+    printf("FAILED\n");
+    ret = -1;
+  } else {
+    printf("OK\n");
+  }
+  return ret;
+}
+
+int main(int argc, char** argv) {
+  if (argc == 2) {
+    const picnic_params_t param = argument_to_params(argv[1], true);
+    if (param == PARAMETER_SET_INVALID) {
+      printf("ERR: invalid test idx\n");
+      return 1;
     }
 
-    printf("testing multiple message sizes: %s ... ", picnic_get_param_name(params));
-    r = picnic_test_multiple_message_sizes(params);
-    if (r == -2) {
-      printf("SKIPPED\n");
-    } else if (r) {
-      printf("FAILED\n");
+    return perform_test(param);
+  }
+
+  int ret = 0;
+  for (unsigned int param = Picnic_L1_FS; param < PARAMETER_SET_MAX_INDEX; ++param) {
+    const int r = perform_test(param);
+    if (r) {
       ret = -1;
-    } else {
-      printf("OK\n");
     }
   }
+
   return ret;
 }
