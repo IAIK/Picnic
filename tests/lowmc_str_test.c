@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #include "utils.h"
+#include "m4ri_utils.h"
 
 static int lowmc_enc_str(const picnic_params_t param, const char* key, const char* plaintext,
                          const char* expected) {

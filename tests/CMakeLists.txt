@@ -1,3 +1,4 @@
+# Generate tests for all parameters
 function(add_picnic_tests name target m1)
   list(APPEND ALL_PARAMS
        picnic_L1_FS
@@ -34,7 +35,6 @@ if(M4RI_FOUND)
     if(MSVC AND USE_STATIC_RUNTIME)
       target_compile_options("${target}_test" PRIVATE "/MT$<$<CONFIG:Debug>:d>")
     endif()
-    target_compile_definitions("${target}_test" PRIVATE WITH_M4RI_UTILS)
 
     add_test(NAME ${target} COMMAND "${target}_test")
   endforeach(target)
@@ -77,7 +77,6 @@ foreach(target IN ITEMS ${test_targets})
   else()
     add_test(NAME ${target} COMMAND "${target}_test")
   endif()
-
 endforeach(target)
 
 if(NOT WITH_EXTRA_RANDOMNESS AND HAVE_GETLINE)
@@ -95,9 +94,6 @@ if(NOT MSVC)
     add_executable("api_${target}_test" "api_test.c")
     apply_base_options("api_${target}_test")
     target_link_libraries("api_${target}_test" "${target}")
-    target_include_directories("api_${target}_test" PRIVATE
-      "${CMAKE_CURRENT_SOURCE_DIR}/../${target}")
-
     add_test(NAME "api_${target}" COMMAND "api_${target}_test")
   endforeach(target)
 endif()

@@ -6,8 +6,40 @@
  *  more details.
  *  SPDX-License-Identifier: MIT
  */
+#ifndef PICNIC_TEST_UTILS_H
+#define PICNIC_TEST_UTILS_H
 
+#include "picnic.h"
+#include "mzd_additional.h"
+
+#include <errno.h>
+#include <limits.h>
+#include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#define strcasecmp(s1, s2) _stricmp((s1), (s2))
+#endif
+
+static inline picnic_params_t argument_to_params(const char* arg, bool support_m1) {
+  for (unsigned int param = Picnic_L1_FS; param < PARAMETER_SET_MAX_INDEX; ++param) {
+    if (!strcasecmp(arg, picnic_get_param_name(param))) {
+      return param;
+    }
+  }
+
+  const long idx = strtol(arg, NULL, 10);
+  if ((errno == ERANGE && (idx == LONG_MAX || idx == LONG_MIN)) || (errno != 0 && idx == 0) ||
+      idx < 1 || (size_t)idx >= PARAMETER_SET_MAX_INDEX) {
+    return PARAMETER_SET_INVALID;
+  }
+  if (!support_m1 && (size_t)idx > Picnic2_L5_FS) {
+    return PARAMETER_SET_INVALID;
+  }
+
+  return idx;
+}
 
 static inline bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second, unsigned int rows, unsigned cols) {
   const unsigned int num_uints = (cols + 63) / 64;
@@ -26,33 +58,4 @@ static inline bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* 
   return true;
 }
 
-#if defined(WITH_M4RI_UTILS)
-static inline mzd_local_t* mzd_convert_128(const mzd_t* v) {
-  mzd_local_t* r = mzd_local_init(v->nrows, 128);
-
-  for (rci_t row = 0; row < v->nrows; ++row) {
-    memcpy(&BLOCK(r, row >> 1)->w64[(row & 0x1) << 1], v->rows[row], 2 * sizeof(word));
-  }
-  return r;
-}
-
-static inline mzd_local_t* mzd_convert(const mzd_t* v) {
-  if (v->ncols == 128) {
-    return mzd_convert_128(v);
-  }
-
-  const unsigned int num_uints = (v->ncols + 63) / 64;
-  const unsigned int num_blocks = (num_uints + 3) / 4;
-
-  mzd_local_t* r = mzd_local_init(v->nrows, v->ncols);
-
-  for (rci_t i = 0; i < v->nrows; ++i) {
-    for (unsigned int j = 0; j < num_blocks; ++j) {
-      const unsigned int s = ((j == num_blocks - 1) && (num_uints % 4)) ? (num_uints % 4) : 4;
-      memcpy(BLOCK(r, j + i * num_blocks)->w64, &v->rows[i][j * 4], s * sizeof(word));
-    }
-  }
-
-  return r;
-}
 #endif

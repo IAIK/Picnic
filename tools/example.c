@@ -10,7 +10,8 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#include "picnic.h"
+#include <picnic.h>
+
 #include <inttypes.h>
 #include <memory.h>
 #include <stdio.h>

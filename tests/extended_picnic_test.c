@@ -12,7 +12,7 @@
 #endif
 
 #include "picnic.h"
-#include "test_utils.h"
+#include "utils.h"
 
 #include <inttypes.h>
 #include <stdio.h>

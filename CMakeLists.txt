@@ -179,7 +179,7 @@ if(WITH_CONFIG_H)
   configure_file(config.h.in config.h)
 endif()
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} sha3 "sha3/${SHA3_IMPL}")
+include_directories(${CMAKE_CURRENT_BINARY_DIR} sha3 "sha3/${SHA3_IMPL}")
 
 # SHAKE implementation
 list(APPEND SHA3_SOURCES
@@ -319,6 +319,8 @@ target_compile_definitions(picnic_static PRIVATE PICNIC_EXPORT=)
 if(MSVC AND USE_STATIC_RUNTIME)
   target_compile_options(picnic_static PRIVATE "/MT$<$<CONFIG:Debug>:d>")
 endif()
+target_include_directories(picnic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(picnic_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # pkg-config file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/picnic.pc.in
@@ -356,7 +358,8 @@ apply_base_options(example)
 foreach(target IN ITEMS picnic_L1_FS picnic_L1_UR picnic_L3_FS picnic_L3_UR picnic_L5_FS picnic_L5_UR
                         picnic2_L1_FS picnic2_L3_FS picnic2_L5_FS)
   add_library("${target}" STATIC "${target}/sign.c")
-  target_include_directories("${target}" PRIVATE "${target}")
+  target_include_directories("${target}" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories("${target}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/${target}")
   target_link_libraries("${target}" picnic)
 endforeach(target)
 

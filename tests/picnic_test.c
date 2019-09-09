@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 #include "picnic.h"
-#include "test_utils.h"
+#include "utils.h"
 
 static int picnic_sign_verify(const picnic_params_t param) {
   static const uint8_t m[] = "test message";

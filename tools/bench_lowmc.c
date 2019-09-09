@@ -13,10 +13,10 @@
 
 #include "bench_timing.h"
 #include "bench_utils.h"
-#include "io.h"
-#include "lowmc.h"
-#include "picnic_impl.h"
-#include "randomness.h"
+#include "../io.h"
+#include "../lowmc.h"
+#include "../picnic_impl.h"
+#include "../randomness.h"
 
 #include <inttypes.h>
 #include <stdint.h>
