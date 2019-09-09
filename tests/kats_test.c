@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-/* if cmake checks were not run, define HAVE_GETLINE for known good configurations */
+// if cmake checks were not run, define HAVE_GETLINE for known good configurations
 #if !defined(HAVE_GETLINE) && defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L
 #define HAVE_GETLINE
 #endif
@@ -72,7 +72,7 @@ static int parse_hex(uint8_t* dst, const char* src, size_t len) {
 
 #if !defined(HAVE_GETLINE)
 #if !defined(HAVE_SSIZE_T)
-/* this should be good enough */
+// this should be good enough
 typedef int64_t ssize_t;
 #endif
 
@@ -94,7 +94,7 @@ static ssize_t getline(char** line, size_t* len, FILE* fp) {
 
   (*line)[0] = '\0';
   while (fgets(chunk, sizeof(chunk), fp) != NULL) {
-    const size_t len_used   = strlen(*line);
+    size_t len_used   = strlen(*line);
     const size_t chunk_used = strlen(chunk);
 
     if (*len - len_used < chunk_used) {
