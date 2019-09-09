@@ -1,4 +1,5 @@
 language: c
+cache: ccache
 
 matrix:
   include:
@@ -12,6 +13,7 @@ matrix:
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - cmake
+            - ccache
     - compiler: gcc
       os: linux
       addons:
@@ -22,6 +24,7 @@ matrix:
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - cmake
+            - ccache
     - compiler: gcc
       os: linux
       addons:
@@ -33,6 +36,7 @@ matrix:
           packages:
             - gcc-9
             - cmake
+            - ccache
       env:
         - COMPILER=gcc-9
     - compiler: gcc
@@ -46,6 +50,7 @@ matrix:
           packages:
             - gcc-8
             - cmake
+            - ccache
       env:
         - COMPILER=gcc-8
     - compiler: gcc
@@ -59,6 +64,7 @@ matrix:
           packages:
             - gcc-7
             - cmake
+            - ccache
       env:
         - COMPILER=gcc-7
     - compiler: gcc
@@ -72,6 +78,7 @@ matrix:
           packages:
             - gcc-6
             - cmake
+            - ccache
       env:
         - COMPILER=gcc-6
     - compiler: gcc
@@ -85,6 +92,7 @@ matrix:
           packages:
             - gcc-5
             - cmake
+            - ccache
       env:
         - COMPILER=gcc-5
     - compiler: gcc
@@ -98,6 +106,7 @@ matrix:
           packages:
             - gcc-4.9
             - cmake
+            - ccache
       env:
         - COMPILER=gcc-4.9
     - compiler: clang
