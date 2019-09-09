@@ -43,10 +43,9 @@ int picnicExample(picnic_params_t parameters) {
 
   uint8_t message[MSG_LEN];
   memset(message, 0x01, sizeof(message));
-  uint8_t* signature = NULL;
 
   size_t signature_len = picnic_signature_size(parameters);
-  signature            = (uint8_t*)malloc(signature_len);
+  uint8_t* signature   = malloc(signature_len);
   if (signature == NULL) {
     printf("failed to allocate signature\n");
     exit(-1);
