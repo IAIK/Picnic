@@ -35,6 +35,7 @@ extern "C" {
 #define PICNIC_CONCAT2(a, b) a##_##b
 #define PICNIC_CONCAT(a, b) PICNIC_CONCAT2(a, b)
 
+/* Block sizes of the LowMC ciphers per parameter */
 #define LOWMC_BLOCK_SIZE_Picnic_L1_FS 16
 #define LOWMC_BLOCK_SIZE_Picnic_L1_UR 16
 #define LOWMC_BLOCK_SIZE_Picnic_L3_FS 24
@@ -47,14 +48,10 @@ extern "C" {
 
 #define LOWMC_BLOCK_SIZE(p) PICNIC_CONCAT(LOWMC_BLOCK_SIZE, p)
 
-#define SALT_SIZE 32
-#define MAX_LOWMC_ROUNDS 38
-#define MAX_LOWMC_SBOXES 10
-#define MAX_ROUNDS 438
-
 #define PICNIC_PRIVATE_KEY_SIZE(p) (1 + 3 * LOWMC_BLOCK_SIZE(p))
 #define PICNIC_PUBLIC_KEY_SIZE(p) (1 + 2 * LOWMC_BLOCK_SIZE(p))
 
+/* Max. signature sizes per parameter */
 #define PICNIC_SIGNATURE_SIZE_Picnic_L1_FS 34032
 #define PICNIC_SIGNATURE_SIZE_Picnic_L1_UR 53961
 #define PICNIC_SIGNATURE_SIZE_Picnic_L3_FS 76732
