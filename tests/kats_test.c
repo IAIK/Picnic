@@ -10,12 +10,7 @@
 #if defined(HAVE_CONFIG_H)
 #include <config.h>
 #else
-// define HAVE_* for more known good configurations
-#if !defined(HAVE_GETLINE) &&                                                                      \
-    ((defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L) || defined(__APPLE__))
-// POSIX has getline
-#define HAVE_GETLINE
-#endif
+#error "The KATs require config.h to be available."
 #endif
 
 #include "picnic.h"
