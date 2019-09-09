@@ -9,6 +9,12 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
+#else
+// define HAVE_* for more known good configurations
+#if !defined(HAVE_GETLINE) && defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L
+// POSIX has getline
+#define HAVE_GETLINE
+#endif
 #endif
 
 #include "picnic.h"
@@ -18,11 +24,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stddef.h>
-
-// if cmake checks were not run, define HAVE_GETLINE for known good configurations
-#if !defined(HAVE_GETLINE) && defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L
-#define HAVE_GETLINE
-#endif
 
 #if defined(__WIN32__)
 #define SIZET_FMT "%Iu"
