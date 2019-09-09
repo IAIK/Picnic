@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "picnic.h"
+#include "../picnic.h"
 
 typedef struct {
   picnic_params_t params;
