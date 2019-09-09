@@ -317,7 +317,7 @@ else()
 endif()
 target_compile_definitions(picnic_static PRIVATE PICNIC_EXPORT=)
 if(MSVC AND USE_STATIC_RUNTIME)
-  target_compile_options(picnic_static PRIVATE "/MT$<$<CONFIG:Debug>:d>")
+  target_compile_options(picnic_static PUBLIC "/MT$<$<CONFIG:Debug>:d>")
 endif()
 target_include_directories(picnic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(picnic_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -330,9 +330,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/picnic.pc.in
 add_executable(visualize_signature tools/visualize_signature.c)
 target_link_libraries(visualize_signature picnic_static)
 apply_base_options(visualize_signature)
-if(MSVC AND USE_STATIC_RUNTIME)
-  target_compile_options(visualize_signature PRIVATE "/MT$<$<CONFIG:Debug>:d>")
-endif()
 
 # bench utils library
 add_library(bench_utils STATIC tools/bench_utils.c tools/bench_timing.c)
