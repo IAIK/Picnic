@@ -108,7 +108,7 @@ typedef struct {
 
 /** Private key */
 typedef struct {
-  uint8_t data[1 + 3 * MAX_LOWMC_BLOCK_SIZE];
+  uint8_t data[PICNIC_MAX_PRIVATEKEY_SIZE];
 } picnic_privatekey_t;
 
 /**
@@ -206,7 +206,7 @@ PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey
  *
  * @param[in]  key The public key to serialize
  * @param[out] buf The buffer to write the key to.
- *                 Must have size at least PICNIC_MAX_PUBLICKEY_SIZE + 1 bytes.
+ *                 Must have size at least PICNIC_MAX_PUBLICKEY_SIZE bytes.
  * @param[in]  buflen The length of buf, in bytes
  *
  * @return Returns the number of bytes written.
@@ -219,7 +219,7 @@ PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_write_public_key(const picnic
  *
  * @param[out]  key The public key object to be populated.
  * @param[in] buf The buffer to read the public key from.
- *                 Must be at least PICNIC_MAX_PUBLICKEY_SIZE + 1 bytes.
+ *                 Must be at least PICNIC_MAX_PUBLICKEY_SIZE bytes.
  * @param[in]  buflen The length of buf, in bytes
  *
  * @return Returns 0 on success, or a nonzero value indicating an error.
@@ -233,7 +233,7 @@ PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_read_public_key(picnic_public
  *
  * @param[in]  key The private key to serialize
  * @param[out] buf The buffer to write the key to.
- *                 Must have size at least PICNIC_MAX_PRIVATEKEY_SIZE + 1 bytes.
+ *                 Must have size at least PICNIC_MAX_PRIVATEKEY_SIZE bytes.
  * @param[in]  buflen The length of buf, in bytes
  *
  * @return Returns the number of bytes written.
@@ -246,7 +246,7 @@ PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_write_private_key(const picni
  *
  * @param[out]  key The private key object to be populated
  * @param[in] buf The buffer to read the key from.
- *                 Must have size at least PICNIC_MAX_PRIVATEKEY_SIZE + 1 bytes.
+ *                 Must have size at least PICNIC_MAX_PRIVATEKEY_SIZE bytes.
  * @param[in]  buflen The length of buf, in bytes
  *
  * @return Returns 0 on success, or a nonzero value indicating an error.
