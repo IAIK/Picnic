@@ -15,6 +15,9 @@
 #cmakedefine HAVE_GETRANDOM
 #cmakedefine HAVE_GETLINE
 
+/* available types */
+#cmakedefine HAVE_SSIZE_T
+
 /* available OS X frameworks */
 #cmakedefine HAVE_SECURITY_FRAMEWORK
 

@@ -34,6 +34,7 @@ include(CheckFunctionExists)
 include(CheckCCompilerFlag)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
+include(CheckTypeSize)
 
 function(check_c_compiler_flag_and_add flag result)
   check_c_compiler_flag("${flag}" ${result})
@@ -63,6 +64,9 @@ check_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
 check_symbol_exists(memalign malloc.h HAVE_MEMALIGN)
 check_symbol_exists(getrandom sys/random.h HAVE_GETRANDOM)
 check_symbol_exists(getline stdio.h HAVE_GETLINE)
+
+# check supported types
+check_type_size(ssize_t SSIZE_T LANGUAGE C)
 
 # check supported compiler flags
 check_c_compiler_flag(-march=native CC_SUPPORTS_MARCH_NATIVE)

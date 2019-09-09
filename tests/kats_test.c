@@ -17,6 +17,12 @@
 #include <memory.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stddef.h>
+
+/* if cmake checks were not run, define HAVE_GETLINE for known good configurations */
+#if !defined(HAVE_GETLINE) && defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L
+#define HAVE_GETLINE
+#endif
 
 #if defined(__WIN32__)
 #define SIZET_FMT "%Iu"
@@ -65,6 +71,11 @@ static int parse_hex(uint8_t* dst, const char* src, size_t len) {
 }
 
 #if !defined(HAVE_GETLINE)
+#if !defined(HAVE_SSIZE_T)
+/* this should be good enough */
+typedef int64_t ssize_t;
+#endif
+
 static ssize_t getline(char** line, size_t* len, FILE* fp) {
   if (line == NULL || len == NULL || fp == NULL) {
     errno = EINVAL;
@@ -73,7 +84,7 @@ static ssize_t getline(char** line, size_t* len, FILE* fp) {
 
   char chunk[4096];
   if (*line == NULL || *len < sizeof(chunk)) {
-    *len = sizeof(chunk);
+    *len  = sizeof(chunk);
     *line = malloc(*len);
     if (*line == NULL) {
       errno = ENOMEM;
@@ -83,8 +94,8 @@ static ssize_t getline(char** line, size_t* len, FILE* fp) {
 
   (*line)[0] = '\0';
   while (fgets(chunk, sizeof(chunk), fp) != NULL) {
-    size_t len_used   = strlen(*line);
-    size_t chunk_used = strlen(chunk);
+    const size_t len_used   = strlen(*line);
+    const size_t chunk_used = strlen(chunk);
 
     if (*len - len_used < chunk_used) {
       if (*len > SIZE_MAX / 2) {
