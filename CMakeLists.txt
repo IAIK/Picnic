@@ -330,7 +330,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/picnic.pc.in
 add_executable(visualize_signature tools/visualize_signature.c)
 target_link_libraries(visualize_signature picnic_static)
 apply_base_options(visualize_signature)
-target_compile_definitions(visualize_signature PRIVATE PICNIC_STATIC)
 if(MSVC AND USE_STATIC_RUNTIME)
   target_compile_options(visualize_signature PRIVATE "/MT$<$<CONFIG:Debug>:d>")
 endif()
