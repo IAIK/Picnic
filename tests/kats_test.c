@@ -7,7 +7,7 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#ifdef HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include <config.h>
 #else
 // define HAVE_* for more known good configurations
@@ -292,7 +292,7 @@ typedef struct {
 static int run_test(picnic_params_t param) {
   static const test_t tests[] = {
       {NULL, 0, 0},
-      {"/kat_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_FS),
+      {KATDIR "/kat_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_FS),
        PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_FS)},
       {KATDIR "/kat_l1_ur.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_UR),
        PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_FS)},
