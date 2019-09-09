@@ -16,6 +16,13 @@
 
 #include <memory.h>
 #include <stdbool.h>
+#include <stdio.h>
+
+#if defined(__WIN32__)
+#define SIZET_FMT "%Iu"
+#else
+#define SIZET_FMT "%zu"
+#endif
 
 typedef struct {
   size_t mlen;
@@ -57,6 +64,57 @@ static int parse_hex(uint8_t* dst, const char* src, size_t len) {
   return 0;
 }
 
+#if !defined(HAVE_GETLINE)
+static ssize_t getline(char** line, size_t* len, FILE* fp) {
+  if (line == NULL || len == NULL || fp == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  char chunk[4096];
+  if (*line == NULL || *len < sizeof(chunk)) {
+    *len = sizeof(chunk);
+    *line = malloc(*len);
+    if (*line == NULL) {
+      errno = ENOMEM;
+      return -1;
+    }
+  }
+
+  (*line)[0] = '\0';
+  while (fgets(chunk, sizeof(chunk), fp) != NULL) {
+    size_t len_used   = strlen(*line);
+    size_t chunk_used = strlen(chunk);
+
+    if (*len - len_used < chunk_used) {
+      if (*len > SIZE_MAX / 2) {
+        errno = EOVERFLOW;
+        return -1;
+      } else {
+        *len *= 2;
+      }
+
+      char* tmp_line = realloc(*line, *len);
+      if (tmp_line == NULL) {
+        errno = ENOMEM;
+        return -1;
+      }
+      *line = tmp_line;
+    }
+
+    memcpy(*line + len_used, chunk, chunk_used);
+    len_used += chunk_used;
+    (*line)[len_used] = '\0';
+
+    if ((*line)[len_used - 1] == '\n') {
+      return len_used;
+    }
+  }
+
+  return -1;
+}
+#endif
+
 static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sks) {
   char* line = NULL;
   size_t len = 0;
@@ -83,7 +141,7 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
       continue;
     } else if (strncmp(line, "mlen = ", 7) == 0) {
       // read message length
-      if (sscanf(line + 7, "%zu", &tv->mlen) != 1) {
+      if (sscanf(line + 7, SIZET_FMT, &tv->mlen) != 1) {
         goto err;
       }
     } else if (strncmp(line, "msg = ", 6) == 0 && tv->mlen && uread >= 2 * tv->mlen + 6) {
@@ -104,7 +162,7 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
       }
     } else if (strncmp(line, "smlen = ", 8) == 0) {
       // read signature length
-      if (sscanf(line + 8, "%zu", &tv->smlen) != 1) {
+      if (sscanf(line + 8, SIZET_FMT, &tv->smlen) != 1) {
         goto err;
       }
     } else if (strncmp(line, "sm = ", 5) == 0 && tv->smlen && uread >= 2 * tv->smlen + 5) {
@@ -115,7 +173,7 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
       }
       break;
     } else {
-      printf("Do not know how handle line (len = %zu): %s", uread, line);
+      printf("Do not know how handle line (len = " SIZET_FMT "): %s", uread, line);
       goto err;
     }
   }
@@ -289,7 +347,7 @@ int main(int argc, char** argv) {
   for (size_t s = 0; s < num_tests; ++s) {
     const int t = tests[s]();
     if (!t) {
-      printf("ERR: Picnic KAT test %zu FAILED (%d)\n", s, t);
+      printf("ERR: Picnic KAT test " SIZET_FMT " FAILED (%d)\n", s, t);
       ret = -1;
     }
   }

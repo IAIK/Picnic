@@ -71,7 +71,7 @@ foreach(target IN ITEMS ${test_targets})
   endif()
 endforeach(target)
 
-if(NOT WITH_EXTRA_RANDOMNESS AND HAVE_GETLINE)
+if(NOT WITH_EXTRA_RANDOMNESS)
   add_executable(kats_test kats_test.c)
   target_link_libraries(kats_test picnic)
   apply_base_options(kats_test)
