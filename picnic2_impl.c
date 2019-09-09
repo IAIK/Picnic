@@ -31,6 +31,12 @@
 #define LOWMC_MAX_AND_GATES (3 * 38 * 10 + 4) /* Rounded to nearest byte */
 #define MAX_AUX_BYTES ((LOWMC_MAX_AND_GATES + LOWMC_MAX_KEY_BITS) / 8 + 1)
 
+#if defined(__WIN32__)
+#define SIZET_FMT "%Iu"
+#else
+#define SIZET_FMT "%zu"
+#endif
+
 /* Helper functions */
 
 ATTR_CONST
@@ -463,7 +469,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
                              sig->proofs[t].seedInfoLen, sig->salt, t, params);
       if (ret != 0) {
 #if !defined(NDEBUG)
-        printf("Failed to reconstruct seeds for round %lu\n", t);
+        printf("Failed to reconstruct seeds for round " SIZET_FMT "\n", t);
 #endif
         ret = -1;
         goto Exit;
@@ -535,7 +541,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       freeRandomTape(&tapes[t]);
       if (ret != 0) {
 #if !defined(NDEBUG)
-        printf("MPC simulation failed for round %lu, signature invalid\n", t);
+        printf("MPC simulation failed for round " SIZET_FMT ", signature invalid\n", t);
 #endif
         ret = -1;
         goto Exit;
@@ -886,7 +892,7 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
   /* Fail if the signature does not have the exact number of bytes we expect */
   if (sigBytesLen != bytesRequired) {
 #if !defined(NDEBUG)
-    printf("%s: sigBytesLen = %lu, expected bytesRequired = %lu\n", __func__, sigBytesLen,
+    printf("%s: sigBytesLen = " SIZET_FMT ", expected bytesRequired = " SIZET_FMT "\n", __func__, sigBytesLen,
            bytesRequired);
 #endif
     return EXIT_FAILURE;
