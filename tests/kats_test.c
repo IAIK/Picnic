@@ -282,62 +282,36 @@ static int run_test_vectors_from_file(const char* path, size_t pks, size_t sks) 
   return (vectors_run && vectors_succeeded == vectors_run) ? 1 : 0;
 }
 
-static int picnic_test_vector_L1FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_FS));
+typedef struct {
+  const char* path;
+  size_t pks;
+  size_t sks;
+} test_t;
+
+static int run_test(picnic_params_t param) {
+  static const test_t tests[] = {
+      {NULL, 0, 0},
+      {"/kat_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_FS),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_FS)},
+      {KATDIR "/kat_l1_ur.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_UR),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_FS)},
+      {KATDIR "/kat_l3_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L3_FS),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L3_FS)},
+      {KATDIR "/kat_l3_ur.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L3_UR),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L3_FS)},
+      {KATDIR "/kat_l5_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L5_FS),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_FS)},
+      {KATDIR "/kat_l5_ur.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L5_UR),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_FS)},
+      {KATDIR "/kat_picnic2_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L1_FS),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic2_L1_FS)},
+      {KATDIR "/kat_picnic2_l3_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L3_FS),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic2_L3_FS)},
+      {KATDIR "/kat_picnic2_l5_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L5_FS),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic2_L5_FS)}};
+
+  return run_test_vectors_from_file(tests[param].path, tests[param].pks, tests[param].sks);
 }
-
-static int picnic_test_vector_L1UR(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_l1_ur.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_UR),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_FS));
-}
-
-static int picnic_test_vector_L3FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_l3_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L3_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L3_FS));
-}
-
-static int picnic_test_vector_L3UR(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_l3_ur.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L3_UR),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L3_FS));
-}
-
-static int picnic_test_vector_L5FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_l5_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L5_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_FS));
-}
-
-static int picnic_test_vector_L5UR(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_l5_ur.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L5_UR),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_FS));
-}
-
-static int picnic2_test_vector_L1FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l1_fs.txt",
-                                    PICNIC_PUBLIC_KEY_SIZE(Picnic2_L1_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic2_L1_FS));
-}
-
-static int picnic2_test_vector_L3FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l3_fs.txt",
-                                    PICNIC_PUBLIC_KEY_SIZE(Picnic2_L3_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic2_L3_FS));
-}
-
-static int picnic2_test_vector_L5FS(void) {
-  return run_test_vectors_from_file(KATDIR "/kat_picnic2_l5_fs.txt",
-                                    PICNIC_PUBLIC_KEY_SIZE(Picnic2_L5_FS),
-                                    PICNIC_PRIVATE_KEY_SIZE(Picnic2_L5_FS));
-}
-
-typedef int (*test_fn_t)(void);
-
-static const test_fn_t tests[] = {
-    picnic_test_vector_L1FS,  picnic_test_vector_L1UR,  picnic_test_vector_L3FS,
-    picnic_test_vector_L3UR,  picnic_test_vector_L5FS,  picnic_test_vector_L5UR,
-    picnic2_test_vector_L1FS, picnic2_test_vector_L3FS, picnic2_test_vector_L5FS};
-
-static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
 
 int main(int argc, char** argv) {
   if (argc == 2) {
@@ -347,17 +321,17 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    const int t = tests[param - 1]();
+    const int t = run_test(param);
     if (!t) {
-      printf("ERR: Picnic KAT test %u FAILED (%d)\n", param - 1, t);
+      printf("ERR: Picnic KAT test %u FAILED (%d)\n", param, t);
       return -1;
     }
     return 0;
   }
 
   int ret = 0;
-  for (size_t s = 0; s < num_tests; ++s) {
-    const int t = tests[s]();
+  for (size_t s = Picnic_L1_FS; s <= Picnic2_L5_FS; ++s) {
+    const int t = run_test(s);
     if (!t) {
       printf("ERR: Picnic KAT test " SIZET_FMT " FAILED (%d)\n", s, t);
       ret = -1;
