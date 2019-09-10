@@ -962,7 +962,7 @@ static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_k
   // N as 16 bit LE integer
   kdf_shake_update_key_uint16_le(&ctx, lowmc_n);
 #if defined(WITH_EXTRA_RANDOMNESS)
-  // Add extra randomn bytes for fault attack mitigation
+  // Add extra random bytes for fault attack mitigation
   unsigned char buffer[2 * MAX_DIGEST_SIZE];
   rand_bytes(buffer, 2 * seed_size);
   kdf_shake_update_key(&ctx, buffer, 2 * seed_size);
