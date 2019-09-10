@@ -90,8 +90,8 @@ static ssize_t getline(char** line, size_t* len, FILE* fp) {
   }
 
   (*line)[0] = '\0';
-  while (fgets(chunk, sizeof(chunk), fp) != NULL) {
-    size_t len_used   = strlen(*line);
+  while (fgets(chunk, sizeof(chunk), fp)) {
+    size_t len_used         = strlen(*line);
     const size_t chunk_used = strlen(chunk);
 
     if (*len - len_used < chunk_used) {
@@ -150,33 +150,39 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
     } else if (strncmp(line, "mlen = ", 7) == 0) {
       // read message length
       if (sscanf(line + 7, SIZET_FMT, &tv->mlen) != 1) {
+        printf("Unable to parse message length.\n");
         goto err;
       }
     } else if (strncmp(line, "msg = ", 6) == 0 && tv->mlen && uread >= 2 * tv->mlen + 6) {
       // read message
       tv->msg = calloc(1, tv->mlen);
       if (parse_hex(tv->msg, line + 6, tv->mlen) == -1) {
+        printf("Unable to parse message.\n");
         goto err;
       }
     } else if (strncmp(line, "pk = ", 5) == 0 && uread >= 2 * pks + 5) {
       // read pk
       if (parse_hex(tv->pk, line + 5, pks) == -1) {
+        printf("Unable to parse public key.\n");
         goto err;
       }
     } else if (strncmp(line, "sk = ", 5) == 0 && uread >= 2 * sks + 5) {
       // read sk
       if (parse_hex(tv->sk, line + 5, sks) == -1) {
+        printf("Unable to parse secret key.\n");
         goto err;
       }
     } else if (strncmp(line, "smlen = ", 8) == 0) {
       // read signature length
       if (sscanf(line + 8, SIZET_FMT, &tv->smlen) != 1) {
+        printf("Unable to parse signature length.\n");
         goto err;
       }
     } else if (strncmp(line, "sm = ", 5) == 0 && tv->smlen && uread >= 2 * tv->smlen + 5) {
       // read signature
       tv->sm = calloc(1, tv->smlen);
       if (parse_hex(tv->sm, line + 5, tv->smlen) == -1) {
+        printf("Unable to parse signature.\n");
         goto err;
       }
       break;
@@ -185,11 +191,17 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
       goto err;
     }
   }
+
+  free(line);
+  line = NULL;
+
   if (!tv->mlen || !tv->smlen || !tv->msg || !tv->sm) {
+    if (expect_data) {
+      printf("Missing test vector data (mlen: " SIZET_FMT " smlen: " SIZET_FMT ").\n", tv->mlen, tv->smlen);
+    }
     goto err;
   }
 
-  free(line);
   return 0;
 
 err:
