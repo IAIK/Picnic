@@ -43,7 +43,7 @@ function(check_c_compiler_flag_and_add flag result)
   endif()
 endfunction()
 
-# required libraries
+# check libraries
 find_package(m4ri 20140914)
 
 if(APPLE)
@@ -304,6 +304,7 @@ function(apply_picnic_options lib)
   endif()
 
   if(WIN32)
+    # require new enough Windows for bcrypt to be available
     target_compile_definitions(${lib} PRIVATE "_WIN32_WINNT=0x0601")
     target_link_libraries(${lib} bcrypt)
   endif()
