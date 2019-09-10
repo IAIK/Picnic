@@ -9,12 +9,8 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
-
-#include "cpu.h"
-
+#else
 /* If cmake checks were not run, define some known values. */
-
 #if !defined(HAVE_SYS_AUXV_H) && defined(__linux__)
 #define HAVE_SYS_AUXV_H
 #endif
@@ -22,6 +18,9 @@
 #if !defined(HAVE_ASM_HWCAP_H) && defined(__linux__) && defined(__arm__)
 #define HAVE_ASM_HWCAP_H
 #endif
+#endif
+
+#include "cpu.h"
 
 #if defined(__arm__) && defined(HAVE_SYS_AUXV_H) && defined(HAVE_ASM_HWCAP_H)
 #include <asm/hwcap.h>
