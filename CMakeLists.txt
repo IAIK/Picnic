@@ -124,6 +124,8 @@ if(MSVC)
   list(APPEND WARNINGS 4464)
   # undefined macros evaluating to 0 in MSVC headers
   list(APPEND WARNINGS 4668)
+  # no function prototype in MSVC headers
+  list(APPEND WARNINGS 4255)
   # Spectre mitigation
   list(APPEND WARNINGS 5045)
   # initialization of aggregate types with non-constant values is valid C99
@@ -131,6 +133,8 @@ if(MSVC)
   foreach(warning IN ITEMS ${WARNINGS})
     add_compile_options("/wd${warning}")
   endforeach(warning)
+  # "deprection warnings" of libc functions
+  add_compile_options(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 # enable -march=native -mtune=native if supported
