@@ -18,8 +18,8 @@
 
 #include <memory.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #if defined(__WIN32__)
 #define SIZET_FMT "%Iu"
@@ -197,7 +197,8 @@ static int read_test_vector(FILE* file, test_vector_t* tv, size_t pks, size_t sk
 
   if (!tv->mlen || !tv->smlen || !tv->msg || !tv->sm) {
     if (expect_data) {
-      printf("Missing test vector data (mlen: " SIZET_FMT " smlen: " SIZET_FMT ").\n", tv->mlen, tv->smlen);
+      printf("Missing test vector data (mlen: " SIZET_FMT " smlen: " SIZET_FMT ").\n", tv->mlen,
+             tv->smlen);
     }
     goto err;
   }
