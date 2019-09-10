@@ -73,7 +73,11 @@ endforeach(target)
 
 if(NOT WITH_EXTRA_RANDOMNESS AND WITH_CONFIG_H)
   add_executable(kats_test kats_test.c)
-  target_link_libraries(kats_test picnic)
+  if (NOT MSVC)
+    target_link_libraries(kats_test picnic)
+  else()
+    target_link_libraries(kats_test picnic_static)
+  endif()
   apply_base_options(kats_test)
   target_compile_definitions(kats_test PRIVATE "-DKATDIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"")
 
