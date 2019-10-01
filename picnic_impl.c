@@ -1005,13 +1005,11 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   in_out_shares_t in_out_shares[2];
   mzd_local_init_multiple_ex(in_out_shares[0].s, SC_PROOF, 1, lowmc_k, false);
   mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
+  mpc_lowmc_key_t const* shared_key = &in_out_shares->s[0];
 
   // Generate seeds
   generate_seeds(pp, private_key, plaintext, public_key, m, m_len, prf->round[0].seeds[0],
                  prf->salt);
-
-  mzd_local_t* shared_key[SC_PROOF];
-  mzd_local_init_multiple(shared_key, SC_PROOF, 1, lowmc_k);
 
   rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for AND-gates
 
@@ -1059,7 +1057,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       }
 
       // perform ZKB++ LowMC evaluation
-      lowmc_impl(shared_key, p, views, in_out_shares, rvec, &recorded_state);
+      lowmc_impl(p, views, in_out_shares, rvec, &recorded_state);
 
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
         mzd_to_char_array(round[round_offset].output_shares[j], in_out_shares[1].s[j], output_size);
@@ -1106,7 +1104,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     }
 
     // perform ZKB++ LowMC evaluation
-    lowmc_impl(shared_key, p, views, in_out_shares, rvec, &recorded_state);
+    lowmc_impl(p, views, in_out_shares, rvec, &recorded_state);
 
     // commitments
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -1134,7 +1132,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   }
   free(rvec);
   free(views);
-  mzd_local_free_multiple(shared_key);
   mzd_local_free_multiple(in_out_shares[1].s);
   mzd_local_free_multiple(in_out_shares[0].s);
   proof_free(prf);
