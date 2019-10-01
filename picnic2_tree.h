@@ -13,7 +13,7 @@
 #ifndef PICNIC2_TREE_H
 #define PICNIC2_TREE_H
 
-#include "picnic_impl.h"
+#include "picnic_instances.h"
 
 /*
  * Represents a (nearly) complete binary tree, stored in memory as an array.

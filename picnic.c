@@ -18,8 +18,13 @@
 
 #include "io.h"
 #include "lowmc.h"
+#include "picnic_instances.h"
+#if defined(WITH_ZKBPP)
 #include "picnic_impl.h"
+#endif
+#if defined(WITH_KKW)
 #include "picnic2_impl.h"
+#endif
 #include "randomness.h"
 
 // Public and private keys are serialized as follows:
@@ -207,11 +212,20 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
   const uint8_t* sk_c  = SK_C(sk);
   const uint8_t* sk_pt = SK_PT(sk);
 
-  if (param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS)
+  if (param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS) {
+#if defined(WITH_KKW)
     return impl_sign_picnic2(instance, sk_pt, sk_sk, sk_c, message, message_len, signature,
                              signature_len);
-  else
+#else
+    return -1;
+#endif
+  } else {
+#if defined(WITH_ZKBPP)
     return impl_sign(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len);
+#else
+    return -1;
+#endif
+  }
 }
 
 int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const uint8_t* message,
@@ -232,11 +246,21 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
   const uint8_t* pk_c  = PK_C(pk);
   const uint8_t* pk_pt = PK_PT(pk);
 
-  if (param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS)
+  if (param == Picnic2_L1_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS) {
+#if defined(WITH_KKW)
     return impl_verify_picnic2(instance, pk_pt, pk_c, message, message_len, signature,
                                signature_len);
-  else
+#else
+    return -1;
+#endif
+  } else {
+#if defined(WITH_ZKBPP)
     return impl_verify(instance, pk_pt, pk_c, message, message_len, signature, signature_len);
+#else
+    return -1;
+#endif
+
+  }
 }
 
 const char* PICNIC_CALLING_CONVENTION picnic_get_param_name(picnic_params_t parameters) {
@@ -366,7 +390,7 @@ int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_privatekey_t* key, 
   return 0;
 }
 
-#if defined(PICNIC_STATIC)
+#if defined(PICNIC_STATIC) && defined(WITH_ZKBPP)
 void picnic_visualize_keys(FILE* out, const picnic_privatekey_t* sk, const picnic_publickey_t* pk) {
   if (!sk || !pk) {
     return;

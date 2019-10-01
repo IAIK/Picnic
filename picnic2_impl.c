@@ -10,6 +10,10 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -25,7 +29,6 @@
 #include "picnic2_simulate_mul.h"
 #include "picnic2_tree.h"
 #include "picnic2_types.h"
-#include "picnic_impl.h"
 
 #define LOWMC_MAX_KEY_BITS 256
 #define LOWMC_MAX_AND_GATES (3 * 38 * 10 + 4) /* Rounded to nearest byte */

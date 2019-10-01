@@ -44,14 +44,6 @@ typedef struct {
   unsigned int round_number;
 } sorting_helper_t;
 
-// Prefix values for domain separation
-const uint8_t HASH_PREFIX_0 = 0;
-const uint8_t HASH_PREFIX_1 = 1;
-const uint8_t HASH_PREFIX_2 = 2;
-const uint8_t HASH_PREFIX_3 = 3;
-const uint8_t HASH_PREFIX_4 = 4;
-const uint8_t HASH_PREFIX_5 = 5;
-
 /**
  * Collapse challenge from one char per challenge to bit array.
  */

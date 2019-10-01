@@ -10,15 +10,22 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#if !defined(_MSC_VER)
+#include <stdalign.h>
+#endif
 
-#include "io.h"
 #include "picnic2_simulate.h"
 #include "picnic2_simulate_mul.h"
-#include "compat.h"
+#include "io.h"
 
 static void wordToMsgsNoTranspose(uint64_t w, msgs_t* msgs) {
   ((uint64_t*)msgs->msgs[msgs->pos % 64])[msgs->pos / 64] = w;

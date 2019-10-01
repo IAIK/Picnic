@@ -1,23 +1,28 @@
 # Generate tests for all parameters
 function(add_picnic_tests name target m1)
-  list(APPEND ALL_PARAMS
-       picnic_L1_FS
-       picnic_L1_UR
-       picnic_L3_FS
-       picnic_L3_UR
-       picnic_L5_FS
-       picnic_L5_UR
-       picnic2_L1_FS
-       picnic2_L3_FS
-       picnic2_L5_FS)
-  if(m1 AND WITH_LOWMC_M1)
+  if(WITH_ZKBPP)
     list(APPEND ALL_PARAMS
-         picnic_L1_1_FS
-         picnic_L1_1_UR
-         picnic_L3_1_FS
-         picnic_L3_1_UR
-         picnic_L5_1_FS
-         picnic_L5_1_UR)
+         picnic_L1_FS
+         picnic_L1_UR
+         picnic_L3_FS
+         picnic_L3_UR
+         picnic_L5_FS
+         picnic_L5_UR)
+    if(m1 AND WITH_LOWMC_M1)
+      list(APPEND ALL_PARAMS
+           picnic_L1_1_FS
+           picnic_L1_1_UR
+           picnic_L3_1_FS
+           picnic_L3_1_UR
+           picnic_L5_1_FS
+           picnic_L5_1_UR)
+    endif()
+  endif()
+  if(WITH_KKW)
+    list(APPEND ALL_PARAMS
+         picnic2_L1_FS
+         picnic2_L3_FS
+         picnic2_L5_FS)
   endif()
 
   foreach(param IN LISTS ALL_PARAMS)
@@ -25,7 +30,7 @@ function(add_picnic_tests name target m1)
   endforeach(param)
 endfunction()
 
-if(M4RI_FOUND)
+if(M4RI_FOUND AND WITH_ZKBPP)
   foreach(target IN ITEMS lowmc_str mzd)
     add_executable("${target}_test" "${target}_test.c")
     target_link_libraries("${target}_test" picnic_static M4RI::m4ri m)
@@ -36,7 +41,13 @@ if(M4RI_FOUND)
   endforeach(target)
 endif()
 
-list(APPEND test_static_targets bitstream kdf_shake256 shake lowmc transpose)
+list(APPEND test_static_targets kdf_shake256 shake)
+if(WITH_ZKBPP)
+  list(APPEND test_static_targets bitstream lowmc)
+endif()
+if(WITH_KKW)
+  list(APPEND test_static_targets transpose)
+endif()
 if(NOT WIN32)
   list(APPEND test_targets picnic extended_picnic)
 else()
@@ -85,8 +96,7 @@ if(NOT WITH_EXTRA_RANDOMNESS AND WITH_CONFIG_H)
 endif()
 
 if(NOT WIN32)
-  foreach(target IN ITEMS picnic_L1_FS picnic_L1_UR picnic_L3_FS picnic_L3_UR picnic_L5_FS picnic_L5_UR
-                          picnic2_L1_FS picnic2_L3_FS picnic2_L5_FS)
+  foreach(target IN ITEMS ${api_targets})
     add_executable("api_${target}_test" api_test.c)
     apply_base_options("api_${target}_test")
     target_link_libraries("api_${target}_test" "${target}")

@@ -10,6 +10,10 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -19,7 +23,6 @@
 #include "picnic.h"
 #include "picnic2_tree.h"
 #include "picnic2_types.h"
-#include "picnic_impl.h"
 
 static int contains(size_t* list, size_t len, size_t value) {
   for (size_t i = 0; i < len; i++) {

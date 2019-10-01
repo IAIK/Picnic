@@ -15,7 +15,7 @@
 #include "bench_utils.h"
 #include "../io.h"
 #include "../lowmc.h"
-#include "../picnic_impl.h"
+#include "../picnic_instances.h"
 #include "../randomness.h"
 
 #include <inttypes.h>

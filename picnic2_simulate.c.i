@@ -10,25 +10,6 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#if !defined(_MSC_VER)
-#include <stdalign.h>
-#endif
-
-#include "kdf_shake.h"
-#include "macros.h"
-#include "picnic_impl.h"
-#include "picnic2_impl.h"
-#include "picnic.h"
-#include "picnic2_types.h"
-#include "picnic2_tree.h"
-#include "io.h"
-
 #if defined(FN_ATTR)
 FN_ATTR
 #endif

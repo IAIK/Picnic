@@ -13,7 +13,7 @@
 
 #include "../io.h"
 #include "../lowmc.h"
-#include "../picnic_impl.h"
+#include "../picnic_instances.h"
 
 #include <inttypes.h>
 #include <stdint.h>

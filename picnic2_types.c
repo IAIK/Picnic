@@ -10,12 +10,17 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#include "picnic2_types.h"
-#include "compat.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "picnic2_types.h"
+#include "compat.h"
 
 shares_t* allocateShares(size_t count) {
   shares_t* shares = malloc(sizeof(shares_t));

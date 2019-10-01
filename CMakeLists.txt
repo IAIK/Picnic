@@ -92,6 +92,12 @@ else()
   set(DEFAULT_WITH_MARCH_NATIVE ON)
 endif()
 
+set(WITH_ZKBPP ON CACHE BOOL "Enable Picnic instances based on ZKB++.")
+set(WITH_KKW ON CACHE BOOL "Enable Picnic instances based on KKW.")
+if(NOT WITH_ZKBPP AND NOT WITH_KKW)
+  message(FATAL_ERROR "At least one of WITH_ZKBPP and WITH_KKW is required.")
+endif()
+
 set(WITH_SIMD_OPT ON CACHE BOOL "Enable optimizations via SIMD.")
 set(WITH_AVX2 ON CACHE BOOL "Use AVX2 and BMI2 if available.")
 set(WITH_SSE2 ON CACHE BOOL "Use SSE2 if available.")
@@ -214,29 +220,35 @@ endif()
 # Picnic implementation
 list(APPEND PICNIC_SOURCES
      aligned_alloc.c
-     bitstream.c
      cpu.c
      io.c
      lowmc.c
      lowmc_128_128_20.c
      lowmc_192_192_30.c
      lowmc_256_256_38.c
-     mpc_lowmc.c
      mzd_additional.c
      picnic.c
-     picnic_impl.c
      picnic_instances.c
-     picnic2_impl.c
-     picnic2_simulate.c
-     picnic2_simulate_mul.c
-     picnic2_tree.c
-     picnic2_types.c
      randomness.c)
-if(WITH_LOWMC_M1)
+if(WITH_ZKBPP)
   list(APPEND PICNIC_SOURCES
-       lowmc_128_128_182.c
-       lowmc_192_192_284.c
-       lowmc_256_256_363.c)
+       bitstream.c
+       mpc_lowmc.c
+       picnic_impl.c)
+  if(WITH_LOWMC_M1)
+    list(APPEND PICNIC_SOURCES
+         lowmc_128_128_182.c
+         lowmc_192_192_284.c
+         lowmc_256_256_363.c)
+  endif()
+endif()
+if(WITH_KKW)
+  list(APPEND PICNIC_SOURCES
+       picnic2_impl.c
+       picnic2_simulate.c
+       picnic2_simulate_mul.c
+       picnic2_tree.c
+       picnic2_types.c)
 endif()
 list(APPEND PICNIC_HEADERS picnic.h)
 
@@ -255,6 +267,12 @@ endif()
 target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC)
 
 function(apply_base_options lib)
+  if(WITH_ZKBPP)
+    target_compile_definitions(${lib} PRIVATE WITH_ZKBPP)
+  endif()
+  if(WITH_KKW)
+    target_compile_definitions(${lib} PRIVATE WITH_KKW)
+  endif()
   if(WITH_CONFIG_H)
     target_compile_definitions(${lib} PRIVATE HAVE_CONFIG_H)
   endif()
@@ -266,7 +284,7 @@ function(apply_base_options lib)
   if(SHA3_IMPL STREQUAL "avx2")
     target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
   endif()
-  if(WITH_LOWMC_M1)
+  if(WITH_ZKBPP AND WITH_LOWMC_M1)
     target_compile_definitions(${lib} PRIVATE WITH_LOWMC_M1)
   endif()
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -298,7 +316,7 @@ function(apply_picnic_options lib)
                              WITH_LOWMC_128_128_20
                              WITH_LOWMC_192_192_30
                              WITH_LOWMC_256_256_38)
-  if(WITH_LOWMC_M1)
+  if(WITH_LOWMC_M1 AND WITH_ZKBPP)
     target_compile_definitions(${lib} PRIVATE
                                WITH_LOWMC_128_128_182
                                WITH_LOWMC_192_192_284
@@ -340,9 +358,11 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/picnic.pc.in
                ${CMAKE_CURRENT_BINARY_DIR}/picnic.pc @ONLY)
 
 # visualize_signature executable
-add_executable(visualize_signature tools/visualize_signature.c)
-target_link_libraries(visualize_signature picnic_static)
-apply_base_options(visualize_signature)
+if(WITH_ZKBPP)
+  add_executable(visualize_signature tools/visualize_signature.c)
+  target_link_libraries(visualize_signature picnic_static)
+  apply_base_options(visualize_signature)
+endif()
 
 # bench utils library
 add_library(bench_utils STATIC tools/bench_utils.c tools/bench_timing.c)
@@ -364,8 +384,23 @@ add_executable(example tools/example.c)
 target_link_libraries(example picnic)
 apply_base_options(example)
 
-foreach(target IN ITEMS picnic_L1_FS picnic_L1_UR picnic_L3_FS picnic_L3_UR picnic_L5_FS picnic_L5_UR
-                        picnic2_L1_FS picnic2_L3_FS picnic2_L5_FS)
+if(WITH_ZKBPP)
+  list(APPEND api_targets
+       picnic_L1_FS
+       picnic_L1_UR
+       picnic_L3_FS
+       picnic_L3_UR
+       picnic_L5_FS
+       picnic_L5_UR)
+endif()
+if(WITH_KKW)
+  list(APPEND api_targets
+       picnic2_L1_FS
+       picnic2_L3_FS
+       picnic2_L5_FS)
+endif()
+
+foreach(target IN ITEMS ${api_targets})
   add_library("${target}" STATIC "${target}/sign.c")
   target_include_directories("${target}" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   target_include_directories("${target}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/${target}")

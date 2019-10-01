@@ -14,8 +14,9 @@
 #include "io.h"
 #include "lowmc.h"
 #include "mzd_additional.h"
+#if defined(WITH_KKW)
 #include "picnic2_impl.h"
-
+#endif
 #if defined(WITH_OPT)
 #include "simd.h"
 #endif
@@ -286,6 +287,7 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
   return NULL;
 }
 
+#if defined(WITH_ZKBPP)
 lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc) {
 #if defined(WITH_LOWMC_M1)
   ASSUME(lowmc->m == 10 || lowmc->m == 1);
@@ -411,7 +413,9 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 
   return NULL;
 }
+#endif
 
+#if defined(WITH_KKW)
 lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_t* lowmc) {
 #if defined(WITH_LOWMC_M1)
   ASSUME(lowmc->m == 10 || lowmc->m == 1);
@@ -482,3 +486,4 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 
   return NULL;
 }
+#endif

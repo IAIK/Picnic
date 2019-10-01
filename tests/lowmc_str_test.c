@@ -12,7 +12,7 @@
 #endif
 
 #include "../lowmc.h"
-#include "../picnic_impl.h"
+#include "../picnic_instances.h"
 
 #include <m4ri/m4ri.h>
 #include <stdint.h>
