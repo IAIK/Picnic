@@ -225,6 +225,7 @@ list(APPEND PICNIC_SOURCES
      mzd_additional.c
      picnic.c
      picnic_impl.c
+     picnic_instances.c
      picnic2_impl.c
      picnic2_simulate.c
      picnic2_simulate_mul.c
