@@ -1340,8 +1340,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 int impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
               const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
               size_t* siglen) {
-  mzd_local_t* m_plaintext  = mzd_local_init_ex(1, pp->lowmc->n, false);
-  mzd_local_t* m_privatekey = mzd_local_init_ex(1, pp->lowmc->k, false);
+  mzd_local_t m_plaintext[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
+  mzd_local_t m_privatekey[(MAX_LOWMC_KEY_SIZE_BITS + 255) / 256];
 
   mzd_from_char_array(m_plaintext, plaintext, pp->output_size);
   mzd_from_char_array(m_privatekey, private_key, pp->input_size);
@@ -1349,25 +1349,19 @@ int impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8
   const int result = sign_impl(pp, private_key, m_privatekey, plaintext, m_plaintext, public_key,
                                msg, msglen, sig, siglen);
 
-  mzd_local_free(m_privatekey);
-  mzd_local_free(m_plaintext);
-
   return result;
 }
 
 int impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
                 const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
-  mzd_local_t* m_plaintext = mzd_local_init_ex(1, pp->lowmc->n, false);
-  mzd_local_t* m_publickey = mzd_local_init_ex(1, pp->lowmc->n, false);
+  mzd_local_t m_plaintext[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
+  mzd_local_t m_publickey[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
 
   mzd_from_char_array(m_plaintext, plaintext, pp->output_size);
   mzd_from_char_array(m_publickey, public_key, pp->output_size);
 
   const int result =
       verify_impl(pp, plaintext, m_plaintext, public_key, m_publickey, msg, msglen, sig, siglen);
-
-  mzd_local_free(m_publickey);
-  mzd_local_free(m_plaintext);
 
   return result;
 }
