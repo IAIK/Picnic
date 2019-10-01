@@ -13,7 +13,6 @@
 
 #include "io.h"
 #include "lowmc.h"
-#include "lowmc_pars.h"
 #include "mzd_additional.h"
 #include "picnic2_impl.h"
 

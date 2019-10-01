@@ -13,7 +13,6 @@
 #include <stdbool.h>
 
 #include "lowmc.h"
-#include "lowmc_pars.h"
 
 /* Share count for proofs */
 #define SC_PROOF 3

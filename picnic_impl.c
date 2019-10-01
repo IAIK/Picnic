@@ -16,7 +16,6 @@
 #include "io.h"
 #include "kdf_shake.h"
 #include "lowmc.h"
-#include "lowmc_pars.h"
 #include "mpc_lowmc.h"
 #include "picnic_impl.h"
 #include "randomness.h"
