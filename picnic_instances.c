@@ -156,11 +156,3 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
 
   return &instances[param];
 }
-
-ATTR_DTOR static void clear_instances(void) {
-  for (unsigned int p = PARAMETER_SET_INVALID + 1; p < PARAMETER_SET_MAX_INDEX; ++p) {
-    if (instance_initialized[p]) {
-      instance_initialized[p] = false;
-    }
-  }
-}
