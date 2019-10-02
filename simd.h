@@ -24,11 +24,6 @@
 #include <arm_neon.h>
 #endif
 
-#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8)) &&                        \
-    !defined(__MINGW32__) && !defined(__MINGW64__)
-#define BUILTIN_CPU_SUPPORTED
-#endif
-
 #include "cpu.h"
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)

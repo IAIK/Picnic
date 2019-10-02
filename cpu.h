@@ -10,6 +10,12 @@
 #ifndef CPU_H
 #define CPU_H
 
+#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8)) &&                        \
+    !defined(__MINGW32__) && !defined(__MINGW64__)
+#define BUILTIN_CPU_SUPPORTED
+#endif
+
+#if !defined(BUILTIN_CPU_SUPPORTED)
 #include <stdbool.h>
 
 /* CPU supports SSE2 */
@@ -25,5 +31,6 @@
  * Helper function in case __builtin_cpu_supports is not available.
  */
 bool cpu_supports(unsigned int caps);
+#endif
 
 #endif
