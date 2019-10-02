@@ -18,6 +18,8 @@
 void mzd_to_char_array(uint8_t* dst, const mzd_local_t* data, size_t numbytes);
 void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, size_t len);
 
+#if defined(PICNIC_STATIC) || !defined(NDEBUG)
 void print_hex(FILE* out, const uint8_t* data, size_t len);
+#endif
 
 #endif
