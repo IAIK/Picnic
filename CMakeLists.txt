@@ -136,6 +136,8 @@ if(MSVC)
   list(APPEND WARNINGS 5045)
   # initialization of aggregate types with non-constant values is valid C99
   list(APPEND WARNINGS 4204)
+  # nameless structs/unions are part of C11
+  list(APPEND WARNINGS 4201)
   foreach(warning IN ITEMS ${WARNINGS})
     add_compile_options("/wd${warning}")
   endforeach(warning)
