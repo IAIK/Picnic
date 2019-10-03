@@ -135,11 +135,11 @@ void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
   aux_mpc_AND_bitsliced(x0s, x1s, x2m, &ab, &bc, &ca, tapes);
 
   // (b & c) ^ a
-  const uint64_t t0 = (bc) ^ x0s;
+  const uint64_t t0 = bc ^ x0s;
   // (c & a) ^ a ^ b
-  const uint64_t t1 = (ca) ^ x0s ^ x1s;
-  // (a & b) ^ a ^ b ^c
-  const uint64_t t2 = (ab) ^ x0s ^ x1s ^ x2m;
+  const uint64_t t1 = ca ^ x0s ^ x1s;
+  // (a & b) ^ a ^ b ^
+  const uint64_t t2 = ab ^ x0s ^ x1s ^ x2m;
 
   *d = (in & MASK_MASK) ^ (t0 >> 2) ^ (t1 >> 1) ^ t2;
 }
@@ -152,9 +152,7 @@ void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
 static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params) {
   mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc->n, 1, true);
 
-  uint8_t temp[32] = {
-      0,
-  };
+  uint8_t temp[32] = {0};
 
   // combine into key shares and calculate lowmc evaluation in plain
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
@@ -184,8 +182,7 @@ static void commit(uint8_t* digest, const uint8_t* seed, const uint8_t* aux, con
   hash_init(&ctx, params->digest_size);
   hash_update(&ctx, seed, params->seed_size);
   if (aux != NULL) {
-    size_t tapeLenBytes = params->view_size;
-    hash_update(&ctx, aux, tapeLenBytes);
+    hash_update(&ctx, aux, params->view_size);
   }
   hash_update(&ctx, salt, SALT_SIZE);
   hash_update_uint16_le(&ctx, t);
@@ -204,7 +201,7 @@ static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* sal
   const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
   hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
   hash_update_x4_uint16_le(&ctx, t);
-  const uint16_t j_arr[4]                     = {j + 0, j + 1, j + 2, j + 3};
+  const uint16_t j_arr[4] = {j + 0, j + 1, j + 2, j + 3};
   hash_update_x4_uint16s_le(&ctx, j_arr);
   hash_final_x4(&ctx);
   hash_squeeze_x4(&ctx, digest, params->digest_size);
