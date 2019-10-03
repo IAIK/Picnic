@@ -25,6 +25,8 @@ make
 ```
 
 The cmake based build system supports the following flags:
+* ``WITH_ZKBPP``: Enable ZKB++-based Picnic instances.
+* ``WITH_KKW``: Enable KKW-based Picnic instances.
 * ``WITH_SIMD_OPT``: Enable SIMD optimizations.
 * ``WITH_AVX2``: Use AVX2 if available.
 * ``WITH_SSE2``: Use SSE2 if available.
@@ -32,7 +34,7 @@ The cmake based build system supports the following flags:
 * ``WITH_MARCH_NATIVE``: Build with -march=native -mtune=native (if supported).
 * ``WITH_LTO``: Enable link-time optimization (if supported).
 * ``WITH_LOWMC_OPT={OFF,ORKC,OLLE}``: Enable optimized round key computation (ORKC) or optimized linear layer evaluation (OLLE) optimizations.
-* ``WITH_LOWMC_M1``: Enable LowMC instances with 1 Sbox minimizing the signature sizes.
+* ``WITH_LOWMC_M1``: Enable LowMC instances with 1 Sbox minimizing the signature sizes (only useful if built with ``WITH_ZKBPP`` on).
 
 Building on Windows
 -------------------
