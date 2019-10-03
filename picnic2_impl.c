@@ -34,10 +34,12 @@
 #define LOWMC_MAX_AND_GATES (3 * 38 * 10 + 4) /* Rounded to nearest byte */
 #define MAX_AUX_BYTES ((LOWMC_MAX_AND_GATES + LOWMC_MAX_KEY_BITS) / 8 + 1)
 
+#if !defined(NDEBUG)
 #if defined(__WIN32__)
 #define SIZET_FMT "%Iu"
 #else
 #define SIZET_FMT "%zu"
+#endif
 #endif
 
 /* Helper functions */
