@@ -39,7 +39,7 @@ static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t 
 #endif
 static const unsigned int align_bound = 128 / (8 * sizeof(word));
 
-static uint32_t calculate_rowstride(uint32_t width) {
+static size_t calculate_rowstride(size_t width) {
   // As soon as we hit the AVX bound, use 32 byte alignment. Otherwise use 16
   // byte alignment for SSE2 and 128 bit vectors.
   if (width > align_bound) {
@@ -49,7 +49,7 @@ static uint32_t calculate_rowstride(uint32_t width) {
   }
 }
 
-static uint32_t calculate_width(uint32_t c) {
+static size_t calculate_width(size_t c) {
   return (c + sizeof(word) * 8 - 1) / (sizeof(word) * 8);
 }
 
@@ -62,8 +62,7 @@ static uint32_t calculate_width(uint32_t c) {
 // memory block.
 
 mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) {
-  const uint32_t width     = calculate_width(c);
-  const uint32_t rowstride = calculate_rowstride(width);
+  const size_t rowstride = calculate_rowstride(calculate_width(c));
 
   const size_t buffer_size = r * rowstride * sizeof(word);
   const size_t alloc_size  = (buffer_size + 31) & ~31;
@@ -84,8 +83,7 @@ void mzd_local_free(mzd_local_t* v) {
 }
 
 void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_t c, bool clear) {
-  const uint32_t width     = calculate_width(c);
-  const uint32_t rowstride = calculate_rowstride(width);
+  const size_t rowstride = calculate_rowstride(calculate_width(c));
 
   const size_t buffer_size   = r * rowstride * sizeof(word);
   const size_t size_per_elem = (buffer_size + 31) & ~31;
