@@ -1,7 +1,7 @@
 Version 2.1.2 -- 2019-10-03
 ---------------------------
 
-* Enable to build with ZKB++- or KKW-based instances only.
+* Add options to build with ZKB++- or KKW-based instances only.
 * Fix ARM NEON optimizations.
 * Slightly reduce heap usage.
 * Remove more unused code.
