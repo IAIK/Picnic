@@ -173,6 +173,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 }
 #endif
 
+#if !defined(NO_UINT64_FALLBACK)
 /* PICNIC2_L1_FS */
 #define XOR mzd_xor_uint64_128
 #define MPC_MUL mpc_matrix_mul_uint64_128
@@ -247,6 +248,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #undef LOWMC_R
 #undef LOWMC_INSTANCE
 #undef SIM_ONLINE
+#endif
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -441,6 +443,7 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* 
     }
   }
 #endif
+
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
@@ -462,6 +465,8 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* 
   }
 #endif
 #endif
+
+#if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
@@ -478,6 +483,7 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* 
 #endif
     }
   }
+#endif
 
   return NULL;
 }

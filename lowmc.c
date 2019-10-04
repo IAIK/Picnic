@@ -93,6 +93,7 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #include "lowmc_256_256_363.h"
 #endif
 
+#if !defined(NO_UINT64_FALLBACK)
 // uint64 based implementation
 #include "lowmc_fns_uint64_L1.h"
 #define LOWMC lowmc_uint64_128
@@ -107,6 +108,7 @@ static void sbox_layer_1_uint64(uint64_t* d) {
 #undef LOWMC
 #define LOWMC lowmc_uint64_256
 #include "lowmc.c.i"
+#endif
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -248,6 +250,7 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #endif
 #endif
 
+#if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
@@ -282,6 +285,7 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #endif
     }
   }
+#endif
 #endif
 
   return NULL;
@@ -375,6 +379,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #endif
 #endif
 
+#if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
@@ -409,6 +414,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #endif
     }
   }
+#endif
 #endif
 
   return NULL;
@@ -467,6 +473,7 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 #endif
 #endif
 
+#if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
@@ -483,6 +490,7 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 #endif
     }
   }
+#endif
 
   return NULL;
 }

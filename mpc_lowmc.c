@@ -259,6 +259,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 
 #define R_uint64 const uint64_t* r = rvec[i].t
 
+#if !defined(NO_UINT64_FALLBACK)
 // uint64 based implementation
 #include "lowmc_fns_uint64_L1.h"
 #define SIGN mpc_lowmc_call_uint64_128
@@ -274,6 +275,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #define SIGN mpc_lowmc_call_uint64_256
 #define VERIFY mpc_lowmc_call_verify_uint64_256
 #include "mpc_lowmc.c.i"
+#endif
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -415,6 +417,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
 #endif
 
+#if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
@@ -449,6 +452,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
     }
   }
+#endif
 #endif
 
   return NULL;
@@ -579,6 +583,7 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
 #endif
 
+#if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
 #if defined(WITH_LOWMC_128_128_20)
@@ -614,10 +619,12 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
     }
   }
 #endif
+#endif
 
   return NULL;
 }
 
+#if !defined(NO_UINT64_FALLBACK)
 static void mzd_share_uint64_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
                                  const mzd_local_t* v3) {
   mzd_xor_uint64_128(r, v1, v2);
@@ -635,6 +642,7 @@ static void mzd_share_uint64_256(mzd_local_t* r, const mzd_local_t* v1, const mz
   mzd_xor_uint64_256(r, v1, v2);
   mzd_xor_uint64_256(r, r, v3);
 }
+#endif
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -702,6 +710,7 @@ zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc) 
 #endif
 #endif
 
+#if !defined(NO_UINT64_FALLBACK)
   switch (lowmc->n) {
   case 128:
     return mzd_share_uint64_128;
@@ -710,4 +719,5 @@ zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc) 
   default:
     return mzd_share_uint64_256;
   }
+#endif
 }
