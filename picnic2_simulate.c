@@ -93,7 +93,7 @@ static uint8_t mpc_AND(uint8_t a, uint8_t b, uint64_t mask_a, uint64_t mask_b, r
 
 static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs,
                      uint8_t* unopenened_msg, const picnic_instance_t* params) {
-  uint8_t state[32];
+  uint8_t state[MAX_LOWMC_BLOCK_SIZE];
   mzd_to_char_array(state, statein, params->lowmc->n / 8);
   for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
     uint8_t a       = getBit((uint8_t*)state, i + 2);
