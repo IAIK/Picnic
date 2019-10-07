@@ -39,7 +39,9 @@
 #if defined(__x86_64__) || defined(_M_X64)
 // X86-64 CPUs always support SSE2
 #define CPU_SUPPORTS_SSE2 1
+#if defined(WITH_SSE2) || defined(WITH_AVX2)
 #define NO_UINT64_FALLBACK
+#endif
 #elif defined(__i386__) || defined(_M_IX86)
 #if defined(BUILTIN_CPU_SUPPORTED)
 #define CPU_SUPPORTS_SSE2 __builtin_cpu_supports("sse2")
@@ -52,7 +54,9 @@
 
 #if defined(__aarch64__)
 #define CPU_SUPPORTS_NEON 1
+#if defined(WITH_NEON)
 #define NO_UINT64_FALLBACK
+#endif
 #elif defined(__arm__)
 #define CPU_SUPPRTS_NEON cpu_supports(CPU_CAP_NEON)
 #else
