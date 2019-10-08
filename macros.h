@@ -247,4 +247,10 @@ static inline uint32_t ceil_log2(uint32_t x) {
   return 32 - clz(x - 1);
 }
 
+#if defined(__WIN32__)
+#define SIZET_FMT "%Iu"
+#else
+#define SIZET_FMT "%zu"
+#endif
+
 #endif

@@ -8,15 +8,14 @@
  */
 
 #include "api.h"
+#include "macros.h"
 
 #include <stdio.h>
 #include <string.h>
 
 #if defined(__WIN32__)
-#define SIZET_FMT "%Iu"
 #define LL_FMT "%I64u"
 #else
-#define SIZET_FMT "%zu"
 #define LL_FMT "%llu"
 #endif
 

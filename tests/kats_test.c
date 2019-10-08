@@ -14,18 +14,13 @@
 #endif
 
 #include "picnic.h"
+#include "macros.h"
 #include "utils.h"
 
 #include <memory.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
-
-#if defined(__WIN32__)
-#define SIZET_FMT "%Iu"
-#else
-#define SIZET_FMT "%zu"
-#endif
 
 typedef struct {
   size_t mlen;

@@ -14,6 +14,7 @@
 #include "../io.h"
 #include "../lowmc.h"
 #include "../picnic_instances.h"
+#include "../macros.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -305,12 +306,6 @@ static const test_fn_t tests[] = {
 };
 
 static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);
-
-#if defined(__WIN32__)
-#define SIZET_FMT "%Iu"
-#else
-#define SIZET_FMT "%zu"
-#endif
 
 int main(void) {
   int ret = 0;
