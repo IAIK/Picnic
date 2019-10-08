@@ -1,3 +1,7 @@
+#if !defined(__has_attribute)
+#define __has_attribute(x) 0
+#endif
+
 #if defined(__GNUC__) || __has_attribute(target)
 #define ATTRIBUTE_TARGET(x) __attribute__((target((x))))
 #else
