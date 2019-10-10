@@ -19,11 +19,11 @@
 #endif
 
 /* compatibility with clang and other compilers */
-#ifndef __has_attribute
+#if !defined(__has_attribute)
 #define __has_attribute(a) 0
 #endif
 
-#ifndef __has_builtin
+#if !defined(__has_builtin)
 #define __has_builtin(b) 0
 #endif
 
