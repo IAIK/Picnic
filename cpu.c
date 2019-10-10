@@ -113,8 +113,11 @@ static unsigned init_caps(void) {
   }
 
   if (__get_cpuid(7, &eax, &ebx, &ecx, &edx)) {
-    if (ebx & ((1 << 5) | (1 << 8))) {
+    if (ebx & (1 << 5)) {
       caps |= CPU_CAP_AVX2;
+    }
+    if (ebx & (1 << 8)) {
+      caps |= CPU_CAP_BMI2;
     }
   }
 
@@ -139,6 +142,6 @@ bool cpu_supports(unsigned int caps) {
     cpu_caps = init_caps();
   }
 
-  return cpu_caps & caps;
+  return (cpu_caps & caps) == caps;
 }
 #endif
