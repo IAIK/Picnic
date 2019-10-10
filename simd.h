@@ -28,7 +28,11 @@
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #if defined(BUILTIN_CPU_SUPPORTED)
+#if !defined(BUILTIN_CPU_SUPPORT_BROKEN_BMI2)
 #define CPU_SUPPORTS_AVX2 (__builtin_cpu_supports("avx2") && __builtin_cpu_supports("bmi2"))
+#else
+#define CPU_SUPPORTS_AVX2 (__builtin_cpu_supports("avx2") && cpu_supports(CPU_CAP_BMI2))
+#endif
 #define CPU_SUPPORTS_POPCNT __builtin_cpu_supports("popcnt")
 #else
 #define CPU_SUPPORTS_AVX2 cpu_supports(CPU_CAP_AVX2 | CPU_CAP_BMI2)
