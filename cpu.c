@@ -65,8 +65,11 @@ static unsigned init_caps(void) {
 
   if (max >= 7) {
     __cpuidex(regs.data, 7, 0);
-    if (regs.ebx & ((1 << 5) | (1 << 8))) {
+    if (regs.ebx & (1 << 5)) {
       caps |= CPU_CAP_AVX2;
+    }
+    if (regs.ebx & (1 << 8)) {
+      caps |= CPU_CAP_BMI2;
     }
   }
 
