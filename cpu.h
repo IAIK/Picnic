@@ -19,10 +19,10 @@
 
 #if defined(BUILTIN_CPU_SUPPORTED) && GNUC_CHECK(4, 9) && !GNUC_CHECK(5, 0)
 /* gcc 4.9's __builtin_cpu_support does not support "bmi2" */
-#define BUILTIN_CPU_SUPPORT_BROKEN_BMI2
+#define BUILTIN_CPU_SUPPORTED_BROKEN_BMI2
 #endif
 
-#if !defined(BUILTIN_CPU_SUPPORTED) || defined(BUILTIN_CPU_SUPPORT_BROKEN_BMI2)
+#if !defined(BUILTIN_CPU_SUPPORTED) || defined(BUILTIN_CPU_SUPPORTED_BROKEN_BMI2)
 #include <stdbool.h>
 
 /* CPU supports SSE2 */
