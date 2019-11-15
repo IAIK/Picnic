@@ -1,4 +1,6 @@
 .idea/
+.vs/
+CMakeSettings.json
 cmake-build-*/
 build*/
 submission/
