@@ -43,26 +43,6 @@ const uint8_t HASH_PREFIX_5 = 5;
 #define LOWMC_L5_OR_NULL NULL
 #endif
 
-// L1, L3, and L5 lowmc instances with 1 SBOX
-#if defined(WITH_LOWMC_128_128_182)
-#include "lowmc_128_128_182.h"
-#define LOWMC_L1_1_OR_NULL &lowmc_128_128_182
-#else
-#define LOWMC_L1_1_OR_NULL NULL
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-#include "lowmc_192_192_284.h"
-#define LOWMC_L3_1_OR_NULL &lowmc_192_192_284
-#else
-#define LOWMC_L3_1_OR_NULL NULL
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-#include "lowmc_256_256_363.h"
-#define LOWMC_L5_1_OR_NULL &lowmc_256_256_363
-#else
-#define LOWMC_L5_1_OR_NULL NULL
-#endif
-
 #if defined(WITH_ZKBPP)
 #define ENABLE_ZKBPP(x) x
 #else
