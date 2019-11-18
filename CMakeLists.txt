@@ -15,8 +15,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(picnic C)
 
 set(PICNIC_MAJOR_VERSION 2)
-set(PICNIC_MINOR_VERSION 1)
-set(PICNIC_PATCH_VERSION 2)
+set(PICNIC_MINOR_VERSION 2)
+set(PICNIC_PATCH_VERSION 0)
 set(PICNIC_VERSION ${PICNIC_MAJOR_VERSION}.${PICNIC_MINOR_VERSION}.${PICNIC_PATCH_VERSION})
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -107,7 +107,6 @@ set(WITH_LTO ON CACHE BOOL "Enable link-time optimization (if supported).")
 set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
 set(WITH_LOWMC_OPT "OLLE" CACHE STRING "Enable LowMC optimizations.")
 set_property(CACHE WITH_LOWMC_OPT PROPERTY STRINGS "OFF" "ORKC" "OLLE")
-set(WITH_LOWMC_M1 OFF CACHE BOOL "Enable LowMC instances with 1 Sbox.")
 set(WITH_EXTRA_RANDOMNESS OFF CACHE BOOL "Feed extra random bytes to KDF (fault attack counter measure).")
 set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h.")
 if(MSVC)
@@ -237,12 +236,6 @@ if(WITH_ZKBPP)
        bitstream.c
        mpc_lowmc.c
        picnic_impl.c)
-  if(WITH_LOWMC_M1)
-    list(APPEND PICNIC_SOURCES
-         lowmc_128_128_182.c
-         lowmc_192_192_284.c
-         lowmc_256_256_363.c)
-  endif()
 endif()
 if(WITH_KKW)
   list(APPEND PICNIC_SOURCES
@@ -286,9 +279,6 @@ function(apply_base_options lib)
   if(SHA3_IMPL STREQUAL "avx2")
     target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
   endif()
-  if(WITH_ZKBPP AND WITH_LOWMC_M1)
-    target_compile_definitions(${lib} PRIVATE WITH_LOWMC_M1)
-  endif()
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${lib} PRIVATE NDEBUG)
   endif()
@@ -318,12 +308,6 @@ function(apply_picnic_options lib)
                              WITH_LOWMC_128_128_20
                              WITH_LOWMC_192_192_30
                              WITH_LOWMC_256_256_38)
-  if(WITH_LOWMC_M1 AND WITH_ZKBPP)
-    target_compile_definitions(${lib} PRIVATE
-                               WITH_LOWMC_128_128_182
-                               WITH_LOWMC_192_192_284
-                               WITH_LOWMC_256_256_363)
-  endif()
   if(WITH_EXTRA_RANDOMNESS)
     target_compile_definitions(${lib} PRIVATE WITH_EXTRA_RANDOMNESS)
   endif()

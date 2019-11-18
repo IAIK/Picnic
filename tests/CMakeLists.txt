@@ -8,15 +8,6 @@ function(add_picnic_tests name target m1)
          picnic_L3_UR
          picnic_L5_FS
          picnic_L5_UR)
-    if(m1 AND WITH_LOWMC_M1)
-      list(APPEND ALL_PARAMS
-           picnic_L1_1_FS
-           picnic_L1_1_UR
-           picnic_L3_1_FS
-           picnic_L3_1_UR
-           picnic_L5_1_FS
-           picnic_L5_1_UR)
-    endif()
   endif()
   if(WITH_KKW)
     list(APPEND ALL_PARAMS
@@ -59,9 +50,6 @@ foreach(target IN ITEMS ${test_static_targets})
   target_link_libraries("${target}_test" picnic_static)
   apply_base_options("${target}_test")
   apply_opt_options("${target}_test")
-  if(WITH_LOWMC_M1)
-      target_compile_definitions("${target}_test" PRIVATE WITH_LOWMC_M1)
-  endif()
 
   if(${target} STREQUAL picnic OR ${target} STREQUAL extended_picnic)
     add_picnic_tests(${target} "${target}_test" ON)

@@ -415,11 +415,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #endif // WITH_OPT
 
 lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* lowmc) {
-#if defined(WITH_LOWMC_M1)
-  ASSUME(lowmc->m == 10 || lowmc->m == 1);
-#else
   ASSUME(lowmc->m == 10);
-#endif
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
 #if defined(WITH_OPT)

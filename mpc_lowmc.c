@@ -201,29 +201,6 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
   bitsliced_step_2_uint64_10(SC_VERIFY);
 }
 
-#if defined(WITH_LOWMC_M1)
-static void mpc_sbox_layer_bitsliced_uint64_1(uint64_t* in, view_t* view, uint64_t const* rvec) {
-  bitsliced_step_1_uint64_1(SC_PROOF);
-
-  mpc_and_uint64(r0m, x0s, x1s, r2m, view, 0);
-  mpc_and_uint64(r2m, x1s, x2m, r1s, view, 1);
-  mpc_and_uint64(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_step_2_uint64_1(SC_PROOF - 1);
-}
-
-static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
-                                                     uint64_t const* rvec) {
-  bitsliced_step_1_uint64_1(SC_VERIFY);
-
-  mpc_and_verify_uint64(r0m, x0s, x1s, r2m, view, MASK_X2I_1, 0);
-  mpc_and_verify_uint64(r2m, x1s, x2m, r1s, view, MASK_X2I_1, 1);
-  mpc_and_verify_uint64(r1m, x0s, x2m, r0s, view, MASK_X2I_1, 2);
-
-  bitsliced_step_2_uint64_1(SC_VERIFY);
-}
-#endif
-
 #if defined(WITH_LOWMC_128_128_20)
 #include "lowmc_128_128_20.h"
 #endif
@@ -232,15 +209,6 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #endif
 #if defined(WITH_LOWMC_256_256_38)
 #include "lowmc_256_256_38.h"
-#endif
-#if defined(WITH_LOWMC_128_128_182)
-#include "lowmc_128_128_182.h"
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-#include "lowmc_192_192_284.h"
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-#include "lowmc_256_256_363.h"
 #endif
 
 #define SBOX_uint64(sbox, y, x, views, r, n, shares, shares2)                                      \
@@ -331,11 +299,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_1(uint64_t* in, view_t* view,
 #endif
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {
-#if defined(WITH_LOWMC_M1)
-  ASSUME(lowmc->m == 10 || lowmc->m == 1);
-#else
   ASSUME(lowmc->m == 10);
-#endif
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
 #if defined(WITH_OPT)
@@ -357,24 +321,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
       }
     }
-#if defined(WITH_LOWMC_M1)
-    if (lowmc->m == 1) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-      case 128:
-        return mpc_lowmc_call_s256_128_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-      case 192:
-        return mpc_lowmc_call_s256_192_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-      case 256:
-        return mpc_lowmc_call_s256_256_1;
-#endif
-      }
-    }
-#endif
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -395,24 +341,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
       }
     }
-#if defined(WITH_LOWMC_M1)
-    if (lowmc->m == 1) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-      case 128:
-        return mpc_lowmc_call_s128_128_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-      case 192:
-        return mpc_lowmc_call_s128_192_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-      case 256:
-        return mpc_lowmc_call_s128_256_1;
-#endif
-      }
-    }
-#endif
   }
 #endif
 #endif
@@ -435,35 +363,13 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
     }
   }
 
-#if defined(WITH_LOWMC_M1)
-  if (lowmc->m == 1) {
-    switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-    case 128:
-      return mpc_lowmc_call_uint64_128_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-    case 192:
-      return mpc_lowmc_call_uint64_192_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-    case 256:
-      return mpc_lowmc_call_uint64_256_1;
-#endif
-    }
-  }
-#endif
 #endif
 
   return NULL;
 }
 
 zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc) {
-#if defined(WITH_LOWMC_M1)
-  ASSUME(lowmc->m == 10 || lowmc->m == 1);
-#else
   ASSUME(lowmc->m == 10);
-#endif
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
 #if defined(WITH_OPT)
@@ -485,24 +391,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
       }
     }
-#if defined(WITH_LOWMC_M1)
-    if (lowmc->m == 1) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-      case 128:
-        return mpc_lowmc_call_verify_s256_128_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-      case 192:
-        return mpc_lowmc_call_verify_s256_192_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-      case 256:
-        return mpc_lowmc_call_verify_s256_256_1;
-#endif
-      }
-    }
-#endif
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -523,24 +411,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
       }
     }
-#if defined(WITH_LOWMC_M1)
-    if (lowmc->m == 1) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-      case 128:
-        return mpc_lowmc_call_verify_s128_128_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-      case 192:
-        return mpc_lowmc_call_verify_s128_192_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-      case 256:
-        return mpc_lowmc_call_verify_s128_256_1;
-#endif
-      }
-    }
-#endif
   }
 #endif
 #if defined(WITH_NEON)
@@ -561,24 +431,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
       }
     }
-#if defined(WITH_LOWMC_M1)
-    if (lowmc->m == 1) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-      case 128:
-        return mpc_lowmc_call_verify_s128_128_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-      case 192:
-        return mpc_lowmc_call_verify_s128_192_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-      case 256:
-        return mpc_lowmc_call_verify_s128_256_1;
-#endif
-      }
-    }
-#endif
   }
 #endif
 #endif
@@ -600,25 +452,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
     }
   }
-
-#if defined(WITH_LOWMC_M1)
-  if (lowmc->m == 1) {
-    switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_182)
-    case 128:
-      return mpc_lowmc_call_verify_uint64_128_1;
-#endif
-#if defined(WITH_LOWMC_192_192_284)
-    case 192:
-      return mpc_lowmc_call_verify_uint64_192_1;
-#endif
-#if defined(WITH_LOWMC_256_256_363)
-    case 256:
-      return mpc_lowmc_call_verify_uint64_256_1;
-#endif
-    }
-  }
-#endif
 #endif
 
   return NULL;
