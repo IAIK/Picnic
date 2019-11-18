@@ -141,45 +141,6 @@ static void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t
     }                                                                                              \
   } while (0)
 
-#define bitsliced_step_1_uint64_1(sc)                                                              \
-  uint64_t r0m[sc];                                                                                \
-  uint64_t r0s[sc];                                                                                \
-  uint64_t r1m[sc];                                                                                \
-  uint64_t r1s[sc];                                                                                \
-  uint64_t r2m[sc];                                                                                \
-  uint64_t x0s[sc];                                                                                \
-  uint64_t x1s[sc];                                                                                \
-  uint64_t x2m[sc];                                                                                \
-  do {                                                                                             \
-    for (unsigned int m = 0; m < (sc); ++m) {                                                      \
-      const uint64_t inm   = in[m];                                                                \
-      const uint64_t rvecm = rvec[m];                                                              \
-                                                                                                   \
-      x0s[m] = (inm & MASK_X0I_1) << 2;                                                            \
-      x1s[m] = (inm & MASK_X1I_1) << 1;                                                            \
-      x2m[m] = inm & MASK_X2I_1;                                                                   \
-                                                                                                   \
-      r0m[m] = rvecm & MASK_X0I_1;                                                                 \
-      r1m[m] = rvecm & MASK_X1I_1;                                                                 \
-      r2m[m] = rvecm & MASK_X2I_1;                                                                 \
-                                                                                                   \
-      r0s[m] = r0m[m] << 2;                                                                        \
-      r1s[m] = r1m[m] << 1;                                                                        \
-    }                                                                                              \
-  } while (0)
-
-#define bitsliced_step_2_uint64_1(sc)                                                              \
-  do {                                                                                             \
-    for (unsigned int m = 0; m < (sc); ++m) {                                                      \
-      const uint64_t tmp1 = r2m[m] ^ x0s[m];                                                       \
-      const uint64_t tmp2 = x0s[m] ^ x1s[m];                                                       \
-      const uint64_t tmp3 = tmp2 ^ r1m[m];                                                         \
-      const uint64_t tmp4 = tmp2 ^ r0m[m] ^ x2m[m];                                                \
-                                                                                                   \
-      in[m] = (in[m] & MASK_MASK_1) ^ (tmp4) ^ (tmp1 >> 2) ^ (tmp3 >> 1);                          \
-    }                                                                                              \
-  } while (0)
-
 static void mpc_sbox_layer_bitsliced_uint64_10(uint64_t* in, view_t* view, uint64_t const* rvec) {
   bitsliced_step_1_uint64_10(SC_PROOF);
 
