@@ -11,17 +11,12 @@
 
 #define ADDMUL mzd_addmul_v_s256_128
 #define MUL mzd_mul_v_s256_128
-#define SHUFFLE mzd_shuffle_pext_128_30
 #define XOR mzd_xor_s256_128
 #define COPY mzd_copy_s256_128
 
-#define MUL_MC mzd_mul_v_s256_128_768
-#define ADDMUL_R mzd_addmul_v_s256_30_128
-#define MUL_Z mzd_mul_v_parity_uint64_128_30
-#define XOR_MC mzd_xor_s256_768
-
-#if defined(WITH_LOWMC_128_128_20)
-#define LOWMC_INSTANCE lowmc_128_128_20
+#if defined(WITH_LOWMC_126_126_4)
+#define LOWMC_INSTANCE lowmc_126_126_4
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R LOWMC_L1_R
+#define LOWMC_M LOWMC_L1_M

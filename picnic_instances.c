@@ -24,21 +24,21 @@ const uint8_t HASH_PREFIX_5 = 5;
 // instance handling
 
 // L1, L3, and L5 LowMC instances
-#if defined(WITH_LOWMC_128_128_20)
-#include "lowmc_128_128_20.h"
-#define LOWMC_L1_OR_NULL &lowmc_128_128_20
+#if defined(WITH_LOWMC_126_126_4)
+#include "lowmc_126_126_4.h"
+#define LOWMC_L1_OR_NULL &lowmc_126_126_4
 #else
 #define LOWMC_L1_OR_NULL NULL
 #endif
-#if defined(WITH_LOWMC_192_192_30)
-#include "lowmc_192_192_30.h"
-#define LOWMC_L3_OR_NULL &lowmc_192_192_30
+#if defined(WITH_LOWMC_192_192_4)
+#include "lowmc_192_192_4.h"
+#define LOWMC_L3_OR_NULL &lowmc_192_192_4
 #else
 #define LOWMC_L3_OR_NULL NULL
 #endif
-#if defined(WITH_LOWMC_256_256_38)
-#include "lowmc_256_256_38.h"
-#define LOWMC_L5_OR_NULL &lowmc_256_256_38
+#if defined(WITH_LOWMC_255_255_4)
+#include "lowmc_255_255_4.h"
+#define LOWMC_L5_OR_NULL &lowmc_255_255_4
 #else
 #define LOWMC_L5_OR_NULL NULL
 #endif

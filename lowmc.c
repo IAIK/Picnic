@@ -16,6 +16,7 @@
 #include "mzd_additional.h"
 #if defined(WITH_KKW)
 #include "picnic2_impl.h"
+#include "picnic2_simulate_mul.h"
 #endif
 #if defined(WITH_OPT)
 #include "simd.h"
@@ -26,37 +27,80 @@
 #endif
 #include <string.h>
 
-static uint64_t sbox_layer_10_bitsliced_uint64(uint64_t in) {
-  // a, b, c
-  const uint64_t x0s = (in & MASK_X0I) << 2;
-  const uint64_t x1s = (in & MASK_X1I) << 1;
-  const uint64_t x2m = in & MASK_X2I;
-
-  // (b & c) ^ a
-  const uint64_t t0 = (x1s & x2m) ^ x0s;
-  // (c & a) ^ a ^ b
-  const uint64_t t1 = (x0s & x2m) ^ x0s ^ x1s;
-  // (a & b) ^ a ^ b ^c
-  const uint64_t t2 = (x0s & x1s) ^ x0s ^ x1s ^ x2m;
-
-  return (in & MASK_MASK) ^ (t0 >> 2) ^ (t1 >> 1) ^ t2;
-}
-
+// TODO: these sboxes are pretty inefficient, look for better implementation maybe
 /**
- * S-box for m = 10
+ * S-box for m = 42
  */
-static void sbox_layer_10_uint64(uint64_t* d) {
-  *d = sbox_layer_10_bitsliced_uint64(*d);
+static void sbox_layer_42(mzd_local_t* in) {
+  uint8_t tmp[16];
+  mzd_to_char_array(tmp, in, 16);
+  for (uint32_t i = 0; i < 42; i++) {
+    uint8_t a = getBit(tmp, 3 * i + 2);
+    uint8_t b = getBit(tmp, 3 * i + 1);
+    uint8_t c = getBit(tmp, 3 * i + 0);
+
+    uint8_t d = a ^ (b & c);
+    uint8_t e = a ^ b ^ (a & c);
+    uint8_t f = a ^ b ^ c ^ (a & b);
+
+    setBit(tmp, 3 * i + 2, d);
+    setBit(tmp, 3 * i + 1, e);
+    setBit(tmp, 3 * i + 0, f);
+  }
+  mzd_from_char_array(in, tmp, 16);
+}
+/**
+ * S-box for m = 64
+ */
+static void sbox_layer_64(mzd_local_t* in) {
+  uint8_t tmp[24];
+  mzd_to_char_array(tmp, in, 24);
+  for (uint32_t i = 0; i < 64; i++) {
+    uint8_t a = getBit(tmp, 3 * i + 2);
+    uint8_t b = getBit(tmp, 3 * i + 1);
+    uint8_t c = getBit(tmp, 3 * i + 0);
+
+    uint8_t d = a ^ (b & c);
+    uint8_t e = a ^ b ^ (a & c);
+    uint8_t f = a ^ b ^ c ^ (a & b);
+
+    setBit(tmp, 3 * i + 2, d);
+    setBit(tmp, 3 * i + 1, e);
+    setBit(tmp, 3 * i + 0, f);
+  }
+  mzd_from_char_array(in, tmp, 24);
+}
+/**
+ * S-box for m = 85
+ */
+static void sbox_layer_85(mzd_local_t* in) {
+  uint8_t tmp[32];
+  mzd_to_char_array(tmp, in, 32);
+  for (uint32_t i = 0; i < 85; i++) {
+    uint8_t a = getBit(tmp, 3 * i + 2);
+    uint8_t b = getBit(tmp, 3 * i + 1);
+    uint8_t c = getBit(tmp, 3 * i + 0);
+
+    uint8_t d = a ^ (b & c);
+    uint8_t e = a ^ b ^ (a & c);
+    uint8_t f = a ^ b ^ c ^ (a & b);
+
+    setBit(tmp, 3 * i + 2, d);
+    setBit(tmp, 3 * i + 1, e);
+    setBit(tmp, 3 * i + 0, f);
+  }
+  mzd_from_char_array(in, tmp, 32);
 }
 
-#if defined(WITH_LOWMC_128_128_20)
-#include "lowmc_128_128_20.h"
+
+#if defined(WITH_LOWMC_126_126_4)
+#include "lowmc_126_126_4.h"
 #endif
-#if defined(WITH_LOWMC_192_192_30)
-#include "lowmc_192_192_30.h"
+#if defined(WITH_LOWMC_192_192_4)
+#include "lowmc_192_192_4.h"
 #endif
-#if defined(WITH_LOWMC_256_256_38)
-#include "lowmc_256_256_38.h"
+#if defined(WITH_LOWMC_255_255_4)
+#include "lowmc_255_255_4.h"
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
@@ -138,15 +182,15 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
   if (CPU_SUPPORTS_AVX2) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
       case 128:
         return lowmc_s256_128_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
       case 192:
         return lowmc_s256_192_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
       case 256:
         return lowmc_s256_256_10;
 #endif
@@ -158,15 +202,15 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
       case 128:
         return lowmc_s128_128_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
       case 192:
         return lowmc_s128_192_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
       case 256:
         return lowmc_s128_256_10;
 #endif
@@ -179,15 +223,15 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
     case 128:
       return lowmc_uint64_128_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
     case 192:
       return lowmc_uint64_192_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
     case 256:
       return lowmc_uint64_256_10;
 #endif
@@ -209,15 +253,15 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
   if (CPU_SUPPORTS_AVX2) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
       case 128:
         return lowmc_s256_128_store_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
       case 192:
         return lowmc_s256_192_store_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
       case 256:
         return lowmc_s256_256_store_10;
 #endif
@@ -229,15 +273,15 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
       case 128:
         return lowmc_s128_128_store_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
       case 192:
         return lowmc_s128_192_store_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
       case 256:
         return lowmc_s128_256_store_10;
 #endif
@@ -250,15 +294,15 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
     case 128:
       return lowmc_uint64_128_store_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
     case 192:
       return lowmc_uint64_192_store_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
     case 256:
       return lowmc_uint64_256_store_10;
 #endif
@@ -281,15 +325,15 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
   if (CPU_SUPPORTS_AVX2) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
       case 128:
         return lowmc_s256_128_compute_aux_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
       case 192:
         return lowmc_s256_192_compute_aux_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
       case 256:
         return lowmc_s256_256_compute_aux_10;
 #endif
@@ -301,15 +345,15 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->m == 10) {
       switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
       case 128:
         return lowmc_s128_128_compute_aux_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
       case 192:
         return lowmc_s128_192_compute_aux_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
       case 256:
         return lowmc_s128_256_compute_aux_10;
 #endif
@@ -322,15 +366,15 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 #if !defined(NO_UINT64_FALLBACK)
   if (lowmc->m == 10) {
     switch (lowmc->n) {
-#if defined(WITH_LOWMC_128_128_20)
+#if defined(WITH_LOWMC_126_126_4)
     case 128:
       return lowmc_uint64_128_compute_aux_10;
 #endif
-#if defined(WITH_LOWMC_192_192_30)
+#if defined(WITH_LOWMC_192_192_4)
     case 192:
       return lowmc_uint64_192_compute_aux_10;
 #endif
-#if defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_255_255_4)
     case 256:
       return lowmc_uint64_256_compute_aux_10;
 #endif

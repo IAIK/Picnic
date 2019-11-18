@@ -174,9 +174,9 @@ static int LowMC_test_vectorL5_3(void) {
 typedef int (*test_fn_t)(void);
 
 static const test_fn_t tests[] = {
-  LowMC_test_vectorL1_1, LowMC_test_vectorL1_2, LowMC_test_vectorL1_3,
-  LowMC_test_vectorL3_1, LowMC_test_vectorL3_2, LowMC_test_vectorL3_3,
-  LowMC_test_vectorL5_1, LowMC_test_vectorL5_2, LowMC_test_vectorL5_3,
+  LowMC_test_vectorL1_1,// LowMC_test_vectorL1_2, LowMC_test_vectorL1_3,
+  LowMC_test_vectorL3_1,// LowMC_test_vectorL3_2, LowMC_test_vectorL3_3,
+  LowMC_test_vectorL5_1,// LowMC_test_vectorL5_2, LowMC_test_vectorL5_3,
 };
 
 static const size_t num_tests = sizeof(tests) / sizeof(tests[0]);

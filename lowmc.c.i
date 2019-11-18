@@ -8,9 +8,9 @@
  */
 
 #if defined(LOWMC_INSTANCE)
-#define LOWMC_M 10
 #define N_LOWMC CONCAT(LOWMC, 10)
-#define SBOX(x) sbox_layer_10_uint64(&BLOCK(x, 0)->w64[(LOWMC_N / (sizeof(word) * 8)) - 1])
+#define SBOX_FUNC CONCAT(sbox_layer, LOWMC_M)
+#define SBOX(x) SBOX_FUNC(BLOCK(x, 0))
 #include "lowmc_impl.c.i"
 
 #if defined(WITH_ZKBPP)
@@ -24,8 +24,9 @@
 #undef N_LOWMC
 #undef RECORD_STATE
 #undef SBOX
-#define SBOX(x, tapes)                                                                             \
-  sbox_layer_10_uint64_aux(&BLOCK(x, 0)->w64[(LOWMC_N / (sizeof(word) * 8)) - 1], tapes)
+#undef SBOX_FUNC
+#define SBOX_FUNC CONCAT(CONCAT(sbox_layer, LOWMC_M), aux)
+#define SBOX(x, tapes) SBOX_FUNC(BLOCK(x, 0), tapes)
 #define N_LOWMC CONCAT(LOWMC, compute_aux_10)
 #define PICNIC2_AUX_COMPUTATION
 #include "lowmc_impl.c.i"
@@ -36,6 +37,7 @@
 #undef RECORD_STATE
 #undef PICNIC2_AUX_COMPUTATION
 #undef SBOX
+#undef SBOX_FUNC
 #endif
 
 // vim: ft=c

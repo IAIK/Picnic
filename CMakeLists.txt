@@ -105,8 +105,6 @@ set(WITH_NEON ON CACHE BOOL "Use NEON if available.")
 set(WITH_MARCH_NATIVE ${DEFAULT_WITH_MARCH_NATIVE} CACHE BOOL "Build with -march=native -mtune=native (if supported).")
 set(WITH_LTO ON CACHE BOOL "Enable link-time optimization (if supported).")
 set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
-set(WITH_LOWMC_OPT "OLLE" CACHE STRING "Enable LowMC optimizations.")
-set_property(CACHE WITH_LOWMC_OPT PROPERTY STRINGS "OFF" "ORKC" "OLLE")
 set(WITH_EXTRA_RANDOMNESS OFF CACHE BOOL "Feed extra random bytes to KDF (fault attack counter measure).")
 set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h.")
 if(MSVC)
@@ -224,9 +222,9 @@ list(APPEND PICNIC_SOURCES
      cpu.c
      io.c
      lowmc.c
-     lowmc_128_128_20.c
-     lowmc_192_192_30.c
-     lowmc_256_256_38.c
+     lowmc_126_126_4.c
+     lowmc_192_192_4.c
+     lowmc_255_255_4.c
      mzd_additional.c
      picnic.c
      picnic_instances.c
@@ -271,11 +269,6 @@ function(apply_base_options lib)
   if(WITH_CONFIG_H)
     target_compile_definitions(${lib} PRIVATE HAVE_CONFIG_H)
   endif()
-  if(WITH_LOWMC_OPT STREQUAL "ORKC")
-    target_compile_definitions(${lib} PRIVATE REDUCED_ROUND_KEY_COMPUTATION)
-  elseif(WITH_LOWMC_OPT STREQUAL "OLLE")
-    target_compile_definitions(${lib} PRIVATE REDUCED_ROUND_KEY_COMPUTATION OPTIMIZED_LINEAR_LAYER_EVALUATION)
-  endif()
   if(SHA3_IMPL STREQUAL "avx2")
     target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
   endif()
@@ -305,9 +298,9 @@ function(apply_picnic_options lib)
 
   set_target_properties(${lib} PROPERTIES C_VISIBILITY_PRESET hidden)
   target_compile_definitions(${lib} PRIVATE
-                             WITH_LOWMC_128_128_20
-                             WITH_LOWMC_192_192_30
-                             WITH_LOWMC_256_256_38)
+                             WITH_LOWMC_126_126_4
+                             WITH_LOWMC_192_192_4
+                             WITH_LOWMC_255_255_4)
   if(WITH_EXTRA_RANDOMNESS)
     target_compile_definitions(${lib} PRIVATE WITH_EXTRA_RANDOMNESS)
   endif()
