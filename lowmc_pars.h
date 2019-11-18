@@ -32,14 +32,6 @@ typedef mzd_local_t lowmc_key_t;
 #define MASK_MASK UINT64_C(0x00000003ffffffff)
 
 /**
- * Masks for 1 S-box.
- */
-#define MASK_X0I_1 UINT64_C(0x2000000000000000)
-#define MASK_X1I_1 UINT64_C(0x4000000000000000)
-#define MASK_X2I_1 UINT64_C(0x8000000000000000)
-#define MASK_MASK_1 UINT64_C(0x1fffffffffffffff)
-
-/**
  * LowMC instances
  */
 #define LOWMC_L1_N 128
@@ -56,21 +48,6 @@ typedef mzd_local_t lowmc_key_t;
 #define LOWMC_L5_M 10
 #define LOWMC_L5_K LOWMC_L5_N
 #define LOWMC_L5_R 38
-
-#define LOWMC_L1_1_N 128
-#define LOWMC_L1_1_M 1
-#define LOWMC_L1_1_K LOWMC_L1_1_N
-#define LOWMC_L1_1_R 182
-
-#define LOWMC_L3_1_N 192
-#define LOWMC_L3_1_M 1
-#define LOWMC_L3_1_K LOWMC_L3_1_N
-#define LOWMC_L3_1_R 284
-
-#define LOWMC_L5_1_N 256
-#define LOWMC_L5_1_M 1
-#define LOWMC_L5_1_K LOWMC_L5_1_N
-#define LOWMC_L5_1_R 363
 
 typedef struct {
 #if !defined(REDUCED_ROUND_KEY_COMPUTATION)
