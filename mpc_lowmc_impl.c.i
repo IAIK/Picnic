@@ -10,7 +10,6 @@
 #define RANDTAPE R_uint64
 #define SBOX SBOX_uint64
 
-#define LOWMC_M 10
 #undef SBOX_SIGN
 #undef SBOX_VERIFY
 #define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10

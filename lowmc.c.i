@@ -8,14 +8,14 @@
  */
 
 #if defined(LOWMC_INSTANCE)
-#define N_LOWMC CONCAT(LOWMC, 10)
+#define N_LOWMC CONCAT(LOWMC, LOWMC_M)
 #define SBOX_FUNC CONCAT(sbox_layer, LOWMC_M)
 #define SBOX(x) SBOX_FUNC(BLOCK(x, 0))
 #include "lowmc_impl.c.i"
 
 #if defined(WITH_ZKBPP)
 #undef N_LOWMC
-#define N_LOWMC CONCAT(LOWMC, store_10)
+#define N_LOWMC CONCAT(CONCAT(LOWMC, LOWMC_M), store)
 #define RECORD_STATE
 #include "lowmc_impl.c.i"
 #endif
@@ -27,7 +27,7 @@
 #undef SBOX_FUNC
 #define SBOX_FUNC CONCAT(CONCAT(sbox_layer, LOWMC_M), aux)
 #define SBOX(x, tapes) SBOX_FUNC(BLOCK(x, 0), tapes)
-#define N_LOWMC CONCAT(LOWMC, compute_aux_10)
+#define N_LOWMC CONCAT(CONCAT(LOWMC, LOWMC_M), compute_aux)
 #define PICNIC2_AUX_COMPUTATION
 #include "lowmc_impl.c.i"
 #endif
