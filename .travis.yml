@@ -125,5 +125,4 @@ script:
   - bash .ci-build.sh -DWITH_KKW=OFF
   - bash .ci-build.sh -DWITH_EXTRA_RANDOMNESS=ON
   - bash .ci-build.sh -DWITH_CONFIG_H=OFF
-  - bash .ci-build.sh -DWITH_LOWMC_M1=ON
   - bash .ci-build.sh -DWITH_LTO=OFF
