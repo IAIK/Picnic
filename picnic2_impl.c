@@ -79,124 +79,127 @@ static void tapesToWords(shares_t* shares, randomTape_t* tapes) {
 }
 
 /**
- * S-box for m = 42, for Picnic2 aux computation
+ * S-box for m = 42, for Picnic2 aux computation, with improved preprocessing
  */
-void sbox_layer_42_aux(mzd_local_t* in, randomTape_t* tapes) {
-  uint8_t tmp[16];
-  mzd_to_char_array(tmp, in, 16);
+void sbox_layer_42_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
+  uint8_t input_mask[16];
+  mzd_to_char_array(input_mask, in, 16);
+  uint8_t output_mask[16];
+  mzd_to_char_array(input_mask, out, 16);
 
-  for (uint32_t i = 0; i < 42; i++) {
-    uint8_t a                     = getBit(tmp, i * 3 + 2);
-    uint8_t b                     = getBit(tmp, i * 3 + 1);
-    uint8_t c                     = getBit(tmp, i * 3 + 0);
-    uint64_t fresh_output_maks_ab = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_ab        = tapesToParityOfWord(tapes, 1);
-    uint64_t fresh_output_maks_bc = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_bc        = tapesToParityOfWord(tapes, 1);
-    uint64_t fresh_output_maks_ca = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_ca        = tapesToParityOfWord(tapes, 1);
-
-    uint64_t aux_bit_ab = (a & b) ^ and_helper_ab;
-    uint64_t aux_bit_bc = (b & c) ^ and_helper_bc;
-    uint64_t aux_bit_ca = (c & a) ^ and_helper_ca;
-
-    setBit(tapes->tape[63], tapes->pos - 5, (uint8_t)aux_bit_ab);
-    setBit(tapes->tape[63], tapes->pos - 3, (uint8_t)aux_bit_bc);
-    setBit(tapes->tape[63], tapes->pos - 1, (uint8_t)aux_bit_ca);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
-
-    uint8_t d = a ^ fresh_output_maks_bc;
-    uint8_t e = a ^ b ^ fresh_output_maks_ca;
-    uint8_t f = a ^ b ^ c ^ fresh_output_maks_ab;
-
-    setBit(tmp, 3 * i + 2, d);
-    setBit(tmp, 3 * i + 1, e);
-    setBit(tmp, 3 * i + 0, f);
+  uint8_t and_helper[16];
+  memset(and_helper, 0, 16);
+  for (size_t i = 0; i < 63; i++) {
+    for (size_t j = 0; j < 16; j++) {
+      and_helper[j] ^= tapes->tape[i][tapes->pos + j];
+    }
   }
 
-  mzd_from_char_array(in, tmp, 16);
+  for (uint32_t i = 0; i < 42; i++) {
+    uint8_t a                     = getBit(input_mask, i * 3 + 2);
+    uint8_t b                     = getBit(input_mask, i * 3 + 1);
+    uint8_t c                     = getBit(input_mask, i * 3 + 0);
+    uint8_t d                     = getBit(output_mask, i * 3 + 2);
+    uint8_t e                     = getBit(output_mask, i * 3 + 1);
+    uint8_t f                     = getBit(output_mask, i * 3 + 0);
+    uint64_t fresh_output_maks_ab = f ^ a ^ b ^ c;
+    uint64_t fresh_output_maks_bc = d ^ a;
+    uint64_t fresh_output_maks_ca = e ^ a ^ b;
+
+    uint64_t and_helper_ab = getBit(and_helper, i * 3 + 0);
+    uint64_t and_helper_bc = getBit(and_helper, i * 3 + 1);
+    uint64_t and_helper_ca = getBit(and_helper, i * 3 + 2);
+
+    uint64_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
+    uint64_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
+    uint64_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
+
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 0, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 1, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 2, (uint8_t)aux_bit_ca);
+  }
 }
 /**
  * S-box for m = 64, for Picnic2 aux computation
  */
-void sbox_layer_64_aux(mzd_local_t* in, randomTape_t* tapes) {
-  uint8_t tmp[24];
-  mzd_to_char_array(tmp, in, 24);
+void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
+  uint8_t input_mask[24];
+  mzd_to_char_array(input_mask, in, 24);
+  uint8_t output_mask[24];
+  mzd_to_char_array(output_mask, out, 24);
 
-  for (uint32_t i = 0; i < 64; i++) {
-    uint8_t a                     = getBit(tmp, i * 3 + 2);
-    uint8_t b                     = getBit(tmp, i * 3 + 1);
-    uint8_t c                     = getBit(tmp, i * 3 + 0);
-    uint64_t fresh_output_maks_ab = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_ab        = tapesToParityOfWord(tapes, 1);
-    uint64_t fresh_output_maks_bc = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_bc        = tapesToParityOfWord(tapes, 1);
-    uint64_t fresh_output_maks_ca = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_ca        = tapesToParityOfWord(tapes, 1);
-
-    uint64_t aux_bit_ab = (a & b) ^ and_helper_ab;
-    uint64_t aux_bit_bc = (b & c) ^ and_helper_bc;
-    uint64_t aux_bit_ca = (c & a) ^ and_helper_ca;
-
-    setBit(tapes->tape[63], tapes->pos - 5, (uint8_t)aux_bit_ab);
-    setBit(tapes->tape[63], tapes->pos - 3, (uint8_t)aux_bit_bc);
-    setBit(tapes->tape[63], tapes->pos - 1, (uint8_t)aux_bit_ca);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
-
-    uint8_t d = a ^ fresh_output_maks_bc;
-    uint8_t e = a ^ b ^ fresh_output_maks_ca;
-    uint8_t f = a ^ b ^ c ^ fresh_output_maks_ab;
-
-    setBit(tmp, 3 * i + 2, d);
-    setBit(tmp, 3 * i + 1, e);
-    setBit(tmp, 3 * i + 0, f);
+  uint8_t and_helper[24];
+  memset(and_helper, 0, 24);
+  for (size_t i = 0; i < 63; i++) {
+    for (size_t j = 0; j < 24; j++) {
+      and_helper[j] ^= tapes->tape[i][tapes->pos + j];
+    }
   }
 
-  mzd_from_char_array(in, tmp, 24);
+  for (uint32_t i = 0; i < 64; i++) {
+    uint8_t a                     = getBit(input_mask, i * 3 + 2);
+    uint8_t b                     = getBit(input_mask, i * 3 + 1);
+    uint8_t c                     = getBit(input_mask, i * 3 + 0);
+    uint8_t d                     = getBit(output_mask, i * 3 + 2);
+    uint8_t e                     = getBit(output_mask, i * 3 + 1);
+    uint8_t f                     = getBit(output_mask, i * 3 + 0);
+    uint64_t fresh_output_maks_ab = f ^ a ^ b ^ c;
+    uint64_t fresh_output_maks_bc = d ^ a;
+    uint64_t fresh_output_maks_ca = e ^ a ^ b;
+
+    uint64_t and_helper_ab = getBit(and_helper, i * 3 + 0);
+    uint64_t and_helper_bc = getBit(and_helper, i * 3 + 1);
+    uint64_t and_helper_ca = getBit(and_helper, i * 3 + 2);
+
+    uint64_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
+    uint64_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
+    uint64_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
+
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 0, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 1, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 2, (uint8_t)aux_bit_ca);
+  }
 }
 /**
  * S-box for m = 85, for Picnic2 aux computation
  */
-void sbox_layer_85_aux(mzd_local_t* in, randomTape_t* tapes) {
-  uint8_t tmp[32];
-  mzd_to_char_array(tmp, in, 32);
+void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
+  uint8_t input_mask[32];
+  mzd_to_char_array(input_mask, in, 32);
+  uint8_t output_mask[32];
+  mzd_to_char_array(input_mask, out, 32);
 
-  for (uint32_t i = 0; i < 85; i++) {
-    uint8_t a                     = getBit(tmp, i * 3 + 2);
-    uint8_t b                     = getBit(tmp, i * 3 + 1);
-    uint8_t c                     = getBit(tmp, i * 3 + 0);
-    uint64_t fresh_output_maks_ab = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_ab        = tapesToParityOfWord(tapes, 1);
-    uint64_t fresh_output_maks_bc = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_bc        = tapesToParityOfWord(tapes, 1);
-    uint64_t fresh_output_maks_ca = tapesToParityOfWord(tapes, 0);
-    uint64_t and_helper_ca        = tapesToParityOfWord(tapes, 1);
-
-    uint64_t aux_bit_ab = (a & b) ^ and_helper_ab;
-    uint64_t aux_bit_bc = (b & c) ^ and_helper_bc;
-    uint64_t aux_bit_ca = (c & a) ^ and_helper_ca;
-
-    setBit(tapes->tape[63], tapes->pos - 5, (uint8_t)aux_bit_ab);
-    setBit(tapes->tape[63], tapes->pos - 3, (uint8_t)aux_bit_bc);
-    setBit(tapes->tape[63], tapes->pos - 1, (uint8_t)aux_bit_ca);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
-    setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
-
-    uint8_t d = a ^ fresh_output_maks_bc;
-    uint8_t e = a ^ b ^ fresh_output_maks_ca;
-    uint8_t f = a ^ b ^ c ^ fresh_output_maks_ab;
-
-    setBit(tmp, 3 * i + 2, d);
-    setBit(tmp, 3 * i + 1, e);
-    setBit(tmp, 3 * i + 0, f);
+  uint8_t and_helper[32];
+  memset(and_helper, 0, 32);
+  for (size_t i = 0; i < 63; i++) {
+    for (size_t j = 0; j < 32; j++) {
+      and_helper[j] ^= tapes->tape[i][tapes->pos + j];
+    }
   }
 
-  mzd_from_char_array(in, tmp, 32);
+  for (uint32_t i = 0; i < 85; i++) {
+    uint8_t a                     = getBit(input_mask, i * 3 + 2);
+    uint8_t b                     = getBit(input_mask, i * 3 + 1);
+    uint8_t c                     = getBit(input_mask, i * 3 + 0);
+    uint8_t d                     = getBit(output_mask, i * 3 + 2);
+    uint8_t e                     = getBit(output_mask, i * 3 + 1);
+    uint8_t f                     = getBit(output_mask, i * 3 + 0);
+    uint64_t fresh_output_maks_ab = f ^ a ^ b ^ c;
+    uint64_t fresh_output_maks_bc = d ^ a;
+    uint64_t fresh_output_maks_ca = e ^ a ^ b;
+
+    uint64_t and_helper_ab = getBit(and_helper, i * 3 + 0);
+    uint64_t and_helper_bc = getBit(and_helper, i * 3 + 1);
+    uint64_t and_helper_ca = getBit(and_helper, i * 3 + 2);
+
+    uint64_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
+    uint64_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
+    uint64_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
+
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 0, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 1, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 2, (uint8_t)aux_bit_ca);
+  }
 }
 
 /* Input is the tapes for one parallel repitition; i.e., tapes[t]
@@ -216,7 +219,7 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
     }
   }
   mzd_from_char_array(lowmc_key, temp, params->input_size);
-  tapes->pos = params->input_size * 8; //params->lowmc->n;
+  tapes->pos = params->input_size * 8; // params->lowmc->n;
 
   lowmc_compute_aux_implementation_f lowmc_aux_impl = params->impls.lowmc_aux;
   // Perform LowMC evaluation and fix AND masks for all AND gates
@@ -344,14 +347,12 @@ static int indexOf(const uint16_t* list, size_t len, uint16_t value) {
 }
 
 static void setAuxBits(randomTape_t* tapes, uint8_t* input, const picnic_instance_t* params) {
-  size_t firstAuxIndex = (params->input_size*8) + 1;
   size_t last          = params->num_MPC_parties - 1;
-  size_t pos           = 0;
 
-  for (size_t i = 0; i < params->view_size * 2 * 8; i += 2) {
-    uint8_t auxBit = getBit(input, pos);
-    setBit(tapes->tape[last], firstAuxIndex + i, auxBit);
-    pos++;
+  for (size_t j = 0; j < params->lowmc->r; j++) {
+    for (size_t i = 0; i < params->input_size; i++) {
+      tapes->tape[last][params->input_size + params->input_size * 2 * j + i] = input[j * params->input_size + i];
+    }
   }
 }
 
@@ -499,7 +500,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   allocateCommitments2(&Ch, params, params->num_rounds);
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
-  shares_t* mask_shares    = allocateShares(params->input_size*8);
+  shares_t* mask_shares    = allocateShares(params->input_size * 8);
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
   mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc->k, false);
   mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
@@ -703,7 +704,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
-  shares_t* mask_shares                  = allocateShares(params->input_size*8);
+  shares_t* mask_shares                  = allocateShares(params->input_size * 8);
 
   /* Commitments to the commitments and views */
   commitments_t Ch;

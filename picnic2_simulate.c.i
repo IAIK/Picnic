@@ -13,13 +13,11 @@
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
-static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_t* tapes, msgs_t* msgs,
-                      const mzd_local_t* plaintext, const uint32_t* pubKey,
+static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_t* tapes,
+                      msgs_t* msgs, const mzd_local_t* plaintext, const uint32_t* pubKey,
                       const picnic_instance_t* params) {
-  int ret                 = 0;
+  int ret = 0;
   mzd_local_t state[((LOWMC_N) + 255) / 256];
-  shares_t* key_masks = allocateShares(params->input_size*8); // Make a copy to use when computing each round key
-  shares_t* mask2_shares = allocateShares(params->input_size*8);
   uint8_t* unopened_msgs = NULL;
 
   if (msgs->unopened >= 0) { // We are in verify, save the unopenend parties msgs
@@ -27,26 +25,29 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
     memcpy(unopened_msgs, msgs->msgs[msgs->unopened], params->view_size + params->input_size);
   }
 
-  copyShares(key_masks, mask_shares);
+  mzd_local_t temp[((LOWMC_N) + 255) / 256];
+  MPC_MUL(temp, maskedKey, LOWMC_INSTANCE.k0_matrix,
+          mask_shares); // roundKey = maskedKey * KMatrix[0]
+  XOR(state, temp, plaintext);
 
-  mzd_local_t roundKey[((LOWMC_N) + 255) / 256];
-  MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.k0_matrix,
-          mask_shares);                                       // roundKey = maskedKey * KMatrix[0]
-  XOR(state, roundKey, plaintext);
-
-  shares_t* round_key_masks = allocateShares(mask_shares->numWords);
   for (uint32_t r = 0; r < LOWMC_R; r++) {
-    copyShares(round_key_masks, key_masks);
-    MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix, round_key_masks);
-
+    // MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix, round_key_masks);
+    if (r != 0) {
+      for (size_t i = 0; i < params->output_size*8; i++) {
+        mask_shares->shares[i] = tapesToWord(tapes);
+      }
+    }
     mpc_sbox(state, mask_shares, tapes, msgs, unopened_msgs, params);
-    MPC_MUL(state, state, LOWMC_INSTANCE.rounds[r].l_matrix,
-            mask_shares); // state = state * LMatrix (r-1)
-    XOR(state, state, LOWMC_INSTANCE.rounds[r].constant);
-    XOR(state, state, roundKey);
-    mpc_xor_masks(mask_shares, mask_shares, round_key_masks);
+    // MPC_MUL(state, state, LOWMC_INSTANCE.rounds[r].l_matrix,
+    //        mask_shares); // state = state * LMatrix (r-1)
+    MUL(temp, state, LOWMC_INSTANCE.rounds[r].l_matrix);
+    XOR(state, temp, LOWMC_INSTANCE.rounds[r].constant);
+    ADDMUL(state, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix);
   }
-  freeShares(round_key_masks);
+
+  for (uint32_t i = 0; i < params->output_size*8; i++) {
+    mask_shares->shares[i] = tapesToWord(tapes);
+  }
 
   /* Unmask the output, and check that it's correct */
   if (msgs->unopened >= 0) {
@@ -57,11 +58,11 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
       setBit((uint8_t*)&mask_shares->shares[i], msgs->unopened, share);
     }
   }
-  uint32_t output[params->output_size*8 / 32];
-  uint32_t outstate[params->output_size*8 / 32];
+  uint32_t output[params->output_size * 8 / 32];
+  uint32_t outstate[params->output_size * 8 / 32];
   mzd_to_char_array((uint8_t*)outstate, state, params->output_size);
   reconstructShares(output, mask_shares);
-  xor_word_array(output, output, outstate, (params->output_size*8 / 32));
+  xor_word_array(output, output, outstate, (params->output_size * 8 / 32));
 
   if (memcmp(output, pubKey, params->output_size) != 0) {
 #if !defined(NDEBUG)
@@ -80,8 +81,6 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
   msgsTranspose(msgs);
 
   free(unopened_msgs);
-  freeShares(key_masks);
-  freeShares(mask2_shares);
 
 Exit:
   return ret;

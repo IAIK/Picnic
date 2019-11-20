@@ -13,6 +13,7 @@
 #define MUL mzd_mul_v_uint64_192
 #define XOR mzd_xor_uint64_192
 #define COPY mzd_copy_uint64_192
+#define MPC_MUL mpc_matrix_mul_uint64_192
 
 #if defined(WITH_LOWMC_192_192_4)
 #define LOWMC_INSTANCE lowmc_192_192_4

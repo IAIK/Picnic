@@ -15,3 +15,4 @@
 #undef LOWMC_M
 #undef MUL
 #undef XOR
+#undef MPC_MUL

@@ -1,0 +1,60 @@
+/*
+ *  This file is part of the optimized implementation of the Picnic signature scheme.
+ *  See the accompanying documentation for complete details.
+ *
+ *  The code is provided under the MIT license, see LICENSE for
+ *  more details.
+ *  SPDX-License-Identifier: MIT
+ */
+
+#if defined(FN_ATTR)
+FN_ATTR
+#endif
+static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
+  mzd_local_t x[((LOWMC_N) + 255) / 256];
+  mzd_local_t y[((LOWMC_N) + 255) / 256];
+  uint8_t temp[32];
+
+  const size_t state_size_bytes = (LOWMC_N + 7) / 8;
+
+  MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
+
+  tapes->pos = state_size_bytes * 2 * LOWMC_R;
+  memset(temp, 0, 32);
+  for (size_t i = 0; i < 64; i++) {
+    for (size_t j = 0; j < state_size_bytes; j++) {
+      temp[j] ^= tapes->tape[i][tapes->pos + j];
+    }
+  }
+  mzd_from_char_array(x, temp, state_size_bytes);
+
+  lowmc_round_t const* round = &LOWMC_INSTANCE.rounds[LOWMC_R - 1];
+  for (unsigned r = 0; r < LOWMC_R; ++r, round--) {
+    ADDMUL(x, lowmc_key, round->k_matrix);
+    MUL(y, x, round->li_matrix);
+
+    // recover input masks from tapes, only in first round we use the key as input
+    if (r == LOWMC_R - 1) {
+      MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
+    } else {
+      tapes->pos = state_size_bytes * 2 * (LOWMC_R - 1 - r);
+      memset(temp, 0, 32);
+      for (size_t i = 0; i < 64; i++) {
+        for (size_t j = 0; j < state_size_bytes; j++) {
+          temp[j] ^= tapes->tape[i][tapes->pos + j];
+        }
+      }
+	  mzd_from_char_array(x, temp, state_size_bytes);
+    }
+    tapes->pos = state_size_bytes * 2 * (LOWMC_R - 1 - r) + state_size_bytes;
+    SBOX(x, y, tapes);
+  }
+
+  for (size_t j = 0; j < LOWMC_R; j++) {
+    for (size_t i = 0; i < state_size_bytes; i++) {
+      tapes->aux_bits[j * state_size_bytes + i] = tapes->tape[63][state_size_bytes + state_size_bytes * 2 * j + i];
+    }
+  }
+}
+
+// vim: ft=c

@@ -159,7 +159,7 @@ static void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex,
   size_t lastNonLeaf = getParent(tree->numNodes - 1);
   size_t i           = 0;
   /* expand the first 4 seeds*/
-  for (; i <= 2; i++) {
+  for (; i <= MIN(2,lastNonLeaf); i++) {
     if (!tree->haveNode[i]) {
       continue;
     }

@@ -26,10 +26,10 @@
 #undef SBOX
 #undef SBOX_FUNC
 #define SBOX_FUNC CONCAT(CONCAT(sbox_layer, LOWMC_M), aux)
-#define SBOX(x, tapes) SBOX_FUNC(BLOCK(x, 0), tapes)
+#define SBOX(x, y, tapes) SBOX_FUNC(BLOCK(x, 0), BLOCK(y,0), tapes)
 #define N_LOWMC CONCAT(CONCAT(LOWMC, LOWMC_M), compute_aux)
 #define PICNIC2_AUX_COMPUTATION
-#include "lowmc_impl.c.i"
+#include "lowmc_impl_aux.c.i"
 #endif
 
 #undef LOWMC_M
