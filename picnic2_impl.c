@@ -215,8 +215,8 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
       temp[j] ^= tapes->tape[i][j];
     }
   }
-  mzd_from_char_array(lowmc_key, temp, params->lowmc->n / 8);
-  tapes->pos = params->lowmc->n;
+  mzd_from_char_array(lowmc_key, temp, params->input_size);
+  tapes->pos = params->input_size * 8; //params->lowmc->n;
 
   lowmc_compute_aux_implementation_f lowmc_aux_impl = params->impls.lowmc_aux;
   // Perform LowMC evaluation and fix AND masks for all AND gates
@@ -344,7 +344,7 @@ static int indexOf(const uint16_t* list, size_t len, uint16_t value) {
 }
 
 static void setAuxBits(randomTape_t* tapes, uint8_t* input, const picnic_instance_t* params) {
-  size_t firstAuxIndex = params->lowmc->n + 1;
+  size_t firstAuxIndex = (params->input_size*8) + 1;
   size_t last          = params->num_MPC_parties - 1;
   size_t pos           = 0;
 
@@ -499,7 +499,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   allocateCommitments2(&Ch, params, params->num_rounds);
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
-  shares_t* mask_shares    = allocateShares(params->lowmc->n);
+  shares_t* mask_shares    = allocateShares(params->input_size*8);
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
   mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc->k, false);
   mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
@@ -703,7 +703,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
-  shares_t* mask_shares                  = allocateShares(params->lowmc->n);
+  shares_t* mask_shares                  = allocateShares(params->input_size*8);
 
   /* Commitments to the commitments and views */
   commitments_t Ch;

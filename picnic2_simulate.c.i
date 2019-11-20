@@ -18,8 +18,8 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
                       const picnic_instance_t* params) {
   int ret                 = 0;
   mzd_local_t state[((LOWMC_N) + 255) / 256];
-  shares_t* key_masks = allocateShares(LOWMC_N); // Make a copy to use when computing each round key
-  shares_t* mask2_shares = allocateShares(LOWMC_N);
+  shares_t* key_masks = allocateShares(params->input_size*8); // Make a copy to use when computing each round key
+  shares_t* mask2_shares = allocateShares(params->input_size*8);
   uint8_t* unopened_msgs = NULL;
 
   if (msgs->unopened >= 0) { // We are in verify, save the unopenend parties msgs
@@ -57,19 +57,19 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
       setBit((uint8_t*)&mask_shares->shares[i], msgs->unopened, share);
     }
   }
-  uint32_t output[LOWMC_N / 32];
-  uint32_t outstate[LOWMC_N / 32];
-  mzd_to_char_array((uint8_t*)outstate, state, LOWMC_N/8);
+  uint32_t output[params->output_size*8 / 32];
+  uint32_t outstate[params->output_size*8 / 32];
+  mzd_to_char_array((uint8_t*)outstate, state, params->output_size);
   reconstructShares(output, mask_shares);
-  xor_word_array(output, output, outstate, (LOWMC_N / 32));
+  xor_word_array(output, output, outstate, (params->output_size*8 / 32));
 
-  if (memcmp(output, pubKey, LOWMC_N / 8) != 0) {
+  if (memcmp(output, pubKey, params->output_size) != 0) {
 #if !defined(NDEBUG)
     printf("%s: output does not match pubKey\n", __func__);
     printf("pubKey: ");
-    print_hex(stdout, (uint8_t*)pubKey, LOWMC_N / 8);
+    print_hex(stdout, (uint8_t*)pubKey, params->output_size);
     printf("\noutput: ");
-    print_hex(stdout, (uint8_t*)output, LOWMC_N / 8);
+    print_hex(stdout, (uint8_t*)output, params->output_size);
     printf("\n");
 #endif
     ret = -1;
