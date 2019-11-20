@@ -18,6 +18,9 @@
 void mzd_to_char_array(uint8_t* dst, const mzd_local_t* data, size_t numbytes);
 void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, size_t len);
 
+uint8_t getBit(const uint8_t* array, size_t bitNumber);
+void setBit(uint8_t* bytes, size_t bitNumber, uint8_t val);
+
 #if defined(PICNIC_STATIC) || !defined(NDEBUG)
 void print_hex(FILE* out, const uint8_t* data, size_t len);
 #endif

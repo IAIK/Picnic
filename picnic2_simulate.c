@@ -142,7 +142,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_126_126_4)
 #include "lowmc_126_126_4.h"
 #define LOWMC_INSTANCE lowmc_126_126_4
-#define SIM_ONLINE lowmc_simulate_online_uint64_128_10
+#define SIM_ONLINE lowmc_simulate_online_uint64_126_42
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -163,7 +163,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_192_192_4)
 #include "lowmc_192_192_4.h"
 #define LOWMC_INSTANCE lowmc_192_192_4
-#define SIM_ONLINE lowmc_simulate_online_uint64_192_10
+#define SIM_ONLINE lowmc_simulate_online_uint64_192_64
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -184,7 +184,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_255_255_4)
 #include "lowmc_255_255_4.h"
 #define LOWMC_INSTANCE lowmc_255_255_4
-#define SIM_ONLINE lowmc_simulate_online_uint64_256_10
+#define SIM_ONLINE lowmc_simulate_online_uint64_255_85
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -211,7 +211,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_126_126_4)
 #include "lowmc_126_126_4.h"
 #define LOWMC_INSTANCE lowmc_126_126_4
-#define SIM_ONLINE lowmc_simulate_online_s128_128_10
+#define SIM_ONLINE lowmc_simulate_online_s128_126_42
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -232,7 +232,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_192_192_4)
 #include "lowmc_192_192_4.h"
 #define LOWMC_INSTANCE lowmc_192_192_4
-#define SIM_ONLINE lowmc_simulate_online_s128_192_10
+#define SIM_ONLINE lowmc_simulate_online_s128_192_64
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -253,7 +253,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_255_255_4)
 #include "lowmc_255_255_4.h"
 #define LOWMC_INSTANCE lowmc_255_255_4
-#define SIM_ONLINE lowmc_simulate_online_s128_256_10
+#define SIM_ONLINE lowmc_simulate_online_s128_255_85
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -279,7 +279,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_126_126_4)
 #include "lowmc_126_126_4.h"
 #define LOWMC_INSTANCE lowmc_126_126_4
-#define SIM_ONLINE lowmc_simulate_online_s256_128_10
+#define SIM_ONLINE lowmc_simulate_online_s256_126_42
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -300,7 +300,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_192_192_4)
 #include "lowmc_192_192_4.h"
 #define LOWMC_INSTANCE lowmc_192_192_4
-#define SIM_ONLINE lowmc_simulate_online_s256_192_10
+#define SIM_ONLINE lowmc_simulate_online_s256_192_64
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -320,7 +320,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #if defined(WITH_LOWMC_255_255_4)
 #include "lowmc_255_255_4.h"
 #define LOWMC_INSTANCE lowmc_255_255_4
-#define SIM_ONLINE lowmc_simulate_online_s256_256_10
+#define SIM_ONLINE lowmc_simulate_online_s256_255_85
 #include "picnic2_simulate.c.i"
 #endif
 #undef XOR
@@ -336,70 +336,58 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #endif // WITH_OPT
 
 lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* lowmc) {
-  ASSUME(lowmc->m == 10);
-  ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+  ASSUME(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
+  ASSUME(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
-    if (lowmc->m == 10) {
-      switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
-      case 128:
-        return lowmc_simulate_online_s256_128_10;
+    if (lowmc->n == 126 && lowmc->m == 42)
+      return lowmc_simulate_online_s256_126_42;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
-      case 192:
-        return lowmc_simulate_online_s256_192_10;
+    if (lowmc->n == 192 && lowmc->m == 64)
+      return lowmc_simulate_online_s256_192_64;
 #endif
 #if defined(WITH_LOWMC_255_255_4)
-      case 256:
-        return lowmc_simulate_online_s256_256_10;
+    if (lowmc->n == 255 && lowmc->m == 85)
+      return lowmc_simulate_online_s256_255_85;
 #endif
-      }
-    }
   }
 #endif
 
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
-    if (lowmc->m == 10) {
-      switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
-      case 128:
-        return lowmc_simulate_online_s128_128_10;
+    if (lowmc->n == 126 && lowmc->m == 42)
+      return lowmc_simulate_online_s128_126_42;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
-      case 192:
-        return lowmc_simulate_online_s128_192_10;
+    if (lowmc->n == 192 && lowmc->m == 64)
+      return lowmc_simulate_online_s128_192_64;
 #endif
 #if defined(WITH_LOWMC_255_255_4)
-      case 256:
-        return lowmc_simulate_online_s128_256_10;
+    if (lowmc->n == 255 && lowmc->m == 85)
+      return lowmc_simulate_online_s128_255_85;
 #endif
-      }
-    }
   }
 #endif
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
-  if (lowmc->m == 10) {
-    switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
-    case 128:
-      return lowmc_simulate_online_uint64_128_10;
+    if (lowmc->n == 126 && lowmc->m == 42)
+      return lowmc_simulate_online_uint64_126_42;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
-    case 192:
-      return lowmc_simulate_online_uint64_192_10;
+    if (lowmc->n == 192 && lowmc->m == 64)
+      return lowmc_simulate_online_uint64_192_64;
 #endif
 #if defined(WITH_LOWMC_255_255_4)
-    case 256:
-      return lowmc_simulate_online_uint64_256_10;
+    if (lowmc->n == 255 && lowmc->m == 85)
+      return lowmc_simulate_online_uint64_255_85;
 #endif
-    }
-  }
 #endif
 
   return NULL;

@@ -425,17 +425,6 @@ void xor_word_array(uint32_t* out, const uint32_t* in1, const uint32_t* in2, uin
   }
 }
 
-/* Get one bit from a byte array */
-uint8_t getBit(const uint8_t* array, uint32_t bitNumber) {
-  return (array[bitNumber / 8] >> (7 - (bitNumber % 8))) & 0x01;
-}
-
-/* Set a specific bit in a byte array to a given value */
-void setBit(uint8_t* bytes, uint32_t bitNumber, uint8_t val) {
-  bytes[bitNumber / 8] =
-      (bytes[bitNumber >> 3] & ~(1 << (7 - (bitNumber % 8)))) | (val << (7 - (bitNumber % 8)));
-}
-
 void copyShares(shares_t* dst, shares_t* src) {
   assert(dst->numWords == src->numWords);
   memcpy(dst->shares, src->shares, dst->numWords * sizeof(dst->shares[0]));

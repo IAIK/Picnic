@@ -37,6 +37,17 @@ void mzd_from_char_array(mzd_local_t* result, const uint8_t* data, size_t len) {
   }
 }
 
+/* Get one bit from a byte array */
+uint8_t getBit(const uint8_t* array, size_t bitNumber) {
+  return (array[bitNumber / 8] >> (7 - (bitNumber % 8))) & 0x01;
+}
+
+/* Set a specific bit in a byte array to a given value */
+void setBit(uint8_t* bytes, size_t bitNumber, uint8_t val) {
+  bytes[bitNumber / 8] =
+      (bytes[bitNumber >> 3] & ~(1 << (7 - (bitNumber % 8)))) | (val << (7 - (bitNumber % 8)));
+}
+
 #if defined(PICNIC_STATIC) || !defined(NDEBUG)
 void print_hex(FILE* out, const uint8_t* data, size_t len) {
   for (size_t i = len; i; --i, ++data) {

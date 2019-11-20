@@ -100,9 +100,21 @@ int PICNIC_CALLING_CONVENTION picnic_keygen(picnic_params_t param, picnic_public
   if (!rand_bytes(sk_sk, input_size)) {
     return -1;
   }
+  if (instance->lowmc->k != instance->input_size * 8) {
+    const size_t diff = instance->input_size * 8 - instance->lowmc->k;
+    for (size_t i = 0; i < diff; i++) {
+      setBit(sk_sk, instance->input_size * 8 - i, 0);
+    }
+  }
   // random plain text
   if (!rand_bytes(sk_pt, output_size)) {
     return -1;
+  }
+  if (instance->lowmc->n != instance->output_size * 8) {
+    const size_t diff = instance->output_size * 8 - instance->lowmc->n;
+    for (size_t i = 0; i < diff; i++) {
+      setBit(sk_pt, instance->output_size * 8 - i, 0);
+    }
   }
   // encrypt plaintext under secret key
   if (picnic_sk_to_pk(sk, pk)) {

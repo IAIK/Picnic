@@ -11,6 +11,7 @@
 #define PICNIC2_SIMULATE_MUL_H
 
 #include "picnic2_types.h"
+#include "io.h"
 
 void mpc_matrix_mul_uint64_128(mzd_local_t* output, const mzd_local_t* vec, const mzd_local_t* matrix,
                                shares_t* mask_shares);
@@ -34,8 +35,6 @@ void mpc_matrix_mul_s256_256(mzd_local_t* output, const mzd_local_t* vec, const 
 
 /* helper functions */
 void copyShares(shares_t* dst, shares_t* src);
-uint8_t getBit(const uint8_t* array, uint32_t bitNumber);
-void setBit(uint8_t* bytes, uint32_t bitNumber, uint8_t val);
 void xor_word_array(uint32_t* out, const uint32_t* in1, const uint32_t* in2, uint32_t length);
 uint64_t tapesToWord(randomTape_t* tapes);
 uint64_t tapesToParityOfWord(randomTape_t* tapes, uint8_t without_last);
