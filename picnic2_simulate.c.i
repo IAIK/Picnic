@@ -21,8 +21,8 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
   uint8_t* unopened_msgs = NULL;
 
   if (msgs->unopened >= 0) { // We are in verify, save the unopenend parties msgs
-    unopened_msgs = malloc(params->view_size + params->input_size);
-    memcpy(unopened_msgs, msgs->msgs[msgs->unopened], params->view_size + params->input_size);
+    unopened_msgs = malloc(params->view_size);
+    memcpy(unopened_msgs, msgs->msgs[msgs->unopened], params->view_size);
   }
 
   mzd_local_t temp[((LOWMC_N) + 255) / 256];
@@ -49,23 +49,9 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
     mask_shares->shares[i] = tapesToWord(tapes);
   }
 
-  /* Unmask the output, and check that it's correct */
-  if (msgs->unopened >= 0) {
-    /* During signature verification we have the shares of the output for
-     * the unopened party already in msgs, but not in mask_shares. */
-    for (size_t i = 0; i < LOWMC_N; i++) {
-      uint8_t share = getBit(unopened_msgs, msgs->pos + i);
-      setBit((uint8_t*)&mask_shares->shares[i], msgs->unopened, share);
-    }
-  }
+  /* check that the output is correct */
   uint32_t output[params->output_size * 8 / 32];
-  uint32_t outstate[params->output_size * 8 / 32];
-  mzd_to_char_array((uint8_t*)outstate, state, params->output_size);
-  reconstructShares(output, mask_shares);
-  for (size_t i = LOWMC_N; i < params->output_size * 8; i++) {
-    setBit((uint8_t*)output, i, 0);
-  }
-  xor_word_array(output, output, outstate, (params->output_size * 8 / 32));
+  mzd_to_char_array((uint8_t*)output, state, params->output_size);
 
   if (memcmp(output, pubKey, params->output_size) != 0) {
 #if !defined(NDEBUG)
@@ -80,7 +66,6 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
     goto Exit;
   }
 
-  broadcast(mask_shares, msgs);
   msgsTranspose(msgs);
 
   free(unopened_msgs);

@@ -164,7 +164,7 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
 
   uint8_t* slab =
       calloc(1, params->num_rounds * (params->num_MPC_parties *
-                                          ((params->view_size + params->input_size + 7) / 8 * 8) +
+                                          ((params->view_size + 7) / 8 * 8) +
                                       params->num_MPC_parties * sizeof(uint8_t*)));
 
   for (uint32_t i = 0; i < params->num_rounds; i++) {
@@ -175,7 +175,7 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
 
     for (uint32_t j = 0; j < params->num_MPC_parties; j++) {
       msgs[i].msgs[j] = slab;
-      slab += (params->view_size + params->input_size + 7) / 8 * 8;
+      slab += (params->view_size + 7) / 8 * 8;
     }
   }
 
@@ -186,7 +186,7 @@ msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
   msgs_t* msgs = malloc(sizeof(msgs_t));
 
   uint8_t* slab =
-      calloc(1, (params->num_MPC_parties * ((params->view_size + params->input_size + 7) / 8 * 8) +
+      calloc(1, (params->num_MPC_parties * ((params->view_size + 7) / 8 * 8) +
                  params->num_MPC_parties * sizeof(uint8_t*)));
 
   msgs->pos      = 0;
@@ -196,7 +196,7 @@ msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
 
   for (uint32_t j = 0; j < params->num_MPC_parties; j++) {
     msgs->msgs[j] = slab;
-    slab += (params->view_size + params->input_size + 7) / 8 * 8;
+    slab += (params->view_size + 7) / 8 * 8;
   }
 
   return msgs;

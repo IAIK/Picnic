@@ -17,11 +17,7 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
 
   const size_t state_size_bytes = (LOWMC_N + 7) / 8;
 
-  tapes->pos = LOWMC_N * 2 * LOWMC_R;
   memset(temp, 0, 32);
-  for (size_t j = 0; j < LOWMC_N; j++) {
-    setBit(temp, j, getBit(tapes->parity_tapes, tapes->pos + j));
-  }
   mzd_from_char_array(x, temp, state_size_bytes);
 
   lowmc_round_t const* round = &LOWMC_INSTANCE.rounds[LOWMC_R - 1];

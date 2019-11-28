@@ -404,12 +404,12 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
   for (size_t t = 0; t < params->num_rounds; t++) {
     hash_update(&ctx, Ch->hashes[t], params->digest_size);
   }
-  //print_hex(stdout, ctx.sponge.state, 32);
-  //printf("\n");
+  // print_hex(stdout, ctx.sponge.state, 32);
+  // printf("\n");
 
   hash_update(&ctx, hCv, params->digest_size);
-  //print_hex(stdout, hCv, params->digest_size);
-  //printf("\n");
+  // print_hex(stdout, hCv, params->digest_size);
+  // printf("\n");
   hash_update(&ctx, salt, SALT_SIZE);
   hash_update(&ctx, (const uint8_t*)pubKey, params->input_size);
   hash_update(&ctx, (const uint8_t*)plaintext, params->input_size);
@@ -593,10 +593,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       size_t tapeLengthBytes = 2 * params->view_size + params->input_size;
       setAuxBits(&tapes[t], sig->proofs[t].aux, params);
       memset(tapes[t].tape[unopened], 0, tapeLengthBytes);
-      for (int i = 0; i < 64; i++) {
-        memset(msgs->msgs[i], 0, params->view_size + params->input_size);
-      }
-      memcpy(msgs->msgs[unopened], sig->proofs[t].msgs, params->view_size + params->input_size);
+      memcpy(msgs->msgs[unopened], sig->proofs[t].msgs, params->view_size);
       msgs->pos      = 0;
       msgs->unopened = unopened;
 
@@ -750,9 +747,10 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
                    (params->input_size / 4)); // maskedKey += privateKey
     mzd_from_char_array(m_maskedKey, (const uint8_t*)maskedKey, params->input_size);
 
-    for (int i = 0; i < 64; i++) {
-      memset(msgs->msgs[i], 0, params->view_size + params->input_size);
+    for (size_t i = params->lowmc->n; i < params->input_size*8; i++) {
+      setBit((uint8_t*)maskedKey, i, 0);
     }
+
     int rv =
         simulateOnline(m_maskedKey, mask_shares, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
     if (rv != 0) {
@@ -825,8 +823,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
       }
 
       memcpy(proofs[t].input, inputs[t], params->input_size);
-      memcpy(proofs[t].msgs, msgs[t].msgs[challengeP[P_index]],
-             params->view_size + params->input_size);
+      memcpy(proofs[t].msgs, msgs[t].msgs[challengeP[P_index]], params->view_size);
 
       /* recompute commitment of unopened party since we did not store it for memory optimization */
       if (proofs[t].unOpenedIndex == params->num_MPC_parties - 1) {
@@ -953,7 +950,7 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
       }
       bytesRequired += params->digest_size;
       bytesRequired += params->input_size;
-      bytesRequired += params->input_size + params->view_size;
+      bytesRequired += params->view_size;
       bytesRequired += seedInfoLen;
     }
   }
@@ -997,13 +994,19 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
         }
       }
 
-      memcpy(sig->proofs[t].input, sigBytes, params->seed_size);
+      memcpy(sig->proofs[t].input, sigBytes, params->input_size);
+      if (!arePaddingBitsZero(sig->proofs[t].input, params->input_size, params->lowmc->n)) {
+#if !defined(NDEBUG)
+        printf("%s: failed while deserializing input bits\n", __func__);
+#endif
+        return -1;
+      }
       sigBytes += params->input_size;
 
-      size_t msgsByteLength = params->input_size + params->view_size;
+      size_t msgsByteLength = params->view_size;
       memcpy(sig->proofs[t].msgs, sigBytes, msgsByteLength);
       sigBytes += msgsByteLength;
-      size_t msgsBitLength = params->lowmc->n + 3 * params->lowmc->r * params->lowmc->m;
+      size_t msgsBitLength = 3 * params->lowmc->r * params->lowmc->m;
       if (!arePaddingBitsZero(sig->proofs[t].msgs, msgsByteLength, msgsBitLength)) {
 #if !defined(NDEBUG)
         printf("%s: failed while deserializing msgs bits\n", __func__);
@@ -1050,7 +1053,7 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
       }
       bytesRequired += params->digest_size;
       bytesRequired += params->input_size;
-      bytesRequired += params->input_size + params->view_size;
+      bytesRequired += params->view_size;
     }
   }
 
@@ -1087,8 +1090,8 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
       memcpy(sigBytes, sig->proofs[t].input, params->input_size);
       sigBytes += params->input_size;
 
-      memcpy(sigBytes, sig->proofs[t].msgs, params->input_size + params->view_size);
-      sigBytes += params->input_size + params->view_size;
+      memcpy(sigBytes, sig->proofs[t].msgs, params->view_size);
+      sigBytes += params->view_size;
 
       memcpy(sigBytes, sig->proofs[t].C, params->digest_size);
       sigBytes += params->digest_size;
