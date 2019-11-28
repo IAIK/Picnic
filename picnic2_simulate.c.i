@@ -33,7 +33,7 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
   for (uint32_t r = 0; r < LOWMC_R; r++) {
     // MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix, round_key_masks);
     if (r != 0) {
-      for (size_t i = 0; i < params->output_size*8; i++) {
+      for (size_t i = 0; i < LOWMC_N; i++) {
         mask_shares->shares[i] = tapesToWord(tapes);
       }
     }
@@ -45,7 +45,7 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
     ADDMUL(state, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix);
   }
 
-  for (uint32_t i = 0; i < params->output_size*8; i++) {
+  for (size_t i = 0; i < LOWMC_N; i++) {
     mask_shares->shares[i] = tapesToWord(tapes);
   }
 
@@ -62,6 +62,9 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
   uint32_t outstate[params->output_size * 8 / 32];
   mzd_to_char_array((uint8_t*)outstate, state, params->output_size);
   reconstructShares(output, mask_shares);
+  for (size_t i = LOWMC_N; i < params->output_size * 8; i++) {
+    setBit((uint8_t*)output, i, 0);
+  }
   xor_word_array(output, output, outstate, (params->output_size * 8 / 32));
 
   if (memcmp(output, pubKey, params->output_size) != 0) {

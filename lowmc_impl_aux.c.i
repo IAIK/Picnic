@@ -19,12 +19,10 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
 
   MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
 
-  tapes->pos = state_size_bytes * 2 * LOWMC_R;
+  tapes->pos = LOWMC_N * 2 * LOWMC_R;
   memset(temp, 0, 32);
-  for (size_t i = 0; i < 64; i++) {
-    for (size_t j = 0; j < state_size_bytes; j++) {
-      temp[j] ^= tapes->tape[i][tapes->pos + j];
-    }
+  for (size_t j = 0; j < LOWMC_N; j++) {
+    setBit(temp, j, getBit(tapes->parity_tapes, tapes->pos + j));
   }
   mzd_from_char_array(x, temp, state_size_bytes);
 
@@ -37,23 +35,15 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
     if (r == LOWMC_R - 1) {
       MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
     } else {
-      tapes->pos = state_size_bytes * 2 * (LOWMC_R - 1 - r);
+      tapes->pos = LOWMC_N * 2 * (LOWMC_R - 1 - r);
       memset(temp, 0, 32);
-      for (size_t i = 0; i < 64; i++) {
-        for (size_t j = 0; j < state_size_bytes; j++) {
-          temp[j] ^= tapes->tape[i][tapes->pos + j];
-        }
-      }
+	  for (size_t j = 0; j < LOWMC_N; j++) {
+		setBit(temp, j, getBit(tapes->parity_tapes, tapes->pos + j));
+	  }
 	  mzd_from_char_array(x, temp, state_size_bytes);
     }
-    tapes->pos = state_size_bytes * 2 * (LOWMC_R - 1 - r) + state_size_bytes;
+    tapes->pos = LOWMC_N * 2 * (LOWMC_R - 1 - r) + LOWMC_N;
     SBOX(x, y, tapes);
-  }
-
-  for (size_t j = 0; j < LOWMC_R; j++) {
-    for (size_t i = 0; i < state_size_bytes; i++) {
-      tapes->aux_bits[j * state_size_bytes + i] = tapes->tape[63][state_size_bytes + state_size_bytes * 2 * j + i];
-    }
   }
 }
 

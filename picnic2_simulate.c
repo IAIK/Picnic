@@ -112,17 +112,7 @@ static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* 
     setBit((uint8_t*)state, i + 1, a ^ b ^ ca);
     setBit((uint8_t*)state, i, a ^ b ^ c ^ ab);
   }
-  size_t filler = params->input_size * 8 - params->lowmc->n;
-  tapes->pos += filler;
   mzd_from_char_array(statein, state, params->output_size);
-}
-
-static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
-  assert(out->numWords == a->numWords && a->numWords == b->numWords);
-
-  for (size_t i = 0; i < out->numWords; i++) {
-    out->shares[i] = a->shares[i] ^ b->shares[i];
-  }
 }
 
 #if defined(WITH_LOWMC_126_126_4)

@@ -41,6 +41,7 @@ void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->aux_bits       = calloc(1, params->view_size);
   tape->buffer         = aligned_alloc(32, tape->nTapes * sizeof(uint64_t));
   size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
+  tape->parity_tapes   = calloc(1, tapeSizeBytes);
   tapeSizeBytes = ((tapeSizeBytes + 7) / 8) * 8; // round up to multiple of 64 bit for transpose
   uint8_t* slab = calloc(1, tape->nTapes * tapeSizeBytes);
   for (uint8_t i = 0; i < tape->nTapes; i++) {
@@ -55,6 +56,7 @@ void freeRandomTape(randomTape_t* tape) {
   if (tape != NULL) {
     free(tape->tape[0]);
     free(tape->tape);
+    free(tape->parity_tapes);
     aligned_free(tape->buffer);
     free(tape->aux_bits);
   }
@@ -64,6 +66,7 @@ void partialFreeRandomTape(randomTape_t* tape) {
   if (tape != NULL) {
     free(tape->tape[0]);
     free(tape->tape);
+    free(tape->parity_tapes);
     aligned_free(tape->buffer);
   }
 }
