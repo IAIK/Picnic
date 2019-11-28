@@ -76,6 +76,9 @@ static void tapesToWords(shares_t* shares, randomTape_t* tapes, size_t num) {
   for (size_t w = 0; w < num; w++) {
     shares->shares[w] = tapesToWord(tapes);
   }
+  for (size_t w = num; w < shares->numWords; w++) {
+    shares->shares[w] = 0;
+  }
 }
 
 /**
@@ -109,9 +112,9 @@ void sbox_layer_42_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
     uint64_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
     uint64_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
 
-    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 0, (uint8_t)aux_bit_ab);
-    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 1, (uint8_t)aux_bit_bc);
-    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 2, (uint8_t)aux_bit_ca);
+    setBit(tapes->tape[63], tapes->pos + 3 * i + 0, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[63], tapes->pos + 3 * i + 1, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[63], tapes->pos + 3 * i + 2, (uint8_t)aux_bit_ca);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
@@ -187,9 +190,9 @@ void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
     uint64_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
     uint64_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
 
-    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 0, (uint8_t)aux_bit_ab);
-    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 1, (uint8_t)aux_bit_bc);
-    setBit(tapes->tape[63], tapes->pos * 8 + 3 * i + 2, (uint8_t)aux_bit_ca);
+    setBit(tapes->tape[63], tapes->pos + 3 * i + 0, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[63], tapes->pos + 3 * i + 1, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[63], tapes->pos + 3 * i + 2, (uint8_t)aux_bit_ca);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
@@ -213,7 +216,7 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
     }
   }
   mzd_from_char_array(lowmc_key, tapes->parity_tapes, params->input_size);
-  tapes->pos = params->lowmc->n;
+  tapes->pos     = params->lowmc->n;
   tapes->aux_pos = 0;
   memset(tapes->aux_bits, 0, params->view_size);
 
@@ -343,13 +346,13 @@ static int indexOf(const uint16_t* list, size_t len, uint16_t value) {
 }
 
 static void setAuxBits(randomTape_t* tapes, uint8_t* input, const picnic_instance_t* params) {
-  size_t last = params->num_MPC_parties - 1;
+  size_t last  = params->num_MPC_parties - 1;
   size_t inBit = 0;
 
   for (size_t j = params->lowmc->r; j > 0; j--) {
     for (size_t i = 0; i < params->lowmc->n; i++) {
-      setBit(tapes->tape[last], params->lowmc->n + params->lowmc->n * 2 * (j-1) + i,
-          getBit(input, inBit++));
+      setBit(tapes->tape[last], params->lowmc->n + params->lowmc->n * 2 * (j - 1) + i,
+             getBit(input, inBit++));
     }
   }
 }
@@ -401,12 +404,12 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
   for (size_t t = 0; t < params->num_rounds; t++) {
     hash_update(&ctx, Ch->hashes[t], params->digest_size);
   }
-  print_hex(stdout, ctx.sponge.state, 32);
-  printf("\n");
+  //print_hex(stdout, ctx.sponge.state, 32);
+  //printf("\n");
 
   hash_update(&ctx, hCv, params->digest_size);
-  print_hex(stdout, hCv, params->digest_size);
-  printf("\n");
+  //print_hex(stdout, hCv, params->digest_size);
+  //printf("\n");
   hash_update(&ctx, salt, SALT_SIZE);
   hash_update(&ctx, (const uint8_t*)pubKey, params->input_size);
   hash_update(&ctx, (const uint8_t*)plaintext, params->input_size);
@@ -985,14 +988,13 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
       if (P_t != (params->num_MPC_parties - 1)) {
         memcpy(sig->proofs[t].aux, sigBytes, params->view_size);
         sigBytes += params->view_size;
-        // TODO: check for 126 and 255 bit versions
-        //        if (!arePaddingBitsZero(sig->proofs[t].aux, params->view_size,
-        //                                3 * params->lowmc->r * params->lowmc->m)) {
-        //#if !defined(NDEBUG)
-        //          printf("%s: failed while deserializing aux bits\n", __func__);
-        //#endif
-        //          return -1;
-        //        }
+        if (!arePaddingBitsZero(sig->proofs[t].aux, params->view_size,
+                                3 * params->lowmc->r * params->lowmc->m)) {
+#if !defined(NDEBUG)
+          printf("%s: failed while deserializing aux bits\n", __func__);
+#endif
+          return -1;
+        }
       }
 
       memcpy(sig->proofs[t].input, sigBytes, params->seed_size);
@@ -1001,13 +1003,13 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
       size_t msgsByteLength = params->input_size + params->view_size;
       memcpy(sig->proofs[t].msgs, sigBytes, msgsByteLength);
       sigBytes += msgsByteLength;
-      //      size_t msgsBitLength = params->lowmc->n + 3 * params->lowmc->r * params->lowmc->m;
-      //      if (!arePaddingBitsZero(sig->proofs[t].msgs, msgsByteLength, msgsBitLength)) {
-      //#if !defined(NDEBUG)
-      //        printf("%s: failed while deserializing msgs bits\n", __func__);
-      //#endif
-      //        return -1;
-      //      }
+      size_t msgsBitLength = params->lowmc->n + 3 * params->lowmc->r * params->lowmc->m;
+      if (!arePaddingBitsZero(sig->proofs[t].msgs, msgsByteLength, msgsBitLength)) {
+#if !defined(NDEBUG)
+        printf("%s: failed while deserializing msgs bits\n", __func__);
+#endif
+        return -1;
+      }
 
       memcpy(sig->proofs[t].C, sigBytes, params->digest_size);
       sigBytes += params->digest_size;

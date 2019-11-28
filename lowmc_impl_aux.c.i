@@ -17,8 +17,6 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
 
   const size_t state_size_bytes = (LOWMC_N + 7) / 8;
 
-  MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
-
   tapes->pos = LOWMC_N * 2 * LOWMC_R;
   memset(temp, 0, 32);
   for (size_t j = 0; j < LOWMC_N; j++) {
