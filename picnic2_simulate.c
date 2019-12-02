@@ -27,6 +27,9 @@
 #include "picnic2_simulate.h"
 #include "picnic2_simulate_mul.h"
 
+#define PACKING_FACTOR 4
+#define PARTIES_LOG 4
+
 static void wordToMsgsNoTranspose(uint64_t w, msgs_t* msgs) {
   ((uint64_t*)msgs->msgs[msgs->pos % 64])[msgs->pos / 64] = w;
   msgs->pos++;
@@ -57,62 +60,82 @@ static void msgsTranspose(msgs_t* msgs) {
 }
 
 /* For each word in shares; write player i's share to their stream of msgs */
-static void broadcast(shares_t* shares, msgs_t* msgs) {
-  for (size_t w = 0; w < shares->numWords; w++) {
-    wordToMsgsNoTranspose(shares->shares[w], msgs);
-  }
-}
+//static void broadcast(shares_t* shares, msgs_t* msgs) {
+//  for (size_t w = 0; w < shares->numWords; w++) {
+//    wordToMsgsNoTranspose(shares->shares[w], msgs);
+//  }
+//}
 
-/* For an input bit b = 0 or 1, return the word of all b bits, i.e.,
- * extend(1) = 0xFFFFFFFFFFFFFFFF
- * extend(0) = 0x0000000000000000
- * Assumes inputs are always 0 or 1.  If this doesn't hold, add "& 1" to the
- * input.
- */
-static inline uint64_t extend(uint64_t bit) {
-  return ~(bit - 1);
-}
-
-static uint8_t mpc_AND(uint8_t a, uint8_t b, uint64_t mask_a, uint64_t mask_b, randomTape_t* tapes,
-                       msgs_t* msgs, uint8_t* unopened_msg) {
+static uint64_t mpc_AND(uint64_t a, uint64_t b, uint64_t mask_a, uint64_t mask_b, randomTape_t* tapes,
+                       msgs_t* msgs, uint8_t** unopened_msg) {
   uint64_t and_helper =
       tapesToWord(tapes); // The special mask value setup during preprocessing for each AND gate
-  uint64_t s_shares = (extend(a) & mask_b) ^ (extend(b) & mask_a) ^ and_helper;
+  uint64_t s_shares = (a & mask_b) ^ (b & mask_a) ^ and_helper;
 
-  if (msgs->unopened >= 0) {
-    uint8_t unopenedPartyBit = getBit(unopened_msg, msgs->pos);
-    setBit((uint8_t*)&s_shares, msgs->unopened, unopenedPartyBit);
+  if (msgs->unopened != NULL) {
+    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+      uint8_t unopenedPartyBit = getBit(unopened_msg[k], msgs->pos);
+      setBit((uint8_t*)&s_shares, (64 / PACKING_FACTOR) * k + msgs->unopened[k], unopenedPartyBit);
+    }
   }
 
   // Broadcast each share of s
   wordToMsgsNoTranspose(s_shares, msgs);
+  for (uint32_t k = 0; k < PARTIES_LOG; k++) {
+    s_shares ^= s_shares >> (1 << (PARTIES_LOG - 1 - k));
+  }
 
-  return (uint8_t)(parity64_uint64(s_shares) ^ (a & b));
+  return (uint64_t)(s_shares ^ (a & b));
 }
 
-static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs,
-                     uint8_t* unopenened_msg, const picnic_instance_t* params) {
-  uint8_t state[MAX_LOWMC_BLOCK_SIZE];
-  mzd_to_char_array(state, statein, params->output_size);
-  for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
-    uint8_t a       = getBit((uint8_t*)state, i + 2);
-    uint64_t mask_a = state_masks->shares[i + 2];
-
-    uint8_t b       = getBit((uint8_t*)state, i + 1);
-    uint64_t mask_b = state_masks->shares[i + 1];
-
-    uint8_t c       = getBit((uint8_t*)state, i);
-    uint64_t mask_c = state_masks->shares[i];
-
-    uint8_t ab = mpc_AND(a, b, mask_a, mask_b, tapes, msgs, unopenened_msg);
-    uint8_t bc = mpc_AND(b, c, mask_b, mask_c, tapes, msgs, unopenened_msg);
-    uint8_t ca = mpc_AND(c, a, mask_c, mask_a, tapes, msgs, unopenened_msg);
-
-    setBit((uint8_t*)state, i + 2, a ^ bc);
-    setBit((uint8_t*)state, i + 1, a ^ b ^ ca);
-    setBit((uint8_t*)state, i, a ^ b ^ c ^ ab);
+static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t* tapes,
+                     msgs_t* msgs, uint8_t** unopenened_msg, const picnic_instance_t* params) {
+  uint8_t state[PACKING_FACTOR][MAX_LOWMC_BLOCK_SIZE];
+  for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+    mzd_to_char_array(state[k], statein[k], params->output_size);
   }
-  mzd_from_char_array(statein, state, params->output_size);
+  for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
+    uint64_t a = 0;
+    uint64_t b = 0;
+    uint64_t c = 0;
+
+    uint64_t mask_a = state_masks->shares[i + 2];
+    uint64_t mask_b = state_masks->shares[i + 1];
+    uint64_t mask_c = state_masks->shares[i];
+    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+      a <<= (64 / PACKING_FACTOR);
+      a |= getBit((uint8_t*)state[PACKING_FACTOR - 1 - k], i + 2);
+      b <<= (64 / PACKING_FACTOR);
+      b |= getBit((uint8_t*)state[PACKING_FACTOR - 1 - k], i + 1);
+      c <<= (64 / PACKING_FACTOR);
+      c |= getBit((uint8_t*)state[PACKING_FACTOR - 1 - k], i);
+    }
+	for (size_t k = 0; k < PARTIES_LOG; k++) {
+      a ^= (a << (1 << k));
+      b ^= (b << (1 << k));
+      c ^= (c << (1 << k));
+    }
+
+    uint64_t ab = mpc_AND(a, b, mask_a, mask_b, tapes, msgs, unopenened_msg);
+    uint64_t bc = mpc_AND(b, c, mask_b, mask_c, tapes, msgs, unopenened_msg);
+    uint64_t ca = mpc_AND(c, a, mask_c, mask_a, tapes, msgs, unopenened_msg);
+
+    uint64_t d = a ^ bc;
+    uint64_t e = a ^ b ^ ca;
+    uint64_t f = a ^ b ^ c ^ ab;
+
+    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+      setBit((uint8_t*)state[k], i + 2, d & 1);
+      d >>= (64 / PACKING_FACTOR);
+      setBit((uint8_t*)state[k], i + 1, e & 1);
+      e >>= (64 / PACKING_FACTOR);
+      setBit((uint8_t*)state[k], i, f & 1);
+      f >>= (64 / PACKING_FACTOR);
+    }
+  }
+  for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+    mzd_from_char_array(statein[k], state[k], params->output_size);
+  }
 }
 
 #if defined(WITH_LOWMC_126_126_4)
@@ -237,16 +260,16 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* 
 
 #if !defined(NO_UINT64_FALLBACK)
 #if defined(WITH_LOWMC_126_126_4)
-    if (lowmc->n == 126 && lowmc->m == 42)
-      return lowmc_simulate_online_uint64_126_42;
+  if (lowmc->n == 126 && lowmc->m == 42)
+    return lowmc_simulate_online_uint64_126_42;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
-    if (lowmc->n == 192 && lowmc->m == 64)
-      return lowmc_simulate_online_uint64_192_64;
+  if (lowmc->n == 192 && lowmc->m == 64)
+    return lowmc_simulate_online_uint64_192_64;
 #endif
 #if defined(WITH_LOWMC_255_255_4)
-    if (lowmc->n == 255 && lowmc->m == 85)
-      return lowmc_simulate_online_uint64_255_85;
+  if (lowmc->n == 255 && lowmc->m == 85)
+    return lowmc_simulate_online_uint64_255_85;
 #endif
 #endif
 

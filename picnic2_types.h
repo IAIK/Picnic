@@ -36,7 +36,7 @@ typedef uint8_t** inputs_t;
 typedef struct msgs_t {
   uint8_t** msgs; // One for each player
   size_t pos;
-  int unopened; // Index of the unopened party, or -1 if all parties opened (when signing)
+  int* unopened; // Index of the unopened party, or NULL if all parties opened (when signing)
 } msgs_t;
 
 typedef struct shares_t {
@@ -54,6 +54,9 @@ void finalFreeRandomTape(randomTape_t* tape);
 void allocateProof2(proof2_t* proof, const picnic_instance_t* params);
 void freeProof2(proof2_t* proof);
 
+commitments_t* allocateCommitments(const picnic_instance_t* params, size_t nCommitments);
+void freeCommitments(commitments_t* commitments);
+
 void allocateCommitments2(commitments_t* commitments, const picnic_instance_t* params,
                           size_t nCommitments);
 void freeCommitments2(commitments_t* commitments);
@@ -63,6 +66,7 @@ void freeInputs(inputs_t inputs);
 
 msgs_t* allocateMsgs(const picnic_instance_t* params);
 msgs_t* allocateMsgsVerify(const picnic_instance_t* params);
+msgs_t* allocateMsgs64(const picnic_instance_t* params);
 void freeMsgs(msgs_t* msgs);
 
 shares_t* allocateShares(size_t count);

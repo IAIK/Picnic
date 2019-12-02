@@ -39,7 +39,7 @@ void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->nTapes         = params->num_MPC_parties;
   tape->tape           = malloc(tape->nTapes * sizeof(uint8_t*));
   tape->aux_bits       = calloc(1, params->view_size);
-  tape->buffer         = aligned_alloc(32, tape->nTapes * sizeof(uint64_t));
+  tape->buffer         = aligned_alloc(32, 64 * sizeof(uint64_t));
   size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
   tape->parity_tapes   = calloc(1, tapeSizeBytes);
   tapeSizeBytes = ((tapeSizeBytes + 7) / 8) * 8; // round up to multiple of 64 bit for transpose
@@ -169,7 +169,7 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
 
   for (uint32_t i = 0; i < params->num_rounds; i++) {
     msgs[i].pos      = 0;
-    msgs[i].unopened = -1;
+    msgs[i].unopened = NULL;
     msgs[i].msgs     = (uint8_t**)slab;
     slab += params->num_MPC_parties * sizeof(uint8_t*);
 
@@ -177,6 +177,26 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
       msgs[i].msgs[j] = slab;
       slab += (params->view_size + 7) / 8 * 8;
     }
+  }
+
+  return msgs;
+}
+
+msgs_t* allocateMsgs64(const picnic_instance_t* params) {
+  msgs_t* msgs = malloc(sizeof(msgs_t));
+
+  uint8_t* slab =
+      calloc(1, (64 * ((params->view_size + 7) / 8 * 8) +
+                 64 * sizeof(uint8_t*)));
+
+  msgs->pos      = 0;
+  msgs->unopened = NULL;
+  msgs->msgs     = (uint8_t**)slab;
+  slab += 64 * sizeof(uint8_t*);
+
+  for (uint32_t j = 0; j < 64; j++) {
+    msgs->msgs[j] = slab;
+    slab += (params->view_size + 7) / 8 * 8;
   }
 
   return msgs;
@@ -190,7 +210,7 @@ msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
                  params->num_MPC_parties * sizeof(uint8_t*)));
 
   msgs->pos      = 0;
-  msgs->unopened = -1;
+  msgs->unopened = NULL;
   msgs->msgs     = (uint8_t**)slab;
   slab += params->num_MPC_parties * sizeof(uint8_t*);
 
@@ -205,4 +225,30 @@ msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
 void freeMsgs(msgs_t* msgs) {
   free(msgs[0].msgs);
   free(msgs);
+}
+
+commitments_t* allocateCommitments(const picnic_instance_t* params, size_t numCommitments) {
+  commitments_t* commitments = malloc(params->num_rounds * sizeof(commitments_t));
+
+  commitments->nCommitments = (numCommitments) ? numCommitments : params->num_MPC_parties;
+
+  uint8_t* slab = malloc(params->num_rounds * (commitments->nCommitments * params->digest_size +
+                                               commitments->nCommitments * sizeof(uint8_t*)));
+
+  for (uint32_t i = 0; i < params->num_rounds; i++) {
+    commitments[i].hashes = (uint8_t**)slab;
+    slab += commitments->nCommitments * sizeof(uint8_t*);
+
+    for (uint32_t j = 0; j < commitments->nCommitments; j++) {
+      commitments[i].hashes[j] = slab;
+      slab += params->digest_size;
+    }
+  }
+
+  return commitments;
+}
+
+void freeCommitments(commitments_t* commitments) {
+  free(commitments[0].hashes);
+  free(commitments);
 }

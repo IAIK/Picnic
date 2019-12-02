@@ -30,6 +30,8 @@
 #include "picnic2_tree.h"
 #include "picnic2_types.h"
 
+#define PACKING_FACTOR 4
+
 #define LOWMC_MAX_KEY_BITS 256
 #define LOWMC_MAX_AND_GATES (3 * 38 * 10 + 4) /* Rounded to nearest byte */
 #define MAX_AUX_BYTES ((LOWMC_MAX_AND_GATES + LOWMC_MAX_KEY_BITS) / 8 + 1)
@@ -90,6 +92,8 @@ void sbox_layer_42_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   uint8_t output_mask[16];
   mzd_to_char_array(output_mask, out, 16);
 
+  const size_t lastParty = 15;
+
   for (uint32_t i = 0; i < 42; i++) {
     uint8_t a                     = getBit(input_mask, i * 3 + 2);
     uint8_t b                     = getBit(input_mask, i * 3 + 1);
@@ -102,19 +106,19 @@ void sbox_layer_42_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
     uint64_t fresh_output_maks_ca = e ^ a ^ b;
 
     uint64_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 0);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
     uint64_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 1);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
     uint64_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 2);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
 
     uint64_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
     uint64_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
     uint64_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
 
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 0, (uint8_t)aux_bit_ab);
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 1, (uint8_t)aux_bit_bc);
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 2, (uint8_t)aux_bit_ca);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, (uint8_t)aux_bit_ca);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
@@ -129,6 +133,8 @@ void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   uint8_t output_mask[24];
   mzd_to_char_array(output_mask, out, 24);
 
+  const size_t lastParty = 15;
+
   for (uint32_t i = 0; i < 64; i++) {
     uint8_t a                     = getBit(input_mask, i * 3 + 2);
     uint8_t b                     = getBit(input_mask, i * 3 + 1);
@@ -141,19 +147,19 @@ void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
     uint64_t fresh_output_maks_ca = e ^ a ^ b;
 
     uint64_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 0);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
     uint64_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 1);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
     uint64_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 2);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
 
     uint64_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
     uint64_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
     uint64_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
 
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 0, (uint8_t)aux_bit_ab);
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 1, (uint8_t)aux_bit_bc);
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 2, (uint8_t)aux_bit_ca);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, (uint8_t)aux_bit_ca);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
@@ -168,6 +174,8 @@ void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   uint8_t output_mask[32];
   mzd_to_char_array(output_mask, out, 32);
 
+  const size_t lastParty = 15;
+
   for (uint32_t i = 0; i < 85; i++) {
     uint8_t a                     = getBit(input_mask, i * 3 + 2);
     uint8_t b                     = getBit(input_mask, i * 3 + 1);
@@ -180,19 +188,19 @@ void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
     uint64_t fresh_output_maks_ca = e ^ a ^ b;
 
     uint64_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 0);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
     uint64_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 1);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
     uint64_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
-                             getBit(tapes->tape[63], tapes->pos + i * 3 + 2);
+                             getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
 
     uint64_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
     uint64_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
     uint64_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
 
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 0, (uint8_t)aux_bit_ab);
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 1, (uint8_t)aux_bit_bc);
-    setBit(tapes->tape[63], tapes->pos + 3 * i + 2, (uint8_t)aux_bit_ca);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, (uint8_t)aux_bit_ab);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, (uint8_t)aux_bit_bc);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, (uint8_t)aux_bit_ca);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ab);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_bc);
     setBit(tapes->aux_bits, tapes->aux_pos++, (uint8_t)aux_bit_ca);
@@ -507,7 +515,8 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   allocateCommitments2(&Cv, params, params->num_rounds);
   shares_t* mask_shares    = allocateShares(params->input_size * 8);
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
-  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc->k, false);
+  mzd_local_t* m_maskedKey[PACKING_FACTOR];
+  mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc->k, false);
   mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
 
   if (ret != 0) {
@@ -582,38 +591,64 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
       commit_h_x4(&Ch.hashes[t4], &C[0], params);
     }
     freeTree(seeds[t]);
+  }
 
-    /* Commit to the views */
-    if (contains(sig->challengeC, params->num_opened_rounds, t)) {
-      /* 2. When t is in C, we have everything we need to re-compute the view, as an honest signer
-       * would.
-       * We simulate the MPC with one fewer party; the unopned party's values are all set to zero.
-       */
-      size_t unopened = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
-      size_t tapeLengthBytes = 2 * params->view_size + params->input_size;
-      setAuxBits(&tapes[t], sig->proofs[t].aux, params);
-      memset(tapes[t].tape[unopened], 0, tapeLengthBytes);
-      memcpy(msgs->msgs[unopened], sig->proofs[t].msgs, params->view_size);
-      msgs->pos      = 0;
-      msgs->unopened = unopened;
-
-      tapesToWords(mask_shares, &tapes[t], params->lowmc->n);
-      mzd_from_char_array(m_maskedKey, sig->proofs[t].input, params->input_size);
-      ret = simulateOnline(m_maskedKey, mask_shares, &tapes[t], msgs, m_plaintext, pubKey, params);
-
-      freeRandomTape(&tapes[t]);
-      if (ret != 0) {
-#if !defined(NDEBUG)
-        printf("MPC simulation failed for round " SIZET_FMT ", signature invalid\n", t);
-#endif
-        ret = -1;
-        goto Exit;
-      }
-      commit_v(Cv.hashes[t], sig->proofs[t].input, msgs, params);
-    } else {
+  /* Commit to the views */
+  for (size_t t = 0; t < params->num_rounds; t++) {
+    if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
       Cv.hashes[t] = NULL;
     }
   }
+
+  assert(params->num_opened_rounds % PACKING_FACTOR == 0);
+  msgs_t* msgs64 = allocateMsgs64(params);
+  for (size_t i = 0; i < params->num_opened_rounds; i += PACKING_FACTOR) {
+    /* 2. When t is in C, we have everything we need to re-compute the view, as an honest signer
+     * would.
+     * We simulate the MPC with one fewer party; the unopned party's values are all set to zero.
+     */
+    size_t t[PACKING_FACTOR];
+    int unopened[PACKING_FACTOR];
+    uint32_t* inputs[PACKING_FACTOR];
+    randomTape_t tapesN[PACKING_FACTOR];
+    for (size_t k = 0; k < PACKING_FACTOR; k++) {
+      t[k]        = sig->challengeC[i + k];
+      unopened[k] = sig->challengeP[i + k];
+      inputs[k]   = (uint32_t*)sig->proofs[t[k]].input;
+      setAuxBits(&tapes[t[k]], sig->proofs[t[k]].aux, params);
+      memset(tapes[t[k]].tape[unopened[k]], 0, 2 * params->view_size + params->input_size);
+      memcpy(msgs64->msgs[(64 / PACKING_FACTOR) * k + unopened[k]], sig->proofs[t[k]].msgs,
+             params->view_size);
+      tapesN[k] = tapes[t[k]];
+      mzd_from_char_array(m_maskedKey[k], (uint8_t*)inputs[k], params->input_size);
+    }
+    msgs64->pos      = 0;
+    msgs64->unopened = unopened;
+    tapesToWords(mask_shares, tapesN, params->lowmc->n);
+    ret = simulateOnline(m_maskedKey, mask_shares, tapesN, msgs64, m_plaintext, pubKey, params);
+
+    if (ret != 0) {
+#if !defined(NDEBUG)
+      printf("MPC simulation failed for round " SIZET_FMT ", signature invalid\n", i);
+#endif
+      ret = -1;
+      freeMsgs(msgs64);
+      freeShares(mask_shares);
+      goto Exit;
+    }
+    for (size_t msg_idx = 0; msg_idx < 64; msg_idx++) {
+      memcpy(msgs->msgs[msg_idx % (64 / PACKING_FACTOR)], msgs64->msgs[msg_idx], params->view_size);
+      if ((msg_idx + 1) % (64 / PACKING_FACTOR) == 0) {
+        msgs->pos = msgs64->pos;
+        commit_v(Cv.hashes[t[msg_idx / (64 / PACKING_FACTOR)]],
+                 sig->proofs[t[msg_idx / (64 / PACKING_FACTOR)]].input, msgs, params);
+      }
+    }
+    for (size_t k = 0; k < PACKING_FACTOR; k++) {
+      freeRandomTape(&tapesN[k]);
+    }
+  }
+  freeMsgs(msgs64);
 
   size_t missingLeavesSize = params->num_rounds - params->num_opened_rounds;
   uint16_t* missingLeaves  = getMissingLeavesList(sig->challengeC, params);
@@ -649,7 +684,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
 Exit:
 
   mzd_local_free(m_plaintext);
-  mzd_local_free(m_maskedKey);
+  mzd_local_free_multiple(m_maskedKey);
   freeShares(mask_shares);
   free(challengeC);
   free(challengeP);
@@ -700,16 +735,13 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
 
   randomTape_t* tapes = malloc(params->num_rounds * sizeof(randomTape_t));
   tree_t** seeds      = malloc(params->num_rounds * sizeof(tree_t*));
-  commitments_t C[4];
-  allocateCommitments2(&C[0], params, params->num_MPC_parties);
-  allocateCommitments2(&C[1], params, params->num_MPC_parties);
-  allocateCommitments2(&C[2], params, params->num_MPC_parties);
-  allocateCommitments2(&C[3], params, params->num_MPC_parties);
+  commitments_t* C     = allocateCommitments(params, 0);
 
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
   shares_t* mask_shares                  = allocateShares(params->input_size * 8);
+  msgs_t* msgs64                         = allocateMsgs64(params);
 
   /* Commitments to the commitments and views */
   commitments_t Ch;
@@ -718,7 +750,8 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   allocateCommitments2(&Cv, params, params->num_rounds);
 
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
-  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc->k, false);
+  mzd_local_t* m_maskedKey[PACKING_FACTOR];
+  mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc->k, false);
 
   mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
 
@@ -732,50 +765,65 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
     for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
       const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j + 0), getLeaf(seeds[t], j + 1),
                                     getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
-      commit_x4(C[t % 4].hashes + j, seed_ptr, sig->salt, t, j, params);
+      commit_x4(C[t].hashes + j, seed_ptr, sig->salt, t, j, params);
     }
     const size_t last = params->num_MPC_parties - 1;
-    commit(C[t % 4].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
+    commit(C[t].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
            params);
+  }
 
+  assert(params->num_rounds % PACKING_FACTOR == 0);
+  for (size_t t = 0; t < params->num_rounds; t += PACKING_FACTOR) {
     /* Simulate the online phase of the MPC */
-    uint32_t* maskedKey = (uint32_t*)inputs[t];
+    msgs64->pos = 0;
+    uint32_t* maskedKey[PACKING_FACTOR];
+    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+      maskedKey[k] = (uint32_t*)inputs[t + k];
+    }
 
     tapesToWords(mask_shares, &tapes[t], params->lowmc->n);
-    reconstructShares(maskedKey, mask_shares); // maskedKey = masks
-    xor_word_array(maskedKey, maskedKey, privateKey,
-                   (params->input_size / 4)); // maskedKey += privateKey
-    mzd_from_char_array(m_maskedKey, (const uint8_t*)maskedKey, params->input_size);
+    reconstructSharesN(maskedKey, mask_shares); // maskedKey = masks
+    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+      xor_word_array(maskedKey[k], maskedKey[k], privateKey,
+                     (params->input_size / 4)); // maskedKey += privateKey
+      mzd_from_char_array(m_maskedKey[k], (const uint8_t*)maskedKey[k], params->input_size);
 
-    for (size_t i = params->lowmc->n; i < params->input_size*8; i++) {
-      setBit((uint8_t*)maskedKey, i, 0);
+      for (size_t i = params->lowmc->n; i < params->input_size * 8; i++) {
+        setBit((uint8_t*)maskedKey[k], i, 0);
+      }
     }
 
     int rv =
-        simulateOnline(m_maskedKey, mask_shares, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
+        simulateOnline(m_maskedKey, mask_shares, &tapes[t], msgs64, m_plaintext, pubKey, params);
     if (rv != 0) {
 #if !defined(NDEBUG)
-      printf("MPC simulation failed, aborting signature\n");
+      printf("MPC simulation failed in round " SIZET_FMT ", aborting signature\n", t);
 #endif
       ret = -1;
     }
-    /* free the expanded random tape and associated buffers to reduce memory usage,
-     however, we are keeping the calculated aux bits for later (hence partial) */
-    partialFreeRandomTape(&tapes[t]);
-    /* hash commitments every four iterations if possible, for the last few do single commitments */
-    if (t >= params->num_rounds / 4 * 4) {
-      commit_h(Ch.hashes[t], &C[t % 4], params);
-      commit_v(Cv.hashes[t], inputs[t], &msgs[t], params);
-    } else if ((t + 1) % 4 == 0) {
-      size_t t4 = t / 4 * 4;
-      commit_h_x4(&Ch.hashes[t4], &C[0], params);
-      commit_v_x4(&Cv.hashes[t4], (const uint8_t**)&inputs[t4], &msgs[t4], params);
+    const size_t num_parties = (64 / PACKING_FACTOR);
+    for (size_t msg_idx = 0; msg_idx < 64; msg_idx++) {
+      memcpy(msgs[t + msg_idx / num_parties].msgs[msg_idx % num_parties], msgs64->msgs[msg_idx],
+             params->view_size);
+      msgs[t + msg_idx / num_parties].pos = msgs64->pos;
     }
   }
   freeShares(mask_shares);
-  mzd_local_free(m_maskedKey);
+  freeMsgs(msgs64);
+  mzd_local_free_multiple(m_maskedKey);
   mzd_local_free(m_plaintext);
-
+  /* Commit to the commitments and views */
+  {
+    size_t t = 0;
+    for (; t < params->num_rounds / 4 * 4; t += 4) {
+      commit_h_x4(&Ch.hashes[t], &C[t], params);
+      commit_v_x4(&Cv.hashes[t], (const uint8_t**)&inputs[t], &msgs[t], params);
+    }
+    for (; t < params->num_rounds; t++) {
+      commit_h(Ch.hashes[t], &C[t], params);
+      commit_v(Cv.hashes[t], inputs[t], &msgs[t], params);
+    }
+  }
   /* Create a Merkle tree with Cv as the leaves */
   tree_t* treeCv = createTree(params->num_rounds, params->digest_size);
   buildMerkleTree(treeCv, Cv.hashes, sig->salt, params);
@@ -839,7 +887,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   sig->proofs = proofs;
 
   for (size_t t = 0; t < params->num_rounds; t++) {
-    finalFreeRandomTape(&tapes[t]);
+    freeRandomTape(&tapes[t]);
     freeTree(seeds[t]);
   }
   free(tapes);
@@ -849,10 +897,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
 
   freeCommitments2(&Ch);
   freeCommitments2(&Cv);
-  freeCommitments2(&C[0]);
-  freeCommitments2(&C[1]);
-  freeCommitments2(&C[2]);
-  freeCommitments2(&C[3]);
+  freeCommitments(C);
   freeInputs(inputs);
   freeMsgs(msgs);
 

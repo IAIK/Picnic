@@ -17,7 +17,7 @@ typedef struct shares_t shares_t;
 typedef struct msgs_t msgs_t;
 typedef struct picnic_instance_t picnic_instance_t;
 
-typedef int (*lowmc_simulate_online_f)(mzd_local_t* maskedKey, shares_t* mask_shares,
+typedef int (*lowmc_simulate_online_f)(mzd_local_t** maskedKey, shares_t* mask_shares,
                                        randomTape_t* tapes, msgs_t* msgs, const mzd_local_t* plaintext,
                                        const uint32_t* pubKey, const picnic_instance_t* params);
 
