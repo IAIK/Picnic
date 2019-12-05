@@ -57,6 +57,7 @@ typedef struct {
   uint32_t k;
 
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
+  const mzd_local_t* ki0_matrix; // inverse of K_0 or K_0 + precomputed if reduced_linear_layer is set
   const lowmc_round_t* rounds;
 
 } lowmc_t;
