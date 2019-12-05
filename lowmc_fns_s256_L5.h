@@ -16,7 +16,7 @@
 #define MPC_MUL mpc_matrix_mul_s256_256
 
 #if defined(WITH_LOWMC_255_255_4)
-#define LOWMC_INSTANCE lowmc_255_255_4
+#define LOWMC_INSTANCE lowmc_255_255_5
 #endif
 #define LOWMC_N LOWMC_L5_N
 #define LOWMC_R LOWMC_L5_R

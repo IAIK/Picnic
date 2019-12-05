@@ -25,20 +25,20 @@ const uint8_t HASH_PREFIX_5 = 5;
 
 // L1, L3, and L5 LowMC instances
 #if defined(WITH_LOWMC_126_126_4)
-#include "lowmc_126_126_4.h"
-#define LOWMC_L1_OR_NULL &lowmc_126_126_4
+#include "lowmc_126_126_5.h"
+#define LOWMC_L1_OR_NULL &lowmc_126_126_5
 #else
 #define LOWMC_L1_OR_NULL NULL
 #endif
 #if defined(WITH_LOWMC_192_192_4)
-#include "lowmc_192_192_4.h"
-#define LOWMC_L3_OR_NULL &lowmc_192_192_4
+#include "lowmc_192_192_5.h"
+#define LOWMC_L3_OR_NULL &lowmc_192_192_5
 #else
 #define LOWMC_L3_OR_NULL NULL
 #endif
 #if defined(WITH_LOWMC_255_255_4)
-#include "lowmc_255_255_4.h"
-#define LOWMC_L5_OR_NULL &lowmc_255_255_4
+#include "lowmc_255_255_5.h"
+#define LOWMC_L5_OR_NULL &lowmc_255_255_5
 #else
 #define LOWMC_L5_OR_NULL NULL
 #endif
@@ -81,11 +81,11 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
     {ENABLE_ZKBPP(LOWMC_L5_OR_NULL), 64, 32, 438, 438, 3, 32, 32, 143, 30, 110, 175, 207,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR, NULL_FNS},
     // Picnic2 params
-    {ENABLE_KKW(LOWMC_L1_OR_NULL), 32, 16, 252, 32, 16, 16, 16, 63, 126, 55, 0, 0,
+    {ENABLE_KKW(LOWMC_L1_OR_NULL), 32, 16, 252, 32, 16, 16, 16, 79, 126, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic2_L1_FS, Picnic2_L1_FS, TRANSFORM_FS, NULL_FNS},
-    {ENABLE_KKW(LOWMC_L3_OR_NULL), 48, 24, 420, 52, 16, 24, 24, 96, 192, 83, 0, 0,
+    {ENABLE_KKW(LOWMC_L3_OR_NULL), 48, 24, 420, 52, 16, 24, 24, 120, 192, 83, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic2_L3_FS, Picnic2_L3_FS, TRANSFORM_FS, NULL_FNS},
-    {ENABLE_KKW(LOWMC_L5_OR_NULL), 64, 32, 604, 68, 16, 32, 32, 128, 255, 110, 0, 0,
+    {ENABLE_KKW(LOWMC_L5_OR_NULL), 64, 32, 604, 68, 16, 32, 32, 160, 255, 110, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic2_L5_FS, Picnic2_L5_FS, TRANSFORM_FS, NULL_FNS},
 };
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];

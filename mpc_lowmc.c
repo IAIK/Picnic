@@ -125,13 +125,13 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 }
 
 #if defined(WITH_LOWMC_126_126_4)
-#include "lowmc_126_126_4.h"
+#include "lowmc_126_126_5.h"
 #endif
 #if defined(WITH_LOWMC_192_192_4)
-#include "lowmc_192_192_4.h"
+#include "lowmc_192_192_5.h"
 #endif
 #if defined(WITH_LOWMC_255_255_4)
-#include "lowmc_255_255_4.h"
+#include "lowmc_255_255_5.h"
 #endif
 
 #define SBOX_uint64(sbox, y, x, views, r, n, shares, shares2)                                      \
