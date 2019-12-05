@@ -38,18 +38,17 @@ static int SIM_ONLINE(mzd_local_t** maskedKey, shares_t* mask_shares, randomTape
 	}
   }
 
-  MPC_MUL(temp, maskedKey, LOWMC_INSTANCE.k0_matrix,
-          mask_shares); // roundKey = maskedKey * KMatrix[0]
+//  MPC_MUL(temp, maskedKey, LOWMC_INSTANCE.k0_matrix,
+//          mask_shares); // roundKey = maskedKey * KMatrix[0]
   for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+    MUL(temp[k], maskedKey[k], LOWMC_INSTANCE.k0_matrix);
     XOR(state[k], temp[k], plaintext);
   }
 
   for (uint32_t r = 0; r < LOWMC_R; r++) {
     // MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix, round_key_masks);
-    if (r != 0) {
-      for (size_t i = 0; i < LOWMC_N; i++) {
-        mask_shares->shares[i] = tapesToWord(tapes);
-      }
+    for (size_t i = 0; i < LOWMC_N; i++) {
+      mask_shares->shares[i] = tapesToWord(tapes);
     }
     mpc_sbox(state, mask_shares, tapes, msgs, unopened_msgs, params);
     // MPC_MUL(state, state, LOWMC_INSTANCE.rounds[r].l_matrix,

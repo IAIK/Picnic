@@ -22,7 +22,7 @@ typedef struct randomTape_t randomTape_t;
 typedef void (*lowmc_implementation_f)(lowmc_key_t const*, mzd_local_t const*, mzd_local_t*);
 typedef void (*lowmc_store_implementation_f)(lowmc_key_t const*, mzd_local_t const*,
                                              recorded_state_t* state);
-typedef void (*lowmc_compute_aux_implementation_f)(lowmc_key_t const*, randomTape_t* tapes);
+typedef void (*lowmc_compute_aux_implementation_f)(lowmc_key_t*, randomTape_t* tapes);
 
 lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc);
 lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc);

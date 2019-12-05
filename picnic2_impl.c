@@ -74,14 +74,14 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
  * an output word.  In the current implementation N is 64 so the words are
  * uint64_t. The return value must be freed with freeShares().
  */
-static void tapesToWords(shares_t* shares, randomTape_t* tapes, size_t num) {
-  for (size_t w = 0; w < num; w++) {
-    shares->shares[w] = tapesToWord(tapes);
-  }
-  for (size_t w = num; w < shares->numWords; w++) {
-    shares->shares[w] = 0;
-  }
-}
+//static void tapesToWords(shares_t* shares, randomTape_t* tapes, size_t num) {
+//  for (size_t w = 0; w < num; w++) {
+//    shares->shares[w] = tapesToWord(tapes);
+//  }
+//  for (size_t w = num; w < shares->numWords; w++) {
+//    shares->shares[w] = 0;
+//  }
+//}
 
 /**
  * S-box for m = 42, for Picnic2 aux computation, with improved preprocessing
@@ -212,7 +212,7 @@ void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
  * AND gates, and computes the N-th party's share such that the AND gate invariant
  * holds on the mask values.
  */
-static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params) {
+static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks, const picnic_instance_t* params) {
   mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc->n, 1, true);
 
   size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
@@ -231,6 +231,11 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
   lowmc_compute_aux_implementation_f lowmc_aux_impl = params->impls.lowmc_aux;
   // Perform LowMC evaluation and fix AND masks for all AND gates
   lowmc_aux_impl(lowmc_key, tapes);
+
+  // write the key masks to the input
+  if (input_masks != NULL) {
+    mzd_to_char_array(input_masks, lowmc_key, params->input_size);
+  }
 
   // Reset the random tape counter so that the online execution uses the
   // same random bits as when computing the aux shares
@@ -557,7 +562,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
     if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
       /* We're given iSeed, have expanded the seeds, compute aux from scratch so we can comnpte
        * Com[t] */
-      computeAuxTape(&tapes[t], params);
+      computeAuxTape(&tapes[t], NULL, params);
       for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
         const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j + 0), getLeaf(seeds[t], j + 1),
                                       getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
@@ -624,7 +629,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
     }
     msgs64->pos      = 0;
     msgs64->unopened = unopened;
-    tapesToWords(mask_shares, tapesN, params->lowmc->n);
+    //tapesToWords(mask_shares, tapesN, params->lowmc->n);
     ret = simulateOnline(m_maskedKey, mask_shares, tapesN, msgs64, m_plaintext, pubKey, params);
 
     if (ret != 0) {
@@ -759,7 +764,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
     seeds[t] = generateSeeds(params->num_MPC_parties, iSeeds[t], sig->salt, t, params);
     createRandomTapes(&tapes[t], getLeaves(seeds[t]), sig->salt, t, params);
     /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
-    computeAuxTape(&tapes[t], params);
+    computeAuxTape(&tapes[t], inputs[t], params);
     /* Commit to seeds and aux bits */
     assert(params->num_MPC_parties % 4 == 0);
     for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
@@ -781,8 +786,8 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
       maskedKey[k] = (uint32_t*)inputs[t + k];
     }
 
-    tapesToWords(mask_shares, &tapes[t], params->lowmc->n);
-    reconstructSharesN(maskedKey, mask_shares); // maskedKey = masks
+    //tapesToWords(mask_shares, &tapes[t], params->lowmc->n);
+    //reconstructSharesN(maskedKey, mask_shares); // maskedKey = masks
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
       xor_word_array(maskedKey[k], maskedKey[k], privateKey,
                      (params->input_size / 4)); // maskedKey += privateKey

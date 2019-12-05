@@ -10,15 +10,18 @@
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
-static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
+static void N_LOWMC(lowmc_key_t* lowmc_key, randomTape_t* tapes) {
   mzd_local_t x[((LOWMC_N) + 255) / 256];
   mzd_local_t y[((LOWMC_N) + 255) / 256];
+  mzd_local_t key0[((LOWMC_N) + 255) / 256];
   uint8_t temp[32];
 
   const size_t state_size_bytes = (LOWMC_N + 7) / 8;
 
   memset(temp, 0, 32);
   mzd_from_char_array(x, temp, state_size_bytes);
+  COPY(key0, lowmc_key);
+  MUL(lowmc_key, key0, LOWMC_INSTANCE.ki0_matrix);
 
   lowmc_round_t const* round = &LOWMC_INSTANCE.rounds[LOWMC_R - 1];
   for (unsigned r = 0; r < LOWMC_R; ++r, round--) {
@@ -27,7 +30,7 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, randomTape_t* tapes) {
 
     // recover input masks from tapes, only in first round we use the key as input
     if (r == LOWMC_R - 1) {
-      MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
+      COPY(x, key0);
     } else {
       tapes->pos = LOWMC_N * 2 * (LOWMC_R - 1 - r);
       memset(temp, 0, 32);
