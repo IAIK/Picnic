@@ -16,7 +16,7 @@
 #define MPC_MUL mpc_matrix_mul_s128_128
 
 #if defined(WITH_LOWMC_126_126_4)
-#define LOWMC_INSTANCE lowmc_126_126_5
+#define LOWMC_INSTANCE lowmc_126_126_4
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R LOWMC_L1_R
