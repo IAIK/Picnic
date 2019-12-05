@@ -28,17 +28,17 @@ typedef mzd_local_t lowmc_key_t;
 #define LOWMC_L1_N 126
 #define LOWMC_L1_M 42
 #define LOWMC_L1_K LOWMC_L1_N
-#define LOWMC_L1_R 5
+#define LOWMC_L1_R 4
 
 #define LOWMC_L3_N 192
 #define LOWMC_L3_M 64
 #define LOWMC_L3_K LOWMC_L3_N
-#define LOWMC_L3_R 5
+#define LOWMC_L3_R 4
 
 #define LOWMC_L5_N 255
 #define LOWMC_L5_M 85
 #define LOWMC_L5_K LOWMC_L5_N
-#define LOWMC_L5_R 5
+#define LOWMC_L5_R 4
 
 typedef struct {
   const mzd_local_t* k_matrix;

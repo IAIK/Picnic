@@ -93,13 +93,13 @@ static void sbox_layer_85(mzd_local_t* in) {
 }
 
 #if defined(WITH_LOWMC_126_126_4)
-#include "lowmc_126_126_5.h"
+#include "lowmc_126_126_4.h"
 #endif
 #if defined(WITH_LOWMC_192_192_4)
-#include "lowmc_192_192_5.h"
+#include "lowmc_192_192_4.h"
 #endif
 #if defined(WITH_LOWMC_255_255_4)
-#include "lowmc_255_255_5.h"
+#include "lowmc_255_255_4.h"
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
