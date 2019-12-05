@@ -3,7 +3,7 @@
 
 #define CRYPTO_SECRETKEYBYTES (1 + 2 * 32 + 32)
 #define CRYPTO_PUBLICKEYBYTES (1 + 2 * 32)
-#define CRYPTO_BYTES (4 + 54732)
+#define CRYPTO_BYTES (4 + 80000)
 #define CRYPTO_ALGNAME "picnic2l5fs"
 #define CRYPTO_DETERMINISTIC 1
 

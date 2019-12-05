@@ -139,13 +139,13 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 }
 
 #if defined(WITH_LOWMC_126_126_4)
-#include "lowmc_126_126_4.h"
+#include "lowmc_126_126_5.h"
 #endif
 #if defined(WITH_LOWMC_192_192_4)
-#include "lowmc_192_192_4.h"
+#include "lowmc_192_192_5.h"
 #endif
 #if defined(WITH_LOWMC_255_255_4)
-#include "lowmc_255_255_4.h"
+#include "lowmc_255_255_5.h"
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)

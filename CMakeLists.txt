@@ -222,9 +222,9 @@ list(APPEND PICNIC_SOURCES
      cpu.c
      io.c
      lowmc.c
-     lowmc_126_126_4.c
-     lowmc_192_192_4.c
-     lowmc_255_255_4.c
+     lowmc_126_126_5.c
+     lowmc_192_192_5.c
+     lowmc_255_255_5.c
      mzd_additional.c
      picnic.c
      picnic_instances.c
