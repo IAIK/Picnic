@@ -136,6 +136,7 @@ static bool armv8_init(timing_context_t* ctx) {
 #if defined(__linux__)
 #include <linux/perf_event.h>
 #include <linux/version.h>
+#include <sys/types.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
