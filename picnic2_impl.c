@@ -306,7 +306,6 @@ static size_t bitsToChunks(size_t chunkLenBits, const uint8_t* input, size_t inp
       chunks[i] += getBit(input, i * chunkLenBits + j) << j;
       assert(chunks[i] < (1 << chunkLenBits));
     }
-    chunks[i] = le16toh(chunks[i]);
   }
 
   return chunkCount;
