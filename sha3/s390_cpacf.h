@@ -93,7 +93,7 @@ static inline void hash_squeeze_kmld(hash_context* ctx, uint8_t* buffer, size_t 
 static inline void hash_update(hash_context* ctx, const uint8_t* data, size_t size) {
   /* process buffered data */
   if (ctx->pos) {
-    const size_t gap = ctx->data_block_size - ctx->pos;
+    const size_t gap       = ctx->data_block_size - ctx->pos;
     const size_t copy_size = MIN(gap, size);
 
     memcpy(ctx->data_block + ctx->pos, data, copy_size);
@@ -123,19 +123,15 @@ static inline void hash_update(hash_context* ctx, const uint8_t* data, size_t si
 }
 
 static inline void hash_final(hash_context* ctx) {
-  if (ctx->pos) {
-    /* process remaining input */
-    hash_update_klmd(ctx, ctx->data_block, ctx->data_block_size, ctx->data_block, ctx->pos);
-    ctx->pos = 0;
-  } else {
-    hash_squeeze_kmld(ctx, ctx->data_block, ctx->data_block_size);
-  }
+  /* process remaining input (if available) */
+  hash_update_klmd(ctx, ctx->data_block, ctx->data_block_size, ctx->data_block, ctx->pos);
+  ctx->pos = 0;
 }
 
 static inline void hash_squeeze(hash_context* ctx, uint8_t* buffer, size_t buflen) {
   /* process buffered output */
   if (ctx->pos < ctx->data_block_size) {
-    const size_t gap = ctx->data_block_size - ctx->pos;
+    const size_t gap       = ctx->data_block_size - ctx->pos;
     const size_t copy_size = MIN(gap, buflen);
 
     memcpy(buffer, ctx->data_block + ctx->pos, copy_size);
