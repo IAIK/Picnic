@@ -173,7 +173,7 @@ static void transpose_64_64_uint64(const uint64_t* in, uint64_t* out) {
 
   // copy in to out and transpose in-place
   for (uint32_t i = 0; i < 64; i++) {
-    out[i] = bswap64(in[i]);
+    out[i] = htobe64(in[i]);
   }
 
   for (uint32_t i = 0; i < logn; i++) {
@@ -196,7 +196,7 @@ static void transpose_64_64_uint64(const uint64_t* in, uint64_t* out) {
     width /= 2;
   }
   for (uint32_t i = 0; i < 64; i++) {
-    out[i] = bswap64(out[i]);
+    out[i] = be64toh(out[i]);
   }
 }
 
