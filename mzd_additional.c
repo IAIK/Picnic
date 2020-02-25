@@ -311,6 +311,8 @@ void mzd_and_uint64_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t 
   mzd_and_uint64_block(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 4);
 }
 
+/* shifts and rotations */
+
 void mzd_shift_left_uint64_128(mzd_local_t* val, unsigned int count) {
   const unsigned int right_count = 8 * sizeof(word) - count;
   block_t* block                 = BLOCK(val, 0);
@@ -345,6 +347,28 @@ void mzd_rotate_right_uint64_192(mzd_local_t* val, unsigned int count) {
   block->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
   block->w64[1] = (block->w64[1] >> count) | (block->w64[2] << left_count);
   block->w64[2] = (block->w64[2] >> count) | tmp;
+}
+
+void mzd_rotate_left_uint64_256(mzd_local_t* val, unsigned int count) {
+  const unsigned int right_count = 8 * sizeof(word) - count;
+  block_t* block                 = BLOCK(val, 0);
+
+  const word tmp = block->w64[3] >> right_count;
+  block->w64[3] = (block->w64[3] << count) | (block->w64[2] >> right_count);
+  block->w64[2] = (block->w64[2] << count) | (block->w64[1] >> right_count);
+  block->w64[1] = (block->w64[1] << count) | (block->w64[0] >> right_count);
+  block->w64[0] = (block->w64[0] << count) | tmp;
+}
+
+void mzd_rotate_right_uint64_256(mzd_local_t* val, unsigned int count) {
+  const unsigned int left_count = 8 * sizeof(word) - count;
+  block_t* block                 = BLOCK(val, 0);
+
+  const word tmp = block->w64[0] << left_count;
+  block->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
+  block->w64[1] = (block->w64[1] >> count) | (block->w64[2] << left_count);
+  block->w64[2] = (block->w64[2] >> count) | (block->w64[3] << left_count);
+  block->w64[3] = (block->w64[3] >> count) | tmp;
 }
 
 #if defined(WITH_OPT)

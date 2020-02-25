@@ -114,6 +114,8 @@ void mzd_shift_left_uint64_128(mzd_local_t* val, unsigned int count);
 void mzd_shift_right_uint64_128(mzd_local_t* val, unsigned int count);
 void mzd_rotate_left_uint64_192(mzd_local_t* val, unsigned int count);
 void mzd_rotate_right_uint64_192(mzd_local_t* val, unsigned int count);
+void mzd_rotate_left_uint64_256(mzd_local_t* val, unsigned int count);
+void mzd_rotate_right_uint64_256(mzd_local_t* val, unsigned int count);
 
 /**
  * Compute v * A optimized for v being a vector.
