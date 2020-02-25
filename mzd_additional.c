@@ -327,6 +327,26 @@ void mzd_shift_right_uint64_128(mzd_local_t* val, unsigned int count) {
   block->w64[1] = block->w64[1] >> count;
 }
 
+void mzd_rotate_left_uint64_192(mzd_local_t* val, unsigned int count) {
+  const unsigned int right_count = 8 * sizeof(word) - count;
+  block_t* block                 = BLOCK(val, 0);
+
+  const word tmp = block->w64[2] >> right_count;
+  block->w64[2] = (block->w64[2] << count) | (block->w64[1] >> right_count);
+  block->w64[1] = (block->w64[1] << count) | (block->w64[0] >> right_count);
+  block->w64[0] = (block->w64[0] << count) | tmp;
+}
+
+void mzd_rotate_right_uint64_192(mzd_local_t* val, unsigned int count) {
+  const unsigned int left_count = 8 * sizeof(word) - count;
+  block_t* block                 = BLOCK(val, 0);
+
+  const word tmp = block->w64[0] << left_count;
+  block->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
+  block->w64[1] = (block->w64[1] >> count) | (block->w64[2] << left_count);
+  block->w64[2] = (block->w64[2] >> count) | tmp;
+}
+
 #if defined(WITH_OPT)
 
 #if defined(WITH_SSE2) || defined(WITH_NEON)

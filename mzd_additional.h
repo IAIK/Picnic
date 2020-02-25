@@ -108,10 +108,12 @@ void mzd_and_s256_256(mzd_local_t* res, mzd_local_t const* first,
                       mzd_local_t const* second) ATTR_NONNULL;
 
 /**
- * mzd_left_shift and mzd_right_shift variants
+ * shifts and rotations
  */
 void mzd_shift_left_uint64_128(mzd_local_t* val, unsigned int count);
 void mzd_shift_right_uint64_128(mzd_local_t* val, unsigned int count);
+void mzd_rotate_left_uint64_192(mzd_local_t* val, unsigned int count);
+void mzd_rotate_right_uint64_192(mzd_local_t* val, unsigned int count);
 
 /**
  * Compute v * A optimized for v being a vector.
