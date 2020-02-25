@@ -65,8 +65,8 @@ static void sbox_layer_42(mzd_local_t* in) {
   // c
   mzd_and_uint64_128(x2m, mask_126_126_42_c, in);
 
-  mzd_shift_left_uint64_128(x0m, 2);
-  mzd_shift_left_uint64_128(x1m, 1);
+  mzd_shift_left_uint64_128(x0m, x0m, 2);
+  mzd_shift_left_uint64_128(x1m, x1m, 1);
 
   mzd_local_t t0[1], t1[1], t2[1];
   // b & c
@@ -88,8 +88,8 @@ static void sbox_layer_42(mzd_local_t* in) {
   mzd_xor_uint64_128(t2, t2, x1m);
   mzd_xor_uint64_128(t2, t2, x2m);
 
-  mzd_shift_right_uint64_128(t0, 2);
-  mzd_shift_right_uint64_128(t1, 1);
+  mzd_shift_right_uint64_128(t0, t0, 2);
+  mzd_shift_right_uint64_128(t1, t1, 1);
 
   mzd_xor_uint64_128(in, t2, t1);
   mzd_xor_uint64_128(in, in, t0);
@@ -107,8 +107,8 @@ static void sbox_layer_64(mzd_local_t* in) {
   // c
   mzd_and_uint64_192(x2m, mask_192_192_64_c, in);
 
-  mzd_rotate_left_uint64_192(x0m, 2);
-  mzd_rotate_left_uint64_192(x1m, 1);
+  mzd_rotate_left_uint64_192(x0m, x0m, 2);
+  mzd_rotate_left_uint64_192(x0m, x1m, 1);
 
   mzd_local_t t0[1], t1[1], t2[1];
   // b & c
@@ -130,8 +130,8 @@ static void sbox_layer_64(mzd_local_t* in) {
   mzd_xor_uint64_192(t2, t2, x1m);
   mzd_xor_uint64_192(t2, t2, x2m);
 
-  mzd_rotate_right_uint64_192(t0, 2);
-  mzd_rotate_right_uint64_192(t1, 1);
+  mzd_rotate_right_uint64_192(t0, t0, 2);
+  mzd_rotate_right_uint64_192(t1, t1, 1);
 
   mzd_xor_uint64_192(in, t2, t1);
   mzd_xor_uint64_192(in, in, t0);
@@ -149,8 +149,8 @@ static void sbox_layer_85(mzd_local_t* in) {
   // c
   mzd_and_uint64_256(x2m, mask_255_255_83_c, in);
 
-  mzd_rotate_left_uint64_256(x0m, 2);
-  mzd_rotate_left_uint64_256(x1m, 1);
+  mzd_rotate_left_uint64_256(x0m, x0m, 2);
+  mzd_rotate_left_uint64_256(x1m, x1m, 1);
 
   mzd_local_t t0[1], t1[1], t2[1];
   // b & c
@@ -172,8 +172,8 @@ static void sbox_layer_85(mzd_local_t* in) {
   mzd_xor_uint64_256(t2, t2, x1m);
   mzd_xor_uint64_256(t2, t2, x2m);
 
-  mzd_rotate_right_uint64_256(t0, 2);
-  mzd_rotate_right_uint64_256(t1, 1);
+  mzd_rotate_right_uint64_256(t0, t0, 2);
+  mzd_rotate_right_uint64_256(t1, t1, 1);
 
   mzd_xor_uint64_256(in, t2, t1);
   mzd_xor_uint64_256(in, in, t0);
