@@ -84,7 +84,6 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
 
 #undef SBOX_SIGN
 #undef SBOX_VERIFY
-#undef SBOX_ARGS
 #undef loop_impl
 #undef N_SIGN
 #undef N_VERIFY
