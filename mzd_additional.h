@@ -71,6 +71,9 @@ void mzd_copy_s128_256(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
 void mzd_copy_s256_128(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
 void mzd_copy_s256_256(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
 
+/**
+ * mzd_xor variants
+ */
 void mzd_xor_uint64_128(mzd_local_t* res, mzd_local_t const* first,
                         mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_uint64_192(mzd_local_t* res, mzd_local_t const* first,
@@ -85,6 +88,30 @@ void mzd_xor_s256_128(mzd_local_t* res, mzd_local_t const* first,
                       mzd_local_t const* second) ATTR_NONNULL;
 void mzd_xor_s256_256(mzd_local_t* res, mzd_local_t const* first,
                       mzd_local_t const* second) ATTR_NONNULL;
+
+/**
+ * mzd_and variants
+ */
+void mzd_and_uint64_128(mzd_local_t* res, mzd_local_t const* first,
+                        mzd_local_t const* second) ATTR_NONNULL;
+void mzd_and_uint64_192(mzd_local_t* res, mzd_local_t const* first,
+                        mzd_local_t const* second) ATTR_NONNULL;
+void mzd_and_uint64_256(mzd_local_t* res, mzd_local_t const* first,
+                        mzd_local_t const* second) ATTR_NONNULL;
+void mzd_and_s128_128(mzd_local_t* res, mzd_local_t const* first,
+                      mzd_local_t const* second) ATTR_NONNULL;
+void mzd_and_s128_256(mzd_local_t* res, mzd_local_t const* first,
+                      mzd_local_t const* second) ATTR_NONNULL;
+void mzd_and_s256_128(mzd_local_t* res, mzd_local_t const* first,
+                      mzd_local_t const* second) ATTR_NONNULL;
+void mzd_and_s256_256(mzd_local_t* res, mzd_local_t const* first,
+                      mzd_local_t const* second) ATTR_NONNULL;
+
+/**
+ * mzd_left_shift and mzd_right_shift variants
+ */
+void mzd_shift_left_uint64_128(mzd_local_t* val, unsigned int count);
+void mzd_shift_right_uint64_128(mzd_local_t* val, unsigned int count);
 
 /**
  * Compute v * A optimized for v being a vector.

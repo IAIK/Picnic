@@ -159,6 +159,8 @@ void mzd_copy_s256_256(mzd_local_t* dst, mzd_local_t const* src) {
 #endif
 #endif
 
+/* implementation of mzd_xor and variants */
+
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
 ATTR_TARGET_S128
@@ -235,6 +237,94 @@ void mzd_xor_uint64_192(mzd_local_t* res, mzd_local_t const* first, mzd_local_t 
 
 void mzd_xor_uint64_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   mzd_xor_uint64_block(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 4);
+}
+
+/* implementation of mzd_and_* and variants */
+
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+ATTR_TARGET_S128
+void mzd_and_s128_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  block_t* rblock       = BLOCK(res, 0);
+  const block_t* fblock = CONST_BLOCK(first, 0);
+  const block_t* sblock = CONST_BLOCK(second, 0);
+
+  rblock->w128[0] = mm128_and(fblock->w128[0], sblock->w128[0]);
+}
+
+ATTR_TARGET_S128
+void mzd_and_s128_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
+                         unsigned int count) {
+  for (; count; --count, ++rblock, ++fblock, ++sblock) {
+    rblock->w128[0] = mm128_and(fblock->w128[0], sblock->w128[0]);
+    rblock->w128[1] = mm128_and(fblock->w128[1], sblock->w128[1]);
+  }
+}
+
+ATTR_TARGET_S128
+void mzd_and_s128_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  mzd_and_s128_blocks(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 1);
+}
+#endif
+
+#if defined(WITH_AVX2)
+ATTR_TARGET_AVX2
+void mzd_and_s256_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  block_t* rblock       = BLOCK(res, 0);
+  const block_t* fblock = CONST_BLOCK(first, 0);
+  const block_t* sblock = CONST_BLOCK(second, 0);
+
+  rblock->w128[0] = mm128_and(fblock->w128[0], sblock->w128[0]);
+}
+
+ATTR_TARGET_AVX2
+void mzd_and_s256_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
+                         unsigned int count) {
+  for (; count; --count, ++rblock, ++fblock, ++sblock) {
+    rblock->w256 = mm256_and(fblock->w256, sblock->w256);
+  }
+}
+
+ATTR_TARGET_AVX2
+void mzd_and_s256_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  mzd_and_s256_blocks(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 1);
+}
+#endif
+#endif
+
+static void mzd_and_uint64_block(block_t* rblock, const block_t* fblock, const block_t* sblock,
+                                 const unsigned int len) {
+  for (unsigned int i = 0; i < len; ++i) {
+    rblock->w64[i] = fblock->w64[i] & sblock->w64[i];
+  }
+}
+
+void mzd_and_uint64_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  mzd_and_uint64_block(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 2);
+}
+
+void mzd_and_uint64_192(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  mzd_and_uint64_block(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 3);
+}
+
+void mzd_and_uint64_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
+  mzd_and_uint64_block(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 4);
+}
+
+void mzd_shift_left_uint64_128(mzd_local_t* val, unsigned int count) {
+  const unsigned int right_count = 8 * sizeof(word) - count;
+  block_t* block                 = BLOCK(val, 0);
+
+  block->w64[1] = (block->w64[1] << count) | (block->w64[0] >> right_count);
+  block->w64[0] = block->w64[0] << count;
+}
+
+void mzd_shift_right_uint64_128(mzd_local_t* val, unsigned int count) {
+  const unsigned int left_count = 8 * sizeof(word) - count;
+  block_t* block                 = BLOCK(val, 0);
+
+  block->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
+  block->w64[1] = block->w64[1] >> count;
 }
 
 #if defined(WITH_OPT)

@@ -32,23 +32,51 @@
  * S-box for m = 42
  */
 static void sbox_layer_42(mzd_local_t* in) {
-  uint8_t tmp[16];
-  mzd_to_char_array(tmp, in, 16);
-  for (uint32_t i = 0; i < 42; i++) {
-    uint8_t a = getBit(tmp, 3 * i + 2);
-    uint8_t b = getBit(tmp, 3 * i + 1);
-    uint8_t c = getBit(tmp, 3 * i + 0);
+  static const mzd_local_t mask_a[1] = {
+      {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), 0, 0}}};
+  static const mzd_local_t mask_b[1] = {
+      {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), 0, 0}}};
+  static const mzd_local_t mask_c[1] = {
+      {{UINT64_C(0x2492492492492490), UINT64_C(0x9249249249249249), 0, 0}}};
 
-    uint8_t d = a ^ (b & c);
-    uint8_t e = a ^ b ^ (a & c);
-    uint8_t f = a ^ b ^ c ^ (a & b);
+  mzd_local_t x0m[1], x1m[1], x2m[1];
+  // a
+  mzd_and_uint64_128(x0m, mask_a, in);
+  // b
+  mzd_and_uint64_128(x1m, mask_b, in);
+  // c
+  mzd_and_uint64_128(x2m, mask_c, in);
 
-    setBit(tmp, 3 * i + 2, d);
-    setBit(tmp, 3 * i + 1, e);
-    setBit(tmp, 3 * i + 0, f);
-  }
-  mzd_from_char_array(in, tmp, 16);
+  mzd_shift_left_uint64_128(x0m, 2);
+  mzd_shift_left_uint64_128(x1m, 1);
+
+  mzd_local_t t0[1], t1[1], t2[1];
+  // b & c
+  mzd_and_uint64_128(t0, x1m, x2m);
+  // c & a
+  mzd_and_uint64_128(t1, x0m, x2m);
+  // a & b
+  mzd_and_uint64_128(t2, x0m, x1m);
+
+  // (b & c) ^ a
+  mzd_xor_uint64_128(t0, t0, x0m);
+
+  // (c & a) ^ a ^ b
+  mzd_xor_uint64_128(t1, t1, x0m);
+  mzd_xor_uint64_128(t1, t1, x1m);
+
+  // (a & b) ^ a ^ b ^c
+  mzd_xor_uint64_128(t2, t2, x0m);
+  mzd_xor_uint64_128(t2, t2, x1m);
+  mzd_xor_uint64_128(t2, t2, x2m);
+
+  mzd_shift_right_uint64_128(t0, 2);
+  mzd_shift_right_uint64_128(t1, 1);
+
+  mzd_xor_uint64_128(in, t2, t1);
+  mzd_xor_uint64_128(in, in, t0);
 }
+
 /**
  * S-box for m = 64
  */
