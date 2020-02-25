@@ -92,7 +92,7 @@ else()
   set(DEFAULT_WITH_MARCH_NATIVE ON)
 endif()
 
-set(WITH_ZKBPP OFF CACHE BOOL "Enable Picnic instances based on ZKB++.")
+set(WITH_ZKBPP ON CACHE BOOL "Enable Picnic instances based on ZKB++.")
 set(WITH_KKW ON CACHE BOOL "Enable Picnic instances based on KKW.")
 if(NOT WITH_ZKBPP AND NOT WITH_KKW)
   message(FATAL_ERROR "At least one of WITH_ZKBPP and WITH_KKW is required.")
