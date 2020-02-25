@@ -26,25 +26,44 @@
 #include <stdalign.h>
 #endif
 #include <string.h>
+static const mzd_local_t mask_126_126_42_a[1] = {
+    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x0), UINT64_C(0x0)}}};
+static const mzd_local_t mask_126_126_42_b[1] = {
+    {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x0), UINT64_C(0x0)}}};
+static const mzd_local_t mask_126_126_42_c[1] = {
+    {{UINT64_C(0x2492492492492490), UINT64_C(0x9249249249249249), UINT64_C(0x0), UINT64_C(0x0)}}};
+
+static const mzd_local_t mask_192_192_64_a[1] = {
+    {{UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
+      UINT64_C(0x0)}}};
+static const mzd_local_t mask_192_192_64_b[1] = {
+    {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
+      UINT64_C(0x0)}}};
+static const mzd_local_t mask_192_192_64_c[1] = {
+    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
+      UINT64_C(0x0)}}};
+
+static const mzd_local_t mask_255_255_83_a[1] = {
+    {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
+      UINT64_C(0x2492492492492492)}}};
+static const mzd_local_t mask_255_255_83_b[1] = {
+    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
+      UINT64_C(0x4924924924924924)}}};
+static const mzd_local_t mask_255_255_83_c[1] = {
+    {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
+      UINT64_C(0x9249249249249249)}}};
 
 /**
  * S-box for m = 42
  */
 static void sbox_layer_42(mzd_local_t* in) {
-  static const mzd_local_t mask_a[1] = {
-      {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), 0, 0}}};
-  static const mzd_local_t mask_b[1] = {
-      {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), 0, 0}}};
-  static const mzd_local_t mask_c[1] = {
-      {{UINT64_C(0x2492492492492490), UINT64_C(0x9249249249249249), 0, 0}}};
-
   mzd_local_t x0m[1], x1m[1], x2m[1];
   // a
-  mzd_and_uint64_128(x0m, mask_a, in);
+  mzd_and_uint64_128(x0m, mask_126_126_42_a, in);
   // b
-  mzd_and_uint64_128(x1m, mask_b, in);
+  mzd_and_uint64_128(x1m, mask_126_126_42_b, in);
   // c
-  mzd_and_uint64_128(x2m, mask_c, in);
+  mzd_and_uint64_128(x2m, mask_126_126_42_c, in);
 
   mzd_shift_left_uint64_128(x0m, 2);
   mzd_shift_left_uint64_128(x1m, 1);
@@ -80,23 +99,13 @@ static void sbox_layer_42(mzd_local_t* in) {
  * S-box for m = 64
  */
 static void sbox_layer_64(mzd_local_t* in) {
-  static const mzd_local_t mask_a[1] = {
-      {{UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
-        UINT64_C(0x0)}}};
-  static const mzd_local_t mask_b[1] = {
-      {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
-        UINT64_C(0x0)}}};
-  static const mzd_local_t mask_c[1] = {
-      {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
-        UINT64_C(0x0)}}};
-
   mzd_local_t x0m[1], x1m[1], x2m[1];
   // a
-  mzd_and_uint64_192(x0m, mask_a, in);
+  mzd_and_uint64_192(x0m, mask_192_192_64_a, in);
   // b
-  mzd_and_uint64_192(x1m, mask_b, in);
+  mzd_and_uint64_192(x1m, mask_192_192_64_b, in);
   // c
-  mzd_and_uint64_192(x2m, mask_c, in);
+  mzd_and_uint64_192(x2m, mask_192_192_64_c, in);
 
   mzd_rotate_left_uint64_192(x0m, 2);
   mzd_rotate_left_uint64_192(x1m, 1);
@@ -132,23 +141,13 @@ static void sbox_layer_64(mzd_local_t* in) {
  * S-box for m = 85
  */
 static void sbox_layer_85(mzd_local_t* in) {
-  static const mzd_local_t mask_a[1] = {
-      {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
-        UINT64_C(0x2492492492492492)}}};
-  static const mzd_local_t mask_b[1] = {
-      {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
-        UINT64_C(0x4924924924924924)}}};
-  static const mzd_local_t mask_c[1] = {
-      {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
-        UINT64_C(0x9249249249249249)}}};
-
   mzd_local_t x0m[1], x1m[1], x2m[1];
   // a
-  mzd_and_uint64_256(x0m, mask_a, in);
+  mzd_and_uint64_256(x0m, mask_255_255_83_a, in);
   // b
-  mzd_and_uint64_256(x1m, mask_b, in);
+  mzd_and_uint64_256(x1m, mask_255_255_83_b, in);
   // c
-  mzd_and_uint64_256(x2m, mask_c, in);
+  mzd_and_uint64_256(x2m, mask_255_255_83_c, in);
 
   mzd_rotate_left_uint64_256(x0m, 2);
   mzd_rotate_left_uint64_256(x1m, 1);
