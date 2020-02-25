@@ -446,20 +446,18 @@ zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc) 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
-    switch (lowmc->n) {
-    case 128:
+    if (lowmc->n <= 128) {
       return mzd_share_s256_128;
-    default:
+    } else {
       return mzd_share_s256_256;
     }
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
-    switch (lowmc->n) {
-    case 128:
+    if (lowmc->n <= 128) {
       return mzd_share_s128_128;
-    default:
+    } else {
       return mzd_share_s128_256;
     }
   }
@@ -467,12 +465,11 @@ zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc) 
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
-  switch (lowmc->n) {
-  case 128:
+  if (lowmc->n <= 128) {
     return mzd_share_uint64_128;
-  case 192:
+  } else if (lowmc->n <= 192) {
     return mzd_share_uint64_192;
-  default:
+  } else {
     return mzd_share_uint64_256;
   }
 #endif
