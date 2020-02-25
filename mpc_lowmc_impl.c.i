@@ -7,14 +7,6 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#define RANDTAPE R_uint64
-#define SBOX SBOX_uint64
-
-#undef SBOX_SIGN
-#undef SBOX_VERIFY
-#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
-#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
-
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
@@ -82,13 +74,9 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
 #undef MPC_LOOP_CONST_C
 }
 
-#undef SBOX_SIGN
-#undef SBOX_VERIFY
 #undef loop_impl
 #undef N_SIGN
 #undef N_VERIFY
-#undef RANDTAPE
-#undef SBOX
 #undef LOWMC_M
 
 // vim: ft=c

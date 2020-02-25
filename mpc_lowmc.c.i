@@ -8,8 +8,8 @@
  */
 
 #if defined(LOWMC_INSTANCE)
-#define N_SIGN CONCAT(SIGN, 10)
-#define N_VERIFY CONCAT(VERIFY, 10)
+#define N_SIGN CONCAT(SIGN, 42)
+#define N_VERIFY CONCAT(VERIFY, 42)
 #include "mpc_lowmc_impl.c.i"
 #endif
 

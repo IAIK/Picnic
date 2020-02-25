@@ -58,6 +58,175 @@
     }                                                                                              \
   } while (0)
 
+static void mpc_and_uint64_128(mzd_local_t* res, const mzd_local_t* first,
+                               const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                               unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < SC_PROOF; ++m) {
+    const unsigned j = (m + 1) % SC_PROOF;
+
+    // f[m] & s[m]
+    mzd_and_uint64_128(&res[m], &first[m], &second[m]);
+
+    // f[m + 1] & s[m]
+    mzd_and_uint64_128(&tmp, &first[j], &second[m]);
+    mzd_xor_uint64_128(&res[m], &res[m], &tmp);
+
+    // f[m] & s[m + 1]
+    mzd_and_uint64_128(&tmp, &first[m], &second[j]);
+    mzd_xor_uint64_128(&res[m], &res[m], &tmp);
+
+    // ... ^ r[m] ^ r[m + 1]
+    mzd_xor_uint64_128(&res[m], &res[m], &r[m]);
+    mzd_xor_uint64_128(&res[m], &res[m], &r[j]);
+
+    if (viewshift) {
+      mzd_shift_right_uint64_128(&tmp, &res[m], viewshift);
+      mzd_xor_uint64_128(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->t[0..2] == 0
+      memcpy(&view->s[m], &res[m], sizeof(mzd_local_t));
+    }
+  }
+
+#if 0
+  mpc_shift_right(buffer, res, viewshift, SC_PROOF);
+  mpc_xor(view->s, view->s, buffer, SC_PROOF);
+#endif
+}
+
+static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first,
+                                      const mzd_local_t* second, const mzd_local_t* r,
+                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned j = m + 1;
+
+    mzd_and_uint64_128(&res[m], &first[m], &second[m]);
+
+    mzd_and_uint64_128(&tmp, &first[j], &second[m]);
+    mzd_xor_uint64_128(&res[m], &res[m], &tmp);
+
+    mzd_and_uint64_128(&tmp, &first[m], &second[j]);
+    mzd_xor_uint64_128(&res[m], &res[m], &tmp);
+
+    mzd_xor_uint64_128(&res[m], &res[m], &r[m]);
+    mzd_xor_uint64_128(&res[m], &res[m], &r[j]);
+
+    if (viewshift || m) {
+      mzd_shift_right_uint64_128(&tmp, &res[m], viewshift);
+      mzd_xor_uint64_128(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->t[0] == 0
+      memcpy(&view->s[m], &res[m], sizeof(mzd_local_t));
+    }
+  }
+
+#if 0
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    mzd_shift_right(b, res[m], viewshift);
+    mzd_xor(view->s[m], view->s[m], b);
+  }
+#endif
+
+  mzd_shift_left_uint64_128(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
+  mzd_and_uint64_128(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+}
+
+#define bitsliced_step_1(sc, AND, ROL, MASK_A, MASK_B, MASK_C)                                     \
+  mzd_local_t x2m[sc];                                                                             \
+  mzd_local_t r0m[sc], r1m[sc], r2m[sc];                                                           \
+  mzd_local_t x0s[sc], x1s[sc], r0s[sc], r1s[sc];                                                  \
+                                                                                                   \
+  for (unsigned int m = 0; m < (sc); ++m) {                                                        \
+    (AND)(&x0s[m], &in[m], MASK_A);                                                                \
+    (AND)(&x1s[m], &in[m], MASK_B);                                                                \
+    (AND)(&x2m[m], &in[m], MASK_C);                                                                \
+                                                                                                   \
+    (ROL)(&x0s[m], &x0s[m], 2);                                                                    \
+    (ROL)(&x1s[m], &x1s[m], 1);                                                                    \
+                                                                                                   \
+    (AND)(&r0m[m], &rvec->s[m], MASK_A);                                                           \
+    (AND)(&r1m[m], &rvec->s[m], MASK_B);                                                           \
+    (AND)(&r2m[m], &rvec->s[m], MASK_C);                                                           \
+                                                                                                   \
+    (ROL)(&r0s[m], &r0m[m], 2);                                                                    \
+    (ROL)(&r1s[m], &r1m[m], 1);                                                                    \
+  }
+
+#define bitsliced_step_2(sc, XOR, ROR)                                                             \
+  for (unsigned int m = 0; m < sc; ++m) {                                                          \
+    (XOR)(&r2m[m], &r2m[m], &x0s[m]);                                                              \
+    (XOR)(&x0s[m], &x0s[m], &x1s[m]);                                                              \
+    (XOR)(&r1m[m], &r1m[m], &x0s[m]);                                                              \
+    (XOR)(&r0m[m], &r0m[m], &x0s[m]);                                                              \
+    (XOR)(&r0m[m], &r0m[m], &x2m[m]);                                                              \
+                                                                                                   \
+    (ROR)(&x0s[m], &r2m[m], 2);                                                                    \
+    (ROR)(&x1s[m], &r1m[m], 1);                                                                    \
+                                                                                                   \
+    (XOR)(&x0s[m], &x0s[m], &r2m[m]);                                                              \
+    (XOR)(&out[m], &x0s[m], &x1s[m]);                                                              \
+  }
+
+static const mzd_local_t mask_126_126_42_a[1] = {
+    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x0), UINT64_C(0x0)}}};
+static const mzd_local_t mask_126_126_42_b[1] = {
+    {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x0), UINT64_C(0x0)}}};
+static const mzd_local_t mask_126_126_42_c[1] = {
+    {{UINT64_C(0x2492492492492490), UINT64_C(0x9249249249249249), UINT64_C(0x0), UINT64_C(0x0)}}};
+
+static const mzd_local_t mask_192_192_64_a[1] = {
+    {{UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
+      UINT64_C(0x0)}}};
+static const mzd_local_t mask_192_192_64_b[1] = {
+    {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
+      UINT64_C(0x0)}}};
+static const mzd_local_t mask_192_192_64_c[1] = {
+    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
+      UINT64_C(0x0)}}};
+
+static const mzd_local_t mask_255_255_83_a[1] = {
+    {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
+      UINT64_C(0x2492492492492492)}}};
+static const mzd_local_t mask_255_255_83_b[1] = {
+    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
+      UINT64_C(0x4924924924924924)}}};
+static const mzd_local_t mask_255_255_83_c[1] = {
+    {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
+      UINT64_C(0x9249249249249249)}}};
+
+
+static void mpc_sbox_uint64_42(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+
+  // mpc_clear(view->s, SC_PROOF);
+  // a & b
+  mpc_and_uint64_128(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_uint64_128(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_uint64_128(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
+}
+
+static void mpc_sbox_verify_uint64_42(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+
+  // mzd_local_clear(view->s[0]);
+  // a & b
+  mpc_and_verify_uint64_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
+  // b & c
+  mpc_and_verify_uint64_128(r2m, x1s, x2m, r1s, view, mask_126_126_42_c, 1);
+  // c & a
+  mpc_and_verify_uint64_128(r1m, x0s, x2m, r0s, view, mask_126_126_42_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
+}
+
 static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
                            uint64_t const* r, view_t* view, unsigned viewshift) {
   for (unsigned m = 0; m < SC_PROOF; ++m) {
@@ -140,7 +309,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
     for (unsigned int count = 0; count < shares; ++count) {                                        \
       in[count] = CONST_BLOCK(x[count], 0)->w64[(n) / (sizeof(word) * 8) - 1];                     \
     }                                                                                              \
-    sbox(in, views, r);                                                                            \
+    sbox(in, views, r->t);                                                                            \
     for (unsigned int count = 0; count < shares2; ++count) {                                       \
       memcpy(BLOCK(y[count], 0)->w64, CONST_BLOCK(x[count], 0)->w64,                               \
              ((n) / (sizeof(word) * 8) - 1) * sizeof(word));                                       \
@@ -148,14 +317,36 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
     }                                                                                              \
   } while (0)
 
-#define R_uint64 const uint64_t* r = rvec[i].t
+#define SBOX_uint64_126_126_42(sbox, y, x, views, rvec, n, shares, shares2)                        \
+  {                                                                                                \
+    mzd_local_t tmp[shares];                                                                       \
+    for (unsigned int count = 0; count < shares; ++count) {                                        \
+      memcpy(tmp[count].w64, CONST_BLOCK(x[count], 0)->w64, sizeof(mzd_local_t));                  \
+    }                                                                                              \
+    sbox(tmp, tmp, views, rvec);                                                                   \
+    for (unsigned int count = 0; count < shares; ++count) {                                        \
+      memcpy(BLOCK(y[count], 0)->w64, tmp[count].w64, sizeof(mzd_local_t));                        \
+    }                                                                                              \
+  }                                                                                                \
+  while (0)
 
 #if !defined(NO_UINT64_FALLBACK)
+#define SBOX SBOX_uint64_126_126_42
+#define SBOX_SIGN mpc_sbox_uint64_42
+#define SBOX_VERIFY mpc_sbox_verify_uint64_42
+
 // uint64 based implementation
 #include "lowmc_fns_uint64_L1.h"
-#define SIGN mpc_lowmc_call_uint64_128
-#define VERIFY mpc_lowmc_call_verify_uint64_128
+#define SIGN mpc_lowmc_prove_uint64_126_126
+#define VERIFY mpc_lowmc_verify_uint64_126_126
 #include "mpc_lowmc.c.i"
+
+#undef SBOX
+#undef SBOX_SIGN
+#undef SBOX_VERIFY
+#define SBOX SBOX_uint64
+#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
+#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
 
 #include "lowmc_fns_uint64_L3.h"
 #define SIGN mpc_lowmc_call_uint64_192
@@ -174,11 +365,25 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 #define FN_ATTR ATTR_TARGET_SSE2
 #endif
 
+#undef SBOX
+#undef SBOX_SIGN
+#undef SBOX_VERIFY
+#define SBOX SBOX_uint64_126_126_42
+#define SBOX_SIGN mpc_sbox_uint64_42
+#define SBOX_VERIFY mpc_sbox_verify_uint64_42
+
 // L1 using SSE2/NEON
 #include "lowmc_fns_s128_L1.h"
-#define SIGN mpc_lowmc_call_s128_128
-#define VERIFY mpc_lowmc_call_verify_s128_128
+#define SIGN mpc_lowmc_prove_s128_126_126
+#define VERIFY mpc_lowmc_verify_s128_126_126
 #include "mpc_lowmc.c.i"
+
+#undef SBOX
+#undef SBOX_SIGN
+#undef SBOX_VERIFY
+#define SBOX SBOX_uint64
+#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
+#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
 
 // L3 using SSE2/NEON
 #include "lowmc_fns_s128_L3.h"
@@ -198,11 +403,26 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 #if defined(WITH_AVX2)
 #define FN_ATTR ATTR_TARGET_AVX2
 
+#undef SBOX
+#undef SBOX_SIGN
+#undef SBOX_VERIFY
+#define SBOX SBOX_uint64_126_126_42
+#define SBOX_SIGN mpc_sbox_uint64_42
+#define SBOX_VERIFY mpc_sbox_verify_uint64_42
+
 // L1 using AVX2
 #include "lowmc_fns_s256_L1.h"
-#define SIGN mpc_lowmc_call_s256_128
-#define VERIFY mpc_lowmc_call_verify_s256_128
+#define SIGN mpc_lowmc_prove_s256_126_126
+#define VERIFY mpc_lowmc_verify_s256_126_126
 #include "mpc_lowmc.c.i"
+
+#undef SBOX
+#undef SBOX_SIGN
+#undef SBOX_VERIFY
+#define SBOX SBOX_uint64
+#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
+#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
+
 
 // L3 using AVX2
 #include "lowmc_fns_s256_L3.h"
@@ -222,12 +442,19 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 #endif
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {
-  ASSUME(lowmc->m == 10);
-  ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+  // ASSUME(lowmc->m == 10);
+  // ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
+    if (lowmc->n == 126 && lowmc->m == 42) {
+#if defined(WITH_LOWMC_126_126_4)
+      return mpc_lowmc_prove_s256_126_126_42;
+#endif
+    }
+
+    /*
     if (lowmc->m == 10) {
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
@@ -244,10 +471,18 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
       }
     }
+    */
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
+    if (lowmc->n == 126 && lowmc->m == 42) {
+#if defined(WITH_LOWMC_126_126_4)
+      return mpc_lowmc_prove_s128_126_126_42;
+#endif
+    }
+
+    /*
     if (lowmc->m == 10) {
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
@@ -264,11 +499,20 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
       }
     }
+    */
   }
 #endif
 #endif
 
+
 #if !defined(NO_UINT64_FALLBACK)
+  if (lowmc->n == 126 && lowmc->m == 42) {
+#if defined(WITH_LOWMC_126_126_4)
+    return mpc_lowmc_prove_uint64_126_126_42;
+#endif
+  }
+
+  /*
   if (lowmc->m == 10) {
     switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
@@ -285,6 +529,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
     }
   }
+  */
 
 #endif
 
@@ -292,12 +537,19 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 }
 
 zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc) {
-  ASSUME(lowmc->m == 10);
-  ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+  // ASSUME(lowmc->m == 10);
+  // ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
+    if (lowmc->n == 126 && lowmc->m == 42) {
+#if defined(WITH_LOWMC_126_126_4)
+      return mpc_lowmc_verify_s128_126_126_42;
+#endif
+    }
+
+/*
     if (lowmc->m == 10) {
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
@@ -314,10 +566,18 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
       }
     }
+    */
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
+    if (lowmc->n == 126 && lowmc->m == 42) {
+#if defined(WITH_LOWMC_126_126_4)
+      return mpc_lowmc_verify_s128_126_126_42;
+#endif
+    }
+
+    /*
     if (lowmc->m == 10) {
       switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
@@ -334,31 +594,17 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
       }
     }
-  }
-#endif
-#if defined(WITH_NEON)
-  if (CPU_SUPPORTS_NEON) {
-    if (lowmc->m == 10) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_126_126_4)
-      case 128:
-        return mpc_lowmc_call_verify_s128_128_10;
-#endif
-#if defined(WITH_LOWMC_192_192_4)
-      case 192:
-        return mpc_lowmc_call_verify_s128_192_10;
-#endif
-#if defined(WITH_LOWMC_255_255_4)
-      case 256:
-        return mpc_lowmc_call_verify_s128_256_10;
-#endif
-      }
-    }
+    */
   }
 #endif
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
+  if (lowmc->n == 126 && lowmc->m == 42) {
+    return mpc_lowmc_verify_uint64_126_126_42;
+  }
+
+  /*
   if (lowmc->m == 10) {
     switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
@@ -375,6 +621,7 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
     }
   }
+  */
 #endif
 
   return NULL;

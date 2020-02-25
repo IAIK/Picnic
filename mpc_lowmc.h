@@ -21,6 +21,7 @@
 
 typedef union {
   uint64_t t[SC_PROOF];
+  mzd_local_t s[SC_PROOF];
 } view_t;
 
 typedef view_t rvec_t;
