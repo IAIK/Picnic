@@ -24,7 +24,7 @@ static int test_vector(const picnic_params_t param) {
 
   picnic_privatekey_t sk = {0};
   sk.data[0]             = param;
-  memset(&sk.data[1], 0x7f, lowmc_blocksize);
+  memset(&sk.data[1], 0x7c, lowmc_blocksize);
   memset(&sk.data[1 + 2 * lowmc_blocksize], 0xf8, lowmc_blocksize);
 
   picnic_publickey_t pk = {{0}};
