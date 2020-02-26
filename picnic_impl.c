@@ -993,7 +993,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   lowmc_store_impl(lowmc_key, p, &recorded_state);
 
   sig_proof_t* prf = proof_new(pp);
-  view_t* views    = calloc(sizeof(view_t), view_count);
+  view_t* views    = aligned_alloc(32, sizeof(view_t) * view_count);
 
   in_out_shares_t in_out_shares[2];
   mzd_local_init_multiple_ex(in_out_shares[0].s, SC_PROOF, 1, lowmc_k, false);
@@ -1004,7 +1004,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   generate_seeds(pp, private_key, plaintext, public_key, m, m_len, prf->round[0].seeds[0],
                  prf->salt);
 
-  rvec_t* rvec = calloc(sizeof(rvec_t), lowmc_r); // random tapes for AND-gates
+  rvec_t* rvec = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for AND-gates
 
   proof_round_t* round = prf->round;
   // use 4 parallel instances of keccak for speedup
@@ -1125,8 +1125,8 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       free(tape_bytes_x4[k][j]);
     }
   }
-  free(rvec);
-  free(views);
+  aligned_free(rvec);
+  aligned_free(views);
   mzd_local_free_multiple(in_out_shares[1].s);
   mzd_local_free_multiple(in_out_shares[0].s);
   proof_free(prf);
@@ -1162,8 +1162,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   in_out_shares_t in_out_shares[2];
   mzd_local_init_multiple_ex(in_out_shares[0].s, SC_VERIFY, 1, lowmc_k, false);
   mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
-  view_t* views       = calloc(sizeof(view_t), view_count);
-  rvec_t* rvec        = calloc(sizeof(rvec_t), lowmc_r); // random tapes for and-gates
+  view_t* views    = aligned_alloc(32, sizeof(view_t) * view_count);
+  rvec_t* rvec     = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for and-gates
 
   // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when
   // verifying since all of this is public information, there is no leakage
@@ -1322,8 +1322,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       free(tape_bytes_x4[i][j]);
     }
   }
-  free(rvec);
-  free(views);
+  aligned_free(rvec);
+  aligned_free(views);
   mzd_local_free_multiple(in_out_shares[1].s);
   mzd_local_free_multiple(in_out_shares[0].s);
 
