@@ -86,14 +86,9 @@ static void mpc_and_uint64_128(mzd_local_t* res, const mzd_local_t* first,
       mzd_xor_uint64_128(&view->s[m], &view->s[m], &tmp);
     } else {
       // on first call (viewshift == 0), view->t[0..2] == 0
-      memcpy(&view->s[m], &res[m], sizeof(mzd_local_t));
+      mzd_copy_uint64_128(&view->s[m], &res[m]);
     }
   }
-
-#if 0
-  mpc_shift_right(buffer, res, viewshift, SC_PROOF);
-  mpc_xor(view->s, view->s, buffer, SC_PROOF);
-#endif
 }
 
 static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first,
@@ -120,19 +115,402 @@ static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first
       mzd_xor_uint64_128(&view->s[m], &view->s[m], &tmp);
     } else {
       // on first call (viewshift == 0), view->s[0] == 0
-      memcpy(&view->s[m], &res[m], sizeof(mzd_local_t));
+      mzd_copy_uint64_128(&view->s[m], &res[m]);
     }
   }
 
-#if 0
-  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
-    mzd_shift_right(b, res[m], viewshift);
-    mzd_xor(view->s[m], view->s[m], b);
-  }
-#endif
-
   mzd_shift_left_uint64_128(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
   mzd_and_uint64_128(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+}
+
+static void mpc_and_uint64_192(mzd_local_t* res, const mzd_local_t* first,
+                               const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                               unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < SC_PROOF; ++m) {
+    const unsigned j = (m + 1) % SC_PROOF;
+
+    // f[m] & s[m]
+    mzd_and_uint64_192(&res[m], &first[m], &second[m]);
+
+    // f[m + 1] & s[m]
+    mzd_and_uint64_192(&tmp, &first[j], &second[m]);
+    mzd_xor_uint64_192(&res[m], &res[m], &tmp);
+
+    // f[m] & s[m + 1]
+    mzd_and_uint64_192(&tmp, &first[m], &second[j]);
+    mzd_xor_uint64_192(&res[m], &res[m], &tmp);
+
+    // ... ^ r[m] ^ r[m + 1]
+    mzd_xor_uint64_192(&res[m], &res[m], &r[m]);
+    mzd_xor_uint64_192(&res[m], &res[m], &r[j]);
+
+    if (viewshift) {
+      mzd_shift_right_uint64_192(&tmp, &res[m], viewshift);
+      mzd_xor_uint64_192(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->t[0..2] == 0
+      mzd_copy_uint64_192(&view->s[m], &res[m]);
+    }
+  }
+}
+
+static void mpc_and_verify_uint64_192(mzd_local_t* res, const mzd_local_t* first,
+                                      const mzd_local_t* second, const mzd_local_t* r,
+                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned j = m + 1;
+
+    mzd_and_uint64_192(&res[m], &first[m], &second[m]);
+
+    mzd_and_uint64_192(&tmp, &first[j], &second[m]);
+    mzd_xor_uint64_192(&res[m], &res[m], &tmp);
+
+    mzd_and_uint64_192(&tmp, &first[m], &second[j]);
+    mzd_xor_uint64_192(&res[m], &res[m], &tmp);
+
+    mzd_xor_uint64_192(&res[m], &res[m], &r[m]);
+    mzd_xor_uint64_192(&res[m], &res[m], &r[j]);
+
+    if (viewshift || m) {
+      mzd_shift_right_uint64_192(&tmp, &res[m], viewshift);
+      mzd_xor_uint64_192(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->s[0] == 0
+      mzd_copy_uint64_192(&view->s[m], &res[m]);
+    }
+  }
+
+  mzd_shift_left_uint64_192(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
+  mzd_and_uint64_192(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+}
+
+static void mpc_and_uint64_256(mzd_local_t* res, const mzd_local_t* first,
+                               const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                               unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < SC_PROOF; ++m) {
+    const unsigned j = (m + 1) % SC_PROOF;
+
+    // f[m] & s[m]
+    mzd_and_uint64_256(&res[m], &first[m], &second[m]);
+
+    // f[m + 1] & s[m]
+    mzd_and_uint64_256(&tmp, &first[j], &second[m]);
+    mzd_xor_uint64_256(&res[m], &res[m], &tmp);
+
+    // f[m] & s[m + 1]
+    mzd_and_uint64_256(&tmp, &first[m], &second[j]);
+    mzd_xor_uint64_256(&res[m], &res[m], &tmp);
+
+    // ... ^ r[m] ^ r[m + 1]
+    mzd_xor_uint64_256(&res[m], &res[m], &r[m]);
+    mzd_xor_uint64_256(&res[m], &res[m], &r[j]);
+
+    if (viewshift) {
+      mzd_shift_right_uint64_256(&tmp, &res[m], viewshift);
+      mzd_xor_uint64_256(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->t[0..2] == 0
+      mzd_copy_uint64_256(&view->s[m], &res[m]);
+    }
+  }
+}
+
+static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first,
+                                      const mzd_local_t* second, const mzd_local_t* r,
+                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned j = m + 1;
+
+    mzd_and_uint64_256(&res[m], &first[m], &second[m]);
+
+    mzd_and_uint64_256(&tmp, &first[j], &second[m]);
+    mzd_xor_uint64_256(&res[m], &res[m], &tmp);
+
+    mzd_and_uint64_256(&tmp, &first[m], &second[j]);
+    mzd_xor_uint64_256(&res[m], &res[m], &tmp);
+
+    mzd_xor_uint64_256(&res[m], &res[m], &r[m]);
+    mzd_xor_uint64_256(&res[m], &res[m], &r[j]);
+
+    if (viewshift || m) {
+      mzd_shift_right_uint64_256(&tmp, &res[m], viewshift);
+      mzd_xor_uint64_256(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->s[0] == 0
+      mzd_copy_uint64_256(&view->s[m], &res[m]);
+    }
+  }
+
+  mzd_shift_left_uint64_256(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
+  mzd_and_uint64_256(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+}
+
+static void mpc_and_s128_128(mzd_local_t* res, const mzd_local_t* first,
+                               const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                               unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < SC_PROOF; ++m) {
+    const unsigned j = (m + 1) % SC_PROOF;
+
+    // f[m] & s[m]
+    mzd_and_s128_128(&res[m], &first[m], &second[m]);
+
+    // f[m + 1] & s[m]
+    mzd_and_s128_128(&tmp, &first[j], &second[m]);
+    mzd_xor_s128_128(&res[m], &res[m], &tmp);
+
+    // f[m] & s[m + 1]
+    mzd_and_s128_128(&tmp, &first[m], &second[j]);
+    mzd_xor_s128_128(&res[m], &res[m], &tmp);
+
+    // ... ^ r[m] ^ r[m + 1]
+    mzd_xor_s128_128(&res[m], &res[m], &r[m]);
+    mzd_xor_s128_128(&res[m], &res[m], &r[j]);
+
+    if (viewshift) {
+      mzd_shift_right_s128_128(&tmp, &res[m], viewshift);
+      mzd_xor_s128_128(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->t[0..2] == 0
+      mzd_copy_s128_128(&view->s[m], &res[m]);
+    }
+  }
+}
+
+static void mpc_and_verify_s128_128(mzd_local_t* res, const mzd_local_t* first,
+                                      const mzd_local_t* second, const mzd_local_t* r,
+                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned j = m + 1;
+
+    mzd_and_s128_128(&res[m], &first[m], &second[m]);
+
+    mzd_and_s128_128(&tmp, &first[j], &second[m]);
+    mzd_xor_s128_128(&res[m], &res[m], &tmp);
+
+    mzd_and_s128_128(&tmp, &first[m], &second[j]);
+    mzd_xor_s128_128(&res[m], &res[m], &tmp);
+
+    mzd_xor_s128_128(&res[m], &res[m], &r[m]);
+    mzd_xor_s128_128(&res[m], &res[m], &r[j]);
+
+    if (viewshift || m) {
+      mzd_shift_right_s128_128(&tmp, &res[m], viewshift);
+      mzd_xor_s128_128(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->s[0] == 0
+      mzd_copy_s128_128(&view->s[m], &res[m]);
+    }
+  }
+
+  mzd_shift_left_s128_128(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
+  mzd_and_s128_128(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+}
+
+static void mpc_and_s128_256(mzd_local_t* res, const mzd_local_t* first,
+                               const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                               unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < SC_PROOF; ++m) {
+    const unsigned j = (m + 1) % SC_PROOF;
+
+    // f[m] & s[m]
+    mzd_and_s128_256(&res[m], &first[m], &second[m]);
+
+    // f[m + 1] & s[m]
+    mzd_and_s128_256(&tmp, &first[j], &second[m]);
+    mzd_xor_s128_256(&res[m], &res[m], &tmp);
+
+    // f[m] & s[m + 1]
+    mzd_and_s128_256(&tmp, &first[m], &second[j]);
+    mzd_xor_s128_256(&res[m], &res[m], &tmp);
+
+    // ... ^ r[m] ^ r[m + 1]
+    mzd_xor_s128_256(&res[m], &res[m], &r[m]);
+    mzd_xor_s128_256(&res[m], &res[m], &r[j]);
+
+    if (viewshift) {
+      mzd_shift_right_s128_256(&tmp, &res[m], viewshift);
+      mzd_xor_s128_256(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->t[0..2] == 0
+      mzd_copy_s128_256(&view->s[m], &res[m]);
+    }
+  }
+}
+
+static void mpc_and_verify_s128_256(mzd_local_t* res, const mzd_local_t* first,
+                                      const mzd_local_t* second, const mzd_local_t* r,
+                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned j = m + 1;
+
+    mzd_and_s128_256(&res[m], &first[m], &second[m]);
+
+    mzd_and_s128_256(&tmp, &first[j], &second[m]);
+    mzd_xor_s128_256(&res[m], &res[m], &tmp);
+
+    mzd_and_s128_256(&tmp, &first[m], &second[j]);
+    mzd_xor_s128_256(&res[m], &res[m], &tmp);
+
+    mzd_xor_s128_256(&res[m], &res[m], &r[m]);
+    mzd_xor_s128_256(&res[m], &res[m], &r[j]);
+
+    if (viewshift || m) {
+      mzd_shift_right_s128_256(&tmp, &res[m], viewshift);
+      mzd_xor_s128_256(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->s[0] == 0
+      mzd_copy_s128_256(&view->s[m], &res[m]);
+    }
+  }
+
+  mzd_shift_left_s128_256(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
+  mzd_and_s128_256(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+}
+
+static void mpc_and_s256_128(mzd_local_t* res, const mzd_local_t* first,
+                               const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                               unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < SC_PROOF; ++m) {
+    const unsigned j = (m + 1) % SC_PROOF;
+
+    // f[m] & s[m]
+    mzd_and_s256_128(&res[m], &first[m], &second[m]);
+
+    // f[m + 1] & s[m]
+    mzd_and_s256_128(&tmp, &first[j], &second[m]);
+    mzd_xor_s256_128(&res[m], &res[m], &tmp);
+
+    // f[m] & s[m + 1]
+    mzd_and_s256_128(&tmp, &first[m], &second[j]);
+    mzd_xor_s256_128(&res[m], &res[m], &tmp);
+
+    // ... ^ r[m] ^ r[m + 1]
+    mzd_xor_s256_128(&res[m], &res[m], &r[m]);
+    mzd_xor_s256_128(&res[m], &res[m], &r[j]);
+
+    if (viewshift) {
+      mzd_shift_right_s256_128(&tmp, &res[m], viewshift);
+      mzd_xor_s256_128(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->t[0..2] == 0
+      mzd_copy_s256_128(&view->s[m], &res[m]);
+    }
+  }
+}
+
+static void mpc_and_verify_s256_128(mzd_local_t* res, const mzd_local_t* first,
+                                      const mzd_local_t* second, const mzd_local_t* r,
+                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned j = m + 1;
+
+    mzd_and_s256_128(&res[m], &first[m], &second[m]);
+
+    mzd_and_s256_128(&tmp, &first[j], &second[m]);
+    mzd_xor_s256_128(&res[m], &res[m], &tmp);
+
+    mzd_and_s256_128(&tmp, &first[m], &second[j]);
+    mzd_xor_s256_128(&res[m], &res[m], &tmp);
+
+    mzd_xor_s256_128(&res[m], &res[m], &r[m]);
+    mzd_xor_s256_128(&res[m], &res[m], &r[j]);
+
+    if (viewshift || m) {
+      mzd_shift_right_s256_128(&tmp, &res[m], viewshift);
+      mzd_xor_s256_128(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->s[0] == 0
+      mzd_copy_s256_128(&view->s[m], &res[m]);
+    }
+  }
+
+  mzd_shift_left_s256_128(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
+  mzd_and_s256_128(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+}
+
+static void mpc_and_s256_256(mzd_local_t* res, const mzd_local_t* first,
+                               const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                               unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < SC_PROOF; ++m) {
+    const unsigned j = (m + 1) % SC_PROOF;
+
+    // f[m] & s[m]
+    mzd_and_s256_256(&res[m], &first[m], &second[m]);
+
+    // f[m + 1] & s[m]
+    mzd_and_s256_256(&tmp, &first[j], &second[m]);
+    mzd_xor_s256_256(&res[m], &res[m], &tmp);
+
+    // f[m] & s[m + 1]
+    mzd_and_s256_256(&tmp, &first[m], &second[j]);
+    mzd_xor_s256_256(&res[m], &res[m], &tmp);
+
+    // ... ^ r[m] ^ r[m + 1]
+    mzd_xor_s256_256(&res[m], &res[m], &r[m]);
+    mzd_xor_s256_256(&res[m], &res[m], &r[j]);
+
+    if (viewshift) {
+      mzd_shift_right_s256_256(&tmp, &res[m], viewshift);
+      mzd_xor_s256_256(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->t[0..2] == 0
+      mzd_copy_s256_256(&view->s[m], &res[m]);
+    }
+  }
+}
+
+static void mpc_and_verify_s256_256(mzd_local_t* res, const mzd_local_t* first,
+                                      const mzd_local_t* second, const mzd_local_t* r,
+                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp;
+
+  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned j = m + 1;
+
+    mzd_and_s256_256(&res[m], &first[m], &second[m]);
+
+    mzd_and_s256_256(&tmp, &first[j], &second[m]);
+    mzd_xor_s256_256(&res[m], &res[m], &tmp);
+
+    mzd_and_s256_256(&tmp, &first[m], &second[j]);
+    mzd_xor_s256_256(&res[m], &res[m], &tmp);
+
+    mzd_xor_s256_256(&res[m], &res[m], &r[m]);
+    mzd_xor_s256_256(&res[m], &res[m], &r[j]);
+
+    if (viewshift || m) {
+      mzd_shift_right_s256_256(&tmp, &res[m], viewshift);
+      mzd_xor_s256_256(&view->s[m], &view->s[m], &tmp);
+    } else {
+      // on first call (viewshift == 0), view->s[0] == 0
+      mzd_copy_s256_256(&view->s[m], &res[m]);
+    }
+  }
+
+  mzd_shift_left_s256_256(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
+  mzd_and_s256_256(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
 }
 
 #define bitsliced_step_1(sc, AND, ROL, MASK_A, MASK_B, MASK_C)                                     \
