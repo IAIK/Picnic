@@ -43,13 +43,13 @@ static const mzd_local_t mask_192_192_64_c[1] = {
     {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
       UINT64_C(0x0)}}};
 
-static const mzd_local_t mask_255_255_83_a[1] = {
+static const mzd_local_t mask_255_255_85_a[1] = {
     {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
       UINT64_C(0x2492492492492492)}}};
-static const mzd_local_t mask_255_255_83_b[1] = {
+static const mzd_local_t mask_255_255_85_b[1] = {
     {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
       UINT64_C(0x4924924924924924)}}};
-static const mzd_local_t mask_255_255_83_c[1] = {
+static const mzd_local_t mask_255_255_85_c[1] = {
     {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
       UINT64_C(0x9249249249249249)}}};
 
@@ -143,11 +143,11 @@ static void sbox_layer_64(mzd_local_t* in) {
 static void sbox_layer_85(mzd_local_t* in) {
   mzd_local_t x0m[1], x1m[1], x2m[1];
   // a
-  mzd_and_uint64_256(x0m, mask_255_255_83_a, in);
+  mzd_and_uint64_256(x0m, mask_255_255_85_a, in);
   // b
-  mzd_and_uint64_256(x1m, mask_255_255_83_b, in);
+  mzd_and_uint64_256(x1m, mask_255_255_85_b, in);
   // c
-  mzd_and_uint64_256(x2m, mask_255_255_83_c, in);
+  mzd_and_uint64_256(x2m, mask_255_255_85_c, in);
 
   mzd_rotate_left_uint64_256(x0m, x0m, 2);
   mzd_rotate_left_uint64_256(x1m, x1m, 1);
