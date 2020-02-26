@@ -566,13 +566,13 @@ static const mzd_local_t mask_192_192_64_c[1] = {
     {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
       UINT64_C(0x0)}}};
 
-static const mzd_local_t mask_255_255_83_a[1] = {
+static const mzd_local_t mask_255_255_85_a[1] = {
     {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
       UINT64_C(0x2492492492492492)}}};
-static const mzd_local_t mask_255_255_83_b[1] = {
+static const mzd_local_t mask_255_255_85_b[1] = {
     {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
       UINT64_C(0x4924924924924924)}}};
-static const mzd_local_t mask_255_255_83_c[1] = {
+static const mzd_local_t mask_255_255_85_c[1] = {
     {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
       UINT64_C(0x9249249249249249)}}};
 
