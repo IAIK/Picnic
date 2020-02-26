@@ -119,7 +119,7 @@ static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first
       mzd_shift_right_uint64_128(&tmp, &res[m], viewshift);
       mzd_xor_uint64_128(&view->s[m], &view->s[m], &tmp);
     } else {
-      // on first call (viewshift == 0), view->t[0] == 0
+      // on first call (viewshift == 0), view->s[0] == 0
       memcpy(&view->s[m], &res[m], sizeof(mzd_local_t));
     }
   }
@@ -167,7 +167,7 @@ static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first
     (ROR)(&x0s[m], &r2m[m], 2);                                                                    \
     (ROR)(&x1s[m], &r1m[m], 1);                                                                    \
                                                                                                    \
-    (XOR)(&x0s[m], &x0s[m], &r2m[m]);                                                              \
+    (XOR)(&x0s[m], &x0s[m], &r0m[m]);                                                              \
     (XOR)(&out[m], &x0s[m], &x1s[m]);                                                              \
   }
 
