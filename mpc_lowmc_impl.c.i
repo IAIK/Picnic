@@ -20,7 +20,7 @@ static void N_SIGN(mzd_local_t const* p, view_t* views, in_out_shares_t* in_out_
   XOR((x)[SC_PROOF - 1], (x)[SC_PROOF - 1], recorded_state->state[i])
 #define ch 0
 #define shares SC_PROOF
-#define sbox SBOX_SIGN
+#define sbox CONCAT(mpc_sbox_prove, CONCAT(IMPL, LOWMC_INSTANCE))
 
   mpc_lowmc_key_t const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;
@@ -53,7 +53,7 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
 
 #define shares SC_VERIFY
 #define reduced_shares shares
-#define sbox SBOX_VERIFY
+#define sbox CONCAT(mpc_sbox_verify, CONCAT(IMPL, LOWMC_INSTANCE))
 
   mzd_local_t* const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;

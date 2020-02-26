@@ -576,11 +576,9 @@ static const mzd_local_t mask_255_255_85_c[1] = {
     {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
       UINT64_C(0x9249249249249249)}}};
 
-
-static void mpc_sbox_uint64_42(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+static void mpc_sbox_prove_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_PROOF, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
 
-  // mpc_clear(view->s, SC_PROOF);
   // a & b
   mpc_and_uint64_128(r0m, x0s, x1s, r2m, view, 0);
   // b & c
@@ -591,10 +589,9 @@ static void mpc_sbox_uint64_42(mzd_local_t* out, const mzd_local_t* in, view_t* 
   bitsliced_step_2(SC_PROOF, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
 }
 
-static void mpc_sbox_verify_uint64_42(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+static void mpc_sbox_verify_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_VERIFY, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
 
-  // mzd_local_clear(view->s[0]);
   // a & b
   mpc_and_verify_uint64_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
   // b & c
@@ -605,70 +602,212 @@ static void mpc_sbox_verify_uint64_42(mzd_local_t* out, const mzd_local_t* in, v
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
 }
 
-static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
-                           uint64_t const* r, view_t* view, unsigned viewshift) {
-  for (unsigned m = 0; m < SC_PROOF; ++m) {
-    const unsigned j = (m + 1) % SC_PROOF;
-    uint64_t tmp1    = second[m] ^ second[j];
-    uint64_t tmp2    = first[j] & second[m];
-    tmp1             = tmp1 & first[m];
-    tmp1             = tmp1 ^ tmp2;
-    tmp2             = r[m] ^ r[j];
-    res[m] = tmp1 = tmp1 ^ tmp2;
-    if (viewshift) {
-      tmp1       = tmp1 >> viewshift;
-      view->t[m] = view->t[m] ^ tmp1;
-    } else {
-      // on first call (viewshift == 0), view->t[0..2] == 0
-      view->t[m] = tmp1;
-    }
-  }
+static void mpc_sbox_prove_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
+
+  // a & b
+  mpc_and_uint64_192(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_uint64_192(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_uint64_192(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_uint64_192, mzd_rotate_right_uint64_192);
 }
 
-static void mpc_and_verify_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
-                                  uint64_t const* r, view_t* view, uint64_t const mask,
-                                  unsigned viewshift) {
-  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
-    const unsigned j = (m + 1);
-    uint64_t tmp1    = second[m] ^ second[j];
-    uint64_t tmp2    = first[j] & second[m];
-    tmp1             = tmp1 & first[m];
-    tmp1             = tmp1 ^ tmp2;
-    tmp2             = r[m] ^ r[j];
-    res[m] = tmp1 = tmp1 ^ tmp2;
-    if (viewshift || m) {
-      tmp1       = tmp1 >> viewshift;
-      view->t[m] = view->t[m] ^ tmp1;
-    } else {
-      // on first call (viewshift == 0), view->t[0] == 0
-      view->t[m] = tmp1;
-    }
-  }
+static void mpc_sbox_verify_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
 
-  const uint64_t rsc = view->t[SC_VERIFY - 1] << viewshift;
-  res[SC_VERIFY - 1] = rsc & mask;
+  // a & b
+  mpc_and_verify_uint64_192(r0m, x0s, x1s, r2m, view, mask_192_192_64_c, 0);
+  // b & c
+  mpc_and_verify_uint64_192(r2m, x1s, x2m, r1s, view, mask_192_192_64_c, 1);
+  // c & a
+  mpc_and_verify_uint64_192(r1m, x0s, x2m, r0s, view, mask_192_192_64_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_192, mzd_rotate_right_uint64_192);
 }
 
+static void mpc_sbox_prove_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_uint64_256, mzd_rotate_left_uint64_256, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
 
-static void mpc_sbox_layer_bitsliced_uint64_10(uint64_t* in, view_t* view, uint64_t const* rvec) {
-  //bitsliced_step_1_uint64_10(SC_PROOF);
+  // a & b
+  mpc_and_uint64_256(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_uint64_256(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_uint64_256(r1m, x0s, x2m, r0s, view, 2);
 
-  //mpc_and_uint64(r0m, x0s, x1s, r2m, view, 0);
-  //mpc_and_uint64(r2m, x1s, x2m, r1s, view, 1);
-  //mpc_and_uint64(r1m, x0s, x2m, r0s, view, 2);
-
-  //bitsliced_step_2_uint64_10(SC_PROOF - 1);
+  bitsliced_step_2(SC_PROOF, mzd_xor_uint64_256, mzd_rotate_right_uint64_256);
 }
 
-static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view,
-                                                      uint64_t const* rvec) {
-  //bitsliced_step_1_uint64_10(SC_VERIFY);
+static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_256, mzd_shift_left_uint64_256, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
 
-  //mpc_and_verify_uint64(r0m, x0s, x1s, r2m, view, MASK_X2I, 0);
-  //mpc_and_verify_uint64(r2m, x1s, x2m, r1s, view, MASK_X2I, 1);
-  //mpc_and_verify_uint64(r1m, x0s, x2m, r0s, view, MASK_X2I, 2);
+  // a & b
+  mpc_and_verify_uint64_256(r0m, x0s, x1s, r2m, view, mask_255_255_85_c, 0);
+  // b & c
+  mpc_and_verify_uint64_256(r2m, x1s, x2m, r1s, view, mask_255_255_85_c, 1);
+  // c & a
+  mpc_and_verify_uint64_256(r1m, x0s, x2m, r0s, view, mask_255_255_85_c, 2);
 
-  //bitsliced_step_2_uint64_10(SC_VERIFY);
+  bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_256, mzd_shift_right_uint64_256);
+}
+
+static void mpc_sbox_prove_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_s128_128, mzd_shift_left_s128_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+
+  // a & b
+  mpc_and_s128_128(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_s128_128(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_s128_128(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_s128_128, mzd_shift_right_s128_128);
+}
+
+static void mpc_sbox_verify_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_s128_128, mzd_shift_left_s128_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+
+  // a & b
+  mpc_and_verify_s128_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
+  // b & c
+  mpc_and_verify_s128_128(r2m, x1s, x2m, r1s, view, mask_126_126_42_c, 1);
+  // c & a
+  mpc_and_verify_s128_128(r1m, x0s, x2m, r0s, view, mask_126_126_42_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_s128_128, mzd_shift_right_s128_128);
+}
+
+static void mpc_sbox_prove_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_s128_256, mzd_shift_left_s128_256, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
+
+  // a & b
+  mpc_and_s128_256(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_s128_256(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_s128_256(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_s128_256, mzd_shift_right_s128_256);
+}
+
+static void mpc_sbox_verify_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_s128_256, mzd_shift_left_s128_256, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
+
+  // a & b
+  mpc_and_verify_s128_256(r0m, x0s, x1s, r2m, view, mask_192_192_64_c, 0);
+  // b & c
+  mpc_and_verify_s128_256(r2m, x1s, x2m, r1s, view, mask_192_192_64_c, 1);
+  // c & a
+  mpc_and_verify_s128_256(r1m, x0s, x2m, r0s, view, mask_192_192_64_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_s128_256, mzd_shift_right_s128_256);
+}
+
+static void mpc_sbox_prove_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_s128_256, mzd_rotate_left_s128_256, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
+
+  // a & b
+  mpc_and_s128_256(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_s128_256(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_s128_256(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_s128_256, mzd_rotate_right_s128_256);
+}
+
+static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_s128_256, mzd_rotate_left_s128_256, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
+
+  // a & b
+  mpc_and_verify_s128_256(r0m, x0s, x1s, r2m, view, mask_255_255_85_c, 0);
+  // b & c
+  mpc_and_verify_s128_256(r2m, x1s, x2m, r1s, view, mask_255_255_85_c, 1);
+  // c & a
+  mpc_and_verify_s128_256(r1m, x0s, x2m, r0s, view, mask_255_255_85_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_s128_256, mzd_rotate_right_s128_256);
+}
+
+static void mpc_sbox_prove_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_s256_128, mzd_shift_left_s256_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+
+  // a & b
+  mpc_and_s256_128(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_s256_128(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_s256_128(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_s256_128, mzd_shift_right_s256_128);
+}
+
+static void mpc_sbox_verify_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_s256_128, mzd_shift_left_s256_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+
+  // a & b
+  mpc_and_verify_s256_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
+  // b & c
+  mpc_and_verify_s256_128(r2m, x1s, x2m, r1s, view, mask_126_126_42_c, 1);
+  // c & a
+  mpc_and_verify_s256_128(r1m, x0s, x2m, r0s, view, mask_126_126_42_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_s256_128, mzd_shift_right_s256_128);
+}
+
+static void mpc_sbox_prove_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_s256_256, mzd_shift_left_s256_256, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
+
+  // a & b
+  mpc_and_s256_256(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_s256_256(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_s256_256(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_s256_256, mzd_shift_right_s256_256);
+}
+
+static void mpc_sbox_verify_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_s256_256, mzd_shift_left_s256_256, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
+
+  // a & b
+  mpc_and_verify_s256_256(r0m, x0s, x1s, r2m, view, mask_192_192_64_c, 0);
+  // b & c
+  mpc_and_verify_s256_256(r2m, x1s, x2m, r1s, view, mask_192_192_64_c, 1);
+  // c & a
+  mpc_and_verify_s256_256(r1m, x0s, x2m, r0s, view, mask_192_192_64_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_s256_256, mzd_shift_right_s256_256);
+}
+
+static void mpc_sbox_prove_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_s256_256, mzd_rotate_left_s256_256, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
+
+  // a & b
+  mpc_and_s256_256(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_s256_256(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_s256_256(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_s256_256, mzd_rotate_right_s256_256);
+}
+
+static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_s256_256, mzd_rotate_left_s256_256, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
+
+  // a & b
+  mpc_and_verify_s256_256(r0m, x0s, x1s, r2m, view, mask_255_255_85_c, 0);
+  // b & c
+  mpc_and_verify_s256_256(r2m, x1s, x2m, r1s, view, mask_255_255_85_c, 1);
+  // c & a
+  mpc_and_verify_s256_256(r1m, x0s, x2m, r0s, view, mask_255_255_85_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_s256_256, mzd_rotate_right_s256_256);
 }
 
 #if defined(WITH_LOWMC_126_126_4)
@@ -695,7 +834,8 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
     }                                                                                              \
   } while (0)
 
-#define SBOX_uint64_126_126_42(sbox, y, x, views, rvec, n, shares, shares2)                        \
+/* TODO: get rid of the copies */
+#define SBOX_mzd(sbox, y, x, views, rvec, n, shares, shares2)                                      \
   {                                                                                                \
     mzd_local_t tmp[shares];                                                                       \
     for (unsigned int count = 0; count < shares; ++count) {                                        \
@@ -708,32 +848,19 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
   }                                                                                                \
   while (0)
 
+#define SBOX SBOX_mzd
+
 #if !defined(NO_UINT64_FALLBACK)
-#define SBOX SBOX_uint64_126_126_42
-#define SBOX_SIGN mpc_sbox_uint64_42
-#define SBOX_VERIFY mpc_sbox_verify_uint64_42
+#define IMPL uint64
 
 // uint64 based implementation
 #include "lowmc_fns_uint64_L1.h"
-#define SIGN mpc_lowmc_prove_uint64_126_126
-#define VERIFY mpc_lowmc_verify_uint64_126_126
 #include "mpc_lowmc.c.i"
 
-#undef SBOX
-#undef SBOX_SIGN
-#undef SBOX_VERIFY
-#define SBOX SBOX_uint64
-#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
-#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
-
 #include "lowmc_fns_uint64_L3.h"
-#define SIGN mpc_lowmc_call_uint64_192
-#define VERIFY mpc_lowmc_call_verify_uint64_192
 #include "mpc_lowmc.c.i"
 
 #include "lowmc_fns_uint64_L5.h"
-#define SIGN mpc_lowmc_call_uint64_256
-#define VERIFY mpc_lowmc_call_verify_uint64_256
 #include "mpc_lowmc.c.i"
 #endif
 
@@ -743,36 +870,19 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 #define FN_ATTR ATTR_TARGET_SSE2
 #endif
 
-#undef SBOX
-#undef SBOX_SIGN
-#undef SBOX_VERIFY
-#define SBOX SBOX_uint64_126_126_42
-#define SBOX_SIGN mpc_sbox_uint64_42
-#define SBOX_VERIFY mpc_sbox_verify_uint64_42
+#undef IMPL
+#define IMPL s128
 
 // L1 using SSE2/NEON
 #include "lowmc_fns_s128_L1.h"
-#define SIGN mpc_lowmc_prove_s128_126_126
-#define VERIFY mpc_lowmc_verify_s128_126_126
 #include "mpc_lowmc.c.i"
-
-#undef SBOX
-#undef SBOX_SIGN
-#undef SBOX_VERIFY
-#define SBOX SBOX_uint64
-#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
-#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
 
 // L3 using SSE2/NEON
 #include "lowmc_fns_s128_L3.h"
-#define SIGN mpc_lowmc_call_s128_192
-#define VERIFY mpc_lowmc_call_verify_s128_192
 #include "mpc_lowmc.c.i"
 
 // L5 using SSE2/NEON
 #include "lowmc_fns_s128_L5.h"
-#define SIGN mpc_lowmc_call_s128_256
-#define VERIFY mpc_lowmc_call_verify_s128_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -781,41 +891,22 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 #if defined(WITH_AVX2)
 #define FN_ATTR ATTR_TARGET_AVX2
 
-#undef SBOX
-#undef SBOX_SIGN
-#undef SBOX_VERIFY
-#define SBOX SBOX_uint64_126_126_42
-#define SBOX_SIGN mpc_sbox_uint64_42
-#define SBOX_VERIFY mpc_sbox_verify_uint64_42
+#undef IMPL
+#define IMPL s256
 
 // L1 using AVX2
 #include "lowmc_fns_s256_L1.h"
-#define SIGN mpc_lowmc_prove_s256_126_126
-#define VERIFY mpc_lowmc_verify_s256_126_126
 #include "mpc_lowmc.c.i"
-
-#undef SBOX
-#undef SBOX_SIGN
-#undef SBOX_VERIFY
-#define SBOX SBOX_uint64
-#define SBOX_SIGN mpc_sbox_layer_bitsliced_uint64_10
-#define SBOX_VERIFY mpc_sbox_layer_bitsliced_verify_uint64_10
-
 
 // L3 using AVX2
 #include "lowmc_fns_s256_L3.h"
-#define SIGN mpc_lowmc_call_s256_192
-#define VERIFY mpc_lowmc_call_verify_s256_192
 #include "mpc_lowmc.c.i"
 
 // L5 using AVX2
 #include "lowmc_fns_s256_L5.h"
-#define SIGN mpc_lowmc_call_s256_256
-#define VERIFY mpc_lowmc_call_verify_s256_256
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
-
 #endif
 #endif
 
@@ -828,56 +919,38 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
   if (CPU_SUPPORTS_AVX2) {
     if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
-      return mpc_lowmc_prove_s256_126_126_42;
+      return mpc_lowmc_prove_s256_lowmc_126_126_4;
 #endif
     }
-
-    /*
-    if (lowmc->m == 10) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_126_126_4)
-      case 128:
-        return mpc_lowmc_call_s256_128_10;
-#endif
+    if (lowmc->n == 192 && lowmc->m == 64) {
 #if defined(WITH_LOWMC_192_192_4)
-      case 192:
-        return mpc_lowmc_call_s256_192_10;
+      return mpc_lowmc_prove_s256_lowmc_192_192_4;
 #endif
-#if defined(WITH_LOWMC_255_255_4)
-      case 256:
-        return mpc_lowmc_call_s256_256_10;
-#endif
-      }
     }
-    */
+    if (lowmc->n == 255 && lowmc->m == 85) {
+#if defined(WITH_LOWMC_255_255_4)
+      return mpc_lowmc_prove_s256_lowmc_255_255_4;
+#endif
+    }
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
-      return mpc_lowmc_prove_s128_126_126_42;
+      return mpc_lowmc_prove_s128_lowmc_126_126_4;
 #endif
     }
-
-    /*
-    if (lowmc->m == 10) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_126_126_4)
-      case 128:
-        return mpc_lowmc_call_s128_128_10;
-#endif
+    if (lowmc->n == 192 && lowmc->m == 64) {
 #if defined(WITH_LOWMC_192_192_4)
-      case 192:
-        return mpc_lowmc_call_s128_192_10;
+      return mpc_lowmc_prove_s128_lowmc_192_192_4;
 #endif
-#if defined(WITH_LOWMC_255_255_4)
-      case 256:
-        return mpc_lowmc_call_s128_256_10;
-#endif
-      }
     }
-    */
+    if (lowmc->n == 255 && lowmc->m == 85) {
+#if defined(WITH_LOWMC_255_255_4)
+      return mpc_lowmc_prove_s128_lowmc_255_255_4;
+#endif
+    }
   }
 #endif
 #endif
@@ -886,29 +959,19 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #if !defined(NO_UINT64_FALLBACK)
   if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
-    return mpc_lowmc_prove_uint64_126_126_42;
+    return mpc_lowmc_prove_uint64_lowmc_126_126_4;
 #endif
   }
-
-  /*
-  if (lowmc->m == 10) {
-    switch (lowmc->n) {
-#if defined(WITH_LOWMC_126_126_4)
-    case 128:
-      return mpc_lowmc_call_uint64_128_10;
-#endif
+  if (lowmc->n == 192 && lowmc->m == 64) {
 #if defined(WITH_LOWMC_192_192_4)
-    case 192:
-      return mpc_lowmc_call_uint64_192_10;
+    return mpc_lowmc_prove_uint64_lowmc_192_192_4;
 #endif
-#if defined(WITH_LOWMC_255_255_4)
-    case 256:
-      return mpc_lowmc_call_uint64_256_10;
-#endif
-    }
   }
-  */
-
+  if (lowmc->n == 255 && lowmc->m == 85) {
+#if defined(WITH_LOWMC_255_255_4)
+    return mpc_lowmc_prove_uint64_lowmc_255_255_4;
+#endif
+  }
 #endif
 
   return NULL;
@@ -923,83 +986,59 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
   if (CPU_SUPPORTS_AVX2) {
     if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
-      return mpc_lowmc_verify_s128_126_126_42;
+      return mpc_lowmc_verify_s256_lowmc_126_126_4;
 #endif
     }
-
-/*
-    if (lowmc->m == 10) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_126_126_4)
-      case 128:
-        return mpc_lowmc_call_verify_s256_128_10;
-#endif
+    if (lowmc->n == 192 && lowmc->m == 64) {
 #if defined(WITH_LOWMC_192_192_4)
-      case 192:
-        return mpc_lowmc_call_verify_s256_192_10;
+      return mpc_lowmc_verify_s256_lowmc_192_192_4;
 #endif
-#if defined(WITH_LOWMC_255_255_4)
-      case 256:
-        return mpc_lowmc_call_verify_s256_256_10;
-#endif
-      }
     }
-    */
+    if (lowmc->n == 255 && lowmc->m == 85) {
+#if defined(WITH_LOWMC_255_255_4)
+      return mpc_lowmc_verify_s256_lowmc_255_255_4;
+#endif
+    }
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
-      return mpc_lowmc_verify_s128_126_126_42;
+      return mpc_lowmc_verify_s128_lowmc_126_126_4;
 #endif
     }
-
-    /*
-    if (lowmc->m == 10) {
-      switch (lowmc->n) {
-#if defined(WITH_LOWMC_126_126_4)
-      case 128:
-        return mpc_lowmc_call_verify_s128_128_10;
-#endif
+    if (lowmc->n == 192 && lowmc->m == 64) {
 #if defined(WITH_LOWMC_192_192_4)
-      case 192:
-        return mpc_lowmc_call_verify_s128_192_10;
+      return mpc_lowmc_verify_s128_lowmc_192_192_4;
 #endif
-#if defined(WITH_LOWMC_255_255_4)
-      case 256:
-        return mpc_lowmc_call_verify_s128_256_10;
-#endif
-      }
     }
-    */
+    if (lowmc->n == 255 && lowmc->m == 85) {
+#if defined(WITH_LOWMC_255_255_4)
+      return mpc_lowmc_verify_s128_lowmc_255_255_4;
+#endif
+    }
   }
 #endif
 #endif
+
 
 #if !defined(NO_UINT64_FALLBACK)
   if (lowmc->n == 126 && lowmc->m == 42) {
-    return mpc_lowmc_verify_uint64_126_126_42;
-  }
-
-  /*
-  if (lowmc->m == 10) {
-    switch (lowmc->n) {
 #if defined(WITH_LOWMC_126_126_4)
-    case 128:
-      return mpc_lowmc_call_verify_uint64_128_10;
+    return mpc_lowmc_verify_uint64_lowmc_126_126_4;
 #endif
-#if defined(WITH_LOWMC_192_192_4)
-    case 192:
-      return mpc_lowmc_call_verify_uint64_192_10;
-#endif
-#if defined(WITH_LOWMC_255_255_4)
-    case 256:
-      return mpc_lowmc_call_verify_uint64_256_10;
-#endif
-    }
   }
-  */
+  if (lowmc->n == 192 && lowmc->m == 64) {
+#if defined(WITH_LOWMC_192_192_4)
+    return mpc_lowmc_verify_uint64_lowmc_192_192_4;
+#endif
+  }
+  if (lowmc->n == 255 && lowmc->m == 85) {
+#if defined(WITH_LOWMC_255_255_4)
+    return mpc_lowmc_verify_uint64_lowmc_255_255_4;
+#endif
+  }
 #endif
 
   return NULL;
