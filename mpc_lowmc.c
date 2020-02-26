@@ -549,33 +549,6 @@ static void mpc_and_verify_s256_256(mzd_local_t* res, const mzd_local_t* first,
     (XOR)(&out[m], &x0s[m], &x1s[m]);                                                              \
   }
 
-static const mzd_local_t mask_126_126_42_a[1] = {
-    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x0), UINT64_C(0x0)}}};
-static const mzd_local_t mask_126_126_42_b[1] = {
-    {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x0), UINT64_C(0x0)}}};
-static const mzd_local_t mask_126_126_42_c[1] = {
-    {{UINT64_C(0x2492492492492490), UINT64_C(0x9249249249249249), UINT64_C(0x0), UINT64_C(0x0)}}};
-
-static const mzd_local_t mask_192_192_64_a[1] = {
-    {{UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
-      UINT64_C(0x0)}}};
-static const mzd_local_t mask_192_192_64_b[1] = {
-    {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
-      UINT64_C(0x0)}}};
-static const mzd_local_t mask_192_192_64_c[1] = {
-    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
-      UINT64_C(0x0)}}};
-
-static const mzd_local_t mask_255_255_85_a[1] = {
-    {{UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249), UINT64_C(0x4924924924924924),
-      UINT64_C(0x2492492492492492)}}};
-static const mzd_local_t mask_255_255_85_b[1] = {
-    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x9249249249249249),
-      UINT64_C(0x4924924924924924)}}};
-static const mzd_local_t mask_255_255_85_c[1] = {
-    {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),
-      UINT64_C(0x9249249249249249)}}};
-
 static void mpc_sbox_prove_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_PROOF, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
 
