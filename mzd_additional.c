@@ -323,6 +323,7 @@ void mzd_and_uint64_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t 
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
+ATTR_TARGET_AVX2
 void mzd_shift_left_s256_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   ASSUME(count < 64);
 
@@ -333,6 +334,7 @@ void mzd_shift_left_s256_128(mzd_local_t* res, const mzd_local_t* val, unsigned 
                                  _mm_srli_epi64(_mm_bslli_si128(block->w128[0], 8), 64 - count));
 }
 
+ATTR_TARGET_AVX2
 void mzd_shift_right_s256_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   ASSUME(count < 64);
 
@@ -343,6 +345,7 @@ void mzd_shift_right_s256_128(mzd_local_t* res, const mzd_local_t* val, unsigned
                                  _mm_slli_epi64(_mm_bsrli_si128(block->w128[0], 8), 64 - count));
 }
 
+ATTR_TARGET_AVX2
 void mzd_shift_left_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   ASSUME(count < 64);
 
@@ -357,6 +360,7 @@ void mzd_shift_left_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned 
                          _MM_SHUFFLE(3, 3, 3, 0)));
 }
 
+ATTR_TARGET_AVX2
 void mzd_shift_right_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   ASSUME(count < 64);
 
@@ -371,6 +375,7 @@ void mzd_shift_right_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned
                          _MM_SHUFFLE(0, 3, 3, 3)));
 }
 
+ATTR_TARGET_AVX2
 void mzd_rotate_left_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   ASSUME(count < 64);
 
@@ -382,6 +387,7 @@ void mzd_rotate_left_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned
       _mm256_permute4x64_epi64(_mm256_srli_epi64(block->w256, 64 - count), _MM_SHUFFLE(2, 1, 0, 3)));
 }
 
+ATTR_TARGET_AVX2
 void mzd_rotate_right_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   ASSUME(count < 64);
 
@@ -396,6 +402,7 @@ void mzd_rotate_right_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigne
 #endif /* WITH_AVX2 */
 
 #if defined(WITH_SSE2) || defined(WITH_NEON)
+ATTR_TARGET_S128
 void mzd_shift_left_s128_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int right_count = 8 * sizeof(word) - count;
   const block_t* block           = CONST_BLOCK(val, 0);
@@ -405,6 +412,7 @@ void mzd_shift_left_s128_128(mzd_local_t* res, const mzd_local_t* val, unsigned 
   rblock->w64[0] = block->w64[0] << count;
 }
 
+ATTR_TARGET_S128
 void mzd_shift_right_s128_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
   const block_t* block           = CONST_BLOCK(val, 0);
@@ -414,6 +422,7 @@ void mzd_shift_right_s128_128(mzd_local_t* res, const mzd_local_t* val, unsigned
   rblock->w64[1] = block->w64[1] >> count;
 }
 
+ATTR_TARGET_S128
 void mzd_shift_left_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int right_count = 8 * sizeof(word) - count;
   const block_t* block           = CONST_BLOCK(val, 0);
@@ -425,6 +434,7 @@ void mzd_shift_left_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned 
   rblock->w64[0] = block->w64[0] << count;
 }
 
+ATTR_TARGET_S128
 void mzd_shift_right_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
   const block_t* block           = CONST_BLOCK(val, 0);
@@ -436,6 +446,7 @@ void mzd_shift_right_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned
   rblock->w64[3] = block->w64[3] >> count;
 }
 
+ATTR_TARGET_S128
 void mzd_rotate_left_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int right_count = 8 * sizeof(word) - count;
   const block_t* block           = CONST_BLOCK(val, 0);
@@ -448,6 +459,7 @@ void mzd_rotate_left_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned
   rblock->w64[0] = (block->w64[0] << count) | tmp;
 }
 
+ATTR_TARGET_S128
 void mzd_rotate_right_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
   const block_t* block           = CONST_BLOCK(val, 0);
