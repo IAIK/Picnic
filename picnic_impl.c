@@ -44,6 +44,10 @@ typedef struct {
   unsigned int round_number;
 } sorting_helper_t;
 
+static void clear_extra_bits(mzd_local_t* v, const unsigned int diff) {
+  BLOCK(v, 0)->w64[0] &= UINT64_C(0xffffffffffffffff) << diff;
+}
+
 /**
  * Collapse challenge from one char per challenge to bit array.
  */
@@ -285,80 +289,76 @@ static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, con
   kdf_shake_x4_finalize_key(kdf);
 }
 
-static void uint64_to_bitstream_10(bitstream_t* bs, const uint64_t v) {
-  bitstream_put_bits_32(bs, v >> (64 - 30), 30);
+static void mzd_to_bitstream(bitstream_t* bs, const mzd_local_t* v, const size_t width, const size_t size) {
+  const uint64_t* d = &CONST_BLOCK(v, 0)->w64[width - 1];
+  size_t bits       = size;
+  for (; bits >= sizeof(uint64_t) * 8; bits -= sizeof(uint64_t) * 8, --d) {
+    bitstream_put_bits(bs, *d, sizeof(uint64_t) * 8);
+  }
+  if (bits) {
+    bitstream_put_bits(bs, *d >> (sizeof(uint64_t) * 8 - bits), bits);
+  }
 }
 
-static uint64_t uint64_from_bitstream_10(bitstream_t* bs) {
-  return ((uint64_t)bitstream_get_bits_32(bs, 30)) << (64 - 30);
-}
+static void mzd_from_bitstream(bitstream_t* bs, mzd_local_t* v, const size_t width, const size_t size) {
+  uint64_t* d = &BLOCK(v, 0)->w64[width - 1];
+  uint64_t* f = BLOCK(v, 0)->w64;
 
-static void uint64_to_bitstream_1(bitstream_t* bs, const uint64_t v) {
-  bitstream_put_bits_8(bs, v >> (64 - 3), 3);
-}
-
-static uint64_t uint64_from_bitstream_1(bitstream_t* bs) {
-  return ((uint64_t)bitstream_get_bits_8(bs, 3)) << (64 - 3);
+  size_t bits = size;
+  for (; bits >= sizeof(uint64_t) * 8; bits -= sizeof(uint64_t) * 8, --d) {
+    *d = bitstream_get_bits(bs, sizeof(uint64_t) * 8);
+  }
+  if (bits) {
+    *d = bitstream_get_bits(bs, bits) << (sizeof(uint64_t) * 8 - bits);
+    --d;
+  }
+  for (; d >= f; --d) {
+    *d = 0;
+  }
 }
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
                           const unsigned int idx) {
   const size_t num_views = pp->lowmc->r;
+  const size_t view_round_size = pp->view_round_size;
 
   bitstream_t bs;
   bs.buffer.w = dst;
   bs.position = 0;
 
   const view_t* v = &views[0];
-  if (pp->lowmc->m == 10) {
-    for (size_t i = 0; i < num_views; ++i, ++v) {
-      uint64_to_bitstream_10(&bs, v->t[idx]);
-    }
-  } else if (pp->lowmc->m == 1) {
-    for (size_t i = 0; i < num_views; ++i, ++v) {
-      uint64_to_bitstream_1(&bs, v->t[idx]);
-    }
+  for (size_t i = 0; i < num_views; ++i, ++v) {
+    mzd_to_bitstream(&bs, &v->s[idx], (view_round_size + 63) / 64, view_round_size);
   }
 }
 
 static void decompress_view(view_t* views, const picnic_instance_t* pp, const uint8_t* src,
                             const unsigned int idx) {
   const size_t num_views = pp->lowmc->r;
+  const size_t view_round_size = pp->view_round_size;
 
   bitstream_t bs;
   bs.buffer.r = src;
   bs.position = 0;
 
   view_t* v = &views[0];
-  if (pp->lowmc->m == 10) {
-    for (size_t i = 0; i < num_views; ++i, ++v) {
-      v->t[idx] = uint64_from_bitstream_10(&bs);
-    }
-  } else if (pp->lowmc->m == 1) {
-    for (size_t i = 0; i < num_views; ++i, ++v) {
-      v->t[idx] = uint64_from_bitstream_1(&bs);
-    }
+  for (size_t i = 0; i < num_views; ++i, ++v) {
+    mzd_from_bitstream(&bs, &v->s[idx], (view_round_size + 63) / 64, view_round_size);
   }
 }
 
 static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, const uint8_t* src,
                                    const unsigned int idx) {
   const size_t num_views = pp->lowmc->r;
+  const size_t view_round_size = pp->view_round_size;
 
   bitstream_t bs;
   bs.buffer.r = src;
   bs.position = 0;
 
   rvec_t* rv = &rvec[0];
-
-  if (pp->lowmc->m == 10) {
-    for (size_t i = 0; i < num_views; ++i, ++rv) {
-      rv->t[idx] = uint64_from_bitstream_10(&bs);
-    }
-  } else if (pp->lowmc->m == 1) {
-    for (size_t i = 0; i < num_views; ++i, ++rv) {
-      rv->t[idx] = uint64_from_bitstream_1(&bs);
-    }
+  for (size_t i = 0; i < num_views; ++i, ++rv) {
+    mzd_from_bitstream(&bs, &rv->s[idx], (view_round_size + 63) / 64, view_round_size);
   }
 }
 
@@ -980,6 +980,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const size_t lowmc_n        = lowmc->n;
   const size_t lowmc_r        = lowmc->r;
   const size_t view_size      = pp->view_size;
+  const unsigned int diff     = pp->input_size * 8 - lowmc->n;
 
   const zkbpp_lowmc_implementation_f lowmc_impl       = pp->impls.zkbpp_lowmc;
   const lowmc_store_implementation_f lowmc_store_impl = pp->impls.lowmc_store;
@@ -1039,6 +1040,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
       for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
         mzd_from_char_array(shared_key[j], round[round_offset].input_shares[j], input_size);
+        clear_extra_bits(shared_key[j], diff);
       }
       mzd_share(shared_key[2], shared_key[0], shared_key[1], lowmc_key);
       mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1], shared_key[SC_PROOF - 1],
@@ -1080,6 +1082,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
       kdf_shake_get_randomness(&kdfs[j], round->input_shares[j], input_size);
       mzd_from_char_array(shared_key[j], round->input_shares[j], input_size);
+      clear_extra_bits(shared_key[j], diff);
     }
     mzd_share(shared_key[2], shared_key[0], shared_key[1], lowmc_key);
     mzd_to_char_array(round->input_shares[SC_PROOF - 1], shared_key[SC_PROOF - 1], input_size);

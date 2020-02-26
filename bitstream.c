@@ -88,7 +88,6 @@ uint32_t bitstream_get_bits_32(bitstream_t* bs, unsigned int num_bits) {
   return ret;
 }
 
-#if defined(PICNIC_STATIC)
 void bitstream_put_bits(bitstream_t* bs, uint64_t value, unsigned int num_bits) {
   ASSUME(1 <= num_bits && num_bits <= 64);
 
@@ -113,7 +112,6 @@ void bitstream_put_bits(bitstream_t* bs, uint64_t value, unsigned int num_bits) 
     *p = (value & ((1 << num_bits) - 1)) << (8 - num_bits);
   }
 }
-#endif
 
 void bitstream_put_bits_8(bitstream_t* bs, uint8_t value, unsigned int num_bits) {
   ASSUME(1 <= num_bits && num_bits <= 8);
