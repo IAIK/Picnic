@@ -189,6 +189,14 @@ apply_array(mm256_and_sse, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2);
 #define mm128_shift_right(data, count)                                                             \
   _mm_or_si128(_mm_srli_epi64(data, count), _mm_slli_epi64(_mm_bsrli_si128(data, 8), 64 - count))
 
+#define mm128_rotate_left(data, count)                                                             \
+  _mm_or_si128(_mm_slli_epi64(data, count),                                                        \
+               _mm_shuffle_epi32(_mm_srli_epi64(data, 64 - count), _MM_SHUFFLE(1, 0, 3, 2)))
+
+#define mm128_rotate_right(data, count)                                                            \
+  _mm_or_si128(_mm_srli_epi64(data, count),                                                        \
+               _mm_shuffle_epi32(_mm_slli_epi64(data, 64 - count), _MM_SHUFFLE(1, 0, 3, 2)))
+
 static inline void FN_ATTRIBUTES_SSE2 mm128_shift_right_256(__m128i res[2], __m128i const data[2],
                                                             const unsigned int count) {
   __m128i total_carry = _mm_bslli_si128(data[1], 8);
@@ -215,6 +223,28 @@ static inline void FN_ATTRIBUTES_SSE2 mm128_shift_left_256(__m128i res[2], __m12
     res[i] = _mm_or_si128(res[i], carry);
   }
   res[1] = _mm_or_si128(res[1], total_carry);
+}
+
+/* shift left by 64 to 127 bits */
+#define mm128_shift_left_64_127(data, count) _mm_slli_epi64(_mm_slli_si128(data, 8), count - 64)
+#define mm128_shift_right_64_127(data, count) _mm_srli_epi64(_mm_srli_si128(data, 8), count - 64)
+
+static inline void FN_ATTRIBUTES_SSE2 mm128_rotate_left_256(__m128i res[2], __m128i const data[2],
+                                                            const unsigned int count) {
+  const __m128i carry = mm128_shift_right_64_127(data[0], 128 - count);
+
+  res[0] = _mm_or_si128(mm128_shift_left(data[0], count),
+                        mm128_shift_right_64_127(data[1], 128 - count));
+  res[1] = _mm_or_si128(mm128_shift_left(data[1], count), carry);
+}
+
+static inline void FN_ATTRIBUTES_SSE2 mm128_rotate_right_256(__m128i res[2], __m128i const data[2],
+                                                             const unsigned int count) {
+  const __m128i carry = mm128_shift_left_64_127(data[0], 128 - count);
+
+  res[0] = _mm_or_si128(mm128_shift_right(data[0], count),
+                        mm128_shift_left_64_127(data[1], 128 - count));
+  res[1] = _mm_or_si128(mm128_shift_right(data[1], count), carry);
 }
 #endif
 
