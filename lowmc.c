@@ -26,6 +26,7 @@
 #include <stdalign.h>
 #endif
 #include <string.h>
+#include <assert.h>
 
 /**
  * S-box for m = 42
@@ -230,8 +231,8 @@ static void sbox_uint64_lowmc_255_255_4(mzd_local_t* in) {
 #endif
 
 lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
-  ASSUME(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
-  ASSUME(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
+  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
+  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -288,8 +289,8 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 
 #if defined(WITH_ZKBPP)
 lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc) {
-  ASSUME(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
-  ASSUME(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
+  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
+  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
