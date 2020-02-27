@@ -28,6 +28,7 @@
 #include <string.h>
 #include <assert.h>
 
+#if !defined(NO_UINT64_FALLBACK)
 /**
  * S-box for m = 42
  */
@@ -153,6 +154,7 @@ static void sbox_uint64_lowmc_255_255_4(mzd_local_t* in) {
   mzd_xor_uint64_256(t2, t2, t1);
   mzd_xor_uint64_256(in, t2, t0);
 }
+#endif /* NO_UINT_FALLBACK */
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)

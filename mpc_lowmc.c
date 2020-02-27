@@ -58,6 +58,7 @@
     }                                                                                              \
   } while (0)
 
+#if !defined(NO_UINT64_FALLBACK)
 static void mpc_and_uint64_128(mzd_local_t* res, const mzd_local_t* first,
                                const mzd_local_t* second, const mzd_local_t* r, view_t* view,
                                unsigned viewshift) {
@@ -366,6 +367,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
 
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_256, mzd_shift_right_uint64_256);
 }
+#endif /* NO_UINT_FALLBACK */
 
 #if defined(WITH_OPT)
 /* requires IN and RVEC to be defined */
