@@ -180,8 +180,8 @@ typedef __m128i word128;
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_SSE2);
 apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2);
 apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CONST);
-apply_array(mm256_xor_sse, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2);
-apply_array(mm256_and_sse, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2);
+apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2);
+apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2);
 
 #define mm128_shift_left(data, count)                                                              \
   _mm_or_si128(_mm_slli_epi64(data, count), _mm_srli_epi64(_mm_bslli_si128(data, 8), 64 - count))
@@ -263,8 +263,8 @@ typedef uint64x2_t word128;
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON);
 apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON);
 apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CONST);
-apply_array(mm256_xor, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON);
-apply_array(mm256_and, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
+apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON);
+apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
 
 static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_right(uint32x4_t data,
                                                                     const unsigned int count) {
