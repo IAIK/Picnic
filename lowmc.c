@@ -192,8 +192,8 @@ static inline void sbox_s128_full(mzd_local_t* in, const word128* mask_a, const 
   mm128_and_256(x1m, in->w128, mask_b);
   mm128_and_256(x2m, in->w128, mask_c);
 
-  mm128_shift_left_256(x0m, x0m, 2);
-  mm128_shift_left_256(x1m, x1m, 1);
+  mm128_rotate_left_256(x0m, x0m, 2);
+  mm128_rotate_left_256(x1m, x1m, 1);
 
   word128 t0[2], t1[2], t2[2];
   mm128_and_256(t0, x1m, x2m);
@@ -208,8 +208,8 @@ static inline void sbox_s128_full(mzd_local_t* in, const word128* mask_a, const 
   mm128_xor_256(t2, t2, x0m);
   mm128_xor_256(t2, t2, x2m);
 
-  mm128_shift_right_256(t0, t0, 2);
-  mm128_shift_right_256(t1, t1, 1);
+  mm128_rotate_right_256(t0, t0, 2);
+  mm128_rotate_right_256(t1, t1, 1);
 
   mm128_xor_256(t0, t0, t1);
   mm128_xor_256(in->w128, t0, t2);
