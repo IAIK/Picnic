@@ -640,30 +640,42 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
   res[SC_VERIFY - 1] = AND(ROL(VIEW(SC_VERIFY - 1), viewshift), MASK);
 
 #if defined(WITH_SSE2) || defined(WITH_NEON)
-static void mpc_sbox_prove_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_PROOF, mzd_and_s128_128, mzd_shift_left_s128_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+#define IN(m) in[m].w128[0]
+#define OUT(m) out[m].w128[0]
+#define RVEC(m) rvec->s[m].w128[0]
+#define VIEW(m) view->s[m].w128[0]
+
+static void mpc_sbox_prove_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
+                                                view_t* view, const rvec_t* rvec) {
+  bitsliced_mm_step_1(SC_PROOF, word128, mm128_and, mm128_shift_left, mask_126_126_42_a->w128[0],
+                      mask_126_126_42_b->w128[0], mask_126_126_42_c->w128[0]);
 
   // a & b
-  mpc_and_s128_128(r0m, x0s, x1s, r2m, view, 0);
+  mpc_mm_and_def(word128, mm128_and, mm128_xor, mm128_shift_right, r0m, x0s, x1s, r2m, 0);
   // b & c
-  mpc_and_s128_128(r2m, x1s, x2m, r1s, view, 1);
+  mpc_mm_and_def(word128, mm128_and, mm128_xor, mm128_shift_right, r2m, x1s, x2m, r1s, 1);
   // c & a
-  mpc_and_s128_128(r1m, x0s, x2m, r0s, view, 2);
+  mpc_mm_and_def(word128, mm128_and, mm128_xor, mm128_shift_right, r1m, x0s, x2m, r0s, 2);
 
-  bitsliced_step_2(SC_PROOF, mzd_xor_s128_128, mzd_shift_right_s128_128);
+  bitsliced_mm_step_2(SC_PROOF, word128, mm128_xor, mm128_shift_right);
 }
 
-static void mpc_sbox_verify_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_VERIFY, mzd_and_s128_128, mzd_shift_left_s128_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+static void mpc_sbox_verify_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
+                                                 view_t* view, const rvec_t* rvec) {
+  bitsliced_mm_step_1(SC_VERIFY, word128, mm128_and, mm128_shift_left, mask_126_126_42_a->w128[0],
+                      mask_126_126_42_b->w128[0], mask_126_126_42_c->w128[0]);
 
   // a & b
-  mpc_and_verify_s128_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
+  mpc_mm_and_verify_def(word128, mm128_and, mm128_xor, mm128_shift_left, mm128_rotate_right, r0m,
+                        x0s, x1s, r2m, mask_126_126_42_c->w128[0], 0);
   // b & c
-  mpc_and_verify_s128_128(r2m, x1s, x2m, r1s, view, mask_126_126_42_c, 1);
+  mpc_mm_and_verify_def(word128, mm128_and, mm128_xor, mm128_shift_left, mm128_rotate_right, r2m,
+                        x1s, x2m, r1s, mask_126_126_42_c->w128[0], 1);
   // c & a
-  mpc_and_verify_s128_128(r1m, x0s, x2m, r0s, view, mask_126_126_42_c, 2);
+  mpc_mm_and_verify_def(word128, mm128_and, mm128_xor, mm128_shift_left, mm128_rotate_right, r1m,
+                        x0s, x2m, r0s, mask_126_126_42_c->w128[0], 2);
 
-  bitsliced_step_2(SC_VERIFY, mzd_xor_s128_128, mzd_shift_right_s128_128);
+  bitsliced_mm_step_2(SC_VERIFY, word128, mm128_xor, mm128_shift_right);
 }
 
 static void mpc_sbox_prove_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
@@ -717,6 +729,11 @@ static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 
   bitsliced_step_2(SC_VERIFY, mzd_xor_s128_256, mzd_rotate_right_s128_256);
 }
+
+#undef IN
+#undef OUT
+#undef RVEC
+#undef VIEW
 #endif /* WITH_SSE2 || WITH_NEON */
 
 #if defined(WITH_AVX2)
