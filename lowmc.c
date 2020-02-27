@@ -190,11 +190,9 @@ static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
 #endif
 
 #if defined(WITH_AVX2)
-#define sbox_s256_lowmc_126_126_4 sbox_s128_lowmc_126_126_4
-
 ATTR_TARGET_AVX2
-static inline word256 sbox_s256_lowmc_192_255_full(const word256 min, const word256 mask_a,
-                                                   const word256 mask_b, const word256 mask_c) {
+static inline word256 sbox_s256_lowmc_full(const word256 min, const word256 mask_a,
+                                           const word256 mask_b, const word256 mask_c) {
   word256 x0m = mm256_and(min, mask_a);
   word256 x1m = mm256_and(min, mask_b);
   word256 x2m = mm256_and(min, mask_c);
@@ -220,18 +218,24 @@ static inline word256 sbox_s256_lowmc_192_255_full(const word256 min, const word
   return mm256_xor(mm256_xor(t0, t1), t2);
 }
 
+/* TODO: implement with SSE? */
+ATTR_TARGET_AVX2
+static inline void sbox_s256_lowmc_126_126_4(mzd_local_t* in) {
+  in->w256 = sbox_s256_lowmc_full(in->w256, mask_126_126_42_a->w256, mask_126_126_42_b->w256,
+                                  mask_126_126_42_c->w256);
+}
+
 ATTR_TARGET_AVX2
 static inline void sbox_s256_lowmc_192_192_4(mzd_local_t* in) {
-  in->w256 = sbox_s256_lowmc_192_255_full(in->w256, mask_192_192_64_a->w256,
-                                          mask_192_192_64_b->w256, mask_192_192_64_c->w256);
+  in->w256 = sbox_s256_lowmc_full(in->w256, mask_192_192_64_a->w256, mask_192_192_64_b->w256,
+                                  mask_192_192_64_c->w256);
 }
 
 ATTR_TARGET_AVX2
 static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
-  in->w256 = sbox_s256_lowmc_192_255_full(in->w256, mask_255_255_85_a->w256,
-                                          mask_255_255_85_b->w256, mask_255_255_85_c->w256);
+  in->w256 = sbox_s256_lowmc_full(in->w256, mask_255_255_85_a->w256, mask_255_255_85_b->w256,
+                                  mask_255_255_85_c->w256);
 }
-
 #endif /* WITH_AVX2 */
 #endif /* WITH_OPT */
 

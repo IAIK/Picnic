@@ -720,40 +720,45 @@ static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #endif /* WITH_SSE2 || WITH_NEON */
 
 #if defined(WITH_AVX2)
+#define IN(m) in[m].w256
+#define OUT(m) out[m].w256
+#define RVEC(m) rvec->s[m].w256
+#define VIEW(m) view->s[m].w256
+
+/* TODO: implement with SSE? */
 ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_PROOF, mzd_and_s256_128, mzd_shift_left_s256_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+  bitsliced_mm_step_1(SC_PROOF, word256, mm256_and, mm256_rotate_left, mask_126_126_42_a->w256,
+                      mask_126_126_42_b->w256, mask_126_126_42_c->w256);
 
   // a & b
-  mpc_and_s256_128(r0m, x0s, x1s, r2m, view, 0);
+  mpc_mm_and_def(word256, mm256_and, mm256_xor, mm256_rotate_right, r0m, x0s, x1s, r2m, 0);
   // b & c
-  mpc_and_s256_128(r2m, x1s, x2m, r1s, view, 1);
+  mpc_mm_and_def(word256, mm256_and, mm256_xor, mm256_rotate_right, r2m, x1s, x2m, r1s, 1);
   // c & a
-  mpc_and_s256_128(r1m, x0s, x2m, r0s, view, 2);
+  mpc_mm_and_def(word256, mm256_and, mm256_xor, mm256_rotate_right, r1m, x0s, x2m, r0s, 2);
 
-  bitsliced_step_2(SC_PROOF, mzd_xor_s256_128, mzd_shift_right_s256_128);
+  bitsliced_mm_step_2(SC_PROOF, word256, mm256_xor, mm256_rotate_right);
 }
 
 ATTR_TARGET_AVX2
 static void mpc_sbox_verify_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
                                                  view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_VERIFY, mzd_and_s256_128, mzd_shift_left_s256_128, mask_126_126_42_a,
-                   mask_126_126_42_b, mask_126_126_42_c);
+  bitsliced_mm_step_1(SC_VERIFY, word256, mm256_and, mm256_rotate_left, mask_126_126_42_a->w256,
+                      mask_126_126_42_b->w256, mask_126_126_42_c->w256);
 
   // a & b
-  mpc_and_verify_s256_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
+  mpc_mm_and_verify_def(word256, mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r0m,
+                        x0s, x1s, r2m, mask_126_126_42_c->w256, 0);
   // b & c
-  mpc_and_verify_s256_128(r2m, x1s, x2m, r1s, view, mask_126_126_42_c, 1);
+  mpc_mm_and_verify_def(word256, mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r2m,
+                        x1s, x2m, r1s, mask_126_126_42_c->w256, 1);
   // c & a
-  mpc_and_verify_s256_128(r1m, x0s, x2m, r0s, view, mask_126_126_42_c, 2);
+  mpc_mm_and_verify_def(word256, mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r1m,
+                        x0s, x2m, r0s, mask_126_126_42_c->w256, 2);
 
-  bitsliced_step_2(SC_VERIFY, mzd_xor_s256_128, mzd_shift_right_s256_128);
+  bitsliced_mm_step_2(SC_VERIFY, word256, mm256_xor, mm256_rotate_right);
 }
-
-#define IN(m) in[m].w256
-#define OUT(m) out[m].w256
-#define RVEC(m) rvec->s[m].w256
-#define VIEW(m) view->s[m].w256
 
 ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
