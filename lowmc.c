@@ -154,13 +154,56 @@ static void sbox_uint64_lowmc_255_255_4(mzd_local_t* in) {
   mzd_xor_uint64_256(in, t2, t0);
 }
 
+#if defined(WITH_OPT)
 #define sbox_s128_lowmc_126_126_4 sbox_uint64_lowmc_126_126_4
 #define sbox_s128_lowmc_192_192_4 sbox_uint64_lowmc_192_192_4
 #define sbox_s128_lowmc_255_255_4 sbox_uint64_lowmc_255_255_4
 
+#if defined(WITH_AVX2)
 #define sbox_s256_lowmc_126_126_4 sbox_uint64_lowmc_126_126_4
-#define sbox_s256_lowmc_192_192_4 sbox_uint64_lowmc_192_192_4
-#define sbox_s256_lowmc_255_255_4 sbox_uint64_lowmc_255_255_4
+
+ATTR_TARGET_AVX2
+static inline word256 sbox_s256_lowmc_192_255_full(const word256 min, const word256 mask_a,
+                                                   const word256 mask_b, const word256 mask_c) {
+  word256 x0m = mm256_and(min, mask_a);
+  word256 x1m = mm256_and(min, mask_b);
+  word256 x2m = mm256_and(min, mask_c);
+
+  x0m = mm256_rotate_left_256(x0m, 2);
+  x1m = mm256_rotate_left_256(x1m, 1);
+
+  word256 t0 = mm256_and(x1m, x2m);
+  word256 t1 = mm256_and(x0m, x2m);
+  word256 t2 = mm256_and(x0m, x1m);
+
+  t0 = mm256_xor(t0, x0m);
+
+  x0m = mm256_xor(x0m, x1m);
+  t1  = mm256_xor(t1, x0m);
+
+  t2 = mm256_xor(t2, x0m);
+  t2 = mm256_xor(t2, x2m);
+
+  t0 = mm256_rotate_right_256(t0, 2);
+  t1 = mm256_rotate_right_256(t1, 1);
+
+  return mm256_xor(mm256_xor(t0, t1), t2);
+}
+
+ATTR_TARGET_AVX2
+static inline void sbox_s256_lowmc_192_192_4(mzd_local_t* in) {
+  in->w256 = sbox_s256_lowmc_192_255_full(in->w256, mask_192_192_64_a->w256,
+                                          mask_192_192_64_b->w256, mask_192_192_64_c->w256);
+}
+
+ATTR_TARGET_AVX2
+static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
+  in->w256 = sbox_s256_lowmc_192_255_full(in->w256, mask_255_255_85_a->w256,
+                                          mask_255_255_85_b->w256, mask_255_255_85_c->w256);
+}
+
+#endif /* WITH_AVX2 */
+#endif /* WITH_OPT */
 
 #if defined(WITH_LOWMC_126_126_4)
 #include "lowmc_126_126_4.h"
