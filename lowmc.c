@@ -164,8 +164,8 @@ static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
   word128 x1m = mm128_and(min, mask_126_126_42_a->w128[0]);
   word128 x2m = mm128_and(min, mask_126_126_42_a->w128[0]);
 
-  x0m = mm128_shift_left_128(x0m, 2);
-  x1m = mm128_shift_left_128(x1m, 1);
+  x0m = mm128_shift_left(x0m, 2);
+  x1m = mm128_shift_left(x1m, 1);
 
   word128 t0 = mm128_and(x1m, x2m);
   word128 t1 = mm128_and(x0m, x2m);
@@ -179,8 +179,8 @@ static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
   t2 = mm128_xor(t2, x0m);
   t2 = mm128_xor(t2, x2m);
 
-  t0 = mm128_shift_right_128(t0, 2);
-  t1 = mm128_shift_right_128(t1, 1);
+  t0 = mm128_shift_right(t0, 2);
+  t1 = mm128_shift_right(t1, 1);
 
   in->w128[0] = mm128_xor(mm128_xor(t0, t1), t2);
 }
@@ -199,8 +199,8 @@ static inline word256 sbox_s256_lowmc_192_255_full(const word256 min, const word
   word256 x1m = mm256_and(min, mask_b);
   word256 x2m = mm256_and(min, mask_c);
 
-  x0m = mm256_rotate_left_256(x0m, 2);
-  x1m = mm256_rotate_left_256(x1m, 1);
+  x0m = mm256_rotate_left(x0m, 2);
+  x1m = mm256_rotate_left(x1m, 1);
 
   word256 t0 = mm256_and(x1m, x2m);
   word256 t1 = mm256_and(x0m, x2m);
@@ -214,8 +214,8 @@ static inline word256 sbox_s256_lowmc_192_255_full(const word256 min, const word
   t2 = mm256_xor(t2, x0m);
   t2 = mm256_xor(t2, x2m);
 
-  t0 = mm256_rotate_right_256(t0, 2);
-  t1 = mm256_rotate_right_256(t1, 1);
+  t0 = mm256_rotate_right(t0, 2);
+  t1 = mm256_rotate_right(t1, 1);
 
   return mm256_xor(mm256_xor(t0, t1), t2);
 }

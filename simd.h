@@ -139,26 +139,26 @@ apply_region(mm256_xor_region, word256, mm256_xor, FN_ATTRIBUTES_AVX2);
 apply_mask_region(mm256_xor_mask_region, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2);
 apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST);
 
-#define mm256_shift_left_256(data, count)                                                          \
+#define mm256_shift_left(data, count)                                                              \
   _mm256_or_si256(_mm256_slli_epi64(data, count),                                                  \
                   _mm256_blend_epi32(mm256_zero,                                                   \
                                      _mm256_permute4x64_epi64(_mm256_srli_epi64(data, 64 - count), \
                                                               _MM_SHUFFLE(2, 1, 0, 0)),            \
                                      _MM_SHUFFLE(3, 3, 3, 0)))
 
-#define mm256_shift_right_256(data, count)                                                         \
+#define mm256_shift_right(data, count)                                                             \
   _mm256_or_si256(_mm256_srli_epi64(data, count),                                                  \
                   _mm256_blend_epi32(mm256_zero,                                                   \
                                      _mm256_permute4x64_epi64(_mm256_slli_epi64(data, 64 - count), \
                                                               _MM_SHUFFLE(0, 3, 2, 1)),            \
                                      _MM_SHUFFLE(0, 3, 3, 3)))
 
-#define mm256_rotate_left_256(data, count)                                                         \
+#define mm256_rotate_left(data, count)                                                             \
   _mm256_or_si256(                                                                                 \
       _mm256_slli_epi64(data, count),                                                              \
       _mm256_permute4x64_epi64(_mm256_srli_epi64(data, 64 - count), _MM_SHUFFLE(2, 1, 0, 3)))
 
-#define mm256_rotate_right_256(data, count)                                                        \
+#define mm256_rotate_right(data, count)                                                            \
   _mm256_or_si256(                                                                                 \
       _mm256_srli_epi64(data, count),                                                              \
       _mm256_permute4x64_epi64(_mm256_slli_epi64(data, 64 - count), _MM_SHUFFLE(0, 3, 2, 1)))
@@ -183,14 +183,14 @@ apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CON
 apply_array(mm256_xor_sse, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2);
 apply_array(mm256_and_sse, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2);
 
-#define mm128_shift_left_128(data, count) \
+#define mm128_shift_left(data, count)                                                              \
   _mm_or_si128(_mm_slli_epi64(data, count), _mm_srli_epi64(_mm_bslli_si128(data, 8), 64 - count))
 
-#define mm128_shift_right_128(data, count) \
+#define mm128_shift_right(data, count)                                                             \
   _mm_or_si128(_mm_srli_epi64(data, count), _mm_slli_epi64(_mm_bsrli_si128(data, 8), 64 - count))
 
 static inline void FN_ATTRIBUTES_SSE2 mm128_shift_right_256(__m128i res[2], __m128i const data[2],
-                                                            unsigned int count) {
+                                                            const unsigned int count) {
   __m128i total_carry = _mm_bslli_si128(data[1], 8);
   total_carry         = _mm_slli_epi64(total_carry, 64 - count);
   for (int i = 0; i < 2; ++i) {
@@ -203,7 +203,7 @@ static inline void FN_ATTRIBUTES_SSE2 mm128_shift_right_256(__m128i res[2], __m1
 }
 
 static inline void FN_ATTRIBUTES_SSE2 mm128_shift_left_256(__m128i res[2], __m128i const data[2],
-                                                           unsigned int count) {
+                                                           const unsigned int count) {
   __m128i total_carry = _mm_bsrli_si128(data[0], 8);
   total_carry         = _mm_srli_epi64(total_carry, 64 - count);
 
@@ -236,7 +236,7 @@ apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CON
 apply_array(mm256_xor, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON);
 apply_array(mm256_and, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
 
-static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_right_128(uint32x4_t data,
+static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_right(uint32x4_t data,
                                                                     const unsigned int count) {
   uint32x4_t carry = vmovq_n_u32(0);
   carry            = vextq_u32(data, carry, 1);
@@ -255,7 +255,7 @@ static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_right_128(uint32x4
   return data;
 }
 
-static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_left_128(uint32x4_t data,
+static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_left(uint32x4_t data,
                                                                    const unsigned int count) {
   uint32x4_t carry = vmovq_n_u32(0);
   carry            = vextq_u32(carry, data, 3);
@@ -274,8 +274,9 @@ static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_left_128(uint32x4_
   return data;
 }
 
-static inline void FN_ATTRIBUTES_NEON mm256_shift_right_256(uint32x4_t res[2], uint32x4_t const data[2],
-                                                        const unsigned int count) {
+static inline void FN_ATTRIBUTES_NEON mm256_shift_right_256(uint32x4_t res[2],
+                                                            uint32x4_t const data[2],
+                                                            const unsigned int count) {
   uint32x4_t total_carry = vmovq_n_u32(0);
   total_carry            = vextq_u32(total_carry, data[1], 1);
 
@@ -309,8 +310,9 @@ static inline void FN_ATTRIBUTES_NEON mm256_shift_right_256(uint32x4_t res[2], u
   res[0] = vorrq_u32(res[0], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_NEON mm256_shift_left_256(uint32x4_t res[2], uint32x4_t const data[2],
-                                                       const unsigned int count) {
+static inline void FN_ATTRIBUTES_NEON mm256_shift_left_256(uint32x4_t res[2],
+                                                           uint32x4_t const data[2],
+                                                           const unsigned int count) {
   uint32x4_t total_carry = vmovq_n_u32(0);
   total_carry            = vextq_u32(data[0], total_carry, 3);
   switch (count) {
