@@ -164,8 +164,8 @@ static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
   word128 x1m = mm128_and(min, mask_126_126_42_b->w128[0]);
   word128 x2m = mm128_and(min, mask_126_126_42_c->w128[0]);
 
-  x0m = mm128_shift_left(x0m, 2);
-  x1m = mm128_shift_left(x1m, 1);
+  x0m = mm128_rotate_left(x0m, 2);
+  x1m = mm128_rotate_left(x1m, 1);
 
   word128 t0 = mm128_and(x1m, x2m);
   word128 t1 = mm128_and(x0m, x2m);
@@ -179,14 +179,51 @@ static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
   t2 = mm128_xor(t2, x0m);
   t2 = mm128_xor(t2, x2m);
 
-  t0 = mm128_shift_right(t0, 2);
-  t1 = mm128_shift_right(t1, 1);
+  t0 = mm128_rotate_right(t0, 2);
+  t1 = mm128_rotate_right(t1, 1);
 
   in->w128[0] = mm128_xor(mm128_xor(t0, t1), t2);
 }
 
-#define sbox_s128_lowmc_192_192_4 sbox_uint64_lowmc_192_192_4
-#define sbox_s128_lowmc_255_255_4 sbox_uint64_lowmc_255_255_4
+ATTR_TARGET_S128
+static inline void sbox_s128_full(mzd_local_t* in, const word128* mask_a, const word128* mask_b, const word128* mask_c) {
+  word128 x0m[2], x1m[2], x2m[2];
+  mm128_and_256(x0m, in->w128, mask_a);
+  mm128_and_256(x1m, in->w128, mask_b);
+  mm128_and_256(x2m, in->w128, mask_c);
+
+  mm128_shift_left_256(x0m, x0m, 2);
+  mm128_shift_left_256(x1m, x1m, 1);
+
+  word128 t0[2], t1[2], t2[2];
+  mm128_and_256(t0, x1m, x2m);
+  mm128_and_256(t1, x0m, x2m);
+  mm128_and_256(t2, x0m, x1m);
+
+  mm128_xor_256(t0, t0, x0m);
+
+  mm128_xor_256(x0m, x0m, x1m);
+  mm128_xor_256(t1, t1, x0m);
+
+  mm128_xor_256(t2, t2, x0m);
+  mm128_xor_256(t2, t2, x2m);
+
+  mm128_shift_right_256(t0, t0, 2);
+  mm128_shift_right_256(t1, t1, 1);
+
+  mm128_xor_256(t0, t0, t1);
+  mm128_xor_256(in->w128, t0, t2);
+}
+
+ATTR_TARGET_S128
+static inline void sbox_s128_lowmc_192_192_4(mzd_local_t* in) {
+  sbox_s128_full(in, mask_192_192_64_a->w128, mask_192_192_64_b->w128, mask_192_192_64_c->w128);
+}
+
+ATTR_TARGET_S128
+static inline void sbox_s128_lowmc_255_255_4(mzd_local_t* in) {
+  sbox_s128_full(in, mask_255_255_85_a->w128, mask_255_255_85_b->w128, mask_255_255_85_c->w128);
+}
 #endif
 
 #if defined(WITH_AVX2)
