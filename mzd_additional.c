@@ -214,13 +214,6 @@ static void mzd_xor_uint64_block(block_t* rblock, const block_t* fblock, const b
   }
 }
 
-static void mzd_xor_uint64_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                                  const unsigned int len) {
-  for (unsigned int i = len; i; --i, ++rblock, ++fblock, ++sblock) {
-    mzd_xor_uint64_block(rblock, fblock, sblock, 4);
-  }
-}
-
 void mzd_xor_uint64_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
   mzd_xor_uint64_block(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 2);
 }
@@ -290,13 +283,6 @@ static void mzd_and_uint64_block(block_t* rblock, const block_t* fblock, const b
                                  const unsigned int len) {
   for (unsigned int i = 0; i < len; ++i) {
     rblock->w64[i] = fblock->w64[i] & sblock->w64[i];
-  }
-}
-
-static void mzd_and_uint64_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                                  const unsigned int len) {
-  for (unsigned int i = len; i; --i, ++rblock, ++fblock, ++sblock) {
-    mzd_and_uint64_block(rblock, fblock, sblock, 4);
   }
 }
 
@@ -679,12 +665,6 @@ void mzd_mul_v_s256_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
 static void clear_uint64_block(block_t* block, const unsigned int idx) {
   for (unsigned int i = 0; i < idx; ++i) {
     block->w64[i] = 0;
-  }
-}
-
-static void clear_uint64_blocks(block_t* block, unsigned int len) {
-  for (; len; --len, ++block) {
-    clear_uint64_block(block, 4);
   }
 }
 
