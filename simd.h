@@ -71,6 +71,18 @@
 #define restrict __restrict
 #endif
 
+#if defined(WITH_SSE2)
+/* backwards compatibility macros for GCC 4.8 and 4.9
+ *
+ * bs{l,r}i was introduced in GCC 5 and in clang as macros sometime in 2015.
+ * */
+#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 5) ||                                  \
+    (defined(__clang__) && !defined(_mm_bslli_si128)) || defined(_MSC_VER)
+#define _mm_bslli_si128(a, imm) _mm_slli_si128((a), (imm))
+#define _mm_bsrli_si128(a, imm) _mm_srli_si128((a), (imm))
+#endif
+#endif
+
 #define apply_region(name, type, xor, attributes)                                                  \
   static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      unsigned int count) {                                         \
@@ -120,6 +132,31 @@ typedef __m256i word256;
 apply_region(mm256_xor_region, word256, mm256_xor, FN_ATTRIBUTES_AVX2);
 apply_mask_region(mm256_xor_mask_region, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2);
 apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST);
+
+#define mm256_shift_left_256(data, count)                                                          \
+  _mm256_or_si256(_mm256_slli_epi64(data, count),                                                  \
+                  _mm256_blend_epi32(mm256_zero,                                                   \
+                                     _mm256_permute4x64_epi64(_mm256_srli_epi64(data, 64 - count), \
+                                                              _MM_SHUFFLE(2, 1, 0, 0)),            \
+                                     _MM_SHUFFLE(3, 3, 3, 0)))
+
+#define mm256_shift_right_256(data, count)                                                         \
+  _mm256_or_si256(_mm256_srli_epi64(data, count),                                                  \
+                  _mm256_blend_epi32(mm256_zero,                                                   \
+                                     _mm256_permute4x64_epi64(_mm256_slli_epi64(data, 64 - count), \
+                                                              _MM_SHUFFLE(0, 3, 2, 1)),            \
+                                     _MM_SHUFFLE(0, 3, 3, 3)))
+
+#define mm256_rotate_left_256(data, count)                                                         \
+  _mm256_or_si256(                                                                                 \
+      _mm256_slli_epi64(data, count),                                                              \
+      _mm256_permute4x64_epi64(_mm256_srli_epi64(data, 64 - count), _MM_SHUFFLE(2, 1, 0, 3)))
+
+#define mm256_rotate_right_256(data, count)                                                        \
+  _mm256_or_si256(                                                                                 \
+      _mm256_srli_epi64(data, count),                                                              \
+      _mm256_permute4x64_epi64(_mm256_slli_epi64(data, 64 - count), _MM_SHUFFLE(0, 3, 2, 1)))
+
 #endif
 
 #if defined(WITH_SSE2)
@@ -139,6 +176,40 @@ apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRI
 apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CONST);
 apply_array(mm256_xor_sse, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2);
 apply_array(mm256_and_sse, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2);
+
+#define mm128_shift_left_128(data, count) \
+  _mm_or_si128(_mm_slli_epi64(data, count), _mm_srli_epi64(_mm_bslli_si128(data, 8), 64 - count))
+
+#define mm128_shift_right_128(data, count) \
+  _mm_or_si128(_mm_srli_epi64(data, count), _mm_slli_epi64(_mm_bsrli_si128(data, 8), 64 - count))
+
+static inline void FN_ATTRIBUTES_SSE2 mm128_shift_right_256(__m128i res[2], __m128i const data[2],
+                                                            unsigned int count) {
+  __m128i total_carry = _mm_bslli_si128(data[1], 8);
+  total_carry         = _mm_slli_epi64(total_carry, 64 - count);
+  for (int i = 0; i < 2; ++i) {
+    __m128i carry = _mm_bsrli_si128(data[i], 8);
+    carry         = _mm_slli_epi64(carry, 64 - count);
+    res[i]        = _mm_srli_epi64(data[i], count);
+    res[i]        = _mm_or_si128(res[i], carry);
+  }
+  res[0] = _mm_or_si128(res[0], total_carry);
+}
+
+static inline void FN_ATTRIBUTES_SSE2 mm128_shift_left_256(__m128i res[2], __m128i const data[2],
+                                                           unsigned int count) {
+  __m128i total_carry = _mm_bsrli_si128(data[0], 8);
+  total_carry         = _mm_srli_epi64(total_carry, 64 - count);
+
+  for (int i = 0; i < 2; ++i) {
+    __m128i carry = _mm_bslli_si128(data[i], 8);
+
+    carry  = _mm_srli_epi64(carry, 64 - count);
+    res[i] = _mm_slli_epi64(data[i], count);
+    res[i] = _mm_or_si128(res[i], carry);
+  }
+  res[1] = _mm_or_si128(res[1], total_carry);
+}
 #endif
 
 #if defined(WITH_NEON)
@@ -158,6 +229,113 @@ apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRI
 apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CONST);
 apply_array(mm256_xor, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON);
 apply_array(mm256_and, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
+
+static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_right_128(uint32x4_t data,
+                                                                    const unsigned int count) {
+  uint32x4_t carry = vmovq_n_u32(0);
+  carry            = vextq_u32(data, carry, 1);
+  switch (count) {
+  case 1:
+    carry = vshlq_n_u32(carry, 32 - 1);
+    data  = vshrq_n_u32(data, 1);
+    break;
+  case 2:
+    carry = vshlq_n_u32(carry, 32 - 2);
+    data  = vshrq_n_u32(data, 2);
+    break;
+    /* default: not supported */
+  }
+  data = vorrq_u32(data, carry);
+  return data;
+}
+
+static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_left_128(uint32x4_t data,
+                                                                   const unsigned int count) {
+  uint32x4_t carry = vmovq_n_u32(0);
+  carry            = vextq_u32(carry, data, 3);
+  switch (count) {
+  case 1:
+    carry = vshrq_n_u32(carry, 32 - 1);
+    data  = vshlq_n_u32(data, 1);
+    break;
+  case 2:
+    carry = vshrq_n_u32(carry, 32 - 2);
+    data  = vshlq_n_u32(data, 2);
+    break;
+    /* default: not supported */
+  }
+  data = vorrq_u32(data, carry);
+  return data;
+}
+
+static inline void FN_ATTRIBUTES_NEON mm256_shift_right_256(uint32x4_t res[2], uint32x4_t const data[2],
+                                                        const unsigned int count) {
+  uint32x4_t total_carry = vmovq_n_u32(0);
+  total_carry            = vextq_u32(total_carry, data[1], 1);
+
+  switch (count) {
+  case 1:
+    total_carry = vshlq_n_u32(total_carry, 32 - 1);
+    break;
+  case 2:
+    total_carry = vshlq_n_u32(total_carry, 32 - 2);
+    break;
+    /* default: not supported */
+  }
+
+  for (int i = 0; i < 2; i++) {
+    uint32x4_t carry = vmovq_n_u32(0);
+    carry            = vextq_u32(data[i], carry, 1);
+    switch (count) {
+    case 1:
+      carry  = vshlq_n_u32(carry, 32 - 1);
+      res[i] = vshrq_n_u32(data[i], 1);
+      break;
+    case 2:
+      carry  = vshlq_n_u32(carry, 32 - 2);
+      res[i] = vshrq_n_u32(data[i], 2);
+      break;
+      /* default: not supported */
+    }
+    res[i] = vorrq_u32(res[i], carry);
+  }
+
+  res[0] = vorrq_u32(res[0], total_carry);
+}
+
+static inline void FN_ATTRIBUTES_NEON mm256_shift_left_256(uint32x4_t res[2], uint32x4_t const data[2],
+                                                       const unsigned int count) {
+  uint32x4_t total_carry = vmovq_n_u32(0);
+  total_carry            = vextq_u32(data[0], total_carry, 3);
+  switch (count) {
+  case 1:
+    total_carry = vshrq_n_u32(total_carry, 32 - 1);
+    break;
+  case 2:
+    total_carry = vshrq_n_u32(total_carry, 32 - 2);
+    break;
+    /* default: not supported */
+  }
+
+  for (int i = 0; i < 2; i++) {
+    uint32x4_t carry = vmovq_n_u32(0);
+    carry            = vextq_u32(carry, data[i], 3);
+    switch (count) {
+    case 1:
+      carry  = vshrq_n_u32(carry, 32 - 1);
+      res[i] = vshlq_n_u32(data[i], 1);
+      break;
+    case 2:
+      carry  = vshrq_n_u32(carry, 32 - 2);
+      res[i] = vshlq_n_u32(data[i], 2);
+      break;
+      /* default: not supported */
+    }
+    res[i] = vorrq_u32(res[i], carry);
+  }
+  res[1] = vorrq_u32(res[1], total_carry);
+}
+
 #endif
 
 #if defined(_MSC_VER)
