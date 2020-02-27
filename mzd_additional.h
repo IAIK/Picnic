@@ -116,22 +116,10 @@ void mzd_shift_left_uint64_192(mzd_local_t* res, const mzd_local_t* val, unsigne
 void mzd_shift_right_uint64_192(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
 void mzd_shift_left_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
 void mzd_shift_right_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_shift_left_s128_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_shift_right_s128_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_shift_left_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_shift_right_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_shift_left_s256_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_shift_right_s256_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_shift_left_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_shift_right_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
 void mzd_rotate_left_uint64_192(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
 void mzd_rotate_right_uint64_192(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
 void mzd_rotate_left_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
 void mzd_rotate_right_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_rotate_left_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_rotate_right_s128_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_rotate_left_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
-void mzd_rotate_right_s256_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count);
 
 /**
  * Compute v * A optimized for v being a vector.
