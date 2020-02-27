@@ -29,13 +29,6 @@ static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t 
 
 #if defined(WITH_OPT)
 #include "simd.h"
-
-#if defined(WITH_SSE2)
-#define ATTR_TARGET_S128 ATTR_TARGET_SSE2
-#else
-#define ATTR_TARGET_S128
-#endif
-
 #endif
 static const unsigned int align_bound = 128 / (8 * sizeof(word));
 

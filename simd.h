@@ -72,6 +72,12 @@
 #endif
 
 #if defined(WITH_SSE2)
+#define ATTR_TARGET_S128 ATTR_TARGET_SSE2
+#else
+#define ATTR_TARGET_S128
+#endif
+
+#if defined(WITH_SSE2)
 /* backwards compatibility macros for GCC 4.8 and 4.9
  *
  * bs{l,r}i was introduced in GCC 5 and in clang as macros sometime in 2015.
