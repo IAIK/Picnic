@@ -416,6 +416,7 @@ static void mpc_and_s256_128(mzd_local_t* res, const mzd_local_t* first,
   }
 }
 
+ATTR_TARGET_AVX2
 static void mpc_and_verify_s256_128(mzd_local_t* res, const mzd_local_t* first,
                                       const mzd_local_t* second, const mzd_local_t* r,
                                       view_t* view, const mzd_local_t* mask, unsigned viewshift) {
@@ -715,6 +716,7 @@ static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
   bitsliced_step_2(SC_VERIFY, mzd_xor_s128_256, mzd_rotate_right_s128_256);
 }
 
+ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_PROOF, mzd_and_s256_128, mzd_shift_left_s256_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
 
@@ -728,8 +730,11 @@ static void mpc_sbox_prove_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_loca
   bitsliced_step_2(SC_PROOF, mzd_xor_s256_128, mzd_shift_right_s256_128);
 }
 
-static void mpc_sbox_verify_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_VERIFY, mzd_and_s256_128, mzd_shift_left_s256_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+ATTR_TARGET_AVX2
+static void mpc_sbox_verify_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
+                                                 view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_s256_128, mzd_shift_left_s256_128, mask_126_126_42_a,
+                   mask_126_126_42_b, mask_126_126_42_c);
 
   // a & b
   mpc_and_verify_s256_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
@@ -746,7 +751,9 @@ static void mpc_sbox_verify_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_loc
 #define RVEC(m) rvec->s[m].w256
 #define VIEW(m) view->s[m].w256
 
-static void mpc_sbox_prove_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+ATTR_TARGET_AVX2
+static void mpc_sbox_prove_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
+                                                view_t* view, const rvec_t* rvec) {
   bitsliced_mm_step_1(SC_PROOF, word256, mm256_and, mm256_rotate_left, mask_192_192_64_a->w256,
                       mask_192_192_64_b->w256, mask_192_192_64_c->w256);
 
@@ -758,10 +765,11 @@ static void mpc_sbox_prove_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_loca
   mpc_mm_and_def(word256, mm256_and, mm256_xor, mm256_rotate_right, r1m, x0s, x2m, r0s, 2);
 
   bitsliced_mm_step_2(SC_PROOF, word256, mm256_xor, mm256_rotate_right);
-
 }
 
-static void mpc_sbox_verify_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+ATTR_TARGET_AVX2
+static void mpc_sbox_verify_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
+                                                 view_t* view, const rvec_t* rvec) {
   bitsliced_mm_step_1(SC_VERIFY, word256, mm256_and, mm256_rotate_left, mask_192_192_64_a->w256,
                       mask_192_192_64_b->w256, mask_192_192_64_c->w256);
 
@@ -778,6 +786,7 @@ static void mpc_sbox_verify_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_loc
   bitsliced_mm_step_2(SC_VERIFY, word256, mm256_xor, mm256_rotate_right);
 }
 
+ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
   bitsliced_mm_step_1(SC_PROOF, word256, mm256_and, mm256_rotate_left, mask_255_255_85_a->w256,
@@ -793,6 +802,7 @@ static void mpc_sbox_prove_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loca
   bitsliced_mm_step_2(SC_PROOF, word256, mm256_xor, mm256_rotate_right);
 }
 
+ATTR_TARGET_AVX2
 static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
                                                  view_t* view, const rvec_t* rvec) {
   bitsliced_mm_step_1(SC_VERIFY, word256, mm256_and, mm256_rotate_left, mask_255_255_85_a->w256,
