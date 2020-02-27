@@ -161,8 +161,8 @@ static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
   const word128 min = in->w128[0];
 
   word128 x0m = mm128_and(min, mask_126_126_42_a->w128[0]);
-  word128 x1m = mm128_and(min, mask_126_126_42_a->w128[0]);
-  word128 x2m = mm128_and(min, mask_126_126_42_a->w128[0]);
+  word128 x1m = mm128_and(min, mask_126_126_42_b->w128[0]);
+  word128 x2m = mm128_and(min, mask_126_126_42_c->w128[0]);
 
   x0m = mm128_shift_left(x0m, 2);
   x1m = mm128_shift_left(x1m, 1);
