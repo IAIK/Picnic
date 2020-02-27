@@ -155,12 +155,42 @@ static void sbox_uint64_lowmc_255_255_4(mzd_local_t* in) {
 }
 
 #if defined(WITH_OPT)
-#define sbox_s128_lowmc_126_126_4 sbox_uint64_lowmc_126_126_4
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+ATTR_TARGET_S128
+static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
+  const word128 min = in->w128[0];
+
+  word128 x0m = mm128_and(min, mask_126_126_42_a->w128[0]);
+  word128 x1m = mm128_and(min, mask_126_126_42_a->w128[0]);
+  word128 x2m = mm128_and(min, mask_126_126_42_a->w128[0]);
+
+  x0m = mm128_shift_left_128(x0m, 2);
+  x1m = mm128_shift_left_128(x1m, 1);
+
+  word128 t0 = mm128_and(x1m, x2m);
+  word128 t1 = mm128_and(x0m, x2m);
+  word128 t2 = mm128_and(x0m, x1m);
+
+  t0 = mm128_xor(t0, x0m);
+
+  x0m = mm128_xor(x0m, x1m);
+  t1  = mm128_xor(t1, x0m);
+
+  t2 = mm128_xor(t2, x0m);
+  t2 = mm128_xor(t2, x2m);
+
+  t0 = mm128_shift_right_128(t0, 2);
+  t1 = mm128_shift_right_128(t1, 1);
+
+  in->w128[0] = mm128_xor(mm128_xor(t0, t1), t2);
+}
+
 #define sbox_s128_lowmc_192_192_4 sbox_uint64_lowmc_192_192_4
 #define sbox_s128_lowmc_255_255_4 sbox_uint64_lowmc_255_255_4
+#endif
 
 #if defined(WITH_AVX2)
-#define sbox_s256_lowmc_126_126_4 sbox_uint64_lowmc_126_126_4
+#define sbox_s256_lowmc_126_126_4 sbox_s128_lowmc_126_126_4
 
 ATTR_TARGET_AVX2
 static inline word256 sbox_s256_lowmc_192_255_full(const word256 min, const word256 mask_a,
