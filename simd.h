@@ -266,114 +266,107 @@ apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CON
 apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON);
 apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
 
-static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_right(uint32x4_t data,
-                                                                    const unsigned int count) {
-  uint32x4_t carry = vmovq_n_u32(0);
-  carry            = vextq_u32(data, carry, 1);
+static inline word128 FN_ATTRIBUTES_NEON_CONST mm128_shift_right(word128 data,
+                                                                 const unsigned int count) {
+  word128 carry = vextq_u64(data, vmovq_n_u64(0), 1);
   switch (count) {
   case 1:
-    carry = vshlq_n_u32(carry, 32 - 1);
-    data  = vshrq_n_u32(data, 1);
+    carry = vshlq_n_u64(carry, 64 - 1);
+    data  = vshrq_n_u64(data, 1);
     break;
   case 2:
-    carry = vshlq_n_u32(carry, 32 - 2);
-    data  = vshrq_n_u32(data, 2);
+    carry = vshlq_n_u64(carry, 64 - 2);
+    data  = vshrq_n_u64(data, 2);
     break;
     /* default: not supported */
   }
-  data = vorrq_u32(data, carry);
+  data = vorrq_u64(data, carry);
   return data;
 }
 
-static inline uint32x4_t FN_ATTRIBUTES_NEON_CONST mm128_shift_left(uint32x4_t data,
-                                                                   const unsigned int count) {
-  uint32x4_t carry = vmovq_n_u32(0);
-  carry            = vextq_u32(carry, data, 3);
+static inline word128 FN_ATTRIBUTES_NEON_CONST mm128_shift_left(word128 data,
+                                                                const unsigned int count) {
+  word128 carry = vextq_u64(vmovq_n_u64(0), data, 1);
   switch (count) {
   case 1:
-    carry = vshrq_n_u32(carry, 32 - 1);
-    data  = vshlq_n_u32(data, 1);
+    carry = vshrq_n_u64(carry, 64 - 1);
+    data  = vshlq_n_u64(data, 1);
     break;
   case 2:
-    carry = vshrq_n_u32(carry, 32 - 2);
-    data  = vshlq_n_u32(data, 2);
+    carry = vshrq_n_u64(carry, 64 - 2);
+    data  = vshlq_n_u64(data, 2);
     break;
     /* default: not supported */
   }
-  data = vorrq_u32(data, carry);
+  data = vorrq_u64(data, carry);
   return data;
 }
 
-static inline void FN_ATTRIBUTES_NEON mm256_shift_right_256(uint32x4_t res[2],
-                                                            uint32x4_t const data[2],
+
+static inline void FN_ATTRIBUTES_NEON mm128_shift_right_256(word128 res[2], word128 const data[2],
                                                             const unsigned int count) {
-  uint32x4_t total_carry = vmovq_n_u32(0);
-  total_carry            = vextq_u32(total_carry, data[1], 1);
-
+  word128 total_carry = vextq_u64(vmovq_n_u64(0), data[1], 1);
   switch (count) {
   case 1:
-    total_carry = vshlq_n_u32(total_carry, 32 - 1);
+    total_carry = vshlq_n_u64(total_carry, 64 - 1);
     break;
   case 2:
-    total_carry = vshlq_n_u32(total_carry, 32 - 2);
+    total_carry = vshlq_n_u64(total_carry, 64 - 2);
     break;
     /* default: not supported */
   }
 
   for (int i = 0; i < 2; i++) {
-    uint32x4_t carry = vmovq_n_u32(0);
-    carry            = vextq_u32(data[i], carry, 1);
+    word128 carry = vmovq_n_u64(0);
+    carry         = vextq_u64(data[i], carry, 1);
     switch (count) {
     case 1:
-      carry  = vshlq_n_u32(carry, 32 - 1);
-      res[i] = vshrq_n_u32(data[i], 1);
+      carry  = vshlq_n_u64(carry, 64 - 1);
+      res[i] = vshrq_n_u64(data[i], 1);
       break;
     case 2:
-      carry  = vshlq_n_u32(carry, 32 - 2);
-      res[i] = vshrq_n_u32(data[i], 2);
+      carry  = vshlq_n_u64(carry, 64 - 2);
+      res[i] = vshrq_n_u64(data[i], 2);
       break;
       /* default: not supported */
     }
-    res[i] = vorrq_u32(res[i], carry);
+    res[i] = vorrq_u64(res[i], carry);
   }
 
-  res[0] = vorrq_u32(res[0], total_carry);
+  res[0] = vorrq_u64(res[0], total_carry);
 }
 
-static inline void FN_ATTRIBUTES_NEON mm256_shift_left_256(uint32x4_t res[2],
-                                                           uint32x4_t const data[2],
+static inline void FN_ATTRIBUTES_NEON mm128_shift_left_256(word128 res[2], word128 const data[2],
                                                            const unsigned int count) {
-  uint32x4_t total_carry = vmovq_n_u32(0);
-  total_carry            = vextq_u32(data[0], total_carry, 3);
+  word128 total_carry = vextq_u64(data[0], vmovq_n_u64(0), 1);
   switch (count) {
   case 1:
-    total_carry = vshrq_n_u32(total_carry, 32 - 1);
+    total_carry = vshrq_n_u64(total_carry, 64 - 1);
     break;
   case 2:
-    total_carry = vshrq_n_u32(total_carry, 32 - 2);
+    total_carry = vshrq_n_u64(total_carry, 64 - 2);
     break;
     /* default: not supported */
   }
 
   for (int i = 0; i < 2; i++) {
-    uint32x4_t carry = vmovq_n_u32(0);
-    carry            = vextq_u32(carry, data[i], 3);
+    word128 carry = vmovq_n_u64(0);
+    carry         = vextq_u64(carry, data[i], 1);
     switch (count) {
     case 1:
-      carry  = vshrq_n_u32(carry, 32 - 1);
-      res[i] = vshlq_n_u32(data[i], 1);
+      carry  = vshrq_n_u64(carry, 64 - 1);
+      res[i] = vshlq_n_u64(data[i], 1);
       break;
     case 2:
-      carry  = vshrq_n_u32(carry, 32 - 2);
-      res[i] = vshlq_n_u32(data[i], 2);
+      carry  = vshrq_n_u64(carry, 64 - 2);
+      res[i] = vshlq_n_u64(data[i], 2);
       break;
       /* default: not supported */
     }
-    res[i] = vorrq_u32(res[i], carry);
+    res[i] = vorrq_u64(res[i], carry);
   }
-  res[1] = vorrq_u32(res[1], total_carry);
+  res[1] = vorrq_u64(res[1], total_carry);
 }
-
 #endif
 
 #if defined(_MSC_VER)
