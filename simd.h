@@ -261,7 +261,7 @@ typedef uint64x2_t word128;
 #define mm128_sl_u64(x, s)                                                                         \
   (__builtin_constant_p(s) ? vshlq_n_u64((x), (s)) : vshlq_u64((x), vdupq_n_s64(s)))
 #define mm128_sr_u64(x, s)                                                                         \
-  (__builtin_constant_p(s) ? vshrq_n_u64((x), (s)) : vshlq_u64((x), vdupq_n_s64(-(int64_t)s)))
+  (__builtin_constant_p(s) ? vshrq_n_u64((x), (s)) : vshlq_u64((x), vdupq_n_s64(-(int64_t)(s))))
 
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON);
 apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON);
@@ -269,106 +269,55 @@ apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CON
 apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON);
 apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
 
-static inline word128 FN_ATTRIBUTES_NEON_CONST mm128_shift_right(word128 data,
-                                                                 const unsigned int count) {
-  word128 carry = vextq_u64(data, vmovq_n_u64(0), 1);
-  switch (count) {
-  case 1:
-    carry = vshlq_n_u64(carry, 64 - 1);
-    data  = vshrq_n_u64(data, 1);
-    break;
-  case 2:
-    carry = vshlq_n_u64(carry, 64 - 2);
-    data  = vshrq_n_u64(data, 2);
-    break;
-    /* default: not supported */
-  }
-  data = vorrq_u64(data, carry);
-  return data;
-}
+/* shift left by 64 to 127 bits */
+#define mm128_shift_left_64_127(data, count)                                                       \
+  mm128_sl_u64(vextq_u64(mm128_zero, data, 1), count - 64)
+/* shift right by 64 to 127 bits */
+#define mm128_shift_right_64_127(data, count)                                                      \
+  mm128_sr_u64(vextq_u64(data, mm128_zero, 1), count - 64)
 
-static inline word128 FN_ATTRIBUTES_NEON_CONST mm128_shift_left(word128 data,
-                                                                const unsigned int count) {
-  word128 carry = vextq_u64(vmovq_n_u64(0), data, 1);
-  switch (count) {
-  case 1:
-    carry = vshrq_n_u64(carry, 64 - 1);
-    data  = vshlq_n_u64(data, 1);
-    break;
-  case 2:
-    carry = vshrq_n_u64(carry, 64 - 2);
-    data  = vshlq_n_u64(data, 2);
-    break;
-    /* default: not supported */
-  }
-  data = vorrq_u64(data, carry);
-  return data;
-}
+#define mm128_shift_left(data, count)                                                              \
+  vorrq_u64(mm128_sl_u64(data, count), mm128_sr_u64(vextq_u64(mm128_zero, data, 1), 64 - count))
 
+#define mm128_shift_right(data, count)                                                             \
+  vorrq_u64(mm128_sr_u64(data, count), mm128_sl_u64(vextq_u64(mm128_zero, data, 1), 64 - count))
 
-static inline void FN_ATTRIBUTES_NEON mm128_shift_right_256(word128 res[2], word128 const data[2],
-                                                            const unsigned int count) {
-  word128 total_carry = vextq_u64(vmovq_n_u64(0), data[1], 1);
-  switch (count) {
-  case 1:
-    total_carry = vshlq_n_u64(total_carry, 64 - 1);
-    break;
-  case 2:
-    total_carry = vshlq_n_u64(total_carry, 64 - 2);
-    break;
-    /* default: not supported */
-  }
+#define mm128_rotate_left(data, count)                                                             \
+  vorrq_u64(mm128_shift_left(data, count), mm128_shift_right_64_127(data, 128 - count))
 
-  for (int i = 0; i < 2; i++) {
-    word128 carry = vmovq_n_u64(0);
-    carry         = vextq_u64(data[i], carry, 1);
-    switch (count) {
-    case 1:
-      carry  = vshlq_n_u64(carry, 64 - 1);
-      res[i] = vshrq_n_u64(data[i], 1);
-      break;
-    case 2:
-      carry  = vshlq_n_u64(carry, 64 - 2);
-      res[i] = vshrq_n_u64(data[i], 2);
-      break;
-      /* default: not supported */
-    }
-    res[i] = vorrq_u64(res[i], carry);
-  }
-
-  res[0] = vorrq_u64(res[0], total_carry);
-}
+#define mm128_rotate_right(data, count)                                                            \
+  vorrq_u64(mm128_shift_right(data, count), mm128_shift_left_64_127(data, 128 - count))
 
 static inline void FN_ATTRIBUTES_NEON mm128_shift_left_256(word128 res[2], word128 const data[2],
                                                            const unsigned int count) {
-  word128 total_carry = vextq_u64(data[0], vmovq_n_u64(0), 1);
-  switch (count) {
-  case 1:
-    total_carry = vshrq_n_u64(total_carry, 64 - 1);
-    break;
-  case 2:
-    total_carry = vshrq_n_u64(total_carry, 64 - 2);
-    break;
-    /* default: not supported */
-  }
+  res[1] =
+      vorrq_u64(mm128_shift_left(data[1], count), mm128_shift_right_64_127(data[0], 128 - count));
+  res[0] = mm128_shift_left(data[0], count);
+}
 
-  for (int i = 0; i < 2; i++) {
-    word128 carry = vmovq_n_u64(0);
-    carry         = vextq_u64(carry, data[i], 1);
-    switch (count) {
-    case 1:
-      carry  = vshrq_n_u64(carry, 64 - 1);
-      res[i] = vshlq_n_u64(data[i], 1);
-      break;
-    case 2:
-      carry  = vshrq_n_u64(carry, 64 - 2);
-      res[i] = vshlq_n_u64(data[i], 2);
-      break;
-      /* default: not supported */
-    }
-    res[i] = vorrq_u64(res[i], carry);
-  }
-  res[1] = vorrq_u64(res[1], total_carry);
+static inline void FN_ATTRIBUTES_NEON mm128_shift_right_256(word128 res[2], word128 const data[2],
+                                                            const unsigned int count) {
+  res[0] =
+      vorrq_u64(mm128_shift_right(data[0], count), mm128_shift_left_64_127(data[1], 128 - count));
+  res[1] = mm128_shift_right(data[1], count);
+}
+
+static inline void FN_ATTRIBUTES_NEON mm128_rotate_left_256(word128 res[2], word128 const data[2],
+                                                            const unsigned int count) {
+  const word128 carry = mm128_shift_right_64_127(data[1], 128 - count);
+
+  res[1] =
+      vorrq_u64(mm128_shift_left(data[1], count), mm128_shift_right_64_127(data[0], 128 - count));
+  res[0] = vorrq_u64(mm128_shift_left(data[0], count), carry);
+}
+
+static inline void FN_ATTRIBUTES_NEON mm128_rotate_right_256(word128 res[2], word128 const data[2],
+                                                             const unsigned int count) {
+  const word128 carry = mm128_shift_left_64_127(data[0], 128 - count);
+
+  res[0] =
+      vorrq_u64(mm128_shift_right(data[0], count), mm128_shift_left_64_127(data[1], 128 - count));
+  res[1] = vorrq_u64(mm128_shift_right(data[1], count), carry);
 }
 #endif
 
