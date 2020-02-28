@@ -258,8 +258,10 @@ typedef uint64x2_t word128;
 /* !l & r, requires l to be an immediate */
 #define mm128_nand(l, r) vbicq_u64((r), (l))
 #define mm128_broadcast_u64(x) vdupq_n_u64((x))
-#define mm128_sl_u64(x, s) vshlq_n_u64((x), (s))
-#define mm128_sr_u64(x, s) vshrq_n_u64((x), (s))
+#define mm128_sl_u64(x, s)                                                                         \
+  (__builtin_constant_p(s) ? vshlq_n_u64((x), (s)) : vshlq_u64((x), vdupq_n_s64(s)))
+#define mm128_sr_u64(x, s)                                                                         \
+  (__builtin_constant_p(s) ? vshrq_n_u64((x), (s)) : vshlq_u64((x), vdupq_n_s64(-(int64_t)s)))
 
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON);
 apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON);
