@@ -165,7 +165,7 @@ apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CON
 
 #endif
 
-#if defined(WITH_SSE2)
+#if defined(WITH_SSE2) || defined(WITH_AVX2)
 typedef __m128i word128;
 
 #define mm128_zero _mm_setzero_si128()
