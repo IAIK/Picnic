@@ -227,6 +227,7 @@ static inline void FN_ATTRIBUTES_SSE2 mm128_shift_left_256(__m128i res[2], __m12
 
 /* shift left by 64 to 127 bits */
 #define mm128_shift_left_64_127(data, count) _mm_slli_epi64(_mm_bslli_si128(data, 8), count - 64)
+/* shift right by 64 to 127 bits */
 #define mm128_shift_right_64_127(data, count) _mm_srli_epi64(_mm_bsrli_si128(data, 8), count - 64)
 
 static inline void FN_ATTRIBUTES_SSE2 mm128_rotate_left_256(__m128i res[2], __m128i const data[2],
