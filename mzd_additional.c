@@ -207,8 +207,8 @@ void mzd_xor_s256_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 #endif
 #endif
 
-static void mzd_xor_uint64_block(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                                 const unsigned int len) {
+static inline void mzd_xor_uint64_block(block_t* rblock, const block_t* fblock,
+                                        const block_t* sblock, const unsigned int len) {
   for (unsigned int i = 0; i < len; ++i) {
     rblock->w64[i] = fblock->w64[i] ^ sblock->w64[i];
   }
@@ -279,8 +279,8 @@ void mzd_and_s256_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 #endif
 #endif
 
-static void mzd_and_uint64_block(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                                 const unsigned int len) {
+static inline void mzd_and_uint64_block(block_t* rblock, const block_t* fblock,
+                                        const block_t* sblock, const unsigned int len) {
   for (unsigned int i = 0; i < len; ++i) {
     rblock->w64[i] = fblock->w64[i] & sblock->w64[i];
   }
@@ -408,8 +408,8 @@ void mzd_rotate_right_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsig
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
-ATTR_TARGET_S128 ATTR_CONST static inline word128 mm128_compute_mask(const word idx,
-                                                                     const size_t bit) {
+ATTR_TARGET_S128 ATTR_ARTIFICIAL ATTR_CONST static inline word128
+mm128_compute_mask(const word idx, const size_t bit) {
   return mm128_broadcast_u64(-((idx >> bit) & 1));
 }
 
@@ -528,13 +528,13 @@ void mzd_addmul_v_s128_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
 #endif
 
 #if defined(WITH_AVX2)
-ATTR_TARGET_AVX2
-ATTR_CONST static inline word256 mm256_compute_mask(const word idx, const size_t bit) {
+ATTR_TARGET_AVX2 ATTR_ARTIFICIAL ATTR_CONST static inline word256
+mm256_compute_mask(const word idx, const size_t bit) {
   return _mm256_set1_epi64x(-((idx >> bit) & 1));
 }
 
-ATTR_TARGET_AVX2
-ATTR_CONST static inline word256 mm256_compute_mask_2(const word idx, const size_t bit) {
+ATTR_TARGET_AVX2 ATTR_ARTIFICIAL ATTR_CONST static inline word256
+mm256_compute_mask_2(const word idx, const size_t bit) {
   const uint64_t m1 = -((idx >> bit) & 1);
   const uint64_t m2 = -((idx >> (bit + 1)) & 1);
   return _mm256_set_epi64x(m2, m2, m1, m1);
