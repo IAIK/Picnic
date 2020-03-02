@@ -317,6 +317,32 @@ static void mpc_sbox_verify_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_l
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
 }
 
+static void mpc_sbox_prove_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_129_129_43_a, mask_129_129_43_b, mask_129_129_43_c);
+
+  // a & b
+  mpc_and_uint64_192(r0m, x0s, x1s, r2m, view, 0);
+  // b & c
+  mpc_and_uint64_192(r2m, x1s, x2m, r1s, view, 1);
+  // c & a
+  mpc_and_uint64_192(r1m, x0s, x2m, r0s, view, 2);
+
+  bitsliced_step_2(SC_PROOF, mzd_xor_uint64_192, mzd_rotate_right_uint64_192);
+}
+
+static void mpc_sbox_verify_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_129_129_43_a, mask_129_129_43_b, mask_129_129_43_c);
+
+  // a & b
+  mpc_and_verify_uint64_192(r0m, x0s, x1s, r2m, view, mask_129_129_43_c, 0);
+  // b & c
+  mpc_and_verify_uint64_192(r2m, x1s, x2m, r1s, view, mask_129_129_43_c, 1);
+  // c & a
+  mpc_and_verify_uint64_192(r1m, x0s, x2m, r0s, view, mask_129_129_43_c, 2);
+
+  bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_192, mzd_rotate_right_uint64_192);
+}
+
 static void mpc_sbox_prove_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
 
@@ -637,6 +663,20 @@ static inline void mpc_sbox_verify_s128_256(mzd_local_t* out, const mzd_local_t*
 }
 
 ATTR_TARGET_S128
+static void mpc_sbox_prove_s128_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
+                                                view_t* view, const rvec_t* rvec) {
+  mpc_sbox_prove_s128_256(out, in, view, rvec, mask_129_129_43_a, mask_129_129_43_b,
+                          mask_129_129_43_c);
+}
+
+ATTR_TARGET_S128
+static void mpc_sbox_verify_s128_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
+                                                 view_t* view, const rvec_t* rvec) {
+  mpc_sbox_verify_s128_256(out, in, view, rvec, mask_129_129_43_a, mask_129_129_43_b,
+                           mask_129_129_43_c);
+}
+
+ATTR_TARGET_S128
 static void mpc_sbox_prove_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
   mpc_sbox_prove_s128_256(out, in, view, rvec, mask_192_192_64_a, mask_192_192_64_b,
@@ -726,6 +766,20 @@ static void mpc_sbox_verify_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_loc
 }
 
 ATTR_TARGET_AVX2
+static void mpc_sbox_prove_s256_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
+                                                view_t* view, const rvec_t* rvec) {
+  mpc_sbox_prove_s256_256(out, in, view, rvec, mask_129_129_43_a->w256, mask_129_129_43_b->w256,
+                          mask_129_129_43_c->w256);
+}
+
+ATTR_TARGET_AVX2
+static void mpc_sbox_verify_s256_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
+                                                 view_t* view, const rvec_t* rvec) {
+  mpc_sbox_verify_s256_256(out, in, view, rvec, mask_129_129_43_a->w256, mask_129_129_43_b->w256,
+                           mask_129_129_43_c->w256);
+}
+
+ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
   mpc_sbox_prove_s256_256(out, in, view, rvec, mask_192_192_64_a->w256, mask_192_192_64_b->w256,
@@ -758,6 +812,9 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #if defined(WITH_LOWMC_126_126_4)
 #include "lowmc_126_126_4.h"
 #endif
+#if defined(WITH_LOWMC_129_129_4)
+#include "lowmc_129_129_4.h"
+#endif
 #if defined(WITH_LOWMC_192_192_4)
 #include "lowmc_192_192_4.h"
 #endif
@@ -786,6 +843,9 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #include "lowmc_fns_uint64_L1.h"
 #include "mpc_lowmc.c.i"
 
+#include "lowmc_fns_uint64_L1_129.h"
+#include "mpc_lowmc.c.i"
+
 #include "lowmc_fns_uint64_L3.h"
 #include "mpc_lowmc.c.i"
 
@@ -804,6 +864,9 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 
 // L1 using SSE2/NEON
 #include "lowmc_fns_s128_L1.h"
+#include "mpc_lowmc.c.i"
+
+#include "lowmc_fns_s128_L1_129.h"
 #include "mpc_lowmc.c.i"
 
 // L3 using SSE2/NEON
@@ -827,6 +890,9 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #include "lowmc_fns_s256_L1.h"
 #include "mpc_lowmc.c.i"
 
+#include "lowmc_fns_s256_L1_129.h"
+#include "mpc_lowmc.c.i"
+
 // L3 using AVX2
 #include "lowmc_fns_s256_L3.h"
 #include "mpc_lowmc.c.i"
@@ -840,134 +906,164 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #endif
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {
-  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
-  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
+  assert((lowmc->m == 42 && lowmc->n == 126) || (lowmc->m == 43 && lowmc->n == 129) ||
+         (lowmc->m == 64 && lowmc->n == 192) || (lowmc->m == 85 && lowmc->n == 255));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
-    if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
+    if (lowmc->n == 126 && lowmc->m == 42) {
       return mpc_lowmc_prove_s256_lowmc_126_126_4;
-#endif
     }
-    if (lowmc->n == 192 && lowmc->m == 64) {
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43) {
+      return mpc_lowmc_prove_s256_lowmc_129_129_4;
+    }
+#endif
 #if defined(WITH_LOWMC_192_192_4)
+    if (lowmc->n == 192 && lowmc->m == 64) {
       return mpc_lowmc_prove_s256_lowmc_192_192_4;
-#endif
     }
-    if (lowmc->n == 255 && lowmc->m == 85) {
+#endif
 #if defined(WITH_LOWMC_255_255_4)
+    if (lowmc->n == 255 && lowmc->m == 85) {
       return mpc_lowmc_prove_s256_lowmc_255_255_4;
-#endif
     }
+#endif
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
-    if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
+    if (lowmc->n == 126 && lowmc->m == 42) {
       return mpc_lowmc_prove_s128_lowmc_126_126_4;
-#endif
     }
-    if (lowmc->n == 192 && lowmc->m == 64) {
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43) {
+      return mpc_lowmc_prove_s128_lowmc_129_129_4;
+    }
+#endif
 #if defined(WITH_LOWMC_192_192_4)
+    if (lowmc->n == 192 && lowmc->m == 64) {
       return mpc_lowmc_prove_s128_lowmc_192_192_4;
-#endif
     }
-    if (lowmc->n == 255 && lowmc->m == 85) {
+#endif
 #if defined(WITH_LOWMC_255_255_4)
+    if (lowmc->n == 255 && lowmc->m == 85) {
       return mpc_lowmc_prove_s128_lowmc_255_255_4;
-#endif
     }
+#endif
   }
 #endif
 #endif
 
 
 #if !defined(NO_UINT64_FALLBACK)
-  if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
+  if (lowmc->n == 126 && lowmc->m == 42) {
     return mpc_lowmc_prove_uint64_lowmc_126_126_4;
-#endif
   }
-  if (lowmc->n == 192 && lowmc->m == 64) {
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+  if (lowmc->n == 129 && lowmc->m == 43) {
+    return mpc_lowmc_prove_uint64_lowmc_129_129_4;
+  }
+#endif
 #if defined(WITH_LOWMC_192_192_4)
+  if (lowmc->n == 192 && lowmc->m == 64) {
     return mpc_lowmc_prove_uint64_lowmc_192_192_4;
-#endif
   }
-  if (lowmc->n == 255 && lowmc->m == 85) {
+#endif
 #if defined(WITH_LOWMC_255_255_4)
+  if (lowmc->n == 255 && lowmc->m == 85) {
     return mpc_lowmc_prove_uint64_lowmc_255_255_4;
-#endif
   }
+#endif
 #endif
 
   return NULL;
 }
 
 zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc) {
-  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
-  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
+  assert((lowmc->m == 42 && lowmc->n == 126) || (lowmc->m == 43 && lowmc->n == 129) ||
+         (lowmc->m == 64 && lowmc->n == 192) || (lowmc->m == 85 && lowmc->n == 255));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
-    if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
+    if (lowmc->n == 126 && lowmc->m == 42) {
       return mpc_lowmc_verify_s256_lowmc_126_126_4;
-#endif
     }
-    if (lowmc->n == 192 && lowmc->m == 64) {
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43) {
+      return mpc_lowmc_verify_s256_lowmc_129_129_4;
+    }
+#endif
 #if defined(WITH_LOWMC_192_192_4)
+    if (lowmc->n == 192 && lowmc->m == 64) {
       return mpc_lowmc_verify_s256_lowmc_192_192_4;
-#endif
     }
-    if (lowmc->n == 255 && lowmc->m == 85) {
+#endif
 #if defined(WITH_LOWMC_255_255_4)
+    if (lowmc->n == 255 && lowmc->m == 85) {
       return mpc_lowmc_verify_s256_lowmc_255_255_4;
-#endif
     }
+#endif
   }
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
-    if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
+    if (lowmc->n == 126 && lowmc->m == 42) {
       return mpc_lowmc_verify_s128_lowmc_126_126_4;
-#endif
     }
-    if (lowmc->n == 192 && lowmc->m == 64) {
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43) {
+      return mpc_lowmc_verify_s128_lowmc_129_129_4;
+    }
+#endif
 #if defined(WITH_LOWMC_192_192_4)
+    if (lowmc->n == 192 && lowmc->m == 64) {
       return mpc_lowmc_verify_s128_lowmc_192_192_4;
-#endif
     }
-    if (lowmc->n == 255 && lowmc->m == 85) {
+#endif
 #if defined(WITH_LOWMC_255_255_4)
+    if (lowmc->n == 255 && lowmc->m == 85) {
       return mpc_lowmc_verify_s128_lowmc_255_255_4;
-#endif
     }
+#endif
   }
 #endif
 #endif
 
 
 #if !defined(NO_UINT64_FALLBACK)
-  if (lowmc->n == 126 && lowmc->m == 42) {
 #if defined(WITH_LOWMC_126_126_4)
+  if (lowmc->n == 126 && lowmc->m == 42) {
     return mpc_lowmc_verify_uint64_lowmc_126_126_4;
-#endif
   }
-  if (lowmc->n == 192 && lowmc->m == 64) {
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+  if (lowmc->n == 129 && lowmc->m == 43) {
+    return mpc_lowmc_verify_uint64_lowmc_129_129_4;
+  }
+#endif
 #if defined(WITH_LOWMC_192_192_4)
+  if (lowmc->n == 192 && lowmc->m == 64) {
     return mpc_lowmc_verify_uint64_lowmc_192_192_4;
-#endif
   }
-  if (lowmc->n == 255 && lowmc->m == 85) {
+#endif
 #if defined(WITH_LOWMC_255_255_4)
+  if (lowmc->n == 255 && lowmc->m == 85) {
     return mpc_lowmc_verify_uint64_lowmc_255_255_4;
-#endif
   }
+#endif
 #endif
 
   return NULL;

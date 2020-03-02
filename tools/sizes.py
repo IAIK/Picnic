@@ -31,6 +31,9 @@ def calc_size(digest_size, seed_size, num_rounds, lowmc_k, lowmc_r, lowmc_m, is_
 calc_size(32, 16, 219, 126, 4, 42, False)
 calc_size(32, 16, 219, 126, 4, 42, True)
 
+calc_size(32, 16, 219, 129, 4, 43, False)
+calc_size(32, 16, 219, 129, 4, 43, True)
+
 calc_size(48, 24, 329, 192, 4, 64, False)
 calc_size(48, 24, 329, 192, 4, 64, True)
 

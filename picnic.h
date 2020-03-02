@@ -38,6 +38,8 @@ extern "C" {
 /* Block sizes of the LowMC ciphers per parameter */
 #define LOWMC_BLOCK_SIZE_Picnic_L1_FS 16
 #define LOWMC_BLOCK_SIZE_Picnic_L1_UR 16
+#define LOWMC_BLOCK_SIZE_Picnic_L1_129_FS 17
+#define LOWMC_BLOCK_SIZE_Picnic_L1_129_UR 17
 #define LOWMC_BLOCK_SIZE_Picnic_L3_FS 24
 #define LOWMC_BLOCK_SIZE_Picnic_L3_UR 24
 #define LOWMC_BLOCK_SIZE_Picnic_L5_FS 32
@@ -54,6 +56,8 @@ extern "C" {
 /* Max. signature sizes per parameter */
 #define PICNIC_SIGNATURE_SIZE_Picnic_L1_FS 31404
 #define PICNIC_SIGNATURE_SIZE_Picnic_L1_UR 48705
+#define PICNIC_SIGNATURE_SIZE_Picnic_L1_129_FS 32061
+#define PICNIC_SIGNATURE_SIZE_Picnic_L1_129_UR 49800
 #define PICNIC_SIGNATURE_SIZE_Picnic_L3_FS 71179
 #define PICNIC_SIGNATURE_SIZE_Picnic_L3_UR 110659
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_FS 126286
@@ -79,15 +83,17 @@ extern "C" {
 typedef enum {
   PARAMETER_SET_INVALID,
   /* Instances from the Picnic parameter set with LowMC m=10 */
-  Picnic_L1_FS,  // 1
-  Picnic_L1_UR,  // 2
-  Picnic_L3_FS,  // 3
-  Picnic_L3_UR,  // 4
-  Picnic_L5_FS,  // 5
-  Picnic_L5_UR,  // 6
-  Picnic2_L1_FS, // 7
-  Picnic2_L3_FS, // 8
-  Picnic2_L5_FS, // 9
+  Picnic_L1_FS,     // 1
+  Picnic_L1_UR,     // 2
+  Picnic_L1_129_FS, // 3
+  Picnic_L1_129_UR, // 4
+  Picnic_L3_FS,     // 5
+  Picnic_L3_UR,		// 6
+  Picnic_L5_FS,		// 7
+  Picnic_L5_UR,		// 8
+  Picnic2_L1_FS,	// 9
+  Picnic2_L3_FS,	// 10
+  Picnic2_L5_FS,	// 11
   PARAMETER_SET_MAX_INDEX
 } picnic_params_t;
 
