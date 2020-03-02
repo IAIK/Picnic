@@ -551,6 +551,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
 #define RVEC(m) rvec->s[m].w128[0]
 #define VIEW(m) view->s[m].w128[0]
 
+ATTR_TARGET_S128
 static void mpc_sbox_prove_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
   bitsliced_mm_step_1(SC_PROOF, word128, mm128_and, mm128_shift_left, mask_126_126_42_a->w128[0],
@@ -566,6 +567,7 @@ static void mpc_sbox_prove_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_loca
   bitsliced_mm_step_2(SC_PROOF, mm128_xor, mm128_shift_right);
 }
 
+ATTR_TARGET_S128
 static void mpc_sbox_verify_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
                                                  view_t* view, const rvec_t* rvec) {
   bitsliced_mm_step_1(SC_VERIFY, word128, mm128_and, mm128_shift_left, mask_126_126_42_a->w128[0],
@@ -594,10 +596,12 @@ static void mpc_sbox_verify_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_loc
 #define RVEC(m) rvec->s[m].w128
 #define VIEW(m) view->s[m].w128
 
-static void mpc_sbox_prove_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+ATTR_TARGET_S128
+static inline void mpc_sbox_prove_s128_256(mzd_local_t* out, const mzd_local_t* in, view_t* view,
+                                           const rvec_t* rvec, const mzd_local_t* mask_a,
+                                           const mzd_local_t* mask_b, const mzd_local_t* mask_c) {
   bitsliced_mm_multiple_step_1(SC_PROOF, word128, 2, mm128_and_256, mm128_rotate_left_256,
-                               mask_192_192_64_a->w128, mask_192_192_64_b->w128,
-                               mask_192_192_64_c->w128);
+                               mask_a->w128, mask_b->w128, mask_c->w128);
 
   // a & b
   mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_right_256, r0m,
@@ -612,58 +616,52 @@ static void mpc_sbox_prove_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_loca
   bitsliced_mm_multiple_step_2(SC_PROOF, word128, 2, mm128_xor_256, mm128_rotate_right_256);
 }
 
-static void mpc_sbox_verify_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
+ATTR_TARGET_S128
+static inline void mpc_sbox_verify_s128_256(mzd_local_t* out, const mzd_local_t* in, view_t* view,
+                                            const rvec_t* rvec, const mzd_local_t* mask_a,
+                                            const mzd_local_t* mask_b, const mzd_local_t* mask_c) {
   bitsliced_mm_multiple_step_1(SC_VERIFY, word128, 2, mm128_and_256, mm128_rotate_left_256,
-                               mask_192_192_64_a->w128, mask_192_192_64_b->w128,
-                               mask_192_192_64_c->w128);
+                               mask_a->w128, mask_b->w128, mask_c->w128);
 
   // a & b
   mpc_mm_multiple_and_verify_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_left_256,
-                                 mm128_rotate_right_256, r0m, x0s, x1s, r2m, mask_192_192_64_c->w128, 0);
+                                 mm128_rotate_right_256, r0m, x0s, x1s, r2m, mask_c->w128, 0);
   // b & c
   mpc_mm_multiple_and_verify_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_left_256,
-                                 mm128_rotate_right_256, r2m, x1s, x2m, r1s, mask_192_192_64_c->w128, 1);
+                                 mm128_rotate_right_256, r2m, x1s, x2m, r1s, mask_c->w128, 1);
   // c & a
   mpc_mm_multiple_and_verify_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_left_256,
-                                 mm128_rotate_right_256, r1m, x0s, x2m, r0s, mask_192_192_64_c->w128, 2);
+                                 mm128_rotate_right_256, r1m, x0s, x2m, r0s, mask_c->w128, 2);
 
   bitsliced_mm_multiple_step_2(SC_VERIFY, word128, 2, mm128_xor_256, mm128_rotate_right_256);
 }
 
-static void mpc_sbox_prove_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_multiple_step_1(SC_PROOF, word128, 2, mm128_and_256, mm128_rotate_left_256,
-                               mask_255_255_85_a->w128, mask_255_255_85_b->w128,
-                               mask_255_255_85_c->w128);
-
-  // a & b
-  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_right_256, r0m,
-                          x0s, x1s, r2m, 0);
-  // b & c
-  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_right_256, r2m,
-                          x1s, x2m, r1s, 1);
-  // c & a
-  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_right_256, r1m,
-                          x0s, x2m, r0s, 2);
-
-  bitsliced_mm_multiple_step_2(SC_PROOF, word128, 2, mm128_xor_256, mm128_rotate_right_256);
+ATTR_TARGET_S128
+static void mpc_sbox_prove_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
+                                                view_t* view, const rvec_t* rvec) {
+  mpc_sbox_prove_s128_256(out, in, view, rvec, mask_192_192_64_a, mask_192_192_64_b,
+                          mask_192_192_64_c);
 }
 
-static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_multiple_step_1(SC_VERIFY, word128, 2, mm128_and_256, mm128_rotate_left_256,
-                               mask_255_255_85_a->w128, mask_255_255_85_b->w128,
-                               mask_255_255_85_c->w128);
+ATTR_TARGET_S128
+static void mpc_sbox_verify_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
+                                                 view_t* view, const rvec_t* rvec) {
+  mpc_sbox_verify_s128_256(out, in, view, rvec, mask_192_192_64_a, mask_192_192_64_b,
+                           mask_192_192_64_c);
+}
 
-  // a & b
-  mpc_mm_multiple_and_verify_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_left_256,
-                                 mm128_rotate_right_256, r0m, x0s, x1s, r2m, mask_255_255_85_c->w128, 0);
-  // b & c
-  mpc_mm_multiple_and_verify_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_left_256,
-                                 mm128_rotate_right_256, r2m, x1s, x2m, r1s, mask_255_255_85_c->w128, 1);
-  // c & a
-  mpc_mm_multiple_and_verify_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_rotate_left_256,
-                                 mm128_rotate_right_256, r1m, x0s, x2m, r0s, mask_255_255_85_c->w128, 2);
+ATTR_TARGET_S128
+static void mpc_sbox_prove_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
+                                                view_t* view, const rvec_t* rvec) {
+  mpc_sbox_prove_s128_256(out, in, view, rvec, mask_255_255_85_a, mask_255_255_85_b,
+                          mask_255_255_85_c);
+}
 
-  bitsliced_mm_multiple_step_2(SC_VERIFY, word128, 2, mm128_xor_256, mm128_rotate_right_256);
+ATTR_TARGET_S128
+static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
+                                                 view_t* view, const rvec_t* rvec) {
+  mpc_sbox_verify_s128_256(out, in, view, rvec, mask_255_255_85_a, mask_255_255_85_b,
+                           mask_255_255_85_c);
 }
 
 #undef IN
@@ -678,11 +676,11 @@ static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #define RVEC(m) rvec->s[m].w256
 #define VIEW(m) view->s[m].w256
 
-/* TODO: implement with SSE? */
 ATTR_TARGET_AVX2
-static void mpc_sbox_prove_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_step_1(SC_PROOF, word256, mm256_and, mm256_rotate_left, mask_126_126_42_a->w256,
-                      mask_126_126_42_b->w256, mask_126_126_42_c->w256);
+static inline void mpc_sbox_prove_s256_256(mzd_local_t* out, const mzd_local_t* in, view_t* view,
+                                           const rvec_t* rvec, const word256 mask_a,
+                                           const word256 mask_b, const word256 mask_c) {
+  bitsliced_mm_step_1(SC_PROOF, word256, mm256_and, mm256_rotate_left, mask_a, mask_b, mask_c);
 
   // a & b
   mpc_mm_and_def(mm256_and, mm256_xor, mm256_rotate_right, r0m, x0s, x1s, r2m, 0);
@@ -692,95 +690,67 @@ static void mpc_sbox_prove_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_loca
   mpc_mm_and_def(mm256_and, mm256_xor, mm256_rotate_right, r1m, x0s, x2m, r0s, 2);
 
   bitsliced_mm_step_2(SC_PROOF, mm256_xor, mm256_rotate_right);
+}
+
+ATTR_TARGET_AVX2
+static void mpc_sbox_verify_s256_256(mzd_local_t* out, const mzd_local_t* in, view_t* view,
+                                     const rvec_t* rvec, const word256 mask_a, const word256 mask_b,
+                                     const word256 mask_c) {
+  bitsliced_mm_step_1(SC_VERIFY, word256, mm256_and, mm256_rotate_left, mask_a, mask_b, mask_c);
+
+  // a & b
+  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r0m, x0s, x1s,
+                        r2m, mask_c, 0);
+  // b & c
+  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r2m, x1s, x2m,
+                        r1s, mask_c, 1);
+  // c & a
+  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r1m, x0s, x2m,
+                        r0s, mask_c, 2);
+
+  bitsliced_mm_step_2(SC_VERIFY, mm256_xor, mm256_rotate_right);
+}
+
+ATTR_TARGET_AVX2
+static void mpc_sbox_prove_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
+                                                view_t* view, const rvec_t* rvec) {
+  mpc_sbox_prove_s256_256(out, in, view, rvec, mask_126_126_42_a->w256, mask_126_126_42_b->w256,
+                          mask_126_126_42_c->w256);
 }
 
 ATTR_TARGET_AVX2
 static void mpc_sbox_verify_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
                                                  view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_step_1(SC_VERIFY, word256, mm256_and, mm256_rotate_left, mask_126_126_42_a->w256,
-                      mask_126_126_42_b->w256, mask_126_126_42_c->w256);
-
-  // a & b
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r0m,
-                        x0s, x1s, r2m, mask_126_126_42_c->w256, 0);
-  // b & c
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r2m,
-                        x1s, x2m, r1s, mask_126_126_42_c->w256, 1);
-  // c & a
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r1m,
-                        x0s, x2m, r0s, mask_126_126_42_c->w256, 2);
-
-  bitsliced_mm_step_2(SC_VERIFY, mm256_xor, mm256_rotate_right);
+  mpc_sbox_verify_s256_256(out, in, view, rvec, mask_126_126_42_a->w256, mask_126_126_42_b->w256,
+                           mask_126_126_42_c->w256);
 }
 
 ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_step_1(SC_PROOF, word256, mm256_and, mm256_rotate_left, mask_192_192_64_a->w256,
-                      mask_192_192_64_b->w256, mask_192_192_64_c->w256);
-
-  // a & b
-  mpc_mm_and_def(mm256_and, mm256_xor, mm256_rotate_right, r0m, x0s, x1s, r2m, 0);
-  // b & c
-  mpc_mm_and_def(mm256_and, mm256_xor, mm256_rotate_right, r2m, x1s, x2m, r1s, 1);
-  // c & a
-  mpc_mm_and_def(mm256_and, mm256_xor, mm256_rotate_right, r1m, x0s, x2m, r0s, 2);
-
-  bitsliced_mm_step_2(SC_PROOF, mm256_xor, mm256_rotate_right);
+  mpc_sbox_prove_s256_256(out, in, view, rvec, mask_192_192_64_a->w256, mask_192_192_64_b->w256,
+                          mask_192_192_64_c->w256);
 }
 
 ATTR_TARGET_AVX2
 static void mpc_sbox_verify_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
                                                  view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_step_1(SC_VERIFY, word256, mm256_and, mm256_rotate_left, mask_192_192_64_a->w256,
-                      mask_192_192_64_b->w256, mask_192_192_64_c->w256);
-
-  // a & b
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r0m,
-                        x0s, x1s, r2m, mask_192_192_64_c->w256, 0);
-  // b & c
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r2m,
-                        x1s, x2m, r1s, mask_192_192_64_c->w256, 1);
-  // c & a
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r1m,
-                        x0s, x2m, r0s, mask_192_192_64_c->w256, 2);
-
-  bitsliced_mm_step_2(SC_VERIFY, mm256_xor, mm256_rotate_right);
+  mpc_sbox_verify_s256_256(out, in, view, rvec, mask_192_192_64_a->w256, mask_192_192_64_b->w256,
+                           mask_192_192_64_c->w256);
 }
 
 ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_step_1(SC_PROOF, word256, mm256_and, mm256_rotate_left, mask_255_255_85_a->w256,
-                      mask_255_255_85_b->w256, mask_255_255_85_c->w256);
-
-  // a & b
-  mpc_mm_and_def(mm256_and, mm256_xor, mm256_rotate_right, r0m, x0s, x1s, r2m, 0);
-  // b & c
-  mpc_mm_and_def(mm256_and, mm256_xor, mm256_rotate_right, r2m, x1s, x2m, r1s, 1);
-  // c & a
-  mpc_mm_and_def(mm256_and, mm256_xor, mm256_rotate_right, r1m, x0s, x2m, r0s, 2);
-
-  bitsliced_mm_step_2(SC_PROOF, mm256_xor, mm256_rotate_right);
+  mpc_sbox_prove_s256_256(out, in, view, rvec, mask_255_255_85_a->w256, mask_255_255_85_b->w256,
+                          mask_255_255_85_c->w256);
 }
 
 ATTR_TARGET_AVX2
 static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
                                                  view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_step_1(SC_VERIFY, word256, mm256_and, mm256_rotate_left, mask_255_255_85_a->w256,
-                      mask_255_255_85_b->w256, mask_255_255_85_c->w256);
-
-  // a & b
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r0m,
-                        x0s, x1s, r2m, mask_255_255_85_c->w256, 0);
-  // b & c
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r2m,
-                        x1s, x2m, r1s, mask_255_255_85_c->w256, 1);
-  // c & a
-  mpc_mm_and_verify_def(mm256_and, mm256_xor, mm256_rotate_left, mm256_rotate_right, r1m,
-                        x0s, x2m, r0s, mask_255_255_85_c->w256, 2);
-
-  bitsliced_mm_step_2(SC_VERIFY, mm256_xor, mm256_rotate_right);
+  mpc_sbox_verify_s256_256(out, in, view, rvec, mask_255_255_85_a->w256, mask_255_255_85_b->w256,
+                           mask_255_255_85_c->w256);
 }
 #endif /* WITH_AVX2*/
 #endif /* WITH_OPT */
