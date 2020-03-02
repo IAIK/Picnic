@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #if defined(WITH_OPT)
 #include "simd.h"
@@ -885,8 +886,8 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #endif
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {
-  // ASSUME(lowmc->m == 10);
-  // ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
+  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -952,8 +953,8 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 }
 
 zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc) {
-  // ASSUME(lowmc->m == 10);
-  // ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
+  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
+  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -1040,20 +1041,14 @@ static void mzd_share_uint64_256(mzd_local_t* r, const mzd_local_t* v1, const mz
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
-#if defined(WITH_SSE2)
-#define FN_ATTR ATTR_TARGET_SSE2
-#else
-#define FN_ATTR
-#endif
-
-FN_ATTR
+ATTR_TARGET_S128
 static void mzd_share_s128_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
                                const mzd_local_t* v3) {
   mzd_xor_s128_128(r, v1, v2);
   mzd_xor_s128_128(r, r, v3);
 }
 
-FN_ATTR
+ATTR_TARGET_S128
 static void mzd_share_s128_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
                                const mzd_local_t* v3) {
   mzd_xor_s128_256(r, v1, v2);
