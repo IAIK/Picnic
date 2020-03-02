@@ -496,7 +496,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
   do {                                                                                             \
     for (unsigned int m = 0; m < SC_PROOF; ++m) {                                                  \
       const unsigned int j = (m + 1) % SC_PROOF;                                                   \
-      type tmp1[size], tmp2[size];                                                                 \
+      type tmp1[size] ATTR_ALIGNED(alignof(type)), tmp2[size] ATTR_ALIGNED(alignof(type));         \
                                                                                                    \
       AND(tmp1, first[m], second[m]);                                                              \
       AND(tmp2, first[j], second[m]);                                                              \
@@ -521,7 +521,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
   do {                                                                                             \
     for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {                                               \
       const unsigned int j = (m + 1) % SC_PROOF;                                                   \
-      type tmp1[size], tmp2[size];                                                                 \
+      type tmp1[size] ATTR_ALIGNED(alignof(type)), tmp2[size] ATTR_ALIGNED(alignof(type));         \
                                                                                                    \
       AND(tmp1, first[m], second[m]);                                                              \
       AND(tmp2, first[j], second[m]);                                                              \
@@ -540,7 +540,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
       }                                                                                            \
     }                                                                                              \
                                                                                                    \
-    type tmp[size];                                                                                \
+    type tmp[size] ATTR_ALIGNED(alignof(type));                                                    \
     ROL(tmp, VIEW(SC_VERIFY - 1), viewshift);                                                      \
     AND(res[SC_VERIFY - 1], tmp, MASK);                                                            \
   } while (0)
