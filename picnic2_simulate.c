@@ -187,7 +187,7 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L5_FS */
-#include "lowmc_fns_s128_L3.h"
+#include "lowmc_fns_s128_L5.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s128_255_85
 #include "picnic2_simulate.c.i"
