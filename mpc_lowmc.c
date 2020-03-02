@@ -291,8 +291,10 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
     XOR(&out[m], &x0s[m], &x1s[m]);                                                                \
   }
 
-static void mpc_sbox_prove_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_PROOF, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+static void mpc_sbox_prove_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
+                                                  view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a,
+                   mask_126_126_42_b, mask_126_126_42_c);
 
   // a & b
   mpc_and_uint64_128(r0m, x0s, x1s, r2m, view, 0);
@@ -304,8 +306,10 @@ static void mpc_sbox_prove_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_lo
   bitsliced_step_2(SC_PROOF, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
 }
 
-static void mpc_sbox_verify_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a, mask_126_126_42_b, mask_126_126_42_c);
+static void mpc_sbox_verify_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
+                                                   view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a,
+                   mask_126_126_42_b, mask_126_126_42_c);
 
   // a & b
   mpc_and_verify_uint64_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
@@ -317,8 +321,10 @@ static void mpc_sbox_verify_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_l
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
 }
 
-static void mpc_sbox_prove_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_129_129_43_a, mask_129_129_43_b, mask_129_129_43_c);
+static void mpc_sbox_prove_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
+                                                  view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_129_129_43_a,
+                   mask_129_129_43_b, mask_129_129_43_c);
 
   // a & b
   mpc_and_uint64_192(r0m, x0s, x1s, r2m, view, 0);
@@ -330,8 +336,10 @@ static void mpc_sbox_prove_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_lo
   bitsliced_step_2(SC_PROOF, mzd_xor_uint64_192, mzd_rotate_right_uint64_192);
 }
 
-static void mpc_sbox_verify_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_129_129_43_a, mask_129_129_43_b, mask_129_129_43_c);
+static void mpc_sbox_verify_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
+                                                   view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_129_129_43_a,
+                   mask_129_129_43_b, mask_129_129_43_c);
 
   // a & b
   mpc_and_verify_uint64_192(r0m, x0s, x1s, r2m, view, mask_129_129_43_c, 0);
@@ -343,8 +351,10 @@ static void mpc_sbox_verify_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_l
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_192, mzd_rotate_right_uint64_192);
 }
 
-static void mpc_sbox_prove_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
+static void mpc_sbox_prove_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
+                                                  view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_192_192_64_a,
+                   mask_192_192_64_b, mask_192_192_64_c);
 
   // a & b
   mpc_and_uint64_192(r0m, x0s, x1s, r2m, view, 0);
@@ -356,8 +366,10 @@ static void mpc_sbox_prove_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_lo
   bitsliced_step_2(SC_PROOF, mzd_xor_uint64_192, mzd_rotate_right_uint64_192);
 }
 
-static void mpc_sbox_verify_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
+static void mpc_sbox_verify_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
+                                                   view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_192, mzd_rotate_left_uint64_192, mask_192_192_64_a,
+                   mask_192_192_64_b, mask_192_192_64_c);
 
   // a & b
   mpc_and_verify_uint64_192(r0m, x0s, x1s, r2m, view, mask_192_192_64_c, 0);
@@ -369,8 +381,10 @@ static void mpc_sbox_verify_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_l
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_192, mzd_rotate_right_uint64_192);
 }
 
-static void mpc_sbox_prove_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_PROOF, mzd_and_uint64_256, mzd_rotate_left_uint64_256, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
+static void mpc_sbox_prove_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
+                                                  view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_PROOF, mzd_and_uint64_256, mzd_rotate_left_uint64_256, mask_255_255_85_a,
+                   mask_255_255_85_b, mask_255_255_85_c);
 
   // a & b
   mpc_and_uint64_256(r0m, x0s, x1s, r2m, view, 0);
@@ -382,8 +396,10 @@ static void mpc_sbox_prove_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_lo
   bitsliced_step_2(SC_PROOF, mzd_xor_uint64_256, mzd_rotate_right_uint64_256);
 }
 
-static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in, view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_256, mzd_shift_left_uint64_256, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
+static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
+                                                   view_t* view, const rvec_t* rvec) {
+  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_256, mzd_shift_left_uint64_256, mask_255_255_85_a,
+                   mask_255_255_85_b, mask_255_255_85_c);
 
   // a & b
   mpc_and_verify_uint64_256(r0m, x0s, x1s, r2m, view, mask_255_255_85_c, 0);
@@ -822,22 +838,8 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #include "lowmc_255_255_4.h"
 #endif
 
-#define SBOX_uint64(sbox, y, x, views, r, n, shares, shares2)                                      \
-  do {                                                                                             \
-    uint64_t in[shares];                                                                           \
-    for (unsigned int count = 0; count < shares; ++count) {                                        \
-      in[count] = CONST_BLOCK(x[count], 0)->w64[(n) / (sizeof(word) * 8) - 1];                     \
-    }                                                                                              \
-    sbox(in, views, r->t);                                                                            \
-    for (unsigned int count = 0; count < shares2; ++count) {                                       \
-      memcpy(BLOCK(y[count], 0)->w64, CONST_BLOCK(x[count], 0)->w64,                               \
-             ((n) / (sizeof(word) * 8) - 1) * sizeof(word));                                       \
-      BLOCK(y[count], 0)->w64[(n) / (sizeof(word) * 8) - 1] = in[count];                           \
-    }                                                                                              \
-  } while (0)
-
 /* TODO: get rid of the copies */
-#define SBOX_mzd(sbox, y, x, views, rvec, n, shares, shares2)                                      \
+#define SBOX(sbox, y, x, views, rvec, n, shares, shares2)                                          \
   {                                                                                                \
     mzd_local_t tmp[shares];                                                                       \
     for (unsigned int count = 0; count < shares; ++count) {                                        \
@@ -849,8 +851,6 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
     }                                                                                              \
   }                                                                                                \
   while (0)
-
-#define SBOX SBOX_mzd
 
 #if !defined(NO_UINT64_FALLBACK)
 #define IMPL uint64
