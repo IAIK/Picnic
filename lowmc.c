@@ -72,6 +72,48 @@ static void sbox_uint64_lowmc_126_126_4(mzd_local_t* in) {
 }
 
 /**
+ * S-box for m = 43
+ */
+static void sbox_uint64_lowmc_129_129_4(mzd_local_t* in) {
+  mzd_local_t x0m[1], x1m[1], x2m[1];
+  // a
+  mzd_and_uint64_192(x0m, mask_129_129_43_a, in);
+  // b
+  mzd_and_uint64_192(x1m, mask_129_129_43_b, in);
+  // c
+  mzd_and_uint64_192(x2m, mask_129_129_43_c, in);
+
+  mzd_rotate_left_uint64_192(x0m, x0m, 2);
+  mzd_rotate_left_uint64_192(x1m, x1m, 1);
+
+  mzd_local_t t0[1], t1[1], t2[1];
+  // b & c
+  mzd_and_uint64_192(t0, x1m, x2m);
+  // c & a
+  mzd_and_uint64_192(t1, x0m, x2m);
+  // a & b
+  mzd_and_uint64_192(t2, x0m, x1m);
+
+  // (b & c) ^ a
+  mzd_xor_uint64_192(t0, t0, x0m);
+
+  // (c & a) ^ a ^ b
+  mzd_xor_uint64_192(t1, t1, x0m);
+  mzd_xor_uint64_192(t1, t1, x1m);
+
+  // (a & b) ^ a ^ b ^c
+  mzd_xor_uint64_192(t2, t2, x0m);
+  mzd_xor_uint64_192(t2, t2, x1m);
+  mzd_xor_uint64_192(t2, t2, x2m);
+
+  mzd_rotate_right_uint64_192(t0, t0, 2);
+  mzd_rotate_right_uint64_192(t1, t1, 1);
+
+  mzd_xor_uint64_192(t2, t2, t1);
+  mzd_xor_uint64_192(in, t2, t0);
+}
+
+/**
  * S-box for m = 64
  */
 static void sbox_uint64_lowmc_192_192_4(mzd_local_t* in) {
@@ -221,6 +263,11 @@ static inline void sbox_s128_full(mzd_local_t* in, const word128* mask_a, const 
 }
 
 ATTR_TARGET_S128
+static inline void sbox_s128_lowmc_129_129_4(mzd_local_t* in) {
+  sbox_s128_full(in, mask_129_129_43_a->w128, mask_129_129_43_b->w128, mask_129_129_43_c->w128);
+}
+
+ATTR_TARGET_S128
 static inline void sbox_s128_lowmc_192_192_4(mzd_local_t* in) {
   sbox_s128_full(in, mask_192_192_64_a->w128, mask_192_192_64_b->w128, mask_192_192_64_c->w128);
 }
@@ -268,6 +315,13 @@ static inline void sbox_s256_lowmc_126_126_4(mzd_local_t* in) {
 }
 
 ATTR_TARGET_AVX2
+static inline void sbox_s256_lowmc_129_129_4(mzd_local_t* in) {
+  BLOCK(in, 0)->w256 = sbox_s256_lowmc_full(
+      BLOCK(in, 0)->w256, CONST_BLOCK(mask_129_129_43_a, 0)->w256,
+      CONST_BLOCK(mask_129_129_43_b, 0)->w256, CONST_BLOCK(mask_129_129_43_c, 0)->w256);
+}
+
+ATTR_TARGET_AVX2
 static inline void sbox_s256_lowmc_192_192_4(mzd_local_t* in) {
   BLOCK(in, 0)->w256 = sbox_s256_lowmc_full(
       BLOCK(in, 0)->w256, CONST_BLOCK(mask_192_192_64_a, 0)->w256,
@@ -286,6 +340,9 @@ static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
 #if defined(WITH_LOWMC_126_126_4)
 #include "lowmc_126_126_4.h"
 #endif
+#if defined(WITH_LOWMC_129_129_4)
+#include "lowmc_129_129_4.h"
+#endif
 #if defined(WITH_LOWMC_192_192_4)
 #include "lowmc_192_192_4.h"
 #endif
@@ -297,6 +354,9 @@ static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
 // uint64 based implementation
 #define IMPL uint64
 #include "lowmc_fns_uint64_L1.h"
+#include "lowmc.c.i"
+
+#include "lowmc_fns_uint64_L1_129.h"
 #include "lowmc.c.i"
 
 #include "lowmc_fns_uint64_L3.h"
@@ -316,6 +376,9 @@ static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
 
 // L1 using SSE2/NEON
 #include "lowmc_fns_s128_L1.h"
+#include "lowmc.c.i"
+
+#include "lowmc_fns_s128_L1_129.h"
 #include "lowmc.c.i"
 
 // L3 using SSE2/NEON
@@ -338,6 +401,9 @@ static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
 #include "lowmc_fns_s256_L1.h"
 #include "lowmc.c.i"
 
+#include "lowmc_fns_s256_L1_129.h"
+#include "lowmc.c.i"
+
 // L3 using AVX2
 #include "lowmc_fns_s256_L3.h"
 #include "lowmc.c.i"
@@ -352,8 +418,8 @@ static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
 #endif
 
 lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
-  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
-  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
+  assert((lowmc->m == 42 && lowmc->n == 126) || (lowmc->m == 43 && lowmc->n == 129) ||
+         (lowmc->m == 64 && lowmc->n == 192) || (lowmc->m == 85 && lowmc->n == 255));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -361,6 +427,10 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #if defined(WITH_LOWMC_126_126_4)
     if (lowmc->n == 126 && lowmc->m == 42)
       return lowmc_s256_lowmc_126_126_4;
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43)
+      return lowmc_s256_lowmc_129_129_4;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
     if (lowmc->n == 192 && lowmc->m == 64)
@@ -377,6 +447,10 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 #if defined(WITH_LOWMC_126_126_4)
     if (lowmc->n == 126 && lowmc->m == 42)
       return lowmc_s128_lowmc_126_126_4;
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43)
+      return lowmc_s128_lowmc_129_129_4;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
     if (lowmc->n == 192 && lowmc->m == 64)
@@ -395,6 +469,10 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
   if (lowmc->n == 126 && lowmc->m == 42)
     return lowmc_uint64_lowmc_126_126_4;
 #endif
+#if defined(WITH_LOWMC_129_129_4)
+  if (lowmc->n == 129 && lowmc->m == 43)
+    return lowmc_uint64_lowmc_129_129_4;
+#endif
 #if defined(WITH_LOWMC_192_192_4)
   if (lowmc->n == 192 && lowmc->m == 64)
     return lowmc_uint64_lowmc_192_192_4;
@@ -410,8 +488,8 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 
 #if defined(WITH_ZKBPP)
 lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc) {
-  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
-  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
+  assert((lowmc->m == 42 && lowmc->n == 126) || (lowmc->m == 43 && lowmc->n == 129) ||
+         (lowmc->m == 64 && lowmc->n == 192) || (lowmc->m == 85 && lowmc->n == 255));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -419,6 +497,10 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #if defined(WITH_LOWMC_126_126_4)
     if (lowmc->n == 126 && lowmc->m == 42)
       return lowmc_store_s256_lowmc_126_126_4;
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43)
+      return lowmc_store_s256_lowmc_129_129_4;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
     if (lowmc->n == 192 && lowmc->m == 64)
@@ -435,6 +517,10 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #if defined(WITH_LOWMC_126_126_4)
     if (lowmc->n == 126 && lowmc->m == 42)
       return lowmc_store_s128_lowmc_126_126_4;
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43)
+      return lowmc_store_s128_lowmc_129_129_4;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
     if (lowmc->n == 192 && lowmc->m == 64)
@@ -453,6 +539,10 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
   if (lowmc->n == 126 && lowmc->m == 42)
     return lowmc_store_uint64_lowmc_126_126_4;
 #endif
+#if defined(WITH_LOWMC_129_129_4)
+  if (lowmc->n == 129 && lowmc->m == 43)
+    return lowmc_store_uint64_lowmc_129_129_4;
+#endif
 #if defined(WITH_LOWMC_192_192_4)
   if (lowmc->n == 192 && lowmc->m == 64)
     return lowmc_store_uint64_lowmc_192_192_4;
@@ -469,8 +559,8 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 
 #if defined(WITH_KKW)
 lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_t* lowmc) {
-  assert(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
-  assert(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
+  assert((lowmc->m == 42 && lowmc->n == 126) || (lowmc->m == 43 && lowmc->n == 129) ||
+         (lowmc->m == 64 && lowmc->n == 192) || (lowmc->m == 85 && lowmc->n == 255));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -478,6 +568,10 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 #if defined(WITH_LOWMC_126_126_4)
     if (lowmc->n == 126 && lowmc->m == 42)
       return lowmc_compute_aux_s256_lowmc_126_126_4;
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43)
+      return lowmc_compute_aux_s256_lowmc_129_129_4;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
     if (lowmc->n == 192 && lowmc->m == 64)
@@ -495,6 +589,10 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
     if (lowmc->n == 126 && lowmc->m == 42)
       return lowmc_compute_aux_s128_lowmc_126_126_4;
 #endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43)
+      return lowmc_compute_aux_s128_lowmc_129_129_4;
+#endif
 #if defined(WITH_LOWMC_192_192_4)
     if (lowmc->n == 192 && lowmc->m == 64)
       return lowmc_compute_aux_s128_lowmc_192_192_4;
@@ -511,6 +609,10 @@ lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lo
 #if defined(WITH_LOWMC_126_126_4)
   if (lowmc->n == 126 && lowmc->m == 42)
     return lowmc_compute_aux_uint64_lowmc_126_126_4;
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+  if (lowmc->n == 129 && lowmc->m == 43)
+    return lowmc_compute_aux_uint64_lowmc_129_129_4;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
   if (lowmc->n == 192 && lowmc->m == 64)

@@ -57,6 +57,7 @@ void freeSignature2(signature2_t* sig, const picnic_instance_t* params);
 
 /* Helper functions */
 void sbox_layer_42_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes);
+void sbox_layer_43_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes);
 void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes);
 void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes);
 

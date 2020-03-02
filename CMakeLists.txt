@@ -223,6 +223,7 @@ list(APPEND PICNIC_SOURCES
      io.c
      lowmc.c
      lowmc_126_126_4.c
+     lowmc_129_129_4.c
      lowmc_192_192_4.c
      lowmc_255_255_4.c
      mzd_additional.c
@@ -299,6 +300,7 @@ function(apply_picnic_options lib)
   set_target_properties(${lib} PROPERTIES C_VISIBILITY_PRESET hidden)
   target_compile_definitions(${lib} PRIVATE
                              WITH_LOWMC_126_126_4
+                             WITH_LOWMC_129_129_4
                              WITH_LOWMC_192_192_4
                              WITH_LOWMC_255_255_4)
   if(WITH_EXTRA_RANDOMNESS)
