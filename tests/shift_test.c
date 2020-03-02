@@ -169,6 +169,52 @@ static int test_s128_128(void) {
   return ret;
 }
 
+static void mzd_shift_left_uint64_128_64_127(mzd_local_t* dst, const mzd_local_t* val, unsigned int count) {
+  mzd_shift_left_uint64_128(dst, val, 32);
+  count -= 32;
+
+  while (count) {
+    unsigned int s = MIN(count, 32);
+    mzd_shift_left_uint64_128(dst, dst, s);
+    count -= s;
+  }
+}
+
+static void mzd_shift_right_uint64_128_64_127(mzd_local_t* dst, const mzd_local_t* val, unsigned int count) {
+  mzd_shift_right_uint64_128(dst, val, 32);
+  count -= 32;
+
+  while (count) {
+    unsigned int s = MIN(count, 32);
+    mzd_shift_right_uint64_128(dst, dst, s);
+    count -= s;
+  }
+}
+
+ATTR_TARGET_S128
+static int test_s128_128_64_127(void) {
+  int ret = 0;
+
+  mzd_local_t val = {{UINT64_C(0xffeeddccbbaa9988), UINT64_C(0x0011223344556677)}};
+  mzd_local_t cval, tmp;
+
+  mzd_shift_left_uint64_128_64_127(&cval, &val, 66);
+  tmp.w128[0] = mm128_shift_left_64_127(val.w128[0], 66);
+  if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
+    printf("mm128 shift left fail: 66\n");
+    ret = -1;
+  }
+
+  mzd_shift_right_uint64_128_64_127(&cval, &val, 66);
+  tmp.w128[0] = mm128_shift_right_64_127(val.w128[0], 66);
+  if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
+    printf("mm128 shift right fail: 66\n");
+    ret = -1;
+  }
+
+  return ret;
+}
+
 ATTR_TARGET_S128
 static int test_s128_256(void) {
   int ret = 0;
@@ -316,6 +362,7 @@ int main() {
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
     ret |= test_s128_128();
+    ret |= test_s128_128_64_127();
     ret |= test_s128_256();
   }
 #endif /* WITH_SSE2 || WITH_NEON */
