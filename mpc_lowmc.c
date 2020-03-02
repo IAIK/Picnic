@@ -822,8 +822,22 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #include "lowmc_255_255_4.h"
 #endif
 
+#define SBOX_uint64(sbox, y, x, views, r, n, shares, shares2)                                      \
+  do {                                                                                             \
+    uint64_t in[shares];                                                                           \
+    for (unsigned int count = 0; count < shares; ++count) {                                        \
+      in[count] = CONST_BLOCK(x[count], 0)->w64[(n) / (sizeof(word) * 8) - 1];                     \
+    }                                                                                              \
+    sbox(in, views, r->t);                                                                            \
+    for (unsigned int count = 0; count < shares2; ++count) {                                       \
+      memcpy(BLOCK(y[count], 0)->w64, CONST_BLOCK(x[count], 0)->w64,                               \
+             ((n) / (sizeof(word) * 8) - 1) * sizeof(word));                                       \
+      BLOCK(y[count], 0)->w64[(n) / (sizeof(word) * 8) - 1] = in[count];                           \
+    }                                                                                              \
+  } while (0)
+
 /* TODO: get rid of the copies */
-#define SBOX(sbox, y, x, views, rvec, n, shares)                                                   \
+#define SBOX_mzd(sbox, y, x, views, rvec, n, shares, shares2)                                      \
   {                                                                                                \
     mzd_local_t tmp[shares];                                                                       \
     for (unsigned int count = 0; count < shares; ++count) {                                        \
@@ -835,6 +849,8 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
     }                                                                                              \
   }                                                                                                \
   while (0)
+
+#define SBOX SBOX_mzd
 
 #if !defined(NO_UINT64_FALLBACK)
 #define IMPL uint64
