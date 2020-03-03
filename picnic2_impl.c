@@ -129,10 +129,10 @@ void sbox_layer_42_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
  * S-box for m = 43, for Picnic2 aux computation
  */
 void sbox_layer_43_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
-  uint8_t input_mask[24];
-  mzd_to_char_array(input_mask, in, 24);
-  uint8_t output_mask[24];
-  mzd_to_char_array(output_mask, out, 24);
+  uint8_t input_mask[17];
+  mzd_to_char_array(input_mask, in, 17);
+  uint8_t output_mask[17];
+  mzd_to_char_array(output_mask, out, 17);
 
   const size_t lastParty = 15;
 
@@ -560,7 +560,7 @@ int verify_picnic2(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
   allocateCommitments2(&Ch, params, params->num_rounds);
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
-  shares_t* mask_shares    = allocateShares(params->input_size * 8);
+  shares_t* mask_shares                  = allocateShares((((params->input_size * 8) +63) / 64) * 64);
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
   mzd_local_t* m_maskedKey[PACKING_FACTOR];
   mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc->k, false);
@@ -787,7 +787,7 @@ int sign_picnic2(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
-  shares_t* mask_shares                  = allocateShares(params->input_size * 8);
+  shares_t* mask_shares                  = allocateShares((((params->input_size * 8) +63) / 64) * 64);
   msgs_t* msgs64                         = allocateMsgs64(params);
 
   /* Commitments to the commitments and views */

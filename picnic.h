@@ -45,6 +45,7 @@ extern "C" {
 #define LOWMC_BLOCK_SIZE_Picnic_L5_FS 32
 #define LOWMC_BLOCK_SIZE_Picnic_L5_UR 32
 #define LOWMC_BLOCK_SIZE_Picnic2_L1_FS 16
+#define LOWMC_BLOCK_SIZE_Picnic2_L1_129_FS 17
 #define LOWMC_BLOCK_SIZE_Picnic2_L3_FS 24
 #define LOWMC_BLOCK_SIZE_Picnic2_L5_FS 32
 
@@ -63,14 +64,9 @@ extern "C" {
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_FS 126286
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_UR 196366
 #define PICNIC_SIGNATURE_SIZE_Picnic2_L1_FS 13802
+#define PICNIC_SIGNATURE_SIZE_Picnic2_L1_129_FS 13860 //TODO: is this correct?
 #define PICNIC_SIGNATURE_SIZE_Picnic2_L3_FS 29750
 #define PICNIC_SIGNATURE_SIZE_Picnic2_L5_FS 54732
-#define PICNIC_SIGNATURE_SIZE_Picnic_L1_1_FS 32728
-#define PICNIC_SIGNATURE_SIZE_Picnic_L1_1_UR 51771
-#define PICNIC_SIGNATURE_SIZE_Picnic_L3_1_FS 74798
-#define PICNIC_SIGNATURE_SIZE_Picnic_L3_1_UR 117897
-#define PICNIC_SIGNATURE_SIZE_Picnic_L5_1_FS 130228
-#define PICNIC_SIGNATURE_SIZE_Picnic_L5_1_UR 204250
 
 #define PICNIC_SIGNATURE_SIZE(p) PICNIC_CONCAT(PICNIC_SIGNATURE_SIZE, p)
 
@@ -92,8 +88,9 @@ typedef enum {
   Picnic_L5_FS,		// 7
   Picnic_L5_UR,		// 8
   Picnic2_L1_FS,	// 9
-  Picnic2_L3_FS,	// 10
-  Picnic2_L5_FS,	// 11
+  Picnic2_L1_129_FS,// 10
+  Picnic2_L3_FS,	// 11
+  Picnic2_L5_FS,	// 12
   PARAMETER_SET_MAX_INDEX
 } picnic_params_t;
 

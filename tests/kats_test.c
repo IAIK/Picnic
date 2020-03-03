@@ -313,6 +313,8 @@ static int run_test(picnic_params_t param) {
        PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_FS)},
       {KATDIR "/kat_picnic2_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L1_FS),
        PICNIC_PRIVATE_KEY_SIZE(Picnic2_L1_FS)},
+      {KATDIR "/kat_picnic2_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L1_129_FS),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic2_L1_129_FS)},
       {KATDIR "/kat_picnic2_l3_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L3_FS),
        PICNIC_PRIVATE_KEY_SIZE(Picnic2_L3_FS)},
       {KATDIR "/kat_picnic2_l5_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic2_L5_FS),

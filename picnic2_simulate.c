@@ -141,6 +141,9 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #if defined(WITH_LOWMC_126_126_4)
 #include "lowmc_126_126_4.h"
 #endif
+#if defined(WITH_LOWMC_129_129_4)
+#include "lowmc_129_129_4.h"
+#endif
 #if defined(WITH_LOWMC_192_192_4)
 #include "lowmc_192_192_4.h"
 #endif
@@ -149,10 +152,15 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
-#include "lowmc_fns_uint64_L1.h"
 /* PICNIC2_L1_FS */
+#include "lowmc_fns_uint64_L1.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_uint64_126_42
+#include "picnic2_simulate.c.i"
+
+#include "lowmc_fns_uint64_L1_129.h"
+#undef SIM_ONLINE
+#define SIM_ONLINE lowmc_simulate_online_uint64_129_43
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L3_FS */
@@ -180,6 +188,11 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #define SIM_ONLINE lowmc_simulate_online_s128_126_42
 #include "picnic2_simulate.c.i"
 
+#include "lowmc_fns_s128_L1_129.h"
+#undef SIM_ONLINE
+#define SIM_ONLINE lowmc_simulate_online_s128_129_43
+#include "picnic2_simulate.c.i"
+
 /* PICNIC2_L3_FS */
 #include "lowmc_fns_s128_L3.h"
 #undef SIM_ONLINE
@@ -201,6 +214,11 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #include "lowmc_fns_s256_L1.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s256_126_42
+#include "picnic2_simulate.c.i"
+
+#include "lowmc_fns_s256_L1_129.h"
+#undef SIM_ONLINE
+#define SIM_ONLINE lowmc_simulate_online_s256_129_43
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L3_FS */
@@ -229,6 +247,10 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* 
     if (lowmc->n == 126 && lowmc->m == 42)
       return lowmc_simulate_online_s256_126_42;
 #endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43)
+      return lowmc_simulate_online_s256_129_43;
+#endif
 #if defined(WITH_LOWMC_192_192_4)
     if (lowmc->n == 192 && lowmc->m == 64)
       return lowmc_simulate_online_s256_192_64;
@@ -246,6 +268,10 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* 
     if (lowmc->n == 126 && lowmc->m == 42)
       return lowmc_simulate_online_s128_126_42;
 #endif
+#if defined(WITH_LOWMC_129_129_4)
+    if (lowmc->n == 129 && lowmc->m == 43)
+      return lowmc_simulate_online_s128_129_43;
+#endif
 #if defined(WITH_LOWMC_192_192_4)
     if (lowmc->n == 192 && lowmc->m == 64)
       return lowmc_simulate_online_s128_192_64;
@@ -262,6 +288,10 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* 
 #if defined(WITH_LOWMC_126_126_4)
   if (lowmc->n == 126 && lowmc->m == 42)
     return lowmc_simulate_online_uint64_126_42;
+#endif
+#if defined(WITH_LOWMC_129_129_4)
+  if (lowmc->n == 129 && lowmc->m == 43)
+    return lowmc_simulate_online_uint64_129_43;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
   if (lowmc->n == 192 && lowmc->m == 64)
