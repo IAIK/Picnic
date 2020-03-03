@@ -35,7 +35,7 @@ void mpc_matrix_mul_s256_256(mzd_local_t** output, mzd_local_t** vec, const mzd_
 
 /* helper functions */
 void copyShares(shares_t* dst, shares_t* src);
-void xor_word_array(uint32_t* out, const uint32_t* in1, const uint32_t* in2, uint32_t length);
+void xor_byte_array(uint8_t* out, const uint8_t* in1, const uint8_t* in2, uint32_t length);
 uint64_t tapesToWord(randomTape_t* tapes);
 uint64_t tapesToParityOfWord(randomTape_t* tapes, uint8_t without_last);
 void reconstructShares(uint32_t* output, shares_t* shares);

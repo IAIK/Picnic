@@ -219,8 +219,8 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #endif // WITH_OPT
 
 lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* lowmc) {
-  ASSUME(lowmc->m == 42 || lowmc->m == 64 || lowmc->m == 85);
-  ASSUME(lowmc->n == 126 || lowmc->n == 192 || lowmc->n == 255);
+  assert((lowmc->m == 42 && lowmc->n == 126) || (lowmc->m == 43 && lowmc->n == 129) ||
+         (lowmc->m == 64 && lowmc->n == 192) || (lowmc->m == 85 && lowmc->n == 255));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)

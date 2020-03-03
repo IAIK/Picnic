@@ -14,7 +14,7 @@
 FN_ATTR
 #endif
 static int SIM_ONLINE(mzd_local_t** maskedKey, shares_t* mask_shares, randomTape_t* tapes,
-                      msgs_t* msgs, const mzd_local_t* plaintext, const uint32_t* pubKey,
+                      msgs_t* msgs, const mzd_local_t* plaintext, const uint8_t* pubKey,
                       const picnic_instance_t* params) {
   int ret = 0;
   mzd_local_t* state[PACKING_FACTOR];
@@ -66,16 +66,16 @@ static int SIM_ONLINE(mzd_local_t** maskedKey, shares_t* mask_shares, randomTape
 
   /* check that the output is correct */
   for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-	  uint32_t output[params->output_size * 8 / 32];
-	  mzd_to_char_array((uint8_t*)output, state[k], params->output_size);
+	  uint8_t output[params->output_size];
+	  mzd_to_char_array(output, state[k], params->output_size);
 
 	  if (memcmp(output, pubKey, params->output_size) != 0) {
 	#if !defined(NDEBUG)
 		printf("%s: output does not match pubKey\n", __func__);
 		printf("pubKey: ");
-		print_hex(stdout, (uint8_t*)pubKey, params->output_size);
+		print_hex(stdout, pubKey, params->output_size);
 		printf("\noutput: ");
-		print_hex(stdout, (uint8_t*)output, params->output_size);
+		print_hex(stdout, output, params->output_size);
 		printf("\n");
 	#endif
 		ret = -1;

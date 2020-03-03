@@ -440,7 +440,7 @@ void reconstructSharesN(uint32_t** output, shares_t* shares) {
   }
 }
 
-void xor_word_array(uint32_t* out, const uint32_t* in1, const uint32_t* in2, uint32_t length) {
+void xor_byte_array(uint8_t* out, const uint8_t* in1, const uint8_t* in2, uint32_t length) {
   for (uint32_t i = 0; i < length; i++) {
     out[i] = in1[i] ^ in2[i];
   }

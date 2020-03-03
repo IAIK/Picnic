@@ -448,7 +448,7 @@ static size_t appendUnique(uint16_t* list, uint16_t value, size_t position) {
 }
 
 static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, uint8_t* hCv,
-                uint8_t* salt, const uint32_t* pubKey, const uint32_t* plaintext,
+                uint8_t* salt, const uint8_t* pubKey, const uint8_t* plaintext,
                 const uint8_t* message, size_t messageByteLength, const picnic_instance_t* params) {
   hash_context ctx;
   uint8_t h[MAX_DIGEST_SIZE] = {0};
@@ -466,8 +466,8 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
   // print_hex(stdout, hCv, params->digest_size);
   // printf("\n");
   hash_update(&ctx, salt, SALT_SIZE);
-  hash_update(&ctx, (const uint8_t*)pubKey, params->input_size);
-  hash_update(&ctx, (const uint8_t*)plaintext, params->input_size);
+  hash_update(&ctx, pubKey, params->input_size);
+  hash_update(&ctx, plaintext, params->input_size);
   hash_update(&ctx, message, messageByteLength);
   hash_final(&ctx);
   hash_squeeze(&ctx, h, params->digest_size);
@@ -535,7 +535,7 @@ static uint16_t* getMissingLeavesList(uint16_t* challengeC, const picnic_instanc
   return missingLeaves;
 }
 
-int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* plaintext,
+int verify_picnic2(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plaintext,
                    const uint8_t* message, size_t messageByteLength,
                    const picnic_instance_t* params) {
   commitments_t C[4];
@@ -564,7 +564,7 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
   mzd_local_t* m_maskedKey[PACKING_FACTOR];
   mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc->k, false);
-  mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
+  mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
   if (ret != 0) {
     ret = -1;
@@ -751,22 +751,22 @@ Exit:
 }
 
 static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLength,
-                                   uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
+                                   const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
                                    const uint8_t* message, size_t messageByteLength,
                                    const picnic_instance_t* params) {
   hash_context ctx;
 
   hash_init(&ctx, params->digest_size);
-  hash_update(&ctx, (const uint8_t*)privateKey, params->input_size);
+  hash_update(&ctx, privateKey, params->input_size);
   hash_update(&ctx, message, messageByteLength);
-  hash_update(&ctx, (const uint8_t*)pubKey, params->input_size);
-  hash_update(&ctx, (const uint8_t*)plaintext, params->input_size);
+  hash_update(&ctx, pubKey, params->input_size);
+  hash_update(&ctx, plaintext, params->input_size);
   hash_update_uint16_le(&ctx, (uint16_t)params->lowmc->n);
   hash_final(&ctx);
   hash_squeeze(&ctx, saltAndRoot, saltAndRootLength);
 }
 
-int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
+int sign_picnic2(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
                  const uint8_t* message, size_t messageByteLength, signature2_t* sig,
                  const picnic_instance_t* params) {
   int ret              = 0;
@@ -800,7 +800,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   mzd_local_t* m_maskedKey[PACKING_FACTOR];
   mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc->k, false);
 
-  mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
+  mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
   for (size_t t = 0; t < params->num_rounds; t++) {
     seeds[t] = generateSeeds(params->num_MPC_parties, iSeeds[t], sig->salt, t, params);
@@ -823,16 +823,16 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   for (size_t t = 0; t < params->num_rounds; t += PACKING_FACTOR) {
     /* Simulate the online phase of the MPC */
     msgs64->pos = 0;
-    uint32_t* maskedKey[PACKING_FACTOR];
+    uint8_t* maskedKey[PACKING_FACTOR];
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      maskedKey[k] = (uint32_t*)inputs[t + k];
+      maskedKey[k] = inputs[t + k];
     }
 
     //tapesToWords(mask_shares, &tapes[t], params->lowmc->n);
     //reconstructSharesN(maskedKey, mask_shares); // maskedKey = masks
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      xor_word_array(maskedKey[k], maskedKey[k], privateKey,
-                     (params->input_size / 4)); // maskedKey += privateKey
+      xor_byte_array(maskedKey[k], maskedKey[k], privateKey,
+                     (params->input_size)); // maskedKey += privateKey
       mzd_from_char_array(m_maskedKey[k], (const uint8_t*)maskedKey[k], params->input_size);
 
       for (size_t i = params->lowmc->n; i < params->input_size * 8; i++) {
@@ -1202,7 +1202,7 @@ int impl_sign_picnic2(const picnic_instance_t* instance, const uint8_t* plaintex
   if (sig == NULL) {
     return -1;
   }
-  ret = sign_picnic2((uint32_t*)private_key, (uint32_t*)public_key, (uint32_t*)plaintext, msg,
+  ret = sign_picnic2(private_key, public_key, plaintext, msg,
                      msglen, sig, instance);
   if (ret != EXIT_SUCCESS) {
 #if !defined(NDEBUG)
@@ -1251,7 +1251,7 @@ int impl_verify_picnic2(const picnic_instance_t* instance, const uint8_t* plaint
     return -1;
   }
 
-  ret = verify_picnic2(sig, (uint32_t*)public_key, (uint32_t*)plaintext, msg, msglen, instance);
+  ret = verify_picnic2(sig, public_key, plaintext, msg, msglen, instance);
   if (ret != EXIT_SUCCESS) {
     /* Signature is invalid, or verify function failed */
     freeSignature2(sig, instance);

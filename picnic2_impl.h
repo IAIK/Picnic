@@ -45,10 +45,10 @@ int impl_verify_picnic2(const picnic_instance_t* instance, const uint8_t* plaint
                         const uint8_t* public_key, const uint8_t* msg, size_t msglen,
                         const uint8_t* signature, size_t signature_len);
 
-int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
+int sign_picnic2(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
                  const uint8_t* message, size_t messageByteLength, signature2_t* sig,
                  const picnic_instance_t* params);
-int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* plaintext,
+int verify_picnic2(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plaintext,
                    const uint8_t* message, size_t messageByteLength,
                    const picnic_instance_t* params);
 
