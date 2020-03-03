@@ -15,17 +15,23 @@
 
 void mpc_matrix_mul_uint64_128(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                                shares_t* mask_shares);
+void mpc_matrix_mul_uint64_129(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
+                               shares_t* mask_shares);
 void mpc_matrix_mul_uint64_192(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                                shares_t* mask_shares);
 void mpc_matrix_mul_uint64_256(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                                shares_t* mask_shares);
 void mpc_matrix_mul_s128_128(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                              shares_t* mask_shares);
+void mpc_matrix_mul_s128_129(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
+                             shares_t* mask_shares);
 void mpc_matrix_mul_s128_192(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                              shares_t* mask_shares);
 void mpc_matrix_mul_s128_256(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                              shares_t* mask_shares);
 void mpc_matrix_mul_s256_128(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
+                             shares_t* mask_shares);
+void mpc_matrix_mul_s256_129(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                              shares_t* mask_shares);
 void mpc_matrix_mul_s256_192(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                              shares_t* mask_shares);

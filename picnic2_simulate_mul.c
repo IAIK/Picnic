@@ -484,6 +484,42 @@ void mpc_matrix_mul_uint64_128(mzd_local_t** output, mzd_local_t** vec, const mz
   freeShares(tmp_mask);
 }
 
+void mpc_matrix_mul_uint64_129(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
+                               shares_t* mask_shares) {
+  const uint32_t rowstride = (256) / 8;
+  shares_t* tmp_mask       = allocateShares(mask_shares->numWords);
+
+  for (size_t i = 63; i < 192; i++) {
+    const uint64_t mask_share = mask_shares->shares[192 - 1 - i];
+
+    for (uint32_t j = 0; j < 128; j += 8) {
+      uint8_t matrix_byte = ((const uint8_t*)matrix->w64)[(i * rowstride) + (192 - 1 - j) / 8];
+
+      const block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
+      const block_t* mask2 = &block_masks[(matrix_byte >> 0) & 0xF];
+
+      tmp_mask->shares[j + 0] ^= mask_share & mask1->w64[0];
+      tmp_mask->shares[j + 1] ^= mask_share & mask1->w64[1];
+      tmp_mask->shares[j + 2] ^= mask_share & mask1->w64[2];
+      tmp_mask->shares[j + 3] ^= mask_share & mask1->w64[3];
+      tmp_mask->shares[j + 4] ^= mask_share & mask2->w64[0];
+      tmp_mask->shares[j + 5] ^= mask_share & mask2->w64[1];
+      tmp_mask->shares[j + 6] ^= mask_share & mask2->w64[2];
+      tmp_mask->shares[j + 7] ^= mask_share & mask2->w64[3];
+    }
+    uint8_t matrix_byte = ((const uint8_t*)matrix->w64)[(i * rowstride) + (192 - 1 - 128) / 8];
+    const block_t* mask1 = &block_masks[(matrix_byte >> 4) & 0xF];
+    tmp_mask->shares[128] ^= mask_share & mask1->w64[0];
+  }
+  for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+    mzd_local_t tmp;
+    mzd_copy_uint64_192(&tmp, vec[k]);
+    mzd_mul_v_uint64_129(output[k], &tmp, matrix);
+  }
+
+  copyShares(mask_shares, tmp_mask);
+  freeShares(tmp_mask);
+}
 void mpc_matrix_mul_uint64_192(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                                shares_t* mask_shares) {
   const uint32_t rowstride = (256) / 8;
@@ -589,6 +625,44 @@ void mpc_matrix_mul_s128_128(mzd_local_t** output, mzd_local_t** vec, const mzd_
 }
 
 ATTR_TARGET_S128
+void mpc_matrix_mul_s128_129(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
+                             shares_t* mask_shares) {
+  const uint32_t rowstride = (256) / 8;
+  shares_t* tmp_mask       = allocateShares(mask_shares->numWords);
+
+  for (size_t i = 63; i < 192; i++) {
+    const uint64_t mask_share = mask_shares->shares[192 - 1 - i];
+    const block_t mask_share2 = {{mask_share, mask_share, mask_share, mask_share}};
+    word128 mask1, mask2, mask3, mask4;
+
+    word128* tmp_mask_block = (word128*)tmp_mask->shares;
+
+    for (uint32_t j = 0; j < 128; j += 8, tmp_mask_block += 4) {
+      uint8_t matrix_byte = ((const uint8_t*)matrix->w64)[(i * rowstride) + (192 - 1 - j) / 8];
+
+      mask1 = block_masks[(matrix_byte >> 4) & 0xf].w128[0];
+      mask2 = block_masks[(matrix_byte >> 4) & 0xf].w128[1];
+      mask3 = block_masks[(matrix_byte >> 0) & 0xf].w128[0];
+      mask4 = block_masks[(matrix_byte >> 0) & 0xf].w128[1];
+
+      tmp_mask_block[0] = mm128_xor_mask(tmp_mask_block[0], mask_share2.w128[0], mask1);
+      tmp_mask_block[1] = mm128_xor_mask(tmp_mask_block[1], mask_share2.w128[0], mask2);
+      tmp_mask_block[2] = mm128_xor_mask(tmp_mask_block[2], mask_share2.w128[0], mask3);
+      tmp_mask_block[3] = mm128_xor_mask(tmp_mask_block[3], mask_share2.w128[0], mask4);
+    }
+    uint8_t matrix_byte = ((const uint8_t*)matrix->w64)[(i * rowstride) + (192 - 1 - 128) / 8];
+    const block_t* mask = &block_masks[(matrix_byte >> 4) & 0xF];
+    tmp_mask->shares[128] ^= mask_share & mask->w64[0];
+  }
+  for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+    mzd_mul_v_s128_129(output[k], vec[k], matrix);
+  }
+
+  copyShares(mask_shares, tmp_mask);
+  freeShares(tmp_mask);
+}
+
+ATTR_TARGET_S128
 void mpc_matrix_mul_s128_192(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
                              shares_t* mask_shares) {
   const uint32_t rowstride = (256) / 8;
@@ -684,6 +758,39 @@ void mpc_matrix_mul_s256_128(mzd_local_t** output, mzd_local_t** vec, const mzd_
   }
   for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
     mzd_mul_v_s256_128(output[k], vec[k], matrix);
+  }
+
+  copyShares(mask_shares, tmp_mask);
+  freeShares(tmp_mask);
+}
+
+ATTR_TARGET_AVX2
+void mpc_matrix_mul_s256_129(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,
+                             shares_t* mask_shares) {
+  const uint32_t rowstride = (256) / 8;
+  shares_t* tmp_mask       = allocateShares(mask_shares->numWords);
+
+  for (size_t i = 63; i < 192; i++) {
+    const uint64_t mask_share = mask_shares->shares[192 - 1 - i];
+    const word256 mask_share2 = _mm256_set1_epi64x(mask_share);
+    word256 mask1, mask2;
+
+    word256* tmp_mask_block = (word256*)tmp_mask->shares;
+
+    for (uint32_t j = 0; j < 128; j += 8, tmp_mask_block += 2) {
+      uint8_t matrix_byte = ((const uint8_t*)matrix->w64)[(i * rowstride) + (192 - 1 - j) / 8];
+      mask1               = block_masks[(matrix_byte >> 4) & 0xf].w256;
+      mask2               = block_masks[(matrix_byte >> 0) & 0xf].w256;
+
+      tmp_mask_block[0] = mm256_xor_mask(tmp_mask_block[0], mask_share2, mask1);
+      tmp_mask_block[1] = mm256_xor_mask(tmp_mask_block[1], mask_share2, mask2);
+    }
+    uint8_t matrix_byte = ((const uint8_t*)matrix->w64)[(i * rowstride) + (192 - 1 - 128) / 8];
+    const block_t* mask = &block_masks[(matrix_byte >> 4) & 0xF];
+    tmp_mask->shares[128] ^= mask_share & mask->w64[0];
+  }
+  for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
+    mzd_mul_v_s256_129(output[k], vec[k], matrix);
   }
 
   copyShares(mask_shares, tmp_mask);

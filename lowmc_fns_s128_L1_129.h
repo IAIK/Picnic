@@ -13,7 +13,7 @@
 #define MUL mzd_mul_v_s128_129
 #define XOR mzd_xor_s128_256
 #define COPY mzd_copy_s128_256
-#define MPC_MUL mpc_matrix_mul_s128_192
+#define MPC_MUL mpc_matrix_mul_s128_129
 
 #if defined(WITH_LOWMC_129_129_4)
 #define LOWMC_INSTANCE lowmc_129_129_4
