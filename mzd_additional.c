@@ -311,8 +311,8 @@ void mzd_shift_left_uint64_128(mzd_local_t* res, const mzd_local_t* val, unsigne
 
 void mzd_shift_right_uint64_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
-  const block_t* block           = CONST_BLOCK(val, 0);
-  block_t* rblock                = BLOCK(res, 0);
+  const block_t* block          = CONST_BLOCK(val, 0);
+  block_t* rblock               = BLOCK(res, 0);
 
   rblock->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
   rblock->w64[1] = block->w64[1] >> count;
@@ -330,8 +330,8 @@ void mzd_shift_left_uint64_192(mzd_local_t* res, const mzd_local_t* val, unsigne
 
 void mzd_shift_right_uint64_192(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
-  const block_t* block           = CONST_BLOCK(val, 0);
-  block_t* rblock                = BLOCK(res, 0);
+  const block_t* block          = CONST_BLOCK(val, 0);
+  block_t* rblock               = BLOCK(res, 0);
 
   rblock->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
   rblock->w64[1] = (block->w64[1] >> count) | (block->w64[2] << left_count);
@@ -351,8 +351,8 @@ void mzd_shift_left_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsigne
 
 void mzd_shift_right_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
-  const block_t* block           = CONST_BLOCK(val, 0);
-  block_t* rblock                = BLOCK(res, 0);
+  const block_t* block          = CONST_BLOCK(val, 0);
+  block_t* rblock               = BLOCK(res, 0);
 
   rblock->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
   rblock->w64[1] = (block->w64[1] >> count) | (block->w64[2] << left_count);
@@ -372,8 +372,8 @@ void mzd_rotate_left_uint64_128(mzd_local_t* res, const mzd_local_t* val, unsign
 
 void mzd_rotate_right_uint64_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
-  const block_t* block           = CONST_BLOCK(val, 0);
-  block_t* rblock                = BLOCK(res, 0);
+  const block_t* block          = CONST_BLOCK(val, 0);
+  block_t* rblock               = BLOCK(res, 0);
 
   const word tmp = block->w64[0] << left_count;
   rblock->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
@@ -393,8 +393,8 @@ void mzd_rotate_left_uint64_192(mzd_local_t* res, const mzd_local_t* val, unsign
 
 void mzd_rotate_right_uint64_192(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
-  const block_t* block           = CONST_BLOCK(val, 0);
-  block_t* rblock                = BLOCK(res, 0);
+  const block_t* block          = CONST_BLOCK(val, 0);
+  block_t* rblock               = BLOCK(res, 0);
 
   const word tmp = block->w64[0] << left_count;
   rblock->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
@@ -416,8 +416,8 @@ void mzd_rotate_left_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsign
 
 void mzd_rotate_right_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int left_count = 8 * sizeof(word) - count;
-  const block_t* block           = CONST_BLOCK(val, 0);
-  block_t* rblock                = BLOCK(res, 0);
+  const block_t* block          = CONST_BLOCK(val, 0);
+  block_t* rblock               = BLOCK(res, 0);
 
   const word tmp = block->w64[0] << left_count;
   rblock->w64[0] = (block->w64[0] >> count) | (block->w64[1] << left_count);
@@ -716,6 +716,34 @@ void mzd_mul_v_uint64_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   mzd_addmul_v_uint64_128(c, v, A);
 }
 
+void mzd_addmul_v_uint64_129(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  block_t* cblock       = BLOCK(c, 0);
+  const word* vptr      = CONST_BLOCK(v, 0)->w64;
+  const block_t* Ablock = CONST_BLOCK(A, 0);
+
+  Ablock += 63;
+  {
+    word idx            = (*vptr) >> 63;
+    const uint64_t mask = -(idx & 1);
+    mzd_xor_mask_uint64_block(cblock, Ablock, mask, 3);
+    Ablock++;
+    vptr++;
+  }
+
+  for (unsigned int w = 2; w; --w, ++vptr) {
+    word idx = *vptr;
+    for (unsigned int i = sizeof(word) * 8; i; --i, idx >>= 1, ++Ablock) {
+      const uint64_t mask = -(idx & 1);
+      mzd_xor_mask_uint64_block(cblock, Ablock, mask, 3);
+    }
+  }
+}
+
+void mzd_mul_v_uint64_129(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
+  clear_uint64_block(BLOCK(c, 0), 3);
+  mzd_addmul_v_uint64_129(c, v, A);
+}
+
 void mzd_addmul_v_uint64_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) {
   block_t* cblock       = BLOCK(c, 0);
   const word* vptr      = CONST_BLOCK(v, 0)->w64;
@@ -754,4 +782,3 @@ void mzd_mul_v_uint64_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t cons
   clear_uint64_block(BLOCK(c, 0), 4);
   mzd_addmul_v_uint64_256(c, v, A);
 }
-

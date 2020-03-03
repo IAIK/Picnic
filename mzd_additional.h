@@ -127,6 +127,7 @@ void mzd_rotate_right_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsig
  * Compute v * A optimized for v being a vector.
  */
 void mzd_mul_v_uint64_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
+void mzd_mul_v_uint64_129(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 void mzd_mul_v_uint64_192(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 void mzd_mul_v_uint64_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) ATTR_NONNULL;
 void mzd_mul_v_s128_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* A) ATTR_NONNULL;
@@ -140,6 +141,8 @@ void mzd_mul_v_s256_256(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
  * Compute c + v * A optimized for c and v being vectors.
  */
 void mzd_addmul_v_uint64_128(mzd_local_t* c, mzd_local_t const* v,
+                             mzd_local_t const* A) ATTR_NONNULL;
+void mzd_addmul_v_uint64_129(mzd_local_t* c, mzd_local_t const* v,
                              mzd_local_t const* A) ATTR_NONNULL;
 void mzd_addmul_v_uint64_192(mzd_local_t* c, mzd_local_t const* v,
                              mzd_local_t const* A) ATTR_NONNULL;
