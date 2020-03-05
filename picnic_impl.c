@@ -1148,6 +1148,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   const size_t lowmc_n        = lowmc->n;
   const size_t lowmc_r        = lowmc->r;
   const size_t view_size      = pp->view_size;
+  const unsigned int diff     = pp->input_size * 8 - lowmc->n;
 
   const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->impls.zkbpp_lowmc_verify;
   const zkbpp_share_implementation_f mzd_share                = pp->impls.mzd_share;
@@ -1274,7 +1275,13 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       }
 
       mzd_from_char_array(in_out_shares[0].s[0], helper->round->input_shares[0], input_size);
+      if (b_i) {
+        clear_extra_bits(in_out_shares[0].s[0], diff);
+      }
       mzd_from_char_array(in_out_shares[0].s[1], helper->round->input_shares[1], input_size);
+      if (c_i) {
+        clear_extra_bits(in_out_shares[0].s[1], diff);
+      }
 
       // compute random tapes
       for (unsigned int j = 0; j < SC_VERIFY; ++j) {
