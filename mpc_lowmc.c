@@ -63,7 +63,7 @@
 static void mpc_and_uint64_128(mzd_local_t* res, const mzd_local_t* first,
                                const mzd_local_t* second, const mzd_local_t* r, view_t* view,
                                unsigned viewshift) {
-  mzd_local_t tmp;
+  mzd_local_t tmp = {{0}};
 
   for (unsigned m = 0; m < SC_PROOF; ++m) {
     const unsigned j = (m + 1) % SC_PROOF;
@@ -94,9 +94,9 @@ static void mpc_and_uint64_128(mzd_local_t* res, const mzd_local_t* first,
 }
 
 static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first,
-                                      const mzd_local_t* second, const mzd_local_t* r,
-                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
-  mzd_local_t tmp;
+                                      const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                                      const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp = {{0}};
 
   for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
     const unsigned j = m + 1;
@@ -128,7 +128,7 @@ static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first
 static void mpc_and_uint64_192(mzd_local_t* res, const mzd_local_t* first,
                                const mzd_local_t* second, const mzd_local_t* r, view_t* view,
                                unsigned viewshift) {
-  mzd_local_t tmp;
+  mzd_local_t tmp = {{0}};
 
   for (unsigned m = 0; m < SC_PROOF; ++m) {
     const unsigned j = (m + 1) % SC_PROOF;
@@ -159,9 +159,9 @@ static void mpc_and_uint64_192(mzd_local_t* res, const mzd_local_t* first,
 }
 
 static void mpc_and_verify_uint64_192(mzd_local_t* res, const mzd_local_t* first,
-                                      const mzd_local_t* second, const mzd_local_t* r,
-                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
-  mzd_local_t tmp;
+                                      const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                                      const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp = {{0}};
 
   for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
     const unsigned j = m + 1;
@@ -193,7 +193,7 @@ static void mpc_and_verify_uint64_192(mzd_local_t* res, const mzd_local_t* first
 static void mpc_and_uint64_256(mzd_local_t* res, const mzd_local_t* first,
                                const mzd_local_t* second, const mzd_local_t* r, view_t* view,
                                unsigned viewshift) {
-  mzd_local_t tmp;
+  mzd_local_t tmp = {{0}};
 
   for (unsigned m = 0; m < SC_PROOF; ++m) {
     const unsigned j = (m + 1) % SC_PROOF;
@@ -224,9 +224,9 @@ static void mpc_and_uint64_256(mzd_local_t* res, const mzd_local_t* first,
 }
 
 static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first,
-                                      const mzd_local_t* second, const mzd_local_t* r,
-                                      view_t* view, const mzd_local_t* mask, unsigned viewshift) {
-  mzd_local_t tmp;
+                                      const mzd_local_t* second, const mzd_local_t* r, view_t* view,
+                                      const mzd_local_t* mask, unsigned viewshift) {
+  mzd_local_t tmp = {{0}};
 
   for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
     const unsigned j = m + 1;
@@ -256,9 +256,9 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
 }
 
 #define bitsliced_step_1(sc, AND, ROL, MASK_A, MASK_B, MASK_C)                                     \
-  mzd_local_t x2m[sc];                                                                             \
-  mzd_local_t r0m[sc], r1m[sc], r2m[sc];                                                           \
-  mzd_local_t x0s[sc], x1s[sc], r0s[sc], r1s[sc];                                                  \
+  mzd_local_t x2m[sc] = {{{0}}};                                                                   \
+  mzd_local_t r0m[sc] = {{{0}}}, r1m[sc] = {{{0}}}, r2m[sc] = {{{0}}};                             \
+  mzd_local_t x0s[sc] = {{{0}}}, x1s[sc] = {{{0}}}, r0s[sc] = {{{0}}}, r1s[sc] = {{{0}}};          \
                                                                                                    \
   for (unsigned int m = 0; m < (sc); ++m) {                                                        \
     AND(&x0s[m], &in[m], MASK_A);                                                                  \
@@ -976,7 +976,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
 #endif
 
-
 #if !defined(NO_UINT64_FALLBACK)
 #if defined(WITH_LOWMC_126_126_4)
   if (lowmc->n == 126 && lowmc->m == 42) {
@@ -1057,7 +1056,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
   }
 #endif
 #endif
-
 
 #if !defined(NO_UINT64_FALLBACK)
 #if defined(WITH_LOWMC_126_126_4)
