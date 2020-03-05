@@ -975,7 +975,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const transform_t transform = pp->transform;
   const size_t input_size     = pp->input_size;
   const size_t output_size    = pp->output_size;
-  const size_t view_count     = lowmc->r;
   const size_t lowmc_k        = lowmc->k;
   const size_t lowmc_n        = lowmc->n;
   const size_t lowmc_r        = lowmc->r;
@@ -993,7 +992,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   lowmc_store_impl(lowmc_key, p, &recorded_state);
 
   sig_proof_t* prf = proof_new(pp);
-  view_t* views    = aligned_alloc(32, sizeof(view_t) * view_count);
+  view_t* views    = aligned_alloc(32, sizeof(view_t) * lowmc_r);
 
   in_out_shares_t in_out_shares[2];
   mzd_local_init_multiple_ex(in_out_shares[0].s, SC_PROOF, 1, lowmc_k, false);
@@ -1145,7 +1144,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   const transform_t transform = pp->transform;
   const size_t input_size     = pp->input_size;
   const size_t output_size    = pp->output_size;
-  const size_t view_count     = lowmc->r;
   const size_t lowmc_k        = lowmc->k;
   const size_t lowmc_n        = lowmc->n;
   const size_t lowmc_r        = lowmc->r;
@@ -1162,7 +1160,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   in_out_shares_t in_out_shares[2];
   mzd_local_init_multiple_ex(in_out_shares[0].s, SC_VERIFY, 1, lowmc_k, false);
   mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
-  view_t* views    = aligned_alloc(32, sizeof(view_t) * view_count);
+  view_t* views    = aligned_alloc(32, sizeof(view_t) * lowmc_r);
   rvec_t* rvec     = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for and-gates
 
   // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when
