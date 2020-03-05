@@ -295,6 +295,8 @@ const char* PICNIC_CALLING_CONVENTION picnic_get_param_name(picnic_params_t para
     return "Picnic_L5_UR";
   case Picnic2_L1_FS:
     return "Picnic2_L1_FS";
+  case Picnic2_L1_129_FS:
+    return "Picnic2_L1_129_FS";
   case Picnic2_L3_FS:
     return "Picnic2_L3_FS";
   case Picnic2_L5_FS:
