@@ -107,9 +107,9 @@ typedef __m256i word256;
 /* !l & r */
 #define mm256_nand(l, r) _mm256_andnot_si256((l), (r))
 
-apply_region(mm256_xor_region, word256, mm256_xor, FN_ATTRIBUTES_AVX2);
-apply_mask_region(mm256_xor_mask_region, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2);
-apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST);
+apply_region(mm256_xor_region, word256, mm256_xor, FN_ATTRIBUTES_AVX2)
+apply_mask_region(mm256_xor_mask_region, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2)
+apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST)
 #endif
 
 #if defined(WITH_SSE2)
@@ -124,11 +124,11 @@ typedef __m128i word128;
 #define mm128_sl_u64(x, s) _mm_slli_epi64((x), (s))
 #define mm128_sr_u64(x, s) _mm_srli_epi64((x), (s))
 
-apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_SSE2);
-apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2);
-apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CONST);
-apply_array(mm256_xor_sse, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2);
-apply_array(mm256_and_sse, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2);
+apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_SSE2)
+apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2)
+apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CONST)
+apply_array(mm256_xor_sse, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2)
+apply_array(mm256_and_sse, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2)
 #endif
 
 #if defined(WITH_NEON)
@@ -143,11 +143,11 @@ typedef uint64x2_t word128;
 #define mm128_sl_u64(x, s) vshlq_n_u64((x), (s))
 #define mm128_sr_u64(x, s) vshrq_n_u64((x), (s))
 
-apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON);
-apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON);
-apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CONST);
-apply_array(mm256_xor, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON);
-apply_array(mm256_and, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
+apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON)
+apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON)
+apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CONST)
+apply_array(mm256_xor, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON)
+apply_array(mm256_and, word128, mm128_and, 2, FN_ATTRIBUTES_NEON)
 #endif
 
 #if defined(_MSC_VER)
