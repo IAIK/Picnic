@@ -83,7 +83,7 @@ const uint8_t HASH_PREFIX_5 = 5;
   { NULL, NULL, NULL, NULL, NULL }
 #else
 #define NULL_FNS                                                                                   \
-  { NULL, NULL, NULL }
+  { NULL }
 #endif
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
