@@ -80,8 +80,8 @@ static void mpc_and_uint64_128(mzd_local_t* res, const mzd_local_t* first,
     mzd_xor_uint64_128(&res[m], &res[m], &tmp);
 
     // ... ^ r[m] ^ r[m + 1]
-    mzd_xor_uint64_128(&res[m], &res[m], &r[m]);
-    mzd_xor_uint64_128(&res[m], &res[m], &r[j]);
+    mzd_xor_uint64_128(&tmp, &r[m], &r[j]);
+    mzd_xor_uint64_128(&res[m], &res[m], &tmp);
 
     if (viewshift) {
       mzd_shift_right_uint64_128(&tmp, &res[m], viewshift);
@@ -109,8 +109,8 @@ static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first
     mzd_and_uint64_128(&tmp, &first[m], &second[j]);
     mzd_xor_uint64_128(&res[m], &res[m], &tmp);
 
-    mzd_xor_uint64_128(&res[m], &res[m], &r[m]);
-    mzd_xor_uint64_128(&res[m], &res[m], &r[j]);
+    mzd_xor_uint64_128(&tmp, &r[m], &r[j]);
+    mzd_xor_uint64_128(&res[m], &res[m], &tmp);
 
     if (viewshift) {
       mzd_shift_right_uint64_128(&tmp, &res[m], viewshift);
@@ -149,8 +149,8 @@ static void mpc_and_uint64_192(mzd_local_t* res, const mzd_local_t* first,
     mzd_xor_uint64_192(&res[m], &res[m], &tmp);
 
     // ... ^ r[m] ^ r[m + 1]
-    mzd_xor_uint64_192(&res[m], &res[m], &r[m]);
-    mzd_xor_uint64_192(&res[m], &res[m], &r[j]);
+    mzd_xor_uint64_192(&tmp, &r[m], &r[j]);
+    mzd_xor_uint64_192(&res[m], &res[m], &tmp);
 
     if (viewshift) {
       mzd_shift_right_uint64_192(&tmp, &res[m], viewshift);
@@ -178,8 +178,8 @@ static void mpc_and_verify_uint64_192(mzd_local_t* res, const mzd_local_t* first
     mzd_and_uint64_192(&tmp, &first[m], &second[j]);
     mzd_xor_uint64_192(&res[m], &res[m], &tmp);
 
-    mzd_xor_uint64_192(&res[m], &res[m], &r[m]);
-    mzd_xor_uint64_192(&res[m], &res[m], &r[j]);
+    mzd_xor_uint64_192(&tmp, &r[m], &r[j]);
+    mzd_xor_uint64_192(&res[m], &res[m], &tmp);
 
     if (viewshift) {
       mzd_shift_right_uint64_192(&tmp, &res[m], viewshift);
@@ -218,8 +218,8 @@ static void mpc_and_uint64_256(mzd_local_t* res, const mzd_local_t* first,
     mzd_xor_uint64_256(&res[m], &res[m], &tmp);
 
     // ... ^ r[m] ^ r[m + 1]
-    mzd_xor_uint64_256(&res[m], &res[m], &r[m]);
-    mzd_xor_uint64_256(&res[m], &res[m], &r[j]);
+    mzd_xor_uint64_256(&tmp, &r[m], &r[j]);
+    mzd_xor_uint64_256(&res[m], &res[m], &tmp);
 
     if (viewshift) {
       mzd_shift_right_uint64_256(&tmp, &res[m], viewshift);
@@ -247,8 +247,8 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
     mzd_and_uint64_256(&tmp, &first[m], &second[j]);
     mzd_xor_uint64_256(&res[m], &res[m], &tmp);
 
-    mzd_xor_uint64_256(&res[m], &res[m], &r[m]);
-    mzd_xor_uint64_256(&res[m], &res[m], &r[j]);
+    mzd_xor_uint64_256(&tmp, &r[m], &r[j]);
+    mzd_xor_uint64_256(&res[m], &res[m], &tmp);
 
     if (viewshift) {
       mzd_shift_right_uint64_256(&tmp, &res[m], viewshift);
