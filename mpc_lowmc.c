@@ -65,8 +65,8 @@ static void mpc_and_uint64_128(mzd_local_t* res, const mzd_local_t* first,
                                unsigned viewshift) {
   mzd_local_t tmp = {{0}};
 
-  for (unsigned m = 0; m < SC_PROOF; ++m) {
-    const unsigned j = (m + 1) % SC_PROOF;
+  for (unsigned int m = 0; m < SC_PROOF; ++m) {
+    const unsigned int j = (m + 1) % SC_PROOF;
 
     // f[m] & s[m]
     mzd_and_uint64_128(&res[m], &first[m], &second[m]);
@@ -98,8 +98,8 @@ static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first
                                       const mzd_local_t* mask, unsigned viewshift) {
   mzd_local_t tmp = {{0}};
 
-  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
-    const unsigned j = m + 1;
+  for (unsigned int m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned int j = m + 1;
 
     mzd_and_uint64_128(&res[m], &first[m], &second[m]);
 
@@ -112,7 +112,7 @@ static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first
     mzd_xor_uint64_128(&res[m], &res[m], &r[m]);
     mzd_xor_uint64_128(&res[m], &res[m], &r[j]);
 
-    if (viewshift || m) {
+    if (viewshift) {
       mzd_shift_right_uint64_128(&tmp, &res[m], viewshift);
       mzd_xor_uint64_128(&view->s[m], &view->s[m], &tmp);
     } else {
@@ -130,8 +130,8 @@ static void mpc_and_uint64_192(mzd_local_t* res, const mzd_local_t* first,
                                unsigned viewshift) {
   mzd_local_t tmp = {{0}};
 
-  for (unsigned m = 0; m < SC_PROOF; ++m) {
-    const unsigned j = (m + 1) % SC_PROOF;
+  for (unsigned int m = 0; m < SC_PROOF; ++m) {
+    const unsigned int j = (m + 1) % SC_PROOF;
 
     // f[m] & s[m]
     mzd_and_uint64_192(&res[m], &first[m], &second[m]);
@@ -163,8 +163,8 @@ static void mpc_and_verify_uint64_192(mzd_local_t* res, const mzd_local_t* first
                                       const mzd_local_t* mask, unsigned viewshift) {
   mzd_local_t tmp = {{0}};
 
-  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
-    const unsigned j = m + 1;
+  for (unsigned int m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned int j = m + 1;
 
     mzd_and_uint64_192(&res[m], &first[m], &second[m]);
 
@@ -195,8 +195,8 @@ static void mpc_and_uint64_256(mzd_local_t* res, const mzd_local_t* first,
                                unsigned viewshift) {
   mzd_local_t tmp = {{0}};
 
-  for (unsigned m = 0; m < SC_PROOF; ++m) {
-    const unsigned j = (m + 1) % SC_PROOF;
+  for (unsigned int m = 0; m < SC_PROOF; ++m) {
+    const unsigned int j = (m + 1) % SC_PROOF;
 
     // f[m] & s[m]
     mzd_and_uint64_256(&res[m], &first[m], &second[m]);
@@ -228,8 +228,8 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
                                       const mzd_local_t* mask, unsigned viewshift) {
   mzd_local_t tmp = {{0}};
 
-  for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {
-    const unsigned j = m + 1;
+  for (unsigned int m = 0; m < (SC_VERIFY - 1); ++m) {
+    const unsigned int j = m + 1;
 
     mzd_and_uint64_256(&res[m], &first[m], &second[m]);
 
@@ -242,7 +242,7 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
     mzd_xor_uint64_256(&res[m], &res[m], &r[m]);
     mzd_xor_uint64_256(&res[m], &res[m], &r[j]);
 
-    if (viewshift || m) {
+    if (viewshift) {
       mzd_shift_right_uint64_256(&tmp, &res[m], viewshift);
       mzd_xor_uint64_256(&view->s[m], &view->s[m], &tmp);
     } else {
@@ -475,13 +475,13 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
 
 #define mpc_mm_and_verify_def(AND, XOR, ROL, ROR, res, first, second, r, MASK, viewshift)          \
   do {                                                                                             \
-    for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {                                               \
-      const unsigned j = m + 1;                                                                    \
+    for (unsigned int m = 0; m < (SC_VERIFY - 1); ++m) {                                           \
+      const unsigned int j = m + 1;                                                                \
                                                                                                    \
       res[m] = XOR(AND(first[m], second[m]), AND(first[j], second[m]));                            \
       res[m] = XOR(res[m], AND(first[m], second[j]));                                              \
       res[m] = XOR(res[m], XOR(r[m], r[j]));                                                       \
-      if (viewshift || m) {                                                                        \
+      if (viewshift) {                                                                             \
         VIEW(m) = XOR(ROR(res[m], viewshift), VIEW(m));                                            \
       } else {                                                                                     \
         VIEW(m) = res[m];                                                                          \
@@ -561,7 +561,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
 #define mpc_mm_multiple_and_verify_def(type, size, AND, XOR, ROL, ROR, res, first, second, r,      \
                                        MASK, viewshift)                                            \
   do {                                                                                             \
-    for (unsigned m = 0; m < (SC_VERIFY - 1); ++m) {                                               \
+    for (unsigned int m = 0; m < (SC_VERIFY - 1); ++m) {                                           \
       const unsigned int j = (m + 1) % SC_PROOF;                                                   \
       type tmp1[size] ATTR_ALIGNED(alignof(type)), tmp2[size] ATTR_ALIGNED(alignof(type));         \
                                                                                                    \
@@ -572,7 +572,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
       XOR(res[m], res[m], tmp1);                                                                   \
       XOR(tmp2, r[m], r[j]);                                                                       \
       XOR(res[m], res[m], tmp2);                                                                   \
-      if (viewshift || m) {                                                                        \
+      if (viewshift) {                                                                             \
         ROR(tmp1, res[m], viewshift);                                                              \
         XOR(VIEW(m), tmp1, VIEW(m));                                                               \
       } else {                                                                                     \
