@@ -61,9 +61,11 @@ const uint8_t HASH_PREFIX_5 = 5;
 #elif defined(WITH_ZKBPP)
 #define NULL_FNS                                                                                   \
   { NULL, NULL, NULL, NULL, NULL }
-#else
+#elif defined(WITH_KKW)
 #define NULL_FNS                                                                                   \
-  { NULL }
+  { NULL, NULL, NULL }
+#else
+#error "At least one of WITH_ZKBPP and WITH_KKW have to be defined!"
 #endif
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
