@@ -121,8 +121,12 @@ static void mpc_and_verify_uint64_128(mzd_local_t* res, const mzd_local_t* first
     }
   }
 
-  mzd_shift_left_uint64_128(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
-  mzd_and_uint64_128(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+  if (viewshift) {
+    mzd_shift_left_uint64_128(&tmp, &view->s[SC_VERIFY - 1], viewshift);
+    mzd_and_uint64_128(&res[SC_VERIFY - 1], &tmp, mask);
+  } else {
+    mzd_and_uint64_128(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], mask);
+  }
 }
 
 static void mpc_and_uint64_192(mzd_local_t* res, const mzd_local_t* first,
@@ -177,7 +181,7 @@ static void mpc_and_verify_uint64_192(mzd_local_t* res, const mzd_local_t* first
     mzd_xor_uint64_192(&res[m], &res[m], &r[m]);
     mzd_xor_uint64_192(&res[m], &res[m], &r[j]);
 
-    if (viewshift || m) {
+    if (viewshift) {
       mzd_shift_right_uint64_192(&tmp, &res[m], viewshift);
       mzd_xor_uint64_192(&view->s[m], &view->s[m], &tmp);
     } else {
@@ -186,8 +190,12 @@ static void mpc_and_verify_uint64_192(mzd_local_t* res, const mzd_local_t* first
     }
   }
 
-  mzd_shift_left_uint64_192(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
-  mzd_and_uint64_192(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+  if (viewshift) {
+    mzd_shift_left_uint64_192(&tmp, &view->s[SC_VERIFY - 1], viewshift);
+    mzd_and_uint64_192(&res[SC_VERIFY - 1], &tmp, mask);
+  } else {
+    mzd_and_uint64_192(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], mask);
+  }
 }
 
 static void mpc_and_uint64_256(mzd_local_t* res, const mzd_local_t* first,
@@ -251,8 +259,12 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
     }
   }
 
-  mzd_shift_left_uint64_256(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], viewshift);
-  mzd_and_uint64_256(&res[SC_VERIFY - 1], &res[SC_VERIFY - 1], mask);
+  if (viewshift) {
+    mzd_shift_left_uint64_256(&tmp, &view->s[SC_VERIFY - 1], viewshift);
+    mzd_and_uint64_256(&res[SC_VERIFY - 1], &tmp, mask);
+  } else {
+    mzd_and_uint64_256(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], mask);
+  }
 }
 
 #define bitsliced_step_1(sc, AND, ROL, MASK_A, MASK_B, MASK_C)                                     \
@@ -487,7 +499,11 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
         VIEW(m) = res[m];                                                                          \
       }                                                                                            \
     }                                                                                              \
-    res[SC_VERIFY - 1] = AND(ROL(VIEW(SC_VERIFY - 1), viewshift), MASK);                           \
+    if (viewshift) {                                                                               \
+      res[SC_VERIFY - 1] = AND(ROL(VIEW(SC_VERIFY - 1), viewshift), MASK);                         \
+    } else {                                                                                       \
+      res[SC_VERIFY - 1] = AND(VIEW(SC_VERIFY - 1), MASK);                                         \
+    }                                                                                              \
   } while (0)
 
 #define bitsliced_mm_multiple_step_1(sc, type, size, AND, ROL, MASK_A, MASK_B, MASK_C)             \
@@ -582,9 +598,13 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
       }                                                                                            \
     }                                                                                              \
                                                                                                    \
-    type tmp[size] ATTR_ALIGNED(alignof(type));                                                    \
-    ROL(tmp, VIEW(SC_VERIFY - 1), viewshift);                                                      \
-    AND(res[SC_VERIFY - 1], tmp, MASK);                                                            \
+    if (viewshift) {                                                                               \
+      type tmp[size] ATTR_ALIGNED(alignof(type));                                                  \
+      ROL(tmp, VIEW(SC_VERIFY - 1), viewshift);                                                    \
+      AND(res[SC_VERIFY - 1], tmp, MASK);                                                          \
+    } else {                                                                                       \
+      AND(res[SC_VERIFY - 1], VIEW(SC_VERIFY - 1), MASK);                                          \
+    }                                                                                              \
   } while (0)
 
 #if defined(WITH_SSE2) || defined(WITH_NEON)
