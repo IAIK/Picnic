@@ -628,9 +628,9 @@ void mzd_addmul_v_s256_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t con
       cval[1] = mm256_xor_mask(cval[1], Ablock[3].w256, mm256_compute_mask_2(idx, 6));
     }
   }
-  cval[0] = mm256_xor(cval[0], cval[1]);
-  cblock->w128[0] =
-      mm128_xor(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
+  cval[0]         = mm256_xor(cval[0], cval[1]);
+  cblock->w128[0] = _mm256_extractf128_si256(
+      mm256_xor(cval[0], _mm256_permute4x64_epi64(cval[0], _MM_SHUFFLE(3, 2, 3, 2))), 0);
 }
 
 ATTR_TARGET_AVX2
@@ -649,9 +649,9 @@ void mzd_mul_v_s256_128(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const*
       cval[1] = mm256_xor_mask(cval[1], Ablock[3].w256, mm256_compute_mask_2(idx, 6));
     }
   }
-  cval[0] = mm256_xor(cval[0], cval[1]);
-  cblock->w128[0] =
-      mm128_xor(_mm256_extractf128_si256(cval[0], 0), _mm256_extractf128_si256(cval[0], 1));
+  cval[0]         = mm256_xor(cval[0], cval[1]);
+  cblock->w128[0] = _mm256_extractf128_si256(
+      mm256_xor(cval[0], _mm256_permute4x64_epi64(cval[0], _MM_SHUFFLE(3, 2, 3, 2))), 0);
 }
 
 ATTR_TARGET_AVX2
