@@ -107,7 +107,7 @@ ATTR_TARGET_S128
 static int test_s128_128(void) {
   int ret = 0;
 
-  mzd_local_t val = {{UINT64_C(0xfedcba9876543210), UINT64_C(0xfedcba9876543210) }};
+  mzd_local_t val = {{UINT64_C(0xffeeddccbbaa9988), UINT64_C(0x0011223344556677) }};
   mzd_local_t cval, tmp;
 
   mzd_shift_left_uint64_128(&cval, &val, 1);
@@ -219,8 +219,8 @@ ATTR_TARGET_S128
 static int test_s128_256(void) {
   int ret = 0;
 
-  mzd_local_t val = {{UINT64_C(0xfedcba9876543210), UINT64_C(0xfedcba9876543210),
-                      UINT64_C(0xfedcba9876543210), UINT64_C(0xfedcba9876543210)}};
+  mzd_local_t val = {{UINT64_C(0xffeeddccbbaa9988), UINT64_C(0x0011223344556677),
+                      UINT64_C(0xffeeddccbbaa9988), UINT64_C(0x0011223344556677)}};
   mzd_local_t cval, tmp;
 
   mzd_shift_left_uint64_256(&cval, &val, 1);
@@ -288,8 +288,8 @@ ATTR_TARGET_AVX2
 static int test_s256_256(void) {
   int ret = 0;
 
-  mzd_local_t val = {{UINT64_C(0xfedcba9876543210), UINT64_C(0xfedcba9876543210),
-                      UINT64_C(0xfedcba9876543210), UINT64_C(0xfedcba9876543210)}};
+  mzd_local_t val = {{UINT64_C(0xffeeddccbbaa9988), UINT64_C(0x0011223344556677),
+                      UINT64_C(0xffeeddccbbaa9988), UINT64_C(0x0011223344556677)}};
   mzd_local_t cval, tmp;
 
   mzd_shift_left_uint64_256(&cval, &val, 1);
