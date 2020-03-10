@@ -280,7 +280,7 @@ apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_NEON);
   vorrq_u64(mm128_sl_u64(data, count), mm128_sr_u64(vextq_u64(mm128_zero, data, 1), 64 - count))
 
 #define mm128_shift_right(data, count)                                                             \
-  vorrq_u64(mm128_sr_u64(data, count), mm128_sl_u64(vextq_u64(mm128_zero, data, 1), 64 - count))
+  vorrq_u64(mm128_sr_u64(data, count), mm128_sl_u64(vextq_u64(data, mm128_zero, 1), 64 - count))
 
 #define mm128_rotate_left(data, count)                                                             \
   vorrq_u64(mm128_shift_left(data, count), mm128_shift_right_64_127(data, 128 - count))
