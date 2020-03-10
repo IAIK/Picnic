@@ -208,8 +208,8 @@ static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
   word128 x1m ATTR_ALIGNED(alignof(word128)) = mm128_and(min, mask_126_126_42_b->w128[0]);
   word128 x2m ATTR_ALIGNED(alignof(word128)) = mm128_and(min, mask_126_126_42_c->w128[0]);
 
-  x0m = mm128_rotate_left(x0m, 2);
-  x1m = mm128_rotate_left(x1m, 1);
+  x0m = mm128_shift_left(x0m, 2);
+  x1m = mm128_shift_left(x1m, 1);
 
   word128 ATTR_ALIGNED(alignof(word128)) t0 = mm128_and(x1m, x2m);
   word128 ATTR_ALIGNED(alignof(word128)) t1 = mm128_and(x0m, x2m);
@@ -223,8 +223,8 @@ static inline void sbox_s128_lowmc_126_126_4(mzd_local_t* in) {
   t2 = mm128_xor(t2, x0m);
   t2 = mm128_xor(t2, x2m);
 
-  t0 = mm128_rotate_right(t0, 2);
-  t1 = mm128_rotate_right(t1, 1);
+  t0 = mm128_shift_right(t0, 2);
+  t1 = mm128_shift_right(t1, 1);
 
   BLOCK(in, 0)->w128[0] = mm128_xor(mm128_xor(t0, t1), t2);
 }
@@ -238,8 +238,8 @@ static inline void sbox_s128_full(mzd_local_t* in, const word128* mask_a, const 
   mm128_and_256(x1m, CONST_BLOCK(in, 0)->w128, mask_b);
   mm128_and_256(x2m, CONST_BLOCK(in, 0)->w128, mask_c);
 
-  mm128_rotate_left_256(x0m, x0m, 2);
-  mm128_rotate_left_256(x1m, x1m, 1);
+  mm128_shift_left_256(x0m, x0m, 2);
+  mm128_shift_left_256(x1m, x1m, 1);
 
   word128 t0[2] ATTR_ALIGNED(alignof(word128)), t1[2] ATTR_ALIGNED(alignof(word128)),
       t2[2] ATTR_ALIGNED(alignof(word128));
@@ -255,8 +255,8 @@ static inline void sbox_s128_full(mzd_local_t* in, const word128* mask_a, const 
   mm128_xor_256(t2, t2, x0m);
   mm128_xor_256(t2, t2, x2m);
 
-  mm128_rotate_right_256(t0, t0, 2);
-  mm128_rotate_right_256(t1, t1, 1);
+  mm128_shift_right_256(t0, t0, 2);
+  mm128_shift_right_256(t1, t1, 1);
 
   mm128_xor_256(t0, t0, t1);
   mm128_xor_256(in->w128, t0, t2);
