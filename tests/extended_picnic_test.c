@@ -12,6 +12,8 @@
 #endif
 
 #include "picnic.h"
+#include "picnic_instances.h"
+#include "io.h"
 #include "utils.h"
 
 #include <inttypes.h>
@@ -21,6 +23,70 @@
 
 static const size_t rep         = 32;
 static const size_t message_inc = 512;
+
+static int picnic_test_keys(picnic_params_t parameters) {
+  const size_t max_signature_size = picnic_signature_size(parameters);
+  if (!max_signature_size) {
+    /* not supported */
+    return -2;
+  }
+
+  /* TODO: make this check less dependent on actual parameters */
+  unsigned int diff;
+  switch (parameters) {
+    case Picnic_L1_FS:
+    case Picnic_L1_UR:
+    case Picnic2_L1_FS:
+      diff = 1;
+      break;
+
+    case Picnic_L1_129_FS:
+    case Picnic_L1_129_UR:
+    case Picnic2_L1_129_FS:
+      diff = 7;
+      break;
+
+    case Picnic_L5_FS:
+    case Picnic_L5_UR:
+    case Picnic2_L5_FS:
+      diff = 1;
+      break;
+
+    default:
+      /* instances with key size properly aligned */
+      return -2;
+  }
+
+  const size_t lowmc_blocksize = picnic_get_lowmc_block_size(parameters);
+
+  for (size_t c = 0; c < rep; ++c) {
+    picnic_publickey_t pk = { 0 };
+    picnic_privatekey_t sk = { 0 };
+
+    int ret = picnic_keygen(parameters, &pk, &sk);
+    if (ret) {
+      return ret;
+    }
+
+    // Public and private keys are serialized as follows:
+    // - public key: instance || C || p
+    // - secret key: instance || sk || C || p
+
+    for (size_t i = 0; i < diff; i++) {
+      if (getBit(sk.data, 8 + lowmc_blocksize * 8 - i - 1)) {
+        return -1;
+      }
+      if (getBit(sk.data, 8 + 2 * lowmc_blocksize * 8 - i - 1)) {
+        return -1;
+      }
+      if (getBit(sk.data, 8 + 3 * lowmc_blocksize * 8 - i - 1)) {
+        return -1;
+      }
+    }
+  }
+
+  return 0;
+}
 
 static int picnic_test_multiple_message_sizes(picnic_params_t parameters) {
   const size_t max_signature_size = picnic_signature_size(parameters);
@@ -158,11 +224,22 @@ static int picnic_test_with_read_write(picnic_params_t parameters) {
   return 0;
 }
 
-static int perform_test(picnic_params_t param)
-{
-  printf("testing with read/write: %s ... ", picnic_get_param_name(param));
+static int perform_test(picnic_params_t param) {
   int ret = 0;
-  int r   = picnic_test_with_read_write(param);
+
+  printf("testing keys: %s ...", picnic_get_param_name(param));
+  int r   = picnic_test_keys(param);
+  if (r == -2) {
+    printf("SKIPPED\n");
+  } else if (r) {
+    printf("FAILED\n");
+    ret = -1;
+  } else {
+    printf("OK\n");
+  }
+
+  printf("testing with read/write: %s ... ", picnic_get_param_name(param));
+  r = picnic_test_with_read_write(param);
   if (r == -2) {
     printf("SKIPPED\n");
   } else if (r) {
