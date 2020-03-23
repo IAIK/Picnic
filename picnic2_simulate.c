@@ -104,11 +104,11 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
     uint64_t mask_c = state_masks->shares[i];
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
       a <<= (64 / PACKING_FACTOR);
-      a |= getBit((uint8_t*)state[PACKING_FACTOR - 1 - k], i + 2);
+      a |= getBit(state[PACKING_FACTOR - 1 - k], i + 2);
       b <<= (64 / PACKING_FACTOR);
-      b |= getBit((uint8_t*)state[PACKING_FACTOR - 1 - k], i + 1);
+      b |= getBit(state[PACKING_FACTOR - 1 - k], i + 1);
       c <<= (64 / PACKING_FACTOR);
-      c |= getBit((uint8_t*)state[PACKING_FACTOR - 1 - k], i);
+      c |= getBit(state[PACKING_FACTOR - 1 - k], i);
     }
 	for (size_t k = 0; k < PARTIES_LOG; k++) {
       a ^= (a << (1 << k));
@@ -125,11 +125,11 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
     uint64_t f = a ^ b ^ c ^ ab;
 
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      setBit((uint8_t*)state[k], i + 2, d & 1);
+      setBit(state[k], i + 2, d & 1);
       d >>= (64 / PACKING_FACTOR);
-      setBit((uint8_t*)state[k], i + 1, e & 1);
+      setBit(state[k], i + 1, e & 1);
       e >>= (64 / PACKING_FACTOR);
-      setBit((uint8_t*)state[k], i, f & 1);
+      setBit(state[k], i, f & 1);
       f >>= (64 / PACKING_FACTOR);
     }
   }
