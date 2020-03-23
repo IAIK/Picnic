@@ -97,11 +97,11 @@ int PICNIC_CALLING_CONVENTION picnic_keygen(picnic_params_t param, picnic_public
   // generate private key
   sk->data[0] = param;
   // random secret key
-  if (!rand_bits(sk_sk, instance->lowmc->k)) {
+  if (rand_bits(sk_sk, instance->lowmc->k)) {
     return -1;
   }
   // random plain text
-  if (!rand_bits(sk_pt, instance->lowmc->n)) {
+  if (rand_bits(sk_pt, instance->lowmc->n)) {
     return -1;
   }
   // encrypt plaintext under secret key

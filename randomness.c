@@ -19,7 +19,7 @@ extern void randombytes(unsigned char* x, unsigned long long xlen);
 
 int rand_bytes(uint8_t* dst, size_t len) {
   randombytes(dst, len);
-  return 1;
+  return 0;
 }
 #else
 
@@ -30,18 +30,18 @@ int rand_bytes(uint8_t* dst, size_t len) {
 int rand_bytes(uint8_t* dst, size_t len) {
   const ssize_t ret = getrandom(dst, len, GRND_NONBLOCK);
   if (ret < 0 || (size_t)ret != len) {
-    return 0;
+    return -1;
   }
-  return 1;
+  return 0;
 }
 #elif defined(__APPLE__) && defined(HAVE_APPLE_FRAMEWORK)
 #include <Security/Security.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
   if (SecRandomCopyBytes(kSecRandomDefault, len, dst) == errSecSuccess) {
-    return 1;
+    return 0;
   }
-  return 0;
+  return -1;
 }
 #elif defined(__linux__) || defined(__APPLE__)
 #include <sys/types.h>
@@ -67,7 +67,7 @@ int rand_bytes(uint8_t* dst, size_t len) {
   while ((fd = open("/dev/urandom", O_RDONLY | O_NOFOLLOW | O_CLOEXEC, 0)) == -1) {
     // check if we should restart
     if (errno != EINTR) {
-      return 0;
+      return -1;
     }
   }
 #if O_CLOEXEC == 0
@@ -79,7 +79,7 @@ int rand_bytes(uint8_t* dst, size_t len) {
   if (ioctl(fd, RNDGETENTCNT, &cnt) == -1) {
     // not ready
     close(fd);
-    return 0;
+    return -1;
   }
 #endif
 
@@ -91,7 +91,7 @@ int rand_bytes(uint8_t* dst, size_t len) {
         continue;
       }
       close(fd);
-      return 0;
+      return -1;
     }
 
     dst += ret;
@@ -99,19 +99,19 @@ int rand_bytes(uint8_t* dst, size_t len) {
   }
 
   close(fd);
-  return 1;
+  return 0;
 }
 #elif defined(_WIN16) || defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
   if (len > ULONG_MAX) {
-    return 0;
+    return -1;
   }
   if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, dst, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
-    return 0;
+    return -1;
   }
-  return 1;
+  return 0;
 }
 #else
 #error "Unsupported OS! Please implement rand_bytes."
@@ -122,13 +122,13 @@ int rand_bits(uint8_t* dst, size_t num_bits) {
   const size_t num_bytes = (num_bits + 7) / 8;
   const size_t num_extra_bits = num_bits % 8;
 
-  if (!rand_bytes(dst, num_bytes)) {
-      return 0;
+  if (rand_bytes(dst, num_bytes)) {
+    return -1;
   }
 
   if (num_extra_bits) {
     dst[num_bytes - 1] &= UINT8_C(0xff) << (8 - num_extra_bits);
   }
 
-  return 1;
+  return 0;
 }
