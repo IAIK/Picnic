@@ -25,43 +25,24 @@ static const size_t rep         = 32;
 static const size_t message_inc = 512;
 
 static int picnic_test_keys(picnic_params_t parameters) {
-  const size_t max_signature_size = picnic_signature_size(parameters);
-  if (!max_signature_size) {
+  const picnic_instance_t* instance = picnic_instance_get(parameters);
+  if (!instance) {
     /* not supported */
     return -2;
   }
 
-  /* TODO: make this check less dependent on actual parameters */
-  unsigned int diff;
-  switch (parameters) {
-    case Picnic_L1_FS:
-    case Picnic_L1_UR:
-    case Picnic2_L1_FS:
-      diff = 1;
-      break;
-
-    case Picnic_L1_129_FS:
-    case Picnic_L1_129_UR:
-    case Picnic2_L1_129_FS:
-      diff = 7;
-      break;
-
-    case Picnic_L5_FS:
-    case Picnic_L5_UR:
-    case Picnic2_L5_FS:
-      diff = 1;
-      break;
-
-    default:
-      /* instances with key size properly aligned */
-      return -2;
+  const size_t diff_key = instance->input_size * 8 - instance->lowmc->k;
+  const size_t diff_block = instance->output_size * 8 - instance->lowmc->n;
+  /* instances with key size properly aligned */
+  if (!diff_key && !diff_block) {
+    return -2;
   }
 
   const size_t lowmc_blocksize = picnic_get_lowmc_block_size(parameters);
 
   for (size_t c = 0; c < rep; ++c) {
-    picnic_publickey_t pk = { 0 };
-    picnic_privatekey_t sk = { 0 };
+    picnic_publickey_t pk  = {0};
+    picnic_privatekey_t sk = {0};
 
     int ret = picnic_keygen(parameters, &pk, &sk);
     if (ret) {
@@ -72,10 +53,12 @@ static int picnic_test_keys(picnic_params_t parameters) {
     // - public key: instance || C || p
     // - secret key: instance || sk || C || p
 
-    for (size_t i = 0; i < diff; i++) {
+    for (size_t i = 0; i < diff_key; ++i) {
       if (getBit(sk.data, 8 + lowmc_blocksize * 8 - i - 1)) {
         return -1;
       }
+    }
+    for (size_t i = 0; i < diff_block; ++i) {
       if (getBit(sk.data, 8 + 2 * lowmc_blocksize * 8 - i - 1)) {
         return -1;
       }
