@@ -30,7 +30,11 @@ static void print_timings(const uint64_t* timing, unsigned int iter) {
 }
 
 static void bench_lowmc(const bench_options_t* options) {
-  uint64_t* timings = calloc(options->iter, sizeof(uint64_t));
+  const picnic_instance_t* pp = picnic_instance_get(options->params);
+  if (!pp) {
+    printf("Failed to initialize LowMC instance.\n");
+    return;
+  }
 
   timing_context_t ctx;
   if (!timing_init(&ctx)) {
@@ -38,11 +42,7 @@ static void bench_lowmc(const bench_options_t* options) {
     return;
   }
 
-  const picnic_instance_t* pp = picnic_instance_get(options->params);
-  if (!pp) {
-    printf("Failed to initialize LowMC instance.\n");
-    return;
-  }
+  uint64_t* timings = calloc(options->iter, sizeof(uint64_t));
 
   const lowmc_t* lowmc                    = pp->lowmc;
   const lowmc_implementation_f lowmc_impl = pp->impls.lowmc;

@@ -35,21 +35,20 @@ static void bench_sign_and_verify(const bench_options_t* options) {
   static const uint8_t m[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16,
                               17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
 
-  timing_and_size_t* timings = calloc(options->iter, sizeof(timing_and_size_t));
-
   const size_t max_signature_size = picnic_signature_size(options->params);
   if (!max_signature_size) {
     printf("Failed to create Picnic instance.\n");
     return;
   }
 
-  uint8_t sig[PICNIC_MAX_SIGNATURE_SIZE];
-
   timing_context_t ctx;
   if (!timing_init(&ctx)) {
     printf("Failed to initialize timing functionality.\n");
     return;
   }
+
+  timing_and_size_t* timings = calloc(options->iter, sizeof(timing_and_size_t));
+  uint8_t sig[PICNIC_MAX_SIGNATURE_SIZE];
 
   for (unsigned int i = 0; i != options->iter; ++i) {
     timing_and_size_t* timing = &timings[i];
