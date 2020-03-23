@@ -77,6 +77,12 @@
 #define ATTR_TARGET_S128
 #endif
 
+#if defined(WITH_AVX2)
+#define ATTR_TARGET_S256 ATTR_TARGET_AVX2
+#else
+#define ATTR_TARGET_S256
+#endif
+
 #if defined(WITH_SSE2)
 /* backwards compatibility macros for GCC 4.8 and 4.9
  *
