@@ -83,8 +83,8 @@ static void sbox_uint64_lowmc_129_129_4(mzd_local_t* in) {
   // c
   mzd_and_uint64_192(x2m, mask_129_129_43_c, in);
 
-  mzd_rotate_left_uint64_192(x0m, x0m, 2);
-  mzd_rotate_left_uint64_192(x1m, x1m, 1);
+  mzd_shift_left_uint64_192(x0m, x0m, 2);
+  mzd_shift_left_uint64_192(x1m, x1m, 1);
 
   mzd_local_t t0[1], t1[1], t2[1];
   // b & c
@@ -106,8 +106,8 @@ static void sbox_uint64_lowmc_129_129_4(mzd_local_t* in) {
   mzd_xor_uint64_192(t2, t2, x1m);
   mzd_xor_uint64_192(t2, t2, x2m);
 
-  mzd_rotate_right_uint64_192(t0, t0, 2);
-  mzd_rotate_right_uint64_192(t1, t1, 1);
+  mzd_shift_right_uint64_192(t0, t0, 2);
+  mzd_shift_right_uint64_192(t1, t1, 1);
 
   mzd_xor_uint64_192(t2, t2, t1);
   mzd_xor_uint64_192(in, t2, t0);
@@ -125,8 +125,8 @@ static void sbox_uint64_lowmc_192_192_4(mzd_local_t* in) {
   // c
   mzd_and_uint64_192(x2m, mask_192_192_64_c, in);
 
-  mzd_rotate_left_uint64_192(x0m, x0m, 2);
-  mzd_rotate_left_uint64_192(x1m, x1m, 1);
+  mzd_shift_left_uint64_192(x0m, x0m, 2);
+  mzd_shift_left_uint64_192(x1m, x1m, 1);
 
   mzd_local_t t0[1], t1[1], t2[1];
   // b & c
@@ -148,8 +148,8 @@ static void sbox_uint64_lowmc_192_192_4(mzd_local_t* in) {
   mzd_xor_uint64_192(t2, t2, x1m);
   mzd_xor_uint64_192(t2, t2, x2m);
 
-  mzd_rotate_right_uint64_192(t0, t0, 2);
-  mzd_rotate_right_uint64_192(t1, t1, 1);
+  mzd_shift_right_uint64_192(t0, t0, 2);
+  mzd_shift_right_uint64_192(t1, t1, 1);
 
   mzd_xor_uint64_192(t2, t2, t1);
   mzd_xor_uint64_192(in, t2, t0);
@@ -167,8 +167,8 @@ static void sbox_uint64_lowmc_255_255_4(mzd_local_t* in) {
   // c
   mzd_and_uint64_256(x2m, mask_255_255_85_c, in);
 
-  mzd_rotate_left_uint64_256(x0m, x0m, 2);
-  mzd_rotate_left_uint64_256(x1m, x1m, 1);
+  mzd_shift_left_uint64_256(x0m, x0m, 2);
+  mzd_shift_left_uint64_256(x1m, x1m, 1);
 
   mzd_local_t t0[1], t1[1], t2[1];
   // b & c
@@ -190,8 +190,8 @@ static void sbox_uint64_lowmc_255_255_4(mzd_local_t* in) {
   mzd_xor_uint64_256(t2, t2, x1m);
   mzd_xor_uint64_256(t2, t2, x2m);
 
-  mzd_rotate_right_uint64_256(t0, t0, 2);
-  mzd_rotate_right_uint64_256(t1, t1, 1);
+  mzd_shift_right_uint64_256(t0, t0, 2);
+  mzd_shift_right_uint64_256(t1, t1, 1);
 
   mzd_xor_uint64_256(t2, t2, t1);
   mzd_xor_uint64_256(in, t2, t0);
