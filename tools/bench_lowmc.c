@@ -49,6 +49,7 @@ static void bench_lowmc(const bench_options_t* options) {
 
   mzd_local_t* sk = mzd_local_init(1, lowmc->k);
   mzd_local_t* pt = mzd_local_init(1, lowmc->n);
+  mzd_local_t* ct = mzd_local_init(1, lowmc->n);
 
   const size_t input_size = (lowmc->k + 7) >> 3;
   const size_t output_size = (lowmc->n + 7) >> 3;
@@ -61,16 +62,15 @@ static void bench_lowmc(const bench_options_t* options) {
 
   for (unsigned int i = 0; i != options->iter; ++i) {
     const uint64_t start_time = timing_read(&ctx);
-
-    mzd_local_t* ct = mzd_local_init(1, lowmc->n);
     lowmc_impl(sk, pt, ct);
-    mzd_local_free(pt);
-    pt = ct;
+    timings[i] = timing_read(&ctx) - start_time;
 
-    const uint64_t end_time = timing_read(&ctx);
-    timings[i]              = end_time - start_time;
+    mzd_local_t* tmp = pt;
+    pt = ct;
+    ct = tmp;
   }
 
+  mzd_local_free(ct);
   mzd_local_free(pt);
   mzd_local_free(sk);
 
