@@ -61,16 +61,16 @@ static void sbox_layer_10_uint64(uint64_t* d) {
 
 #if !defined(NO_UINT64_FALLBACK)
 // uint64 based implementation
-#include "lowmc_fns_uint64_L1.h"
+#include "lowmc_128_128_20_fns_uint64.h"
 #define LOWMC lowmc_uint64_128
 #include "lowmc.c.i"
 
-#include "lowmc_fns_uint64_L3.h"
+#include "lowmc_192_192_30_fns_uint64.h"
 #undef LOWMC
 #define LOWMC lowmc_uint64_192
 #include "lowmc.c.i"
 
-#include "lowmc_fns_uint64_L5.h"
+#include "lowmc_256_256_38_fns_uint64.h"
 #undef LOWMC
 #define LOWMC lowmc_uint64_256
 #include "lowmc.c.i"
@@ -83,19 +83,19 @@ static void sbox_layer_10_uint64(uint64_t* d) {
 #endif
 
 // L1 using SSE2/NEON
-#include "lowmc_fns_s128_L1.h"
+#include "lowmc_128_128_20_fns_s128.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_128
 #include "lowmc.c.i"
 
 // L3 using SSE2/NEON
-#include "lowmc_fns_s128_L3.h"
+#include "lowmc_192_192_30_fns_s128.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_192
 #include "lowmc.c.i"
 
 // L5 using SSE2/NEON
-#include "lowmc_fns_s128_L5.h"
+#include "lowmc_256_256_38_fns_s128.h"
 #undef LOWMC
 #define LOWMC lowmc_s128_256
 #include "lowmc.c.i"
@@ -107,19 +107,19 @@ static void sbox_layer_10_uint64(uint64_t* d) {
 #define FN_ATTR ATTR_TARGET_AVX2
 
 // L1 using AVX2
-#include "lowmc_fns_s256_L1.h"
+#include "lowmc_128_128_20_fns_s256.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_128
 #include "lowmc.c.i"
 
 // L3 using AVX2
-#include "lowmc_fns_s256_L3.h"
+#include "lowmc_192_192_30_fns_s256.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_192
 #include "lowmc.c.i"
 
 // L5 using AVX2
-#include "lowmc_fns_s256_L5.h"
+#include "lowmc_256_256_38_fns_s256.h"
 #undef LOWMC
 #define LOWMC lowmc_s256_256
 #include "lowmc.c.i"

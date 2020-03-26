@@ -190,17 +190,17 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 
 #if !defined(NO_UINT64_FALLBACK)
 // uint64 based implementation
-#include "lowmc_fns_uint64_L1.h"
+#include "lowmc_128_128_20_fns_uint64.h"
 #define SIGN mpc_lowmc_call_uint64_128
 #define VERIFY mpc_lowmc_call_verify_uint64_128
 #include "mpc_lowmc.c.i"
 
-#include "lowmc_fns_uint64_L3.h"
+#include "lowmc_192_192_30_fns_uint64.h"
 #define SIGN mpc_lowmc_call_uint64_192
 #define VERIFY mpc_lowmc_call_verify_uint64_192
 #include "mpc_lowmc.c.i"
 
-#include "lowmc_fns_uint64_L5.h"
+#include "lowmc_256_256_38_fns_uint64.h"
 #define SIGN mpc_lowmc_call_uint64_256
 #define VERIFY mpc_lowmc_call_verify_uint64_256
 #include "mpc_lowmc.c.i"
@@ -213,19 +213,19 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 #endif
 
 // L1 using SSE2/NEON
-#include "lowmc_fns_s128_L1.h"
+#include "lowmc_128_128_20_fns_s128.h"
 #define SIGN mpc_lowmc_call_s128_128
 #define VERIFY mpc_lowmc_call_verify_s128_128
 #include "mpc_lowmc.c.i"
 
 // L3 using SSE2/NEON
-#include "lowmc_fns_s128_L3.h"
+#include "lowmc_192_192_30_fns_s128.h"
 #define SIGN mpc_lowmc_call_s128_192
 #define VERIFY mpc_lowmc_call_verify_s128_192
 #include "mpc_lowmc.c.i"
 
 // L5 using SSE2/NEON
-#include "lowmc_fns_s128_L5.h"
+#include "lowmc_256_256_38_fns_s128.h"
 #define SIGN mpc_lowmc_call_s128_256
 #define VERIFY mpc_lowmc_call_verify_s128_256
 #include "mpc_lowmc.c.i"
@@ -237,19 +237,19 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 #define FN_ATTR ATTR_TARGET_AVX2
 
 // L1 using AVX2
-#include "lowmc_fns_s256_L1.h"
+#include "lowmc_128_128_20_fns_s256.h"
 #define SIGN mpc_lowmc_call_s256_128
 #define VERIFY mpc_lowmc_call_verify_s256_128
 #include "mpc_lowmc.c.i"
 
 // L3 using AVX2
-#include "lowmc_fns_s256_L3.h"
+#include "lowmc_192_192_30_fns_s256.h"
 #define SIGN mpc_lowmc_call_s256_192
 #define VERIFY mpc_lowmc_call_verify_s256_192
 #include "mpc_lowmc.c.i"
 
 // L5 using AVX2
-#include "lowmc_fns_s256_L5.h"
+#include "lowmc_256_256_38_fns_s256.h"
 #define SIGN mpc_lowmc_call_s256_256
 #define VERIFY mpc_lowmc_call_verify_s256_256
 #include "mpc_lowmc.c.i"
