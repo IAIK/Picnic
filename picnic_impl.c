@@ -184,6 +184,9 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   const size_t unruh_with_input_bytes_size = pp->unruh_with_input_bytes_size;
 
   sig_proof_t* proof = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
+  if (!proof) {
+    return NULL;
+  }
 
   size_t per_round_mem = SC_VERIFY * digest_size;
   if (pp->transform == TRANSFORM_UR) {
