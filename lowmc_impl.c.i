@@ -22,10 +22,8 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_loca
 #endif
   mzd_local_t x[((LOWMC_N) + 255) / 256];
   mzd_local_t y[((LOWMC_N) + 255) / 256];
-#if defined(REDUCED_ROUND_KEY_COMPUTATION)
 mzd_local_t nl_part[(LOWMC_R * 32 + 255) / 256];
 
-#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION) // LOWMC_OPT=OLLE
 #if defined(PICNIC2_AUX_COMPUTATION)
   MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
   MUL_MC(nl_part, lowmc_key, LOWMC_INSTANCE.precomputed_non_linear_part_matrix);
@@ -75,63 +73,6 @@ mzd_local_t nl_part[(LOWMC_R * 32 + 255) / 256];
       (nl << (1 - (i & 1)) * 32) & WORD_C(0xFFFFFFFF00000000);
   MUL(y, x, LOWMC_INSTANCE.zr_matrix);
   COPY(x, y);
-#endif
-#else // LOWMC_OPT=ORKC
-#if defined(PICNIC2_AUX_COMPUTATION)
-  MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
-  MUL_MC(nl_part, lowmc_key, LOWMC_INSTANCE.precomputed_non_linear_part_matrix);
-#else
-  XOR(x, p, LOWMC_INSTANCE.precomputed_constant_linear);
-  ADDMUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
-  MUL_MC(nl_part, lowmc_key, LOWMC_INSTANCE.precomputed_non_linear_part_matrix);
-  XOR_MC(nl_part, nl_part, LOWMC_INSTANCE.precomputed_constant_non_linear);
-#endif
-
-  lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
-  for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
-#if defined(RECORD_STATE)
-    COPY(state->state[i], x);
-#endif
-#if defined(PICNIC2_AUX_COMPUTATION)
-    SBOX(x, tapes);
-#else
-    SBOX(x);
-#endif
-
-    const word nl = CONST_BLOCK(nl_part, i >> 3)->w64[(i & 0x7) >> 1];
-    BLOCK(x, 0)->w64[(LOWMC_N) / (sizeof(word) * 8) - 1] ^=
-        (i & 1) ? (nl & WORD_C(0xFFFFFFFF00000000)) : (nl << 32);
-    MUL(y, x, round->l_matrix);
-    COPY(x, y);
-  }
-#endif
-#else // LOWMC_OPT=OFF
-#if defined(PICNIC2_AUX_COMPUTATION)
-  MUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
-#else
-  COPY(x, p);
-  ADDMUL(x, lowmc_key, LOWMC_INSTANCE.k0_matrix);
-#endif
-
-  lowmc_round_t const* round = LOWMC_INSTANCE.rounds;
-  for (unsigned i = 0; i < LOWMC_R; ++i, ++round) {
-#if defined(RECORD_STATE)
-    COPY(state->state[i], x);
-#endif
-#if defined(PICNIC2_AUX_COMPUTATION)
-    SBOX(x, tapes);
-#else
-    SBOX(x);
-#endif
-
-    MUL(y, x, round->l_matrix);
-#if !defined(PICNIC2_AUX_COMPUTATION)
-    XOR(x, y, round->constant);
-#else
-    COPY(x, y);
-#endif
-    ADDMUL(x, lowmc_key, round->k_matrix);
-  }
 #endif
 
 #if !defined(PICNIC2_AUX_COMPUTATION)

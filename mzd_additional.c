@@ -890,7 +890,6 @@ void mzd_mul_v_uint64_256_1216(mzd_local_t* c, mzd_local_t const* v, mzd_local_t
 }
 
 // specific instances
-#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 // bit extract, non-constant time for mask, but mask is public in our calls
 static word extract_bits(word in, word mask) {
   word res = 0;
@@ -1101,5 +1100,4 @@ ATTR_TARGET_AVX2
 void mzd_shuffle_pext_256_30(mzd_local_t* x, const word mask) {
   mzd_shuffle_pext_30_idx(x, mask, 3);
 }
-#endif
 #endif

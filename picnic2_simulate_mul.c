@@ -118,7 +118,6 @@ static const block_t block_masks[] = {
     }},
 };
 
-#if defined(REDUCED_ROUND_KEY_COMPUTATION)
 static const block_t nl_part_block_masks[] = {
     {{
         UINT64_C(0x0000000000000000),
@@ -217,7 +216,6 @@ static const block_t nl_part_block_masks[] = {
         UINT64_C(0xffffffffffffffff),
     }},
 };
-#endif
 
 #if defined(PICNIC_STATIC)
 /* transpose a 64x64 bit matrix using Eklundh's algorithm
@@ -635,7 +633,6 @@ void mpc_matrix_mul_uint64_256(mzd_local_t* output, const mzd_local_t* vec,
   freeShares(tmp_mask);
 }
 
-#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 void mpc_matrix_mul_z_uint64_128(mzd_local_t* state2, const mzd_local_t* state,
                                  shares_t* mask2_shares, const shares_t* mask_shares,
                                  const mzd_local_t* matrix) {
@@ -812,9 +809,7 @@ void mpc_matrix_addmul_r_uint64_256(mzd_local_t* state2, const mzd_local_t* stat
   copyShares(mask2_shares, tmp_mask);
   freeShares(tmp_mask);
 }
-#endif
 
-#if defined(REDUCED_ROUND_KEY_COMPUTATION)
 void mpc_matrix_mul_nl_part_uint64_128(mzd_local_t* nl_part, const mzd_local_t* key,
                                        const mzd_local_t* precomputed_nl_matrix,
                                        const mzd_local_t* precomputed_constant_nl,
@@ -901,7 +896,6 @@ void mpc_matrix_mul_nl_part_uint64_256(mzd_local_t* nl_part, const mzd_local_t* 
   mzd_mul_v_uint64_256_1216(nl_part, key, precomputed_nl_matrix);
   mzd_xor_uint64_1216(nl_part, nl_part, precomputed_constant_nl);
 }
-#endif
 
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
@@ -1004,7 +998,6 @@ void mpc_matrix_mul_s128_256(mzd_local_t* output, const mzd_local_t* vec, const 
   freeShares(tmp_mask);
 }
 
-#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 ATTR_TARGET_S128
 void mpc_matrix_mul_z_s128_128(mzd_local_t* state2, const mzd_local_t* state,
                                shares_t* mask2_shares, const shares_t* mask_shares,
@@ -1184,9 +1177,7 @@ void mpc_matrix_addmul_r_s128_256(mzd_local_t* state2, const mzd_local_t* state,
   copyShares(mask2_shares, tmp_mask);
   freeShares(tmp_mask);
 }
-#endif
 
-#if defined(REDUCED_ROUND_KEY_COMPUTATION)
 ATTR_TARGET_S128
 void mpc_matrix_mul_nl_part_s128_128(mzd_local_t* nl_part, const mzd_local_t* key,
                                      const mzd_local_t* precomputed_nl_matrix,
@@ -1283,7 +1274,6 @@ void mpc_matrix_mul_nl_part_s128_256(mzd_local_t* nl_part, const mzd_local_t* ke
   mzd_xor_s128_1280(nl_part, nl_part, precomputed_constant_nl);
 }
 #endif
-#endif
 
 #if defined(WITH_AVX2)
 ATTR_TARGET_AVX2
@@ -1370,7 +1360,6 @@ void mpc_matrix_mul_s256_256(mzd_local_t* output, const mzd_local_t* vec, const 
   freeShares(tmp_mask);
 }
 
-#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 ATTR_TARGET_AVX2
 void mpc_matrix_mul_z_s256_128(mzd_local_t* state2, const mzd_local_t* state,
                                shares_t* mask2_shares, const shares_t* mask_shares,
@@ -1532,9 +1521,7 @@ void mpc_matrix_addmul_r_s256_256(mzd_local_t* state2, const mzd_local_t* state,
   copyShares(mask2_shares, tmp_mask);
   freeShares(tmp_mask);
 }
-#endif
 
-#if defined(REDUCED_ROUND_KEY_COMPUTATION)
 ATTR_TARGET_AVX2
 void mpc_matrix_mul_nl_part_s256_128(mzd_local_t* nl_part, const mzd_local_t* key,
                                      const mzd_local_t* precomputed_nl_matrix,
@@ -1617,6 +1604,5 @@ void mpc_matrix_mul_nl_part_s256_256(mzd_local_t* nl_part, const mzd_local_t* ke
   mzd_mul_v_s256_256_1280(nl_part, key, precomputed_nl_matrix);
   mzd_xor_s256_1280(nl_part, nl_part, precomputed_constant_nl);
 }
-#endif
 #endif
 #endif

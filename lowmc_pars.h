@@ -50,19 +50,9 @@ typedef mzd_local_t lowmc_key_t;
 #define LOWMC_L5_R 38
 
 typedef struct {
-#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
-  const mzd_local_t* k_matrix;
-#endif
-#if !defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
-  const mzd_local_t* l_matrix;
-#else
   const mzd_local_t* z_matrix;
   const mzd_local_t* r_matrix;
   const word r_mask;
-#endif
-#if !defined(REDUCED_ROUND_KEY_COMPUTATION)
-  const mzd_local_t* constant;
-#endif
 } lowmc_round_t;
 
 /**
@@ -75,16 +65,12 @@ typedef struct {
   uint32_t k;
 
   const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
-#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
   const mzd_local_t* zr_matrix; // combined linear layers
-#endif
   const lowmc_round_t* rounds;
 
-#if defined(REDUCED_ROUND_KEY_COMPUTATION)
   const mzd_local_t* precomputed_non_linear_part_matrix;
   const mzd_local_t* precomputed_constant_linear;
   const mzd_local_t* precomputed_constant_non_linear;
-#endif
 } lowmc_t;
 
 #endif

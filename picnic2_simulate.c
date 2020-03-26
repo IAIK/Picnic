@@ -121,16 +121,13 @@ static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* 
   mzd_from_char_array(statein, state, params->lowmc->n / 8);
 }
 
-#if defined(REDUCED_ROUND_KEY_COMPUTATION)
 static void mpc_xor_masks_nl(shares_t* out, const shares_t* a, const shares_t* b, size_t index,
                              size_t num) {
   for (size_t i = 0; i < num; i++) {
     out->shares[i] = a->shares[i] ^ b->shares[index + num - 1 - i];
   }
 }
-#endif
 
-#if defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 static void mpc_shuffle(mzd_local_t* state, shares_t* mask_shares, uint64_t r_mask) {
   if (mask_shares->numWords == 128) {
     mzd_shuffle_128_30(state, r_mask);
@@ -161,9 +158,7 @@ static void mpc_shuffle(mzd_local_t* state, shares_t* mask_shares, uint64_t r_ma
     }
   }
 }
-#endif
 
-#if !defined(REDUCED_ROUND_KEY_COMPUTATION) || defined(OPTIMIZED_LINEAR_LAYER_EVALUATION)
 static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
   assert(out->numWords == a->numWords && a->numWords == b->numWords);
 
@@ -171,7 +166,6 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
     out->shares[i] = a->shares[i] ^ b->shares[i];
   }
 }
-#endif
 
 #if !defined(NO_UINT64_FALLBACK)
 /* PICNIC2_L1_FS */
