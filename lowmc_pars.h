@@ -25,15 +25,10 @@ typedef mzd_local_t lowmc_key_t;
 /**
  * LowMC instances
  */
-#define LOWMC_L1_N 126
-#define LOWMC_L1_M 42
+#define LOWMC_L1_N 129
+#define LOWMC_L1_M 43
 #define LOWMC_L1_K LOWMC_L1_N
 #define LOWMC_L1_R 4
-
-#define LOWMC_L1_129_N 129
-#define LOWMC_L1_129_M 43
-#define LOWMC_L1_129_K LOWMC_L1_129_N
-#define LOWMC_L1_129_R 4
 
 #define LOWMC_L3_N 192
 #define LOWMC_L3_M 64
@@ -67,13 +62,6 @@ typedef struct {
   const lowmc_round_t* rounds;
 
 } lowmc_t;
-
-static const mzd_local_t mask_126_126_42_a[1] = {
-    {{UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492), UINT64_C(0x0), UINT64_C(0x0)}}};
-static const mzd_local_t mask_126_126_42_b[1] = {
-    {{UINT64_C(0x9249249249249248), UINT64_C(0x4924924924924924), UINT64_C(0x0), UINT64_C(0x0)}}};
-static const mzd_local_t mask_126_126_42_c[1] = {
-    {{UINT64_C(0x2492492492492490), UINT64_C(0x9249249249249249), UINT64_C(0x0), UINT64_C(0x0)}}};
 
 static const mzd_local_t mask_129_129_43_a[1] = {
     {{UINT64_C(0x8000000000000000), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),

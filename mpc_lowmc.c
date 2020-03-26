@@ -303,36 +303,6 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
     XOR(&out[m], &x0s[m], &x1s[m]);                                                                \
   }
 
-static void mpc_sbox_prove_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
-                                                  view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_PROOF, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a,
-                   mask_126_126_42_b, mask_126_126_42_c);
-
-  // a & b
-  mpc_and_uint64_128(r0m, x0s, x1s, r2m, view, 0);
-  // b & c
-  mpc_and_uint64_128(r2m, x1s, x2m, r1s, view, 1);
-  // c & a
-  mpc_and_uint64_128(r1m, x0s, x2m, r0s, view, 2);
-
-  bitsliced_step_2(SC_PROOF, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
-}
-
-static void mpc_sbox_verify_uint64_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
-                                                   view_t* view, const rvec_t* rvec) {
-  bitsliced_step_1(SC_VERIFY, mzd_and_uint64_128, mzd_shift_left_uint64_128, mask_126_126_42_a,
-                   mask_126_126_42_b, mask_126_126_42_c);
-
-  // a & b
-  mpc_and_verify_uint64_128(r0m, x0s, x1s, r2m, view, mask_126_126_42_c, 0);
-  // b & c
-  mpc_and_verify_uint64_128(r2m, x1s, x2m, r1s, view, mask_126_126_42_c, 1);
-  // c & a
-  mpc_and_verify_uint64_128(r1m, x0s, x2m, r0s, view, mask_126_126_42_c, 2);
-
-  bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_128, mzd_shift_right_uint64_128);
-}
-
 static void mpc_sbox_prove_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
                                                   view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_shift_left_uint64_192, mask_129_129_43_a,
@@ -608,51 +578,6 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
   } while (0)
 
 #if defined(WITH_SSE2) || defined(WITH_NEON)
-#define IN(m) in[m].w128[0]
-#define OUT(m) out[m].w128[0]
-#define RVEC(m) rvec->s[m].w128[0]
-#define VIEW(m) view->s[m].w128[0]
-
-ATTR_TARGET_S128
-static void mpc_sbox_prove_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
-                                                view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_step_1(SC_PROOF, word128, mm128_and, mm128_shift_left, mask_126_126_42_a->w128[0],
-                      mask_126_126_42_b->w128[0], mask_126_126_42_c->w128[0]);
-
-  // a & b
-  mpc_mm_and_def(mm128_and, mm128_xor, mm128_shift_right, r0m, x0s, x1s, r2m, 0);
-  // b & c
-  mpc_mm_and_def(mm128_and, mm128_xor, mm128_shift_right, r2m, x1s, x2m, r1s, 1);
-  // c & a
-  mpc_mm_and_def(mm128_and, mm128_xor, mm128_shift_right, r1m, x0s, x2m, r0s, 2);
-
-  bitsliced_mm_step_2(SC_PROOF, mm128_xor, mm128_shift_right);
-}
-
-ATTR_TARGET_S128
-static void mpc_sbox_verify_s128_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
-                                                 view_t* view, const rvec_t* rvec) {
-  bitsliced_mm_step_1(SC_VERIFY, word128, mm128_and, mm128_shift_left, mask_126_126_42_a->w128[0],
-                      mask_126_126_42_b->w128[0], mask_126_126_42_c->w128[0]);
-
-  // a & b
-  mpc_mm_and_verify_def(mm128_and, mm128_xor, mm128_shift_left, mm128_shift_right, r0m, x0s, x1s,
-                        r2m, mask_126_126_42_c->w128[0], 0);
-  // b & c
-  mpc_mm_and_verify_def(mm128_and, mm128_xor, mm128_shift_left, mm128_shift_right, r2m, x1s, x2m,
-                        r1s, mask_126_126_42_c->w128[0], 1);
-  // c & a
-  mpc_mm_and_verify_def(mm128_and, mm128_xor, mm128_shift_left, mm128_shift_right, r1m, x0s, x2m,
-                        r0s, mask_126_126_42_c->w128[0], 2);
-
-  bitsliced_mm_step_2(SC_VERIFY, mm128_xor, mm128_shift_right);
-}
-
-#undef IN
-#undef OUT
-#undef RVEC
-#undef VIEW
-
 #define IN(m) in[m].w128
 #define OUT(m) out[m].w128
 #define RVEC(m) rvec->s[m].w128
@@ -788,20 +713,6 @@ static void mpc_sbox_verify_s256_256(mzd_local_t* out, const mzd_local_t* in, vi
 }
 
 ATTR_TARGET_AVX2
-static void mpc_sbox_prove_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
-                                                view_t* view, const rvec_t* rvec) {
-  mpc_sbox_prove_s256_256(out, in, view, rvec, mask_126_126_42_a->w256, mask_126_126_42_b->w256,
-                          mask_126_126_42_c->w256);
-}
-
-ATTR_TARGET_AVX2
-static void mpc_sbox_verify_s256_lowmc_126_126_4(mzd_local_t* out, const mzd_local_t* in,
-                                                 view_t* view, const rvec_t* rvec) {
-  mpc_sbox_verify_s256_256(out, in, view, rvec, mask_126_126_42_a->w256, mask_126_126_42_b->w256,
-                           mask_126_126_42_c->w256);
-}
-
-ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
   mpc_sbox_prove_s256_256(out, in, view, rvec, mask_129_129_43_a->w256, mask_129_129_43_b->w256,
@@ -845,9 +756,6 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #endif /* WITH_AVX2*/
 #endif /* WITH_OPT */
 
-#if defined(WITH_LOWMC_126_126_4)
-#include "lowmc_126_126_4.h"
-#endif
 #if defined(WITH_LOWMC_129_129_4)
 #include "lowmc_129_129_4.h"
 #endif
@@ -879,9 +787,6 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #include "lowmc_fns_uint64_L1.h"
 #include "mpc_lowmc.c.i"
 
-#include "lowmc_fns_uint64_L1_129.h"
-#include "mpc_lowmc.c.i"
-
 #include "lowmc_fns_uint64_L3.h"
 #include "mpc_lowmc.c.i"
 
@@ -900,9 +805,6 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 
 // L1 using SSE2/NEON
 #include "lowmc_fns_s128_L1.h"
-#include "mpc_lowmc.c.i"
-
-#include "lowmc_fns_s128_L1_129.h"
 #include "mpc_lowmc.c.i"
 
 // L3 using SSE2/NEON
@@ -926,9 +828,6 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #include "lowmc_fns_s256_L1.h"
 #include "mpc_lowmc.c.i"
 
-#include "lowmc_fns_s256_L1_129.h"
-#include "mpc_lowmc.c.i"
-
 // L3 using AVX2
 #include "lowmc_fns_s256_L3.h"
 #include "mpc_lowmc.c.i"
@@ -942,17 +841,12 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #endif
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {
-  assert((lowmc->m == 42 && lowmc->n == 126) || (lowmc->m == 43 && lowmc->n == 129) ||
-         (lowmc->m == 64 && lowmc->n == 192) || (lowmc->m == 85 && lowmc->n == 255));
+  assert((lowmc->m == 43 && lowmc->n == 129) || (lowmc->m == 64 && lowmc->n == 192) ||
+         (lowmc->m == 85 && lowmc->n == 255));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
-#if defined(WITH_LOWMC_126_126_4)
-    if (lowmc->n == 126 && lowmc->m == 42) {
-      return mpc_lowmc_prove_s256_lowmc_126_126_4;
-    }
-#endif
 #if defined(WITH_LOWMC_129_129_4)
     if (lowmc->n == 129 && lowmc->m == 43) {
       return mpc_lowmc_prove_s256_lowmc_129_129_4;
@@ -972,11 +866,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
-#if defined(WITH_LOWMC_126_126_4)
-    if (lowmc->n == 126 && lowmc->m == 42) {
-      return mpc_lowmc_prove_s128_lowmc_126_126_4;
-    }
-#endif
 #if defined(WITH_LOWMC_129_129_4)
     if (lowmc->n == 129 && lowmc->m == 43) {
       return mpc_lowmc_prove_s128_lowmc_129_129_4;
@@ -997,11 +886,6 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
-#if defined(WITH_LOWMC_126_126_4)
-  if (lowmc->n == 126 && lowmc->m == 42) {
-    return mpc_lowmc_prove_uint64_lowmc_126_126_4;
-  }
-#endif
 #if defined(WITH_LOWMC_129_129_4)
   if (lowmc->n == 129 && lowmc->m == 43) {
     return mpc_lowmc_prove_uint64_lowmc_129_129_4;
@@ -1023,17 +907,12 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
 }
 
 zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc) {
-  assert((lowmc->m == 42 && lowmc->n == 126) || (lowmc->m == 43 && lowmc->n == 129) ||
-         (lowmc->m == 64 && lowmc->n == 192) || (lowmc->m == 85 && lowmc->n == 255));
+  assert((lowmc->m == 43 && lowmc->n == 129) || (lowmc->m == 64 && lowmc->n == 192) ||
+         (lowmc->m == 85 && lowmc->n == 255));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
-#if defined(WITH_LOWMC_126_126_4)
-    if (lowmc->n == 126 && lowmc->m == 42) {
-      return mpc_lowmc_verify_s256_lowmc_126_126_4;
-    }
-#endif
 #if defined(WITH_LOWMC_129_129_4)
     if (lowmc->n == 129 && lowmc->m == 43) {
       return mpc_lowmc_verify_s256_lowmc_129_129_4;
@@ -1053,11 +932,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
-#if defined(WITH_LOWMC_126_126_4)
-    if (lowmc->n == 126 && lowmc->m == 42) {
-      return mpc_lowmc_verify_s128_lowmc_126_126_4;
-    }
-#endif
 #if defined(WITH_LOWMC_129_129_4)
     if (lowmc->n == 129 && lowmc->m == 43) {
       return mpc_lowmc_verify_s128_lowmc_129_129_4;
@@ -1078,11 +952,6 @@ zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const 
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
-#if defined(WITH_LOWMC_126_126_4)
-  if (lowmc->n == 126 && lowmc->m == 42) {
-    return mpc_lowmc_verify_uint64_lowmc_126_126_4;
-  }
-#endif
 #if defined(WITH_LOWMC_129_129_4)
   if (lowmc->n == 129 && lowmc->m == 43) {
     return mpc_lowmc_verify_uint64_lowmc_129_129_4;

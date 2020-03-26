@@ -9,14 +9,14 @@
 
 #include "lowmc_fns_undef.h"
 
-#define ADDMUL mzd_addmul_v_s128_128
-#define MUL mzd_mul_v_s128_128
-#define XOR mzd_xor_s128_128
-#define COPY mzd_copy_s128_128
-#define MPC_MUL mpc_matrix_mul_s128_128
+#define ADDMUL mzd_addmul_v_s128_129
+#define MUL mzd_mul_v_s128_129
+#define XOR mzd_xor_s128_256
+#define COPY mzd_copy_s128_256
+#define MPC_MUL mpc_matrix_mul_s128_129
 
-#if defined(WITH_LOWMC_126_126_4)
-#define LOWMC_INSTANCE lowmc_126_126_4
+#if defined(WITH_LOWMC_129_129_4)
+#define LOWMC_INSTANCE lowmc_129_129_4
 #endif
 #define LOWMC_N LOWMC_L1_N
 #define LOWMC_R LOWMC_L1_R

@@ -11,9 +11,9 @@ function(add_picnic_tests name target m1)
   endif()
   if(WITH_KKW)
     list(APPEND ALL_PARAMS
-         picnic2_L1_FS
-         picnic2_L3_FS
-         picnic2_L5_FS)
+         picnic3_L1_FS
+         picnic3_L3_FS
+         picnic3_L5_FS)
   endif()
 
   foreach(param IN LISTS ALL_PARAMS)
