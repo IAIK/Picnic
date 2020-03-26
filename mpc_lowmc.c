@@ -784,13 +784,13 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #define IMPL uint64
 
 // uint64 based implementation
-#include "lowmc_fns_uint64_L1.h"
+#include "lowmc_129_129_4_fns_uint64.h"
 #include "mpc_lowmc.c.i"
 
-#include "lowmc_fns_uint64_L3.h"
+#include "lowmc_192_192_4_fns_uint64.h"
 #include "mpc_lowmc.c.i"
 
-#include "lowmc_fns_uint64_L5.h"
+#include "lowmc_255_255_4_fns_uint64.h"
 #include "mpc_lowmc.c.i"
 #endif
 
@@ -804,15 +804,15 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #define IMPL s128
 
 // L1 using SSE2/NEON
-#include "lowmc_fns_s128_L1.h"
+#include "lowmc_129_129_4_fns_s128.h"
 #include "mpc_lowmc.c.i"
 
 // L3 using SSE2/NEON
-#include "lowmc_fns_s128_L3.h"
+#include "lowmc_192_192_4_fns_s128.h"
 #include "mpc_lowmc.c.i"
 
 // L5 using SSE2/NEON
-#include "lowmc_fns_s128_L5.h"
+#include "lowmc_255_255_4_fns_s128.h"
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR
@@ -825,15 +825,15 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #define IMPL s256
 
 // L1 using AVX2
-#include "lowmc_fns_s256_L1.h"
+#include "lowmc_129_129_4_fns_s256.h"
 #include "mpc_lowmc.c.i"
 
 // L3 using AVX2
-#include "lowmc_fns_s256_L3.h"
+#include "lowmc_192_192_4_fns_s256.h"
 #include "mpc_lowmc.c.i"
 
 // L5 using AVX2
-#include "lowmc_fns_s256_L5.h"
+#include "lowmc_255_255_4_fns_s256.h"
 #include "mpc_lowmc.c.i"
 
 #undef FN_ATTR

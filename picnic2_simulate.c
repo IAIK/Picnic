@@ -150,19 +150,19 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 
 #if !defined(NO_UINT64_FALLBACK)
 /* PICNIC2_L1_FS */
-#include "lowmc_fns_uint64_L1.h"
+#include "lowmc_129_129_4_fns_uint64.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_uint64_129_43
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L3_FS */
-#include "lowmc_fns_uint64_L3.h"
+#include "lowmc_192_192_4_fns_uint64.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_uint64_192_64
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L5_FS */
-#include "lowmc_fns_uint64_L5.h"
+#include "lowmc_255_255_4_fns_uint64.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_uint64_255_85
 #include "picnic2_simulate.c.i"
@@ -175,19 +175,19 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #define FN_ATTR ATTR_TARGET_SSE2
 #endif
 /* PICNIC2_L1_FS */
-#include "lowmc_fns_s128_L1.h"
+#include "lowmc_129_129_4_fns_s128.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s128_129_43
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L3_FS */
-#include "lowmc_fns_s128_L3.h"
+#include "lowmc_192_192_4_fns_s128.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s128_192_64
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L5_FS */
-#include "lowmc_fns_s128_L5.h"
+#include "lowmc_255_255_4_fns_s128.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s128_255_85
 #include "picnic2_simulate.c.i"
@@ -198,19 +198,19 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #undef FN_ATTR
 #define FN_ATTR ATTR_TARGET_AVX2
 /* PICNIC2_L1_FS */
-#include "lowmc_fns_s256_L1.h"
+#include "lowmc_129_129_4_fns_s256.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s256_129_43
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L3_FS */
-#include "lowmc_fns_s256_L3.h"
+#include "lowmc_192_192_4_fns_s256.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s256_192_64
 #include "picnic2_simulate.c.i"
 
 /* PICNIC2_L5_FS */
-#include "lowmc_fns_s256_L5.h"
+#include "lowmc_255_255_4_fns_s256.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s256_255_85
 #include "picnic2_simulate.c.i"
