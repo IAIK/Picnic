@@ -1,5 +1,5 @@
 /*! @file picnic2_impl.c
- *  @brief This is the main file of the signature scheme for the Picnic2
+ *  @brief This is the main file of the signature scheme for the Picnic3
  *  parameter sets.
  *
  *  This file is part of the reference implementation of the Picnic signature scheme.

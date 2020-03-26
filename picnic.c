@@ -212,7 +212,7 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
   const uint8_t* sk_c  = SK_C(sk);
   const uint8_t* sk_pt = SK_PT(sk);
 
-  if (param == Picnic2_L1_FS || param == Picnic2_L1_129_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS) {
+  if (param == Picnic3_L1_FS || param == Picnic3_L1_129_FS || param == Picnic3_L3_FS || param == Picnic3_L5_FS) {
 #if defined(WITH_KKW)
     return impl_sign_picnic2(instance, sk_pt, sk_sk, sk_c, message, message_len, signature,
                              signature_len);
@@ -246,7 +246,7 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
   const uint8_t* pk_c  = PK_C(pk);
   const uint8_t* pk_pt = PK_PT(pk);
 
-  if (param == Picnic2_L1_FS || param == Picnic2_L1_129_FS || param == Picnic2_L3_FS || param == Picnic2_L5_FS) {
+  if (param == Picnic3_L1_FS || param == Picnic3_L1_129_FS || param == Picnic3_L3_FS || param == Picnic3_L5_FS) {
 #if defined(WITH_KKW)
     return impl_verify_picnic2(instance, pk_pt, pk_c, message, message_len, signature,
                                signature_len);
@@ -281,14 +281,14 @@ const char* PICNIC_CALLING_CONVENTION picnic_get_param_name(picnic_params_t para
     return "Picnic_L5_FS";
   case Picnic_L5_UR:
     return "Picnic_L5_UR";
-  case Picnic2_L1_FS:
-    return "Picnic2_L1_FS";
-  case Picnic2_L1_129_FS:
-    return "Picnic2_L1_129_FS";
-  case Picnic2_L3_FS:
-    return "Picnic2_L3_FS";
-  case Picnic2_L5_FS:
-    return "Picnic2_L5_FS";
+  case Picnic3_L1_FS:
+    return "Picnic3_L1_FS";
+  case Picnic3_L1_129_FS:
+    return "Picnic3_L1_129_FS";
+  case Picnic3_L3_FS:
+    return "Picnic3_L3_FS";
+  case Picnic3_L5_FS:
+    return "Picnic3_L5_FS";
   default:
     return "Unknown parameter set";
   }

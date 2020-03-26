@@ -1,6 +1,6 @@
 /*! @file picnic2_impl.h
  *  @brief This is the main implementation file of the signature scheme for
- *  the Picnic2 parameter sets.
+ *  the Picnic3 parameter sets.
  *
  *  This file is part of the reference implementation of the Picnic signature scheme.
  *  See the accompanying documentation for complete details.

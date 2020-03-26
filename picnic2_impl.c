@@ -1,5 +1,5 @@
 /*! @file picnic2_impl.c
- *  @brief This is the main file of the signature scheme for the Picnic2
+ *  @brief This is the main file of the signature scheme for the Picnic3
  *  parameter sets.
  *
  *  This file is part of the reference implementation of the Picnic signature scheme.
@@ -84,7 +84,7 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
 //}
 
 /**
- * S-box for m = 42, for Picnic2 aux computation, with improved preprocessing
+ * S-box for m = 42, for Picnic3 aux computation, with improved preprocessing
  */
 void sbox_layer_42_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   uint8_t input_mask[16];
@@ -126,7 +126,7 @@ void sbox_layer_42_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
 }
 
 /**
- * S-box for m = 43, for Picnic2 aux computation
+ * S-box for m = 43, for Picnic3 aux computation
  */
 void sbox_layer_43_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   uint8_t input_mask[17];
@@ -167,7 +167,7 @@ void sbox_layer_43_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   }
 }
 /**
- * S-box for m = 64, for Picnic2 aux computation
+ * S-box for m = 64, for Picnic3 aux computation
  */
 void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   uint8_t input_mask[24];
@@ -208,7 +208,7 @@ void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   }
 }
 /**
- * S-box for m = 85, for Picnic2 aux computation
+ * S-box for m = 85, for Picnic3 aux computation
  */
 void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
   uint8_t input_mask[32];
