@@ -1007,8 +1007,6 @@ static void mzd_share_s128_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_
   mzd_xor_s128_256(r, v1, v2);
   mzd_xor_s128_256(r, r, v3);
 }
-
-#undef FN_ATTR
 #endif
 
 #if defined(WITH_AVX2)
