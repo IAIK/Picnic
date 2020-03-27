@@ -129,7 +129,7 @@ static void sbox_layer_10_uint64(uint64_t* d) {
 #endif
 #endif
 
-lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
+lowmc_implementation_f lowmc_get_implementation(const lowmc_parameters_t* lowmc) {
   ASSUME(lowmc->m == 10);
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
@@ -200,7 +200,7 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc) {
 }
 
 #if defined(WITH_ZKBPP)
-lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc) {
+lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_parameters_t* lowmc) {
   ASSUME(lowmc->m == 10);
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
@@ -272,7 +272,7 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc
 #endif
 
 #if defined(WITH_KKW)
-lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_t* lowmc) {
+lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_parameters_t* lowmc) {
   ASSUME(lowmc->m == 10);
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 

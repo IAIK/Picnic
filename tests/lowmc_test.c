@@ -27,7 +27,7 @@ static int lowmc_enc(const picnic_params_t param, const uint8_t* key, const uint
   if (!pp) {
     return -1;
   }
-  const lowmc_t* lowmc = pp->lowmc;
+  const lowmc_parameters_t* lowmc = &pp->lowmc;
 
   mzd_local_t* sk  = mzd_local_init(1, lowmc->k);
   mzd_local_t* pt  = mzd_local_init(1, lowmc->n);

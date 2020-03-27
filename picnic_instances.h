@@ -27,7 +27,7 @@
 typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 
 typedef struct picnic_instance_t {
-  const lowmc_t* lowmc;
+  lowmc_parameters_t lowmc;
 
   uint32_t digest_size;       /* bytes */
   uint32_t seed_size;         /* bytes */

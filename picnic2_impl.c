@@ -142,7 +142,7 @@ void sbox_layer_10_uint64_aux(uint64_t* d, randomTape_t* tapes) {
  * holds on the mask values.
  */
 static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params) {
-  mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc->n, 1, true);
+  mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc.n, 1, true);
 
   uint8_t temp[32] = {0};
 
@@ -152,8 +152,8 @@ static void computeAuxTape(randomTape_t* tapes, const picnic_instance_t* params)
       temp[j] ^= tapes->tape[i][j];
     }
   }
-  mzd_from_char_array(lowmc_key, temp, params->lowmc->n / 8);
-  tapes->pos = params->lowmc->n;
+  mzd_from_char_array(lowmc_key, temp, params->lowmc.n / 8);
+  tapes->pos = params->lowmc.n;
 
   lowmc_compute_aux_implementation_f lowmc_aux_impl = params->impls.lowmc_aux;
   // Perform LowMC evaluation and fix AND masks for all AND gates
@@ -281,7 +281,7 @@ static int indexOf(const uint16_t* list, size_t len, uint16_t value) {
 }
 
 static void setAuxBits(randomTape_t* tapes, uint8_t* input, const picnic_instance_t* params) {
-  size_t firstAuxIndex = params->lowmc->n + 1;
+  size_t firstAuxIndex = params->lowmc.n + 1;
   size_t last          = params->num_MPC_parties - 1;
   size_t pos           = 0;
 
@@ -435,9 +435,9 @@ int verify_picnic2(signature2_t* sig, const uint32_t* pubKey, const uint32_t* pl
   allocateCommitments2(&Ch, params, params->num_rounds);
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
-  shares_t* mask_shares    = allocateShares(params->lowmc->n);
-  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
-  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc->k, false);
+  shares_t* mask_shares    = allocateShares(params->lowmc.n);
+  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
+  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc.k, false);
   mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
 
   if (ret != 0) {
@@ -609,7 +609,7 @@ static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLengt
   hash_update(&ctx, message, messageByteLength);
   hash_update(&ctx, (const uint8_t*)pubKey, params->input_size);
   hash_update(&ctx, (const uint8_t*)plaintext, params->input_size);
-  hash_update_uint16_le(&ctx, (uint16_t)params->lowmc->n);
+  hash_update_uint16_le(&ctx, (uint16_t)params->lowmc.n);
   hash_final(&ctx);
   hash_squeeze(&ctx, saltAndRoot, saltAndRootLength);
 }
@@ -639,7 +639,7 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
-  shares_t* mask_shares                  = allocateShares(params->lowmc->n);
+  shares_t* mask_shares                  = allocateShares(params->lowmc.n);
 
   /* Commitments to the commitments and views */
   commitments_t Ch;
@@ -647,8 +647,8 @@ int sign_picnic2(uint32_t* privateKey, uint32_t* pubKey, uint32_t* plaintext,
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
 
-  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
-  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc->k, false);
+  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
+  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc.k, false);
 
   mzd_from_char_array(m_plaintext, (const uint8_t*)plaintext, params->output_size);
 
@@ -913,7 +913,7 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
         memcpy(sig->proofs[t].aux, sigBytes, params->view_size);
         sigBytes += params->view_size;
         if (!arePaddingBitsZero(sig->proofs[t].aux, params->view_size,
-                                3 * params->lowmc->r * params->lowmc->m)) {
+                                3 * params->lowmc.r * params->lowmc.m)) {
 #if !defined(NDEBUG)
           printf("%s: failed while deserializing aux bits\n", __func__);
 #endif
@@ -927,7 +927,7 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
       size_t msgsByteLength = params->input_size + params->view_size;
       memcpy(sig->proofs[t].msgs, sigBytes, msgsByteLength);
       sigBytes += msgsByteLength;
-      size_t msgsBitLength = params->lowmc->n + 3 * params->lowmc->r * params->lowmc->m;
+      size_t msgsBitLength = params->lowmc.n + 3 * params->lowmc.r * params->lowmc.m;
       if (!arePaddingBitsZero(sig->proofs[t].msgs, msgsByteLength, msgsBitLength)) {
 #if !defined(NDEBUG)
         printf("%s: failed while deserializing msgs bits\n", __func__);

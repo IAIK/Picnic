@@ -94,8 +94,8 @@ static uint8_t mpc_AND(uint8_t a, uint8_t b, uint64_t mask_a, uint64_t mask_b, r
 static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs,
                      uint8_t* unopenened_msg, const picnic_instance_t* params) {
   uint8_t state[MAX_LOWMC_BLOCK_SIZE];
-  mzd_to_char_array(state, statein, params->lowmc->n / 8);
-  for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
+  mzd_to_char_array(state, statein, params->lowmc.n / 8);
+  for (size_t i = 0; i < params->lowmc.m * 3; i += 3) {
     uint8_t a       = getBit((uint8_t*)state, i + 2);
     uint64_t mask_a = state_masks->shares[i + 2];
 
@@ -118,7 +118,7 @@ static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* 
     setBit((uint8_t*)state, i, a ^ b ^ c ^ ab);
     state_masks->shares[i] = mask_a ^ mask_b ^ mask_c ^ ab_mask;
   }
-  mzd_from_char_array(statein, state, params->lowmc->n / 8);
+  mzd_from_char_array(statein, state, params->lowmc.n / 8);
 }
 
 static void mpc_xor_masks_nl(shares_t* out, const shares_t* a, const shares_t* b, size_t index,
@@ -408,7 +408,7 @@ static void mpc_xor_masks(shares_t* out, const shares_t* a, const shares_t* b) {
 #endif // AVX2
 #endif // WITH_OPT
 
-lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* lowmc) {
+lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_parameters_t* lowmc) {
   ASSUME(lowmc->m == 10);
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 

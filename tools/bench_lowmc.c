@@ -44,7 +44,7 @@ static void bench_lowmc(const bench_options_t* options) {
     return;
   }
 
-  const lowmc_t* lowmc                    = pp->lowmc;
+  const lowmc_parameters_t* lowmc         = &pp->lowmc;
   const lowmc_implementation_f lowmc_impl = pp->impls.lowmc;
 
   mzd_local_t* sk = mzd_local_init(1, lowmc->k);

@@ -26,33 +26,33 @@ const uint8_t HASH_PREFIX_5 = 5;
 // L1, L3, and L5 LowMC instances
 #if defined(WITH_LOWMC_128_128_20)
 #include "lowmc_128_128_20.h"
-#define LOWMC_L1_OR_NULL &lowmc_128_128_20
+#define LOWMC_L1_OR_NULL lowmc_parameters_128_128_20
 #else
-#define LOWMC_L1_OR_NULL NULL
+#define LOWMC_L1_OR_NULL { 0, 0, 0, 0 }
 #endif
 #if defined(WITH_LOWMC_192_192_30)
 #include "lowmc_192_192_30.h"
-#define LOWMC_L3_OR_NULL &lowmc_192_192_30
+#define LOWMC_L3_OR_NULL lowmc_parameters_192_192_30
 #else
-#define LOWMC_L3_OR_NULL NULL
+#define LOWMC_L3_OR_NULL { 0, 0, 0, 0 }
 #endif
 #if defined(WITH_LOWMC_256_256_38)
 #include "lowmc_256_256_38.h"
-#define LOWMC_L5_OR_NULL &lowmc_256_256_38
+#define LOWMC_L5_OR_NULL lowmc_parameters_256_256_38
 #else
-#define LOWMC_L5_OR_NULL NULL
+#define LOWMC_L5_OR_NULL { 0, 0, 0, 0 }
 #endif
 
 #if defined(WITH_ZKBPP)
 #define ENABLE_ZKBPP(x) x
 #else
-#define ENABLE_ZKBPP(x) NULL
+#define ENABLE_ZKBPP(x) { 0, 0, 0, 0 }
 #endif
 
 #if defined(WITH_KKW)
 #define ENABLE_KKW(x) x
 #else
-#define ENABLE_KKW(x) NULL
+#define ENABLE_KKW(x) { 0, 0, 0, 0 }
 #endif
 
 #if defined(WITH_ZKBPP) && defined(WITH_KKW)
@@ -69,7 +69,7 @@ const uint8_t HASH_PREFIX_5 = 5;
 #endif
 
 static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
-    {NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PARAMETER_SET_INVALID, TRANSFORM_FS, NULL_FNS},
+    {{0, 0, 0, 0}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, PARAMETER_SET_INVALID, TRANSFORM_FS, NULL_FNS},
     {ENABLE_ZKBPP(LOWMC_L1_OR_NULL), 32, 16, 219, 219, 3, 16, 16, 75, 30, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_FS, Picnic_L1_FS, TRANSFORM_FS, NULL_FNS},
     {ENABLE_ZKBPP(LOWMC_L1_OR_NULL), 32, 16, 219, 219, 3, 16, 16, 75, 30, 55, 91, 107,
@@ -93,20 +93,20 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
 static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
 static bool create_instance(picnic_instance_t* pp) {
-  if (!pp->lowmc) {
+  if (!pp->lowmc.m || !pp->lowmc.n || !pp->lowmc.r || !pp->lowmc.k) {
     return false;
   }
 
-  pp->impls.lowmc                 = lowmc_get_implementation(pp->lowmc);
+  pp->impls.lowmc                 = lowmc_get_implementation(&pp->lowmc);
 #if defined(WITH_ZKBPP)
-  pp->impls.lowmc_store           = lowmc_store_get_implementation(pp->lowmc);
-  pp->impls.zkbpp_lowmc           = get_zkbpp_lowmc_implementation(pp->lowmc);
-  pp->impls.zkbpp_lowmc_verify    = get_zkbpp_lowmc_verify_implementation(pp->lowmc);
-  pp->impls.mzd_share             = get_zkbpp_share_implentation(pp->lowmc);
+  pp->impls.lowmc_store           = lowmc_store_get_implementation(&pp->lowmc);
+  pp->impls.zkbpp_lowmc           = get_zkbpp_lowmc_implementation(&pp->lowmc);
+  pp->impls.zkbpp_lowmc_verify    = get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
+  pp->impls.mzd_share             = get_zkbpp_share_implentation(&pp->lowmc);
 #endif
 #if defined(WITH_KKW)
-  pp->impls.lowmc_aux             = lowmc_compute_aux_get_implementation(pp->lowmc);
-  pp->impls.lowmc_simulate_online = lowmc_simulate_online_get_implementation(pp->lowmc);
+  pp->impls.lowmc_aux             = lowmc_compute_aux_get_implementation(&pp->lowmc);
+  pp->impls.lowmc_simulate_online = lowmc_simulate_online_get_implementation(&pp->lowmc);
 #endif
 
   return true;

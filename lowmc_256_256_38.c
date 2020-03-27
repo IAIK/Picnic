@@ -3351,7 +3351,6 @@ static const lowmc_round_t rounds[38] = {
 };
 
 const lowmc_t lowmc_256_256_38 = {
-  10, 256, 38, 256,
   precomputed_round_key_matrix_linear_part,
   Z_r,
   rounds,

@@ -295,7 +295,7 @@ static uint64_t uint64_from_bitstream_10(bitstream_t* bs) {
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
                           const unsigned int idx) {
-  const size_t num_views = pp->lowmc->r;
+  const size_t num_views = pp->lowmc.r;
 
   bitstream_t bs;
   bs.buffer.w = dst;
@@ -309,7 +309,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
 
 static void decompress_view(view_t* views, const picnic_instance_t* pp, const uint8_t* src,
                             const unsigned int idx) {
-  const size_t num_views = pp->lowmc->r;
+  const size_t num_views = pp->lowmc.r;
 
   bitstream_t bs;
   bs.buffer.r = src;
@@ -323,7 +323,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
 
 static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, const uint8_t* src,
                                    const unsigned int idx) {
-  const size_t num_views = pp->lowmc->r;
+  const size_t num_views = pp->lowmc.r;
 
   bitstream_t bs;
   bs.buffer.r = src;
@@ -909,12 +909,11 @@ err:
 static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_key,
                            const uint8_t* plaintext, const uint8_t* public_key, const uint8_t* m,
                            size_t m_len, uint8_t* seeds, uint8_t* salt) {
-  const lowmc_t* lowmc     = pp->lowmc;
   const size_t seed_size   = pp->seed_size;
   const size_t num_rounds  = pp->num_rounds;
   const size_t input_size  = pp->input_size;
   const size_t output_size = pp->output_size;
-  const size_t lowmc_n     = lowmc->n;
+  const size_t lowmc_n     = pp->lowmc.n;
 
   kdf_shake_t ctx;
   kdf_shake_init(&ctx, pp->digest_size);
@@ -943,15 +942,14 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
                      const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
                      const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
                      size_t* siglen) {
-  const lowmc_t* lowmc        = pp->lowmc;
   const size_t num_rounds     = pp->num_rounds;
   const transform_t transform = pp->transform;
   const size_t input_size     = pp->input_size;
   const size_t output_size    = pp->output_size;
-  const size_t view_count     = lowmc->r;
-  const size_t lowmc_k        = lowmc->k;
-  const size_t lowmc_n        = lowmc->n;
-  const size_t lowmc_r        = lowmc->r;
+  const size_t view_count     = pp->lowmc.r;
+  const size_t lowmc_k        = pp->lowmc.k;
+  const size_t lowmc_n        = pp->lowmc.n;
+  const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
 
   const zkbpp_lowmc_implementation_f lowmc_impl       = pp->impls.zkbpp_lowmc;
@@ -1111,14 +1109,13 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
                        const uint8_t* ciphertext, mzd_local_t const* c, const uint8_t* m,
                        size_t m_len, const uint8_t* sig, size_t siglen) {
   const size_t num_rounds     = pp->num_rounds;
-  const lowmc_t* lowmc        = pp->lowmc;
   const transform_t transform = pp->transform;
   const size_t input_size     = pp->input_size;
   const size_t output_size    = pp->output_size;
-  const size_t view_count     = lowmc->r;
-  const size_t lowmc_k        = lowmc->k;
-  const size_t lowmc_n        = lowmc->n;
-  const size_t lowmc_r        = lowmc->r;
+  const size_t view_count     = pp->lowmc.r;
+  const size_t lowmc_k        = pp->lowmc.k;
+  const size_t lowmc_n        = pp->lowmc.n;
+  const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
 
   const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->impls.zkbpp_lowmc_verify;

@@ -49,6 +49,19 @@ typedef mzd_local_t lowmc_key_t;
 #define LOWMC_L5_K LOWMC_L5_N
 #define LOWMC_L5_R 38
 
+/**
+ * LowMC parameters
+ */
+typedef struct {
+  uint32_t m;
+  uint32_t n;
+  uint32_t r;
+  uint32_t k;
+} lowmc_parameters_t;
+
+/**
+ * LowMC round with partial Sblox layer
+ */
 typedef struct {
   const mzd_local_t* z_matrix;
   const mzd_local_t* r_matrix;
@@ -56,15 +69,10 @@ typedef struct {
 } lowmc_round_t;
 
 /**
- * LowMC definition
+ * LowMC definition with partial Sbox layer
  */
 typedef struct {
-  uint32_t m;
-  uint32_t n;
-  uint32_t r;
-  uint32_t k;
-
-  const mzd_local_t* k0_matrix; // K_0 or K_0 + precomputed if reduced_linear_layer is set
+  const mzd_local_t* k0_matrix; // K_0 + precomputed
   const mzd_local_t* zr_matrix; // combined linear layers
   const lowmc_round_t* rounds;
 

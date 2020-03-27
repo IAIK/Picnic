@@ -259,7 +259,7 @@ static void mpc_sbox_layer_bitsliced_verify_uint64_10(uint64_t* in, view_t* view
 #endif
 #endif
 
-zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc) {
+zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_parameters_t* lowmc) {
   ASSUME(lowmc->m == 10);
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
@@ -329,7 +329,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc
   return NULL;
 }
 
-zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc) {
+zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_parameters_t* lowmc) {
   ASSUME(lowmc->m == 10);
   ASSUME(lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256);
 
@@ -480,7 +480,7 @@ static void mzd_share_s256_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_
 #endif
 #endif
 
-zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc) {
+zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_parameters_t* lowmc) {
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {

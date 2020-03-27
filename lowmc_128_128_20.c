@@ -1027,7 +1027,6 @@ static const lowmc_round_t rounds[20] = {
 };
 
 const lowmc_t lowmc_128_128_20 = {
-  10, 128, 20, 128,
   precomputed_round_key_matrix_linear_part,
   Z_r,
   rounds,

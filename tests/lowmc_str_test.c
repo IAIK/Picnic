@@ -26,7 +26,7 @@ static int lowmc_enc_str(const picnic_params_t param, const char* key, const cha
   if (!pp) {
     return -1;
   }
-  const lowmc_t* lowmc = pp->lowmc;
+  const lowmc_parameters_t* lowmc = &pp->lowmc;
 
   mzd_t* sk = mzd_from_str(1, lowmc->k, key);
   mzd_t* pt = mzd_from_str(1, lowmc->n, plaintext);
