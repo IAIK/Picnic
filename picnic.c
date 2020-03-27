@@ -283,6 +283,12 @@ const char* PICNIC_CALLING_CONVENTION picnic_get_param_name(picnic_params_t para
     return "Picnic3_L3_FS";
   case Picnic3_L5_FS:
     return "Picnic3_L5_FS";
+  case Picnic_L1_full:
+    return "Picnic_L1_full";
+  case Picnic_L3_full:
+    return "Picnic_L3_full";
+  case Picnic_L5_full:
+    return "Picnic_L5_full";
   default:
     return "Unknown parameter set";
   }

@@ -61,6 +61,9 @@ extern "C" {
 #define PICNIC_SIGNATURE_SIZE_Picnic3_L1_FS 14720
 #define PICNIC_SIGNATURE_SIZE_Picnic3_L3_FS 35184
 #define PICNIC_SIGNATURE_SIZE_Picnic3_L5_FS 61232
+#define PICNIC_SIGNATURE_SIZE_Picnic_L1_full 32061
+#define PICNIC_SIGNATURE_SIZE_Picnic_L3_full 71179
+#define PICNIC_SIGNATURE_SIZE_Picnic_L5_full 126286
 
 #define PICNIC_SIGNATURE_SIZE(p) PICNIC_CONCAT(PICNIC_SIGNATURE_SIZE, p)
 
@@ -72,16 +75,21 @@ extern "C" {
 /** Parameter set names */
 typedef enum {
   PARAMETER_SET_INVALID,
-  /* Instances from the Picnic parameter set with LowMC m=10 */
-  Picnic_L1_FS,      // 1
-  Picnic_L1_UR,      // 2
-  Picnic_L3_FS,      // 3
-  Picnic_L3_UR,      // 4
-  Picnic_L5_FS,      // 5
-  Picnic_L5_UR,      // 6
-  Picnic3_L1_FS,     // 7
-  Picnic3_L3_FS,     // 8
-  Picnic3_L5_FS,     // 9
+  /* ZKB++ with LowMC m=10 */
+  Picnic_L1_FS   = 1,
+  Picnic_L1_UR   = 2,
+  Picnic_L3_FS   = 3,
+  Picnic_L3_UR   = 4,
+  Picnic_L5_FS   = 5,
+  Picnic_L5_UR   = 6,
+  /* KKW with full LowMC */
+  Picnic3_L1_FS  = 7,
+  Picnic3_L3_FS  = 8,
+  Picnic3_L5_FS  = 9,
+  /* ZKB++ with full LowMC */
+  Picnic_L1_full = 10,
+  Picnic_L3_full = 11,
+  Picnic_L5_full = 12,
   PARAMETER_SET_MAX_INDEX
 } picnic_params_t;
 

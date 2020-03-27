@@ -7,7 +7,10 @@ function(add_picnic_tests name target m1)
          picnic_L3_FS
          picnic_L3_UR
          picnic_L5_FS
-         picnic_L5_UR)
+         picnic_L5_UR
+         picnic_L1_full
+         picnic_L3_full
+         picnic_L5_full)
   endif()
   if(WITH_KKW)
     list(APPEND ALL_PARAMS
