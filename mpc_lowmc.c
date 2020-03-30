@@ -897,12 +897,10 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #define SBOX_uint64(sbox, y, x, views, rvec, n, shares, shares2)                                   \
   do {                                                                                             \
     uint64_t in[shares];                                                                           \
-    uint64_t r[shares];                                                                            \
     for (unsigned int count = 0; count < shares; ++count) {                                        \
       in[count] = CONST_BLOCK(x[count], 0)->w64[(n) / (sizeof(word) * 8) - 1];                     \
-      r[count]  = CONST_BLOCK(&rvec->s[count], 0)->w64[(n) / (sizeof(word) * 8) - 1];              \
     }                                                                                              \
-    sbox(in, views, r);                                                                            \
+    sbox(in, views, rvec->t);                                                                            \
     for (unsigned int count = 0; count < shares2; ++count) {                                       \
       memcpy(BLOCK(y[count], 0)->w64, CONST_BLOCK(x[count], 0)->w64,                               \
              ((n) / (sizeof(word) * 8) - 1) * sizeof(word));                                       \
