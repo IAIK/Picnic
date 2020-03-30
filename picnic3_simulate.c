@@ -1,4 +1,4 @@
-/*! @file picnic2_impl.c
+/*! @file picnic3_impl.c
  *  @brief This is the main file of the signature scheme for the Picnic3
  *  parameter sets.
  *
@@ -24,8 +24,8 @@
 #endif
 
 #include "io.h"
-#include "picnic2_simulate.h"
-#include "picnic2_simulate_mul.h"
+#include "picnic3_simulate.h"
+#include "picnic3_simulate_mul.h"
 
 #define PACKING_FACTOR 4
 #define PARTIES_LOG 4
@@ -149,23 +149,23 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
-/* PICNIC2_L1_FS */
+/* PICNIC3_L1_FS */
 #include "lowmc_129_129_4_fns_uint64.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_uint64_129_43
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 
-/* PICNIC2_L3_FS */
+/* PICNIC3_L3_FS */
 #include "lowmc_192_192_4_fns_uint64.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_uint64_192_64
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 
-/* PICNIC2_L5_FS */
+/* PICNIC3_L5_FS */
 #include "lowmc_255_255_4_fns_uint64.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_uint64_255_85
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 #endif
 
 #if defined(WITH_OPT)
@@ -174,46 +174,46 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #if defined(WITH_SSE2)
 #define FN_ATTR ATTR_TARGET_SSE2
 #endif
-/* PICNIC2_L1_FS */
+/* PICNIC3_L1_FS */
 #include "lowmc_129_129_4_fns_s128.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s128_129_43
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 
-/* PICNIC2_L3_FS */
+/* PICNIC3_L3_FS */
 #include "lowmc_192_192_4_fns_s128.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s128_192_64
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 
-/* PICNIC2_L5_FS */
+/* PICNIC3_L5_FS */
 #include "lowmc_255_255_4_fns_s128.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s128_255_85
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 
 #endif // SSE/NEON
 
 #if defined(WITH_AVX2)
 #undef FN_ATTR
 #define FN_ATTR ATTR_TARGET_AVX2
-/* PICNIC2_L1_FS */
+/* PICNIC3_L1_FS */
 #include "lowmc_129_129_4_fns_s256.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s256_129_43
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 
-/* PICNIC2_L3_FS */
+/* PICNIC3_L3_FS */
 #include "lowmc_192_192_4_fns_s256.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s256_192_64
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 
-/* PICNIC2_L5_FS */
+/* PICNIC3_L5_FS */
 #include "lowmc_255_255_4_fns_s256.h"
 #undef SIM_ONLINE
 #define SIM_ONLINE lowmc_simulate_online_s256_255_85
-#include "picnic2_simulate.c.i"
+#include "picnic3_simulate.c.i"
 
 #endif // AVX2
 #endif // WITH_OPT

@@ -245,11 +245,11 @@ if(WITH_ZKBPP)
 endif()
 if(WITH_KKW)
   list(APPEND PICNIC_SOURCES
-       picnic2_impl.c
-       picnic2_simulate.c
-       picnic2_simulate_mul.c
-       picnic2_tree.c
-       picnic2_types.c)
+       picnic3_impl.c
+       picnic3_simulate.c
+       picnic3_simulate_mul.c
+       picnic3_tree.c
+       picnic3_types.c)
 endif()
 list(APPEND PICNIC_HEADERS picnic.h)
 

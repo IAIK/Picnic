@@ -1,4 +1,4 @@
-/*! @file picnic2_impl.h
+/*! @file picnic3_impl.h
  *  @brief This is the main implementation file of the signature scheme for
  *  the Picnic3 parameter sets.
  *
@@ -10,8 +10,8 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#ifndef PICNIC2_IMPL_H
-#define PICNIC2_IMPL_H
+#ifndef PICNIC3_IMPL_H
+#define PICNIC3_IMPL_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -38,17 +38,17 @@ typedef struct signature2_t {
   proof2_t* proofs; // One proof for each online execution the verifier checks
 } signature2_t;
 
-int impl_sign_picnic2(const picnic_instance_t* pp, const uint8_t* plaintext,
+int impl_sign_picnic3(const picnic_instance_t* pp, const uint8_t* plaintext,
                       const uint8_t* private_key, const uint8_t* public_key, const uint8_t* msg,
                       size_t msglen, uint8_t* sig, size_t* siglen);
-int impl_verify_picnic2(const picnic_instance_t* instance, const uint8_t* plaintext,
+int impl_verify_picnic3(const picnic_instance_t* instance, const uint8_t* plaintext,
                         const uint8_t* public_key, const uint8_t* msg, size_t msglen,
                         const uint8_t* signature, size_t signature_len);
 
-int sign_picnic2(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
+int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
                  const uint8_t* message, size_t messageByteLength, signature2_t* sig,
                  const picnic_instance_t* params);
-int verify_picnic2(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plaintext,
+int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plaintext,
                    const uint8_t* message, size_t messageByteLength,
                    const picnic_instance_t* params);
 
@@ -61,4 +61,4 @@ void sbox_layer_43_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes);
 void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes);
 void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes);
 
-#endif /* PICNIC2_IMPL_H */
+#endif /* PICNIC3_IMPL_H */

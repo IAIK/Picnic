@@ -10,8 +10,8 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#ifndef PICNIC2_TREE_H
-#define PICNIC2_TREE_H
+#ifndef PICNIC3_TREE_H
+#define PICNIC3_TREE_H
 
 #include "picnic_instances.h"
 

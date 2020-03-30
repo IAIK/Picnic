@@ -23,7 +23,7 @@
 #include "picnic_impl.h"
 #endif
 #if defined(WITH_KKW)
-#include "picnic2_impl.h"
+#include "picnic3_impl.h"
 #endif
 #include "randomness.h"
 
@@ -214,7 +214,7 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
 
   if (param == Picnic3_L1_FS || param == Picnic3_L3_FS || param == Picnic3_L5_FS) {
 #if defined(WITH_KKW)
-    return impl_sign_picnic2(instance, sk_pt, sk_sk, sk_c, message, message_len, signature,
+    return impl_sign_picnic3(instance, sk_pt, sk_sk, sk_c, message, message_len, signature,
                              signature_len);
 #else
     return -1;
@@ -248,7 +248,7 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
 
   if (param == Picnic3_L1_FS || param == Picnic3_L3_FS || param == Picnic3_L5_FS) {
 #if defined(WITH_KKW)
-    return impl_verify_picnic2(instance, pk_pt, pk_c, message, message_len, signature,
+    return impl_verify_picnic3(instance, pk_pt, pk_c, message, message_len, signature,
                                signature_len);
 #else
     return -1;

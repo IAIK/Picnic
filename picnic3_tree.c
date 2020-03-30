@@ -21,8 +21,8 @@
 #include "endian_compat.h"
 #include "kdf_shake.h"
 #include "picnic.h"
-#include "picnic2_tree.h"
-#include "picnic2_types.h"
+#include "picnic3_tree.h"
+#include "picnic3_types.h"
 
 static int contains(size_t* list, size_t len, size_t value) {
   for (size_t i = 0; i < len; i++) {

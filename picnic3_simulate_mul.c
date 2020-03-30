@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include "endian_compat.h"
-#include "picnic2_simulate_mul.h"
+#include "picnic3_simulate_mul.h"
 
 #if defined(WITH_SSE2)
 #define ATTR_TARGET_S128 ATTR_TARGET_SSE2

@@ -16,7 +16,7 @@ typedef struct {
   mzd_local_t** state;
 } recorded_state_t;
 
-// forward decleration to picnic2_types.h since we get some cyclic dependencies otherwise
+// forward decleration to picnic3_types.h since we get some cyclic dependencies otherwise
 typedef struct randomTape_t randomTape_t;
 
 typedef void (*lowmc_implementation_f)(lowmc_key_t const*, mzd_local_t const*, mzd_local_t*);

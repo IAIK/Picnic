@@ -13,7 +13,7 @@
 #ifndef PICNIC_TYPES_H
 #define PICNIC_TYPES_H
 
-#include "picnic2_impl.h"
+#include "picnic3_impl.h"
 
 /* Type definitions */
 typedef struct randomTape_t {

@@ -1,4 +1,4 @@
-/*! @file picnic2_impl.c
+/*! @file picnic3_impl.c
  *  @brief This is the main file of the signature scheme for the Picnic3
  *  parameter sets.
  *

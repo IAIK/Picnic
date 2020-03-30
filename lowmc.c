@@ -15,8 +15,8 @@
 #include "lowmc.h"
 #include "mzd_additional.h"
 #if defined(WITH_KKW)
-#include "picnic2_impl.h"
-#include "picnic2_simulate_mul.h"
+#include "picnic3_impl.h"
+#include "picnic3_simulate_mul.h"
 #endif
 #if defined(WITH_OPT)
 #include "simd.h"

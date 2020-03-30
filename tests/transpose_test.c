@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #include "endian_compat.h"
-#include "picnic2_simulate_mul.h"
+#include "picnic3_simulate_mul.h"
 
 static const uint8_t test_matrix[64][64] = {
     {1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,

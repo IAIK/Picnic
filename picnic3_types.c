@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "picnic2_types.h"
+#include "picnic3_types.h"
 #include "compat.h"
 
 shares_t* allocateShares(size_t count) {

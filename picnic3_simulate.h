@@ -7,8 +7,8 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#ifndef PICNIC2_SIMULATE_H
-#define PICNIC2_SIMULATE_H
+#ifndef PICNIC3_SIMULATE_H
+#define PICNIC3_SIMULATE_H
 
 #include "lowmc_pars.h"
 

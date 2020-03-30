@@ -7,10 +7,10 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#ifndef PICNIC2_SIMULATE_MUL_H
-#define PICNIC2_SIMULATE_MUL_H
+#ifndef PICNIC3_SIMULATE_MUL_H
+#define PICNIC3_SIMULATE_MUL_H
 
-#include "picnic2_types.h"
+#include "picnic3_types.h"
 #include "io.h"
 
 void mpc_matrix_mul_uint64_128(mzd_local_t** output, mzd_local_t** vec, const mzd_local_t* matrix,

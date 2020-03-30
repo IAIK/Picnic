@@ -15,7 +15,7 @@
 #include "mpc_lowmc.h"
 #endif
 #if defined(WITH_KKW)
-#include "picnic2_simulate.h"
+#include "picnic3_simulate.h"
 #endif
 #include "picnic.h"
 
