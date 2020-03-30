@@ -1,10 +1,10 @@
-#ifndef PICNIC2_L1_FS_API_H
-#define PICNIC2_L1_FS_API_H
+#ifndef PICNIC3_L5_FS_API_H
+#define PICNIC3_L5_FS_API_H
 
-#define CRYPTO_SECRETKEYBYTES (1 + 2 * 16 + 16)
-#define CRYPTO_PUBLICKEYBYTES (1 + 2 * 16)
-#define CRYPTO_BYTES (4 + 13802)
-#define CRYPTO_ALGNAME "picnic2l1fs"
+#define CRYPTO_SECRETKEYBYTES (1 + 2 * 32 + 32)
+#define CRYPTO_PUBLICKEYBYTES (1 + 2 * 32)
+#define CRYPTO_BYTES (4 + 61232)
+#define CRYPTO_ALGNAME "picnic3l5fs"
 #define CRYPTO_DETERMINISTIC 1
 
 int crypto_sign_keypair(unsigned char* pk, unsigned char* sk);
