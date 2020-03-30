@@ -23,6 +23,7 @@
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #define MAX_NUM_ROUNDS 438
 #define MAX_VIEW_SIZE 143
@@ -1106,6 +1107,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
     // compute random tapes
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
+      assert(view_size <= MAX_VIEW_SIZE);
       uint8_t tape_bytes[MAX_VIEW_SIZE];
       kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
       decompress_random_tape(rvec, pp, tape_bytes, j);
@@ -1302,6 +1304,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
       // compute random tapes
       for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+        assert(view_size <= MAX_VIEW_SIZE);
         uint8_t tape_bytes[MAX_VIEW_SIZE];
         kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
         decompress_random_tape(rvec, pp, tape_bytes, j);
@@ -1333,6 +1336,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       }
     }
   }
+
+  assert(pp->num_rounds <= MAX_NUM_ROUNDS);
   unsigned char challenge[MAX_NUM_ROUNDS] = {0};
   H3_verify(pp, prf, ciphertext, plaintext, m, m_len, challenge);
   const int success_status = memcmp(challenge, prf->challenge, pp->num_rounds);
