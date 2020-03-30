@@ -312,7 +312,14 @@ static int run_test(picnic_params_t param) {
       {KATDIR "/kat_picnic3_l3_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L3_FS),
        PICNIC_PRIVATE_KEY_SIZE(Picnic3_L3_FS)},
       {KATDIR "/kat_picnic3_l5_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L5_FS),
-       PICNIC_PRIVATE_KEY_SIZE(Picnic3_L5_FS)}};
+       PICNIC_PRIVATE_KEY_SIZE(Picnic3_L5_FS)},
+      {KATDIR "/kat_l1_full.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_full),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_full)},
+      {KATDIR "/kat_l3_full.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L3_full),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L3_full)},
+      {KATDIR "/kat_l5_full.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L5_full),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_full)},
+  };
 
   return run_test_vectors_from_file(tests[param].path, tests[param].pks, tests[param].sks);
 }
