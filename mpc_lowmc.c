@@ -78,6 +78,7 @@
     }                                                                                              \
   } while (0)
 
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
 /* MPC Sbox implementation for partical Sbox */
 static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
                            uint64_t const* r, view_t* view, unsigned viewshift) {
@@ -181,9 +182,11 @@ static void mpc_sbox_verify_uint64_10(uint64_t* in, view_t* view, uint64_t const
 
   bitsliced_step_2_uint64_10(SC_VERIFY);
 }
+#endif
 
 /* MPC Sbox implementation for full instances */
 #if !defined(NO_UINT64_FALLBACK)
+#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_192_192_4)
 static void mpc_and_uint64_192(mzd_local_t* res, const mzd_local_t* first,
                                const mzd_local_t* second, const mzd_local_t* r, view_t* view,
                                unsigned viewshift) {
@@ -252,7 +255,9 @@ static void mpc_and_verify_uint64_192(mzd_local_t* res, const mzd_local_t* first
     mzd_and_uint64_192(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], mask);
   }
 }
+#endif
 
+#if defined(WITH_LOWMC_255_255_4)
 static void mpc_and_uint64_256(mzd_local_t* res, const mzd_local_t* first,
                                const mzd_local_t* second, const mzd_local_t* r, view_t* view,
                                unsigned viewshift) {
@@ -321,6 +326,7 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
     mzd_and_uint64_256(&res[SC_VERIFY - 1], &view->s[SC_VERIFY - 1], mask);
   }
 }
+#endif
 
 #define bitsliced_step_1(sc, AND, ROL, MASK_A, MASK_B, MASK_C)                                     \
   mzd_local_t x2m[sc] = {{{0}}};                                                                   \
@@ -358,6 +364,7 @@ static void mpc_and_verify_uint64_256(mzd_local_t* res, const mzd_local_t* first
     XOR(&out[m], &x0s[m], &x1s[m]);                                                                \
   }
 
+#if defined(WITH_LOWMC_129_129_4)
 static void mpc_sbox_prove_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
                                                   view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_shift_left_uint64_192, mask_129_129_43_a,
@@ -387,7 +394,9 @@ static void mpc_sbox_verify_uint64_lowmc_129_129_4(mzd_local_t* out, const mzd_l
 
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_192, mzd_shift_right_uint64_192);
 }
+#endif
 
+#if defined(WITH_LOWMC_192_192_4)
 static void mpc_sbox_prove_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
                                                   view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_PROOF, mzd_and_uint64_192, mzd_shift_left_uint64_192, mask_192_192_64_a,
@@ -417,7 +426,9 @@ static void mpc_sbox_verify_uint64_lowmc_192_192_4(mzd_local_t* out, const mzd_l
 
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_192, mzd_shift_right_uint64_192);
 }
+#endif
 
+#if defined(WITH_LOWMC_255_255_4)
 static void mpc_sbox_prove_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
                                                   view_t* view, const rvec_t* rvec) {
   bitsliced_step_1(SC_PROOF, mzd_and_uint64_256, mzd_shift_left_uint64_256, mask_255_255_85_a,
@@ -447,6 +458,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
 
   bitsliced_step_2(SC_VERIFY, mzd_xor_uint64_256, mzd_shift_right_uint64_256);
 }
+#endif
 #endif /* NO_UINT_FALLBACK */
 
 #if defined(WITH_OPT)
@@ -678,6 +690,7 @@ static inline void mpc_sbox_verify_s128_256(mzd_local_t* out, const mzd_local_t*
   bitsliced_mm_multiple_step_2(SC_VERIFY, word128, 2, mm128_xor_256, mm128_shift_right_256);
 }
 
+#if defined(WITH_LOWMC_129_129_4)
 ATTR_TARGET_S128
 static void mpc_sbox_prove_s128_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
@@ -691,7 +704,9 @@ static void mpc_sbox_verify_s128_lowmc_129_129_4(mzd_local_t* out, const mzd_loc
   mpc_sbox_verify_s128_256(out, in, view, rvec, mask_129_129_43_a, mask_129_129_43_b,
                            mask_129_129_43_c);
 }
+#endif
 
+#if defined(WITH_LOWMC_192_192_4)
 ATTR_TARGET_S128
 static void mpc_sbox_prove_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
@@ -705,7 +720,9 @@ static void mpc_sbox_verify_s128_lowmc_192_192_4(mzd_local_t* out, const mzd_loc
   mpc_sbox_verify_s128_256(out, in, view, rvec, mask_192_192_64_a, mask_192_192_64_b,
                            mask_192_192_64_c);
 }
+#endif
 
+#if defined(WITH_LOWMC_255_255_4)
 ATTR_TARGET_S128
 static void mpc_sbox_prove_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
@@ -719,6 +736,7 @@ static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
   mpc_sbox_verify_s128_256(out, in, view, rvec, mask_255_255_85_a, mask_255_255_85_b,
                            mask_255_255_85_c);
 }
+#endif
 
 #undef IN
 #undef OUT
@@ -767,6 +785,7 @@ static void mpc_sbox_verify_s256_256(mzd_local_t* out, const mzd_local_t* in, vi
   bitsliced_mm_step_2(SC_VERIFY, mm256_xor, mm256_rotate_right);
 }
 
+#if defined(WITH_LOWMC_129_129_4)
 ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_129_129_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
@@ -780,7 +799,9 @@ static void mpc_sbox_verify_s256_lowmc_129_129_4(mzd_local_t* out, const mzd_loc
   mpc_sbox_verify_s256_256(out, in, view, rvec, mask_129_129_43_a->w256, mask_129_129_43_b->w256,
                            mask_129_129_43_c->w256);
 }
+#endif
 
+#if defined(WITH_LOWMC_192_192_4)
 ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
@@ -794,7 +815,9 @@ static void mpc_sbox_verify_s256_lowmc_192_192_4(mzd_local_t* out, const mzd_loc
   mpc_sbox_verify_s256_256(out, in, view, rvec, mask_192_192_64_a->w256, mask_192_192_64_b->w256,
                            mask_192_192_64_c->w256);
 }
+#endif
 
+#if defined(WITH_LOWMC_255_255_4)
 ATTR_TARGET_AVX2
 static void mpc_sbox_prove_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_local_t* in,
                                                 view_t* view, const rvec_t* rvec) {
@@ -808,6 +831,7 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
   mpc_sbox_verify_s256_256(out, in, view, rvec, mask_255_255_85_a->w256, mask_255_255_85_b->w256,
                            mask_255_255_85_c->w256);
 }
+#endif
 #endif /* WITH_AVX2*/
 #endif /* WITH_OPT */
 
