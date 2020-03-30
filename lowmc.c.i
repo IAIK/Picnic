@@ -28,7 +28,8 @@
 #endif
 #endif
 
-#if defined(WITH_KKW) && !defined(LOWMC_PARTIAL)
+#if defined(WITH_KKW)
+#if !defined(LOWMC_PARTIAL)
 #undef N_LOWMC
 #undef RECORD_STATE
 #undef SBOX
@@ -37,6 +38,7 @@
 #define SBOX(x, y, tapes) SBOX_FUNC(BLOCK(x, 0), BLOCK(y,0), tapes)
 #define N_LOWMC CONCAT(lowmc_compute_aux, CONCAT(IMPL, LOWMC_INSTANCE))
 #include "lowmc_impl_aux.c.i"
+#endif
 #endif
 
 #undef N_LOWMC

@@ -10,6 +10,7 @@
  *  SPDX-License-Identifier: MIT
  */
 
+#if defined(LOWMC_INSTANCE)
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
@@ -34,8 +35,9 @@ static int SIM_ONLINE(mzd_local_t** maskedKey, shares_t* mask_shares, randomTape
   if (msgs->unopened != NULL) { // We are in verify, save the unopenend parties msgs
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
       unopened_msgs[k] = malloc(params->view_size);
-	  memcpy(unopened_msgs[k], msgs->msgs[(64/PACKING_FACTOR) * k + msgs->unopened[k]], params->view_size);
-	}
+      memcpy(unopened_msgs[k], msgs->msgs[(64 / PACKING_FACTOR) * k + msgs->unopened[k]],
+             params->view_size);
+    }
   }
 
 //  MPC_MUL(temp, maskedKey, LOWMC_INSTANCE.k0_matrix,
@@ -57,7 +59,7 @@ static int SIM_ONLINE(mzd_local_t** maskedKey, shares_t* mask_shares, randomTape
       MUL(temp[k], state[k], LOWMC_INSTANCE.rounds[r].l_matrix);
       XOR(state[k], temp[k], LOWMC_INSTANCE.rounds[r].constant);
       ADDMUL(state[k], maskedKey[k], LOWMC_INSTANCE.rounds[r].k_matrix);
-	}
+    }
   }
 
   for (size_t i = 0; i < LOWMC_N; i++) {
@@ -66,33 +68,33 @@ static int SIM_ONLINE(mzd_local_t** maskedKey, shares_t* mask_shares, randomTape
 
   /* check that the output is correct */
   for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-	  uint8_t output[params->output_size];
-	  mzd_to_char_array(output, state[k], params->output_size);
+    uint8_t output[params->output_size];
+    mzd_to_char_array(output, state[k], params->output_size);
 
-	  if (memcmp(output, pubKey, params->output_size) != 0) {
-	#if !defined(NDEBUG)
-		printf("%s: output does not match pubKey\n", __func__);
-		printf("pubKey: ");
-		print_hex(stdout, pubKey, params->output_size);
-		printf("\noutput: ");
-		print_hex(stdout, output, params->output_size);
-		printf("\n");
-	#endif
-		ret = -1;
-		goto Exit;
-	  }
+    if (memcmp(output, pubKey, params->output_size) != 0) {
+#if !defined(NDEBUG)
+      printf("%s: output does not match pubKey\n", __func__);
+      printf("pubKey: ");
+      print_hex(stdout, pubKey, params->output_size);
+      printf("\noutput: ");
+      print_hex(stdout, output, params->output_size);
+      printf("\n");
+#endif
+      ret = -1;
+      goto Exit;
+    }
   }
 
   msgsTranspose(msgs);
 
-
 Exit:
-  if(msgs->unopened != NULL) {
+  if (msgs->unopened != NULL) {
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
       free(unopened_msgs[k]);
-	}
+    }
   }
   mzd_local_free_multiple(state);
   mzd_local_free_multiple(temp);
   return ret;
 }
+#endif
