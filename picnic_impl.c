@@ -104,6 +104,9 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
 
   sig_proof_t* prf = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
+  if (!prf) {
+    return NULL;
+  }
 
   size_t per_round_mem =
       SC_PROOF * (seed_size + digest_size + input_size + output_size + view_size);
