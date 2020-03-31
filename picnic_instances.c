@@ -13,14 +13,6 @@
 
 #include "picnic_instances.h"
 
-// Prefix values for domain separation
-const uint8_t HASH_PREFIX_0 = 0;
-const uint8_t HASH_PREFIX_1 = 1;
-const uint8_t HASH_PREFIX_2 = 2;
-const uint8_t HASH_PREFIX_3 = 3;
-const uint8_t HASH_PREFIX_4 = 4;
-const uint8_t HASH_PREFIX_5 = 5;
-
 // instance handling
 
 // L1, L3, and L5 instances with partial Sbox layer

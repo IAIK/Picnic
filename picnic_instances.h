@@ -76,12 +76,12 @@ PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic
 PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
                                                             picnic_publickey_t* pk);
 
-// Prefix values for domain separation
-extern const uint8_t HASH_PREFIX_0; // = 0
-extern const uint8_t HASH_PREFIX_1; // = 1
-extern const uint8_t HASH_PREFIX_2; // = 2
-extern const uint8_t HASH_PREFIX_3; // = 3
-extern const uint8_t HASH_PREFIX_4; // = 4
-extern const uint8_t HASH_PREFIX_5; // = 5
+/* Prefix values for domain separation */
+static const uint8_t HASH_PREFIX_0 = 0;
+static const uint8_t HASH_PREFIX_1 = 1;
+static const uint8_t HASH_PREFIX_2 = 2;
+static const uint8_t HASH_PREFIX_3 = 3;
+static const uint8_t HASH_PREFIX_4 = 4;
+static const uint8_t HASH_PREFIX_5 = 5;
 
 #endif
