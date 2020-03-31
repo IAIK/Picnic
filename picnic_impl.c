@@ -1061,7 +1061,11 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
       for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
         mzd_from_char_array(shared_key[j], round[round_offset].input_shares[j], input_size);
-        clear_extra_bits(shared_key[j], diff);
+        if (diff) {
+          clear_extra_bits(shared_key[j], diff);
+          /* TODO: directly clear extra bits in round[round_offset].input_shares[j] */
+          mzd_to_char_array(round[round_offset].input_shares[j], shared_key[j], input_size);
+        }
       }
       mzd_share(shared_key[2], shared_key[0], shared_key[1], lowmc_key);
       mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1], shared_key[SC_PROOF - 1],
@@ -1103,7 +1107,11 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
       kdf_shake_get_randomness(&kdfs[j], round->input_shares[j], input_size);
       mzd_from_char_array(shared_key[j], round->input_shares[j], input_size);
-      clear_extra_bits(shared_key[j], diff);
+      if (diff) {
+        clear_extra_bits(shared_key[j], diff);
+        /* TODO: directly clear extra bits in round->input_shares[j] */
+        mzd_to_char_array(round->input_shares[j], shared_key[j], input_size);
+      }
     }
     mzd_share(shared_key[2], shared_key[0], shared_key[1], lowmc_key);
     mzd_to_char_array(round->input_shares[SC_PROOF - 1], shared_key[SC_PROOF - 1], input_size);
@@ -1299,10 +1307,14 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       mzd_from_char_array(in_out_shares[0].s[0], helper->round->input_shares[0], input_size);
       if (b_i) {
         clear_extra_bits(in_out_shares[0].s[0], diff);
+        /* TODO: clear bits directly in helper->round->input_shares[0] */
+        mzd_to_char_array(helper->round->input_shares[0], in_out_shares[0].s[0], input_size);
       }
       mzd_from_char_array(in_out_shares[0].s[1], helper->round->input_shares[1], input_size);
       if (c_i) {
         clear_extra_bits(in_out_shares[0].s[1], diff);
+        /* TODO: clear bits directly in helper->round->input_shares[0] */
+        mzd_to_char_array(helper->round->input_shares[1], in_out_shares[0].s[1], input_size);
       }
 
       // compute random tapes
