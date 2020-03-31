@@ -1252,8 +1252,20 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
         mzd_from_char_array(in_out_shares[0].s[0], helper[round_offset].round->input_shares[0],
                             input_size);
+        if (b_i && diff) {
+          clear_extra_bits(in_out_shares[0].s[0], diff);
+          /* TODO: clear bits directly in helper->round->input_shares[0] */
+          mzd_to_char_array(helper[round_offset].round->input_shares[0], in_out_shares[0].s[0],
+                            input_size);
+        }
         mzd_from_char_array(in_out_shares[0].s[1], helper[round_offset].round->input_shares[1],
                             input_size);
+        if (c_i && diff) {
+          clear_extra_bits(in_out_shares[0].s[1], diff);
+          /* TODO: clear bits directly in helper->round->input_shares[0] */
+          mzd_to_char_array(helper[round_offset].round->input_shares[1], in_out_shares[0].s[1],
+                            input_size);
+        }
 
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
           decompress_random_tape(rvec, pp, tape_bytes_x4[j][round_offset], j);
@@ -1305,13 +1317,13 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       }
 
       mzd_from_char_array(in_out_shares[0].s[0], helper->round->input_shares[0], input_size);
-      if (b_i) {
+      if (b_i && diff) {
         clear_extra_bits(in_out_shares[0].s[0], diff);
         /* TODO: clear bits directly in helper->round->input_shares[0] */
         mzd_to_char_array(helper->round->input_shares[0], in_out_shares[0].s[0], input_size);
       }
       mzd_from_char_array(in_out_shares[0].s[1], helper->round->input_shares[1], input_size);
-      if (c_i) {
+      if (c_i && diff) {
         clear_extra_bits(in_out_shares[0].s[1], diff);
         /* TODO: clear bits directly in helper->round->input_shares[0] */
         mzd_to_char_array(helper->round->input_shares[1], in_out_shares[0].s[1], input_size);
