@@ -48,11 +48,8 @@ typedef struct shares_t {
 
 void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params);
 void freeRandomTape(randomTape_t* tape);
-void partialFreeRandomTape(randomTape_t* tape);
-void finalFreeRandomTape(randomTape_t* tape);
 
 void allocateProof2(proof2_t* proof, const picnic_instance_t* params);
-void freeProof2(proof2_t* proof);
 
 commitments_t* allocateCommitments(const picnic_instance_t* params, size_t nCommitments);
 void freeCommitments(commitments_t* commitments);

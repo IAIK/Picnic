@@ -62,21 +62,6 @@ void freeRandomTape(randomTape_t* tape) {
   }
 }
 
-void partialFreeRandomTape(randomTape_t* tape) {
-  if (tape != NULL) {
-    free(tape->tape[0]);
-    free(tape->tape);
-    free(tape->parity_tapes);
-    aligned_free(tape->buffer);
-  }
-}
-
-void finalFreeRandomTape(randomTape_t* tape) {
-  if (tape != NULL) {
-    free(tape->aux_bits);
-  }
-}
-
 void allocateProof2(proof2_t* proof, const picnic_instance_t* params) {
   memset(proof, 0, sizeof(proof2_t));
 
@@ -88,7 +73,8 @@ void allocateProof2(proof2_t* proof, const picnic_instance_t* params) {
   proof->aux           = malloc(params->view_size);
   proof->msgs          = malloc(params->view_size + params->input_size);
 }
-void freeProof2(proof2_t* proof) {
+
+static void freeProof2(proof2_t* proof) {
   free(proof->seedInfo);
   free(proof->C);
   free(proof->input);
