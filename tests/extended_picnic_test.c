@@ -207,6 +207,63 @@ static int picnic_test_with_read_write(picnic_params_t parameters) {
   return 0;
 }
 
+static int picnic_test_modified_signatures(picnic_params_t parameters) {
+  const size_t max_signature_size = picnic_signature_size(parameters);
+  if (!max_signature_size) {
+    /* not supported */
+    return -2;
+  }
+
+  picnic_publickey_t pk;
+  picnic_privatekey_t sk;
+
+  int ret = picnic_keygen(parameters, &pk, &sk);
+  if (ret) {
+    return ret;
+  }
+
+  uint8_t* signature = malloc(max_signature_size);
+  uint8_t* message   = malloc(rep * message_inc);
+  if (!signature || !message) {
+    ret = -1;
+    goto end;
+  }
+
+  const size_t message_size = message_inc;
+  /* fill message with some data */
+  memset(message, rand() & 0xFF, message_size);
+
+  size_t signature_len = max_signature_size;
+  ret                  = picnic_sign(&sk, message, message_size, signature, &signature_len);
+  if (ret) {
+    goto end;
+  }
+
+  /* must verify */
+  ret = picnic_verify(&pk, message, message_size, signature, signature_len);
+  if (ret) {
+    goto end;
+  }
+
+  for (size_t l = 0; l < signature_len; ++l) {
+    signature[l] += 1;
+
+    /* must fail */
+    ret = picnic_verify(&pk, message, message_size - 1, signature, signature_len);
+    if (!ret) {
+      ret = -1;
+      goto end;
+    }
+  }
+
+  ret = 0;
+
+end:
+  free(message);
+  free(signature);
+  return ret;
+}
+
 static int perform_test(picnic_params_t param) {
   int ret = 0;
 
@@ -234,6 +291,18 @@ static int perform_test(picnic_params_t param) {
 
   printf("testing multiple message sizes: %s ... ", picnic_get_param_name(param));
   r = picnic_test_multiple_message_sizes(param);
+  if (r == -2) {
+    printf("SKIPPED\n");
+  } else if (r) {
+    printf("FAILED\n");
+    ret = -1;
+  } else {
+    printf("OK\n");
+  }
+  return ret;
+
+  printf("testing with modified signatures: %s ... ", picnic_get_param_name(param));
+  r = picnic_test_modified_signatures(param);
   if (r == -2) {
     printf("SKIPPED\n");
   } else if (r) {
