@@ -25,11 +25,10 @@ typedef union {
 } view_t;
 
 typedef view_t rvec_t;
-typedef mzd_local_t* mpc_lowmc_key_t;
 
 typedef struct {
-  mzd_local_t* s[SC_PROOF];
-} in_out_shares_t;
+  mzd_local_t s[SC_PROOF][(MAX_LOWMC_BLOCK_SIZE + 255) / 256];
+} in_out_shares_t ATTR_ALIGNED(32);
 
 typedef void (*zkbpp_lowmc_implementation_f)(mzd_local_t const*, view_t*, in_out_shares_t*, rvec_t*,
                                              recorded_state_t*);

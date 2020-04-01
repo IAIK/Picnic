@@ -1036,7 +1036,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const transform_t transform = pp->transform;
   const size_t input_size     = pp->input_size;
   const size_t output_size    = pp->output_size;
-  const size_t lowmc_k        = pp->lowmc.k;
   const size_t lowmc_n        = pp->lowmc.n;
   const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
@@ -1058,9 +1057,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   view_t* views    = aligned_alloc(32, sizeof(view_t) * lowmc_r);
 
   in_out_shares_t in_out_shares[2];
-  mzd_local_init_multiple_ex(in_out_shares[0].s, SC_PROOF, 1, lowmc_k, false);
-  mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
-  mpc_lowmc_key_t const* shared_key = &in_out_shares->s[0];
 
   // Generate seeds
   generate_seeds(pp, private_key, plaintext, public_key, m, m_len, prf->round[0].seeds[0],
@@ -1101,17 +1097,17 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
     for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
       for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
-        mzd_from_char_array(shared_key[j], round[round_offset].input_shares[j], input_size);
+        mzd_from_char_array(in_out_shares[0].s[j], round[round_offset].input_shares[j], input_size);
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
         if (diff) {
-          clear_extra_bits(shared_key[j], diff);
+          clear_extra_bits(in_out_shares[0].s[j], diff);
           /* TODO: directly clear extra bits in round[round_offset].input_shares[j] */
-          mzd_to_char_array(round[round_offset].input_shares[j], shared_key[j], input_size);
+          mzd_to_char_array(round[round_offset].input_shares[j], in_out_shares[0].s[j], input_size);
         }
 #endif
       }
-      mzd_share(shared_key[2], shared_key[0], shared_key[1], lowmc_key);
-      mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1], shared_key[SC_PROOF - 1],
+      mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], lowmc_key);
+      mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1],
                         input_size);
 
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -1149,17 +1145,17 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     // compute sharing
     for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
       kdf_shake_get_randomness(&kdfs[j], round->input_shares[j], input_size);
-      mzd_from_char_array(shared_key[j], round->input_shares[j], input_size);
+      mzd_from_char_array(in_out_shares[0].s[j], round->input_shares[j], input_size);
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
       if (diff) {
-        clear_extra_bits(shared_key[j], diff);
+        clear_extra_bits(in_out_shares[0].s[j], diff);
         /* TODO: directly clear extra bits in round->input_shares[j] */
-        mzd_to_char_array(round->input_shares[j], shared_key[j], input_size);
+        mzd_to_char_array(round->input_shares[j], in_out_shares[0].s[j], input_size);
       }
 #endif
     }
-    mzd_share(shared_key[2], shared_key[0], shared_key[1], lowmc_key);
-    mzd_to_char_array(round->input_shares[SC_PROOF - 1], shared_key[SC_PROOF - 1], input_size);
+    mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], lowmc_key);
+    mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1], input_size);
 
     // compute random tapes
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -1202,8 +1198,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   }
   aligned_free(rvec);
   aligned_free(views);
-  mzd_local_free_multiple(in_out_shares[1].s);
-  mzd_local_free_multiple(in_out_shares[0].s);
   proof_free(prf);
 
   mzd_local_free_multiple(recorded_state.state);
@@ -1219,8 +1213,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   const transform_t transform = pp->transform;
   const size_t input_size     = pp->input_size;
   const size_t output_size    = pp->output_size;
-  const size_t lowmc_k        = pp->lowmc.k;
-  const size_t lowmc_n        = pp->lowmc.n;
   const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
@@ -1236,8 +1228,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   }
 
   in_out_shares_t in_out_shares[2];
-  mzd_local_init_multiple_ex(in_out_shares[0].s, SC_VERIFY, 1, lowmc_k, false);
-  mzd_local_init_multiple_ex(in_out_shares[1].s, SC_PROOF, 1, lowmc_n, false);
   view_t* views    = aligned_alloc(32, sizeof(view_t) * lowmc_r);
   rvec_t* rvec     = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for and-gates
 
@@ -1433,8 +1423,6 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   }
   aligned_free(rvec);
   aligned_free(views);
-  mzd_local_free_multiple(in_out_shares[1].s);
-  mzd_local_free_multiple(in_out_shares[0].s);
 
   proof_free(prf);
 
