@@ -29,7 +29,7 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_loca
   lowmc_partial_round_t const* round = LOWMC_INSTANCE.rounds;
   for (unsigned i = 0; i < LOWMC_R - 1; ++i, ++round) {
 #if defined(RECORD_STATE)
-    COPY(state->state[i], x);
+    COPY(state[i].state, x);
 #endif
     SBOX(x);
 
@@ -46,7 +46,7 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_loca
     XOR(x, y, x);
   }
 #if defined(RECORD_STATE)
-  COPY(state->state[LOWMC_R - 1], x);
+  COPY(state[LOWMC_R - 1].state, x);
 #endif
   SBOX(x);
 
@@ -58,7 +58,7 @@ static void N_LOWMC(lowmc_key_t const* lowmc_key, mzd_local_t const* p, mzd_loca
   COPY(x, y);
 
 #if defined(RECORD_STATE)
-  COPY(state->state[LOWMC_R], x);
+  COPY(state[LOWMC_R].state, x);
 #else
   COPY(c, x);
 #endif

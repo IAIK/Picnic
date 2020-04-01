@@ -17,7 +17,7 @@ static void N_SIGN(mzd_local_t const* p, view_t* views, in_out_shares_t* in_out_
   MPC_LOOP_CONST_C_0(function, result, first, second, sc)
 #define RECOVER_FROM_STATE(x, i)                                                                   \
   XOR((x)[SC_PROOF - 1], (x)[0], (x)[1]);                                                          \
-  XOR((x)[SC_PROOF - 1], (x)[SC_PROOF - 1], recorded_state->state[i])
+  XOR((x)[SC_PROOF - 1], (x)[SC_PROOF - 1], recorded_state[i].state)
 #define ch 0
 #define shares SC_PROOF
 #if defined(LOWMC_PARTIAL)

@@ -1036,7 +1036,6 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const transform_t transform = pp->transform;
   const size_t input_size     = pp->input_size;
   const size_t output_size    = pp->output_size;
-  const size_t lowmc_n        = pp->lowmc.n;
   const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
@@ -1048,10 +1047,8 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const zkbpp_share_implementation_f mzd_share        = pp->impls.mzd_share;
 
   // Perform LowMC evaluation and record state before AND gates
-  recorded_state_t recorded_state;
-  recorded_state.state = calloc(lowmc_r + 1, sizeof(mzd_local_t*));
-  mzd_local_init_multiple_ex(recorded_state.state, lowmc_r + 1, 1, lowmc_n, false);
-  lowmc_store_impl(lowmc_key, p, &recorded_state);
+  recorded_state_t* recorded_state = aligned_alloc(32, sizeof(recorded_state_t) * (lowmc_r + 1));
+  lowmc_store_impl(lowmc_key, p, recorded_state);
 
   sig_proof_t* prf = proof_new(pp);
   view_t* views    = aligned_alloc(32, sizeof(view_t) * lowmc_r);
@@ -1115,7 +1112,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       }
 
       // perform ZKB++ LowMC evaluation
-      lowmc_impl(p, views, in_out_shares, rvec, &recorded_state);
+      lowmc_impl(p, views, in_out_shares, rvec, recorded_state);
 
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
         mzd_to_char_array(round[round_offset].output_shares[j], in_out_shares[1].s[j], output_size);
@@ -1170,7 +1167,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     }
 
     // perform ZKB++ LowMC evaluation
-    lowmc_impl(p, views, in_out_shares, rvec, &recorded_state);
+    lowmc_impl(p, views, in_out_shares, rvec, recorded_state);
 
     // commitments
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -1199,10 +1196,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   aligned_free(rvec);
   aligned_free(views);
   proof_free(prf);
-
-  mzd_local_free_multiple(recorded_state.state);
-  free(recorded_state.state);
-
+  aligned_free(recorded_state);
   return ret;
 }
 

@@ -13,7 +13,7 @@
 #include "lowmc_pars.h"
 
 typedef struct {
-  mzd_local_t** state;
+  mzd_local_t state[(MAX_LOWMC_BLOCK_SIZE + 255) / 256];
 } recorded_state_t;
 
 // forward decleration to picnic3_types.h since we get some cyclic dependencies otherwise
