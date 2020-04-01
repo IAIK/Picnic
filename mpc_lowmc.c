@@ -650,6 +650,7 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
 #define RVEC(m) rvec->s[m].w128
 #define VIEW(m) view->s[m].w128
 
+#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_192_192_4) || defined(WITH_LOWMC_255_255_4)
 ATTR_TARGET_S128
 static inline void mpc_sbox_prove_s128_256(mzd_local_t* out, const mzd_local_t* in, view_t* view,
                                            const rvec_t* rvec, const mzd_local_t* mask_a,
@@ -689,6 +690,7 @@ static inline void mpc_sbox_verify_s128_256(mzd_local_t* out, const mzd_local_t*
 
   bitsliced_mm_multiple_step_2(SC_VERIFY, word128, 2, mm128_xor_256, mm128_shift_right_256);
 }
+#endif
 
 #if defined(WITH_LOWMC_129_129_4)
 ATTR_TARGET_S128
@@ -750,6 +752,7 @@ static void mpc_sbox_verify_s128_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #define RVEC(m) rvec->s[m].w256
 #define VIEW(m) view->s[m].w256
 
+#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_192_192_4) || defined(WITH_LOWMC_255_255_4)
 ATTR_TARGET_AVX2
 static inline void mpc_sbox_prove_s256_256(mzd_local_t* out, const mzd_local_t* in, view_t* view,
                                            const rvec_t* rvec, const word256 mask_a,
@@ -784,6 +787,7 @@ static void mpc_sbox_verify_s256_256(mzd_local_t* out, const mzd_local_t* in, vi
 
   bitsliced_mm_step_2(SC_VERIFY, mm256_xor, mm256_rotate_right);
 }
+#endif
 
 #if defined(WITH_LOWMC_129_129_4)
 ATTR_TARGET_AVX2
