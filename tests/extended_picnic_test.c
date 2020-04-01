@@ -35,7 +35,7 @@ static int picnic_test_keys(picnic_params_t parameters) {
   const size_t diff_block = instance->output_size * 8 - instance->lowmc.n;
   /* instances with key size properly aligned */
   if (!diff_key && !diff_block) {
-    return -2;
+    return 0;
   }
 
   const size_t lowmc_blocksize = picnic_get_lowmc_block_size(parameters);
@@ -59,10 +59,8 @@ static int picnic_test_keys(picnic_params_t parameters) {
       }
     }
     for (size_t i = 0; i < diff_block; ++i) {
-      if (getBit(sk.data, 8 + 2 * lowmc_blocksize * 8 - i - 1)) {
-        return -1;
-      }
-      if (getBit(sk.data, 8 + 3 * lowmc_blocksize * 8 - i - 1)) {
+      if (getBit(sk.data, 8 + 2 * lowmc_blocksize * 8 - i - 1) ||
+          getBit(sk.data, 8 + 3 * lowmc_blocksize * 8 - i - 1)) {
         return -1;
       }
     }
