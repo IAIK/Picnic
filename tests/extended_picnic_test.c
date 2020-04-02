@@ -247,7 +247,7 @@ static int picnic_test_modified_signatures(picnic_params_t parameters) {
     signature[l] += 1;
 
     /* must fail */
-    ret = picnic_verify(&pk, message, message_size - 1, signature, signature_len);
+    ret = picnic_verify(&pk, message, message_size, signature, signature_len);
     if (!ret) {
       ret = -1;
       goto end;
