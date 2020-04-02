@@ -47,13 +47,13 @@ typedef union {
  */
 typedef block_t mzd_local_t;
 
-mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) ATTR_ASSUME_ALIGNED(32);
+mzd_local_t* mzd_local_init_ex(unsigned int r, unsigned int c, bool clear) ATTR_ASSUME_ALIGNED(32);
 
 #define mzd_local_init(r, c) mzd_local_init_ex(r, c, true)
 
 void mzd_local_free(mzd_local_t* v);
 
-void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_t c, bool clear)
+void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, unsigned int r, unsigned int c, bool clear)
     ATTR_NONNULL_ARG(1);
 
 #define mzd_local_init_multiple(dst, n, r, c) mzd_local_init_multiple_ex(dst, n, r, c, true)

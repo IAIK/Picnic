@@ -54,7 +54,7 @@ static size_t calculate_width(size_t c) {
 // In mzd_local_init_multiple we do the same, but store n mzd_local_t instances in one
 // memory block.
 
-mzd_local_t* mzd_local_init_ex(uint32_t r, uint32_t c, bool clear) {
+mzd_local_t* mzd_local_init_ex(unsigned int r, unsigned int c, bool clear) {
   const size_t rowstride = calculate_rowstride(calculate_width(c));
 
   const size_t buffer_size = r * rowstride * sizeof(word);
@@ -75,7 +75,7 @@ void mzd_local_free(mzd_local_t* v) {
   aligned_free(v);
 }
 
-void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, uint32_t r, uint32_t c, bool clear) {
+void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, unsigned int r, unsigned int c, bool clear) {
   const size_t rowstride = calculate_rowstride(calculate_width(c));
 
   const size_t buffer_size   = r * rowstride * sizeof(word);
