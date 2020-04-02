@@ -907,6 +907,8 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const size_t view_size                = pp->view_size;
   const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
   const size_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
+  const unsigned int view_diff          = pp->view_size * 8 - pp->view_round_size * pp->lowmc.r;
+  const unsigned int input_share_diff   = pp->input_size * 8 - pp->lowmc.k;
 
   uint8_t* slab      = NULL;
   sig_proof_t* proof = proof_new_verify(pp, &slab);
@@ -955,6 +957,9 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
 
     // read view
     round->communicated_bits[1] = (uint8_t*)tmp;
+    if (check_padding_bits(round->communicated_bits[1][view_size - 1], view_diff)) {
+      goto err;
+    }
     tmp += view_size;
 
     // read seeds
@@ -975,10 +980,16 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
       round->input_shares[0] = slab;
       slab += input_size;
       round->input_shares[1] = (uint8_t*)tmp;
+      if (check_padding_bits(round->input_shares[1][input_size - 1], input_share_diff)) {
+        goto err;
+      }
       tmp += input_size;
       break;
     default:
       round->input_shares[0] = (uint8_t*)tmp;
+      if (check_padding_bits(round->input_shares[0][input_size - 1], input_share_diff)) {
+        goto err;
+      }
       tmp += input_size;
       round->input_shares[1] = slab;
       slab += input_size;
