@@ -1039,7 +1039,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-  const unsigned int diff     = pp->input_size * 8 - pp->lowmc.n;
+  const unsigned int diff     = (pp->lowmc.n  + 63) / 64 * 64 - pp->lowmc.n;
 #endif
 
   const zkbpp_lowmc_implementation_f lowmc_impl       = pp->impls.zkbpp_lowmc;
@@ -1210,7 +1210,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-  const unsigned int diff     = pp->input_size * 8 - pp->lowmc.n;
+  const unsigned int diff     = (pp->lowmc.n  + 63) / 64 * 64 - pp->lowmc.n;
 #endif
 
   const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->impls.zkbpp_lowmc_verify;
