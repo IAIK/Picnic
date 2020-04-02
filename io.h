@@ -29,6 +29,10 @@ static inline void setBit(uint8_t* bytes, size_t bitNumber, uint8_t val) {
       (bytes[bitNumber >> 3] & ~(1 << (7 - (bitNumber % 8)))) | (val << (7 - (bitNumber % 8)));
 }
 
+static inline int check_padding_bits(const uint8_t byte, const unsigned int diff) {
+  return byte & ~(UINT8_C(0xff) << diff);
+}
+
 #if defined(PICNIC_STATIC) || !defined(NDEBUG)
 void print_hex(FILE* out, const uint8_t* data, size_t len);
 #endif

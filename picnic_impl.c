@@ -70,7 +70,7 @@ typedef struct {
 } sorting_helper_t;
 
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-static void clear_extra_bits(mzd_local_t* v, const unsigned int diff) {
+static inline void clear_extra_bits(mzd_local_t* v, const unsigned int diff) {
   BLOCK(v, 0)->w64[0] &= UINT64_C(0xffffffffffffffff) << diff;
 }
 #endif
