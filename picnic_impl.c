@@ -70,8 +70,8 @@ typedef struct {
 } sorting_helper_t;
 
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-static inline void clear_extra_bits(mzd_local_t* v, const unsigned int diff) {
-  BLOCK(v, 0)->w64[0] &= UINT64_C(0xffffffffffffffff) << diff;
+static inline void clear_padding_bits(uint8_t* v, const unsigned int diff) {
+  *v &= UINT8_C(0xff) << diff;
 }
 #endif
 
@@ -1050,7 +1050,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-  const unsigned int diff     = (pp->lowmc.n  + 63) / 64 * 64 - pp->lowmc.n;
+  const unsigned int diff     = input_size * 8 - pp->lowmc.n;
 #endif
 
   const zkbpp_lowmc_implementation_f lowmc_impl       = pp->impls.zkbpp_lowmc;
@@ -1105,14 +1105,12 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
     for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
       for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
-        mzd_from_char_array(in_out_shares[0].s[j], round[round_offset].input_shares[j], input_size);
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
         if (diff) {
-          clear_extra_bits(in_out_shares[0].s[j], diff);
-          /* TODO: directly clear extra bits in round[round_offset].input_shares[j] */
-          mzd_to_char_array(round[round_offset].input_shares[j], in_out_shares[0].s[j], input_size);
+          clear_padding_bits(&round[round_offset].input_shares[j][input_size - 1], diff);
         }
 #endif
+        mzd_from_char_array(in_out_shares[0].s[j], round[round_offset].input_shares[j], input_size);
       }
       mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], lowmc_key);
       mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1],
@@ -1153,14 +1151,12 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     // compute sharing
     for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
       kdf_shake_get_randomness(&kdfs[j], round->input_shares[j], input_size);
-      mzd_from_char_array(in_out_shares[0].s[j], round->input_shares[j], input_size);
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
       if (diff) {
-        clear_extra_bits(in_out_shares[0].s[j], diff);
-        /* TODO: directly clear extra bits in round->input_shares[j] */
-        mzd_to_char_array(round->input_shares[j], in_out_shares[0].s[j], input_size);
+        clear_padding_bits(&round->input_shares[j][input_size - 1], diff);
       }
 #endif
+      mzd_from_char_array(in_out_shares[0].s[j], round->input_shares[j], input_size);
     }
     mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], lowmc_key);
     mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1], input_size);
@@ -1221,7 +1217,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   const size_t lowmc_r        = pp->lowmc.r;
   const size_t view_size      = pp->view_size;
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-  const unsigned int diff     = (pp->lowmc.n  + 63) / 64 * 64 - pp->lowmc.n;
+  const unsigned int diff     = input_size * 8 - pp->lowmc.n;
 #endif
 
   const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->impls.zkbpp_lowmc_verify;
@@ -1292,26 +1288,20 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
         kdf_shake_clear(&kdfs[j]);
       }
       for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
+#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
+        if (diff && b_i) {
+          clear_padding_bits(&helper[round_offset].round->input_shares[0][input_size - 1], diff);
+        }
+#endif
         mzd_from_char_array(in_out_shares[0].s[0], helper[round_offset].round->input_shares[0],
                             input_size);
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-        if (b_i && diff) {
-          clear_extra_bits(in_out_shares[0].s[0], diff);
-          /* TODO: clear bits directly in helper->round->input_shares[0] */
-          mzd_to_char_array(helper[round_offset].round->input_shares[0], in_out_shares[0].s[0],
-                            input_size);
+        if (diff && c_i) {
+          clear_padding_bits(&helper[round_offset].round->input_shares[1][input_size - 1], diff);
         }
 #endif
         mzd_from_char_array(in_out_shares[0].s[1], helper[round_offset].round->input_shares[1],
                             input_size);
-#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-        if (c_i && diff) {
-          clear_extra_bits(in_out_shares[0].s[1], diff);
-          /* TODO: clear bits directly in helper->round->input_shares[0] */
-          mzd_to_char_array(helper[round_offset].round->input_shares[1], in_out_shares[0].s[1],
-                            input_size);
-        }
-#endif
 
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
           decompress_random_tape(rvec, pp, tape_bytes_x4[j][round_offset], j);
@@ -1357,27 +1347,23 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
       // compute input shares if necessary
       if (b_i) {
         kdf_shake_get_randomness(&kdfs[0], helper->round->input_shares[0], input_size);
+#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
+        if (diff) {
+          clear_padding_bits(&helper->round->input_shares[0][input_size - 1], diff);
+        }
+#endif
       }
       if (c_i) {
         kdf_shake_get_randomness(&kdfs[1], helper->round->input_shares[1], input_size);
+#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
+        if (diff) {
+          clear_padding_bits(&helper->round->input_shares[1][input_size - 1], diff);
+        }
+#endif
       }
 
       mzd_from_char_array(in_out_shares[0].s[0], helper->round->input_shares[0], input_size);
-#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-      if (b_i && diff) {
-        clear_extra_bits(in_out_shares[0].s[0], diff);
-        /* TODO: clear bits directly in helper->round->input_shares[0] */
-        mzd_to_char_array(helper->round->input_shares[0], in_out_shares[0].s[0], input_size);
-      }
-#endif
       mzd_from_char_array(in_out_shares[0].s[1], helper->round->input_shares[1], input_size);
-#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
-      if (c_i && diff) {
-        clear_extra_bits(in_out_shares[0].s[1], diff);
-        /* TODO: clear bits directly in helper->round->input_shares[0] */
-        mzd_to_char_array(helper->round->input_shares[1], in_out_shares[0].s[1], input_size);
-      }
-#endif
 
       // compute random tapes
       for (unsigned int j = 0; j < SC_VERIFY; ++j) {
