@@ -12,11 +12,8 @@
 
 #include "endian_compat.h"
 #include "picnic3_simulate_mul.h"
-
-#if defined(WITH_SSE2)
-#define ATTR_TARGET_S128 ATTR_TARGET_SSE2
-#else
-#define ATTR_TARGET_S128
+#if defined(WITH_OPT)
+#include "simd.h"
 #endif
 
 #define PACKING_FACTOR 4
