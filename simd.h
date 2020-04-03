@@ -206,7 +206,7 @@ static inline void FN_ATTRIBUTES_SSE2 mm128_shift_right_256(__m128i res[2], __m1
                                                             const unsigned int count) {
   __m128i total_carry = _mm_bslli_si128(data[1], 8);
   total_carry         = _mm_slli_epi64(total_carry, 64 - count);
-  for (int i = 0; i < 2; ++i) {
+  for (unsigned int i = 0; i < 2; ++i) {
     __m128i carry = _mm_bsrli_si128(data[i], 8);
     carry         = _mm_slli_epi64(carry, 64 - count);
     res[i]        = _mm_srli_epi64(data[i], count);
@@ -220,7 +220,7 @@ static inline void FN_ATTRIBUTES_SSE2 mm128_shift_left_256(__m128i res[2], __m12
   __m128i total_carry = _mm_bsrli_si128(data[0], 8);
   total_carry         = _mm_srli_epi64(total_carry, 64 - count);
 
-  for (int i = 0; i < 2; ++i) {
+  for (unsigned int i = 0; i < 2; ++i) {
     __m128i carry = _mm_bslli_si128(data[i], 8);
 
     carry  = _mm_srli_epi64(carry, 64 - count);
