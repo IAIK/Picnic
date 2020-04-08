@@ -13,6 +13,7 @@
 #include "picnic.h"
 
 #include <string.h>
+#include <assert.h>
 
 int crypto_sign_keypair(unsigned char* pk, unsigned char* sk) {
   return picnic_keygen(PICNIC_INSTANCE, (picnic_publickey_t*)pk, (picnic_privatekey_t*)sk);
@@ -20,9 +21,10 @@ int crypto_sign_keypair(unsigned char* pk, unsigned char* sk) {
 
 int crypto_sign(unsigned char* sm, unsigned long long* smlen, const unsigned char* m,
                 unsigned long long mlen, const unsigned char* sk) {
-
   size_t signature_len = PICNIC_SIGNATURE_SIZE(PICNIC_INSTANCE);
   uint32_t len         = 0;
+
+  assert(signature_len + sizeof(len) == CRYPTO_BYTES);
 
   const int ret =
       picnic_sign((const picnic_privatekey_t*)sk, m, mlen, sm + sizeof(len) + mlen, &signature_len);
