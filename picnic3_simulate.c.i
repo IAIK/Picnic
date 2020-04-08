@@ -93,8 +93,8 @@ Exit:
       free(unopened_msgs[k]);
     }
   }
-  mzd_local_free_multiple(state);
   mzd_local_free_multiple(temp);
+  mzd_local_free_multiple(state);
   return ret;
 }
 #endif
