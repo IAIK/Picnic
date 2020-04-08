@@ -661,13 +661,16 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
     msgs64->unopened = unopened;
     ret = simulateOnline(m_maskedKey, mask_shares, tapesN, msgs64, m_plaintext, pubKey, params);
 
+    for (size_t k = 0; k < PACKING_FACTOR; k++) {
+      freeRandomTape(&tapesN[k]);
+    }
+
     if (ret != 0) {
 #if !defined(NDEBUG)
       printf("MPC simulation failed for round " SIZET_FMT ", signature invalid\n", i);
 #endif
       ret = -1;
       freeMsgs(msgs64);
-      freeShares(mask_shares);
       goto Exit;
     }
     for (size_t msg_idx = 0; msg_idx < 64; msg_idx++) {
@@ -677,9 +680,6 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
         commit_v(Cv.hashes[t[msg_idx / (64 / PACKING_FACTOR)]],
                  sig->proofs[t[msg_idx / (64 / PACKING_FACTOR)]].input, msgs, params);
       }
-    }
-    for (size_t k = 0; k < PACKING_FACTOR; k++) {
-      freeRandomTape(&tapesN[k]);
     }
   }
   freeMsgs(msgs64);
