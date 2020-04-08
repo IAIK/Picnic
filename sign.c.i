@@ -24,7 +24,9 @@ int crypto_sign(unsigned char* sm, unsigned long long* smlen, const unsigned cha
   size_t signature_len = PICNIC_SIGNATURE_SIZE(PICNIC_INSTANCE);
   uint32_t len         = 0;
 
+#if !defined(SUPERCOP)
   assert(signature_len + sizeof(len) == CRYPTO_BYTES);
+#endif
 
   const int ret =
       picnic_sign((const picnic_privatekey_t*)sk, m, mlen, sm + sizeof(len) + mlen, &signature_len);
