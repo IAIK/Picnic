@@ -59,13 +59,6 @@ static void msgsTranspose(msgs_t* msgs) {
   }
 }
 
-/* For each word in shares; write player i's share to their stream of msgs */
-//static void broadcast(shares_t* shares, msgs_t* msgs) {
-//  for (size_t w = 0; w < shares->numWords; w++) {
-//    wordToMsgsNoTranspose(shares->shares[w], msgs);
-//  }
-//}
-
 static uint64_t mpc_AND(uint64_t a, uint64_t b, uint64_t mask_a, uint64_t mask_b, randomTape_t* tapes,
                        msgs_t* msgs, uint8_t** unopened_msg) {
   uint64_t and_helper =
@@ -81,11 +74,13 @@ static uint64_t mpc_AND(uint64_t a, uint64_t b, uint64_t mask_a, uint64_t mask_b
 
   // Broadcast each share of s
   wordToMsgsNoTranspose(s_shares, msgs);
+  s_shares = le64toh(s_shares);
   for (uint32_t k = 0; k < PARTIES_LOG; k++) {
     s_shares ^= s_shares >> (1 << (PARTIES_LOG - 1 - k));
   }
+  s_shares = htole64(s_shares);
 
-  return (uint64_t)(s_shares ^ (a & b));
+  return s_shares ^ (a & b);
 }
 
 static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t* tapes,
@@ -115,6 +110,9 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
       b ^= (b << (1 << k));
       c ^= (c << (1 << k));
     }
+    a = htole64(a);
+    b = htole64(b);
+    c = htole64(c);
 
     uint64_t ab = mpc_AND(a, b, mask_a, mask_b, tapes, msgs, unopenened_msg);
     uint64_t bc = mpc_AND(b, c, mask_b, mask_c, tapes, msgs, unopenened_msg);
@@ -125,12 +123,9 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
     uint64_t f = a ^ b ^ c ^ ab;
 
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      setBit(state[k], i + 2, d & 1);
-      d >>= (64 / PACKING_FACTOR);
-      setBit(state[k], i + 1, e & 1);
-      e >>= (64 / PACKING_FACTOR);
-      setBit(state[k], i, f & 1);
-      f >>= (64 / PACKING_FACTOR);
+      setBit(state[k], i + 2, getBit((uint8_t*)&d, 7 + (64/PACKING_FACTOR) *k));
+      setBit(state[k], i + 1, getBit((uint8_t*)&e, 7 + (64/PACKING_FACTOR) *k));
+      setBit(state[k], i + 0, getBit((uint8_t*)&f, 7 + (64/PACKING_FACTOR) *k));
     }
   }
   for (uint32_t k = 0; k < PACKING_FACTOR; k++) {

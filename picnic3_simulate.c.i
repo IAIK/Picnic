@@ -62,10 +62,6 @@ static int SIM_ONLINE(mzd_local_t** maskedKey, shares_t* mask_shares, randomTape
     }
   }
 
-  for (size_t i = 0; i < LOWMC_N; i++) {
-    mask_shares->shares[i] = tapesToWord(tapes);
-  }
-
   /* check that the output is correct */
   for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
     uint8_t output[params->output_size];

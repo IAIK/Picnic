@@ -445,12 +445,8 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
   for (size_t t = 0; t < params->num_rounds; t++) {
     hash_update(&ctx, Ch->hashes[t], params->digest_size);
   }
-  // print_hex(stdout, ctx.sponge.state, 32);
-  // printf("\n");
 
   hash_update(&ctx, hCv, params->digest_size);
-  // print_hex(stdout, hCv, params->digest_size);
-  // printf("\n");
   hash_update(&ctx, salt, SALT_SIZE);
   hash_update(&ctx, pubKey, params->input_size);
   hash_update(&ctx, plaintext, params->input_size);
@@ -616,7 +612,8 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
 
       memcpy(C[t % 4].hashes[unopened], sig->proofs[t].C, params->digest_size);
     }
-    /* hash commitments every four iterations if possible, for the last few do single commitments */
+    /* hash commitments every four iterations if possible, for the last few do single commitments
+     */
     if (t >= params->num_rounds / 4 * 4) {
       commit_h(Ch.hashes[t], &C[t % 4], params);
     } else if ((t + 1) % 4 == 0) {
@@ -903,7 +900,8 @@ int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t
       memcpy(proofs[t].input, inputs[t], params->input_size);
       memcpy(proofs[t].msgs, msgs[t].msgs[challengeP[P_index]], params->view_size);
 
-      /* recompute commitment of unopened party since we did not store it for memory optimization */
+      /* recompute commitment of unopened party since we did not store it for memory optimization
+       */
       if (proofs[t].unOpenedIndex == params->num_MPC_parties - 1) {
         commit(proofs[t].C, getLeaf(seeds[t], proofs[t].unOpenedIndex), tapes[t].aux_bits,
                sig->salt, t, proofs[t].unOpenedIndex, params);
