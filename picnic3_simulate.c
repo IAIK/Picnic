@@ -236,6 +236,9 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
 #endif
 #endif
 
+#if !defined(PICNIC_STATIC)
+static
+#endif
 void transpose_64_64(const uint64_t* in, uint64_t* out) {
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
