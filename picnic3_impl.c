@@ -26,7 +26,6 @@
 #include "macros.h"
 #include "picnic.h"
 #include "picnic3_impl.h"
-#include "picnic3_simulate_mul.h"
 #include "picnic3_tree.h"
 #include "picnic3_types.h"
 
@@ -366,6 +365,12 @@ static void commit_v_x4(uint8_t** digest, const uint8_t** input, const msgs_t* m
   }
   hash_final_x4(&ctx);
   hash_squeeze_x4(&ctx, digest, params->digest_size);
+}
+
+static void xor_byte_array(uint8_t* out, const uint8_t* in1, const uint8_t* in2, uint32_t length) {
+  for (uint32_t i = 0; i < length; i++) {
+    out[i] = in1[i] ^ in2[i];
+  }
 }
 
 static int contains(const uint16_t* list, size_t len, uint16_t value) {

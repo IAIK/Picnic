@@ -247,7 +247,6 @@ if(WITH_KKW)
   list(APPEND PICNIC_SOURCES
        picnic3_impl.c
        picnic3_simulate.c
-       picnic3_simulate_mul.c
        picnic3_tree.c
        picnic3_types.c)
 endif()

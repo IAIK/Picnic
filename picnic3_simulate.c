@@ -25,10 +25,254 @@
 
 #include "io.h"
 #include "picnic3_simulate.h"
-#include "picnic3_simulate_mul.h"
+#include "picnic3_types.h"
 
 #define PACKING_FACTOR 4
 #define PARTIES_LOG 4
+
+/* transpose a 64x64 bit matrix using Eklundh's algorithm
+   this variant assumes that the bit with index 0 is the msb of byte 0
+   e.g., 01234567 89abcdef ...
+ */
+static void transpose_64_64_uint64(const uint64_t* in, uint64_t* out) {
+  static const uint64_t TRANSPOSE_MASKS64[6] = {
+      UINT64_C(0xFFFFFFFF00000000), UINT64_C(0xFFFF0000FFFF0000), UINT64_C(0xFF00FF00FF00FF00),
+      UINT64_C(0xF0F0F0F0F0F0F0F0), UINT64_C(0xCCCCCCCCCCCCCCCC), UINT64_C(0xAAAAAAAAAAAAAAAA)};
+
+  uint32_t width = 32, nswaps = 1;
+  const uint32_t logn = 6;
+
+  // copy in to out and transpose in-place
+  for (uint32_t i = 0; i < 64; i++) {
+    out[i] = htobe64(in[i]);
+  }
+
+  for (uint32_t i = 0; i < logn; i++) {
+    uint64_t mask     = TRANSPOSE_MASKS64[i];
+    uint64_t inv_mask = ~mask;
+
+    for (uint32_t j = 0; j < nswaps; j++) {
+      for (uint32_t k = 0; k < width; k++) {
+        uint32_t i1 = k + 2 * width * j;
+        uint32_t i2 = k + width + 2 * width * j;
+
+        uint64_t t1 = out[i1];
+        uint64_t t2 = out[i2];
+
+        out[i1] = (t1 & mask) ^ ((t2 & mask) >> width);
+        out[i2] = (t2 & inv_mask) ^ ((t1 & inv_mask) << width);
+      }
+    }
+    nswaps *= 2;
+    width /= 2;
+  }
+  for (uint32_t i = 0; i < 64; i++) {
+    out[i] = be64toh(out[i]);
+  }
+}
+
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+ATTR_TARGET_S128
+static inline void memcpy_bswap64_64_s128(word128* out, const word128* in) {
+#if defined(WITH_NEON)
+  for (size_t i = 0; i < 32; ++i) {
+    out[i] = vreinterpretq_u64_u8(vrev64q_u8(vreinterpretq_u8_u64(in[i])));
+  }
+#elif defined(WITH_SSE2)
+  for (size_t i = 0; i < 32; ++i) {
+    word128 tmp = _mm_or_si128(_mm_slli_epi16(in[i], 8), _mm_srli_epi16(in[i], 8));
+    tmp         = _mm_shufflelo_epi16(tmp, _MM_SHUFFLE(0, 1, 2, 3));
+    out[i]      = _mm_shufflehi_epi16(tmp, _MM_SHUFFLE(0, 1, 2, 3));
+  }
+#endif
+}
+
+/* transpose a 64x64 bit matrix using Eklundh's algorithm
+   this variant assumes that the bit with index 0 is the msb of byte 0
+   e.g., 01234567 89abcdef ...
+ */
+ATTR_TARGET_S128
+static void transpose_64_64_s128(const uint64_t* in, uint64_t* out) {
+  static const uint64_t TRANSPOSE_MASKS64[6] = {
+      UINT64_C(0xFFFFFFFF00000000), UINT64_C(0xFFFF0000FFFF0000), UINT64_C(0xFF00FF00FF00FF00),
+      UINT64_C(0xF0F0F0F0F0F0F0F0), UINT64_C(0xCCCCCCCCCCCCCCCC), UINT64_C(0xAAAAAAAAAAAAAAAA)};
+
+  uint32_t width = 32, nswaps = 1;
+  const uint32_t logn = 6;
+
+  // copy in to out and transpose in-place
+  word128* out128      = (word128*)out;
+  const word128* in128 = (const word128*)in;
+  memcpy_bswap64_64_s128(out128, in128);
+
+  for (uint32_t i = 0; i < logn - 1; i++) {
+    const word128 mask = mm128_broadcast_u64(TRANSPOSE_MASKS64[i]);
+    for (uint32_t j = 0; j < nswaps; j++) {
+      for (uint32_t k = 0; k < width; k += 2) {
+        // uint32_t i1 = k/2 + width * j;
+        // uint32_t i2 = i1 + width / 2;
+        uint32_t i1 = k + 2 * width * j;
+        uint32_t i2 = k + width + 2 * width * j;
+
+        word128 t1 = out128[i1 / 2];
+        word128 t2 = out128[i2 / 2];
+
+        out128[i1 / 2] = mm128_xor(mm128_and(t1, mask), mm128_sr_u64(mm128_and(t2, mask), width));
+        out128[i2 / 2] = mm128_xor(mm128_nand(mask, t2), mm128_sl_u64(mm128_nand(mask, t1), width));
+      }
+    }
+    nswaps *= 2;
+    width /= 2;
+  }
+  const uint64_t mask     = TRANSPOSE_MASKS64[5];
+  const uint64_t inv_mask = ~mask;
+  for (uint32_t j = 0; j < nswaps; j++) {
+    for (uint32_t k = 0; k < width; k++) {
+      uint32_t i1 = k + 2 * width * j;
+      uint32_t i2 = k + width + 2 * width * j;
+
+      uint64_t t1 = out[i1];
+      uint64_t t2 = out[i2];
+
+      out[i1] = (t1 & mask) ^ ((t2 & mask) >> width);
+      out[i2] = (t2 & inv_mask) ^ ((t1 & inv_mask) << width);
+    }
+  }
+
+  memcpy_bswap64_64_s128(out128, out128);
+}
+#endif
+
+#if defined(WITH_AVX2)
+ATTR_TARGET_AVX2
+static inline void memcpy_bswap64_64_s256(word256* out, const word256* in) {
+  const word256 shuffle = _mm256_set_epi8(
+      // two bswap64s in first lane
+      8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7,
+      // two bswap64s in second lane
+      8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7);
+
+  for (size_t i = 0; i < 16; i++) {
+    out[i] = _mm256_shuffle_epi8(in[i], shuffle);
+  }
+}
+
+/* transpose a 64x64 bit matrix using Eklundh's algorithm
+   this variant assumes that the bit with index 0 is the msb of byte 0
+   e.g., 01234567 89abcdef ...
+ */
+ATTR_TARGET_AVX2
+static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
+  static const uint64_t TRANSPOSE_MASKS64[6] = {
+      UINT64_C(0xFFFFFFFF00000000), UINT64_C(0xFFFF0000FFFF0000), UINT64_C(0xFF00FF00FF00FF00),
+      UINT64_C(0xF0F0F0F0F0F0F0F0), UINT64_C(0xCCCCCCCCCCCCCCCC), UINT64_C(0xAAAAAAAAAAAAAAAA)};
+
+  uint32_t width = 32, nswaps = 1;
+  static const uint32_t logn = 6;
+
+  const word256* in256 = (const word256*)in;
+  word256* out256      = (word256*)out;
+
+  // copy in to out and swap bytes
+  memcpy_bswap64_64_s256(out256, in256);
+
+  for (uint32_t i = 0; i < logn - 2; i++) {
+    const word256 mask = _mm256_set1_epi64x(TRANSPOSE_MASKS64[i]);
+    for (uint32_t j = 0; j < nswaps; j++) {
+      for (uint32_t k = 0; k < width; k += 4) {
+        uint32_t i1 = k + 2 * width * j;
+        uint32_t i2 = k + width + 2 * width * j;
+
+        word256 t1 = out256[i1 / 4];
+        word256 t2 = out256[i2 / 4];
+
+        out256[i1 / 4] =
+            mm256_xor(mm256_and(t1, mask), _mm256_srli_epi64(mm256_and(t2, mask), width));
+        out256[i2 / 4] =
+            mm256_xor(mm256_nand(mask, t2), _mm256_slli_epi64(mm256_nand(mask, t1), width));
+      }
+    }
+    nswaps *= 2;
+    width /= 2;
+  }
+  {
+    word128* out128    = (word128*)out;
+    const word128 mask = mm128_broadcast_u64(TRANSPOSE_MASKS64[4]);
+
+    for (uint32_t j = 0; j < nswaps; j++) {
+      for (uint32_t k = 0; k < width; k += 2) {
+        uint32_t i1 = k + 2 * width * j;
+        uint32_t i2 = k + width + 2 * width * j;
+
+        word128 t1 = out128[i1 / 2];
+        word128 t2 = out128[i2 / 2];
+
+        out128[i1 / 2] = mm128_xor(mm128_and(t1, mask), mm128_sr_u64(mm128_and(t2, mask), width));
+        out128[i2 / 2] = mm128_xor(mm128_nand(mask, t2), mm128_sl_u64(mm128_nand(mask, t1), width));
+      }
+    }
+    nswaps *= 2;
+    width /= 2;
+  }
+
+  const uint64_t mask     = TRANSPOSE_MASKS64[5];
+  const uint64_t inv_mask = ~mask;
+  for (uint32_t j = 0; j < nswaps; j++) {
+    for (uint32_t k = 0; k < width; k++) {
+      uint32_t i1 = k + 2 * width * j;
+      uint32_t i2 = k + width + 2 * width * j;
+
+      uint64_t t1 = out[i1];
+      uint64_t t2 = out[i2];
+
+      out[i1] = (t1 & mask) ^ ((t2 & mask) >> width);
+      out[i2] = (t2 & inv_mask) ^ ((t1 & inv_mask) << width);
+    }
+  }
+
+  memcpy_bswap64_64_s256(out256, out256);
+}
+#endif
+#endif
+
+void transpose_64_64(const uint64_t* in, uint64_t* out) {
+#if defined(WITH_OPT)
+#if defined(WITH_AVX2)
+  if (CPU_SUPPORTS_AVX2) {
+    transpose_64_64_s256(in, out);
+    return;
+  }
+#endif
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+  if (CPU_SUPPORTS_NEON || CPU_SUPPORTS_SSE2) {
+    transpose_64_64_s128(in, out);
+    return;
+  }
+#endif
+#endif
+  transpose_64_64_uint64(in, out);
+}
+
+static uint64_t tapesToWord(randomTape_t* tapes) {
+  uint64_t shares;
+  const size_t wordBits = sizeof(uint64_t) * 8;
+
+  if (tapes->pos % wordBits == 0) {
+    for (size_t j = 0; j < PACKING_FACTOR; j++) {
+      for (size_t i = 0; i < tapes->nTapes; i++) {
+        tapes->buffer[j * tapes->nTapes + i] = ((uint64_t*)tapes[j].tape[i])[tapes->pos / wordBits];
+      }
+    }
+    transpose_64_64(tapes->buffer, tapes->buffer);
+  }
+
+  shares = tapes->buffer[tapes->pos % wordBits];
+  for (size_t j = 0; j < PACKING_FACTOR; j++) {
+    tapes[j].pos++;
+  }
+  return shares;
+}
 
 static void wordToMsgsNoTranspose(uint64_t w, msgs_t* msgs) {
   ((uint64_t*)msgs->msgs[msgs->pos % 64])[msgs->pos / 64] = w;

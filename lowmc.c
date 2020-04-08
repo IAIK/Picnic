@@ -16,7 +16,7 @@
 #include "mzd_additional.h"
 #if defined(WITH_KKW)
 #include "picnic3_impl.h"
-#include "picnic3_simulate_mul.h"
+#include "picnic3_types.h"
 #endif
 #if defined(WITH_OPT)
 #include "simd.h"

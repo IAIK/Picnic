@@ -11,7 +11,8 @@
 #include <stdio.h>
 
 #include "endian_compat.h"
-#include "picnic3_simulate_mul.h"
+#include "picnic3_simulate.h"
+#include "io.h"
 
 static const uint8_t test_matrix[64][64] = {
     {1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
@@ -436,25 +437,6 @@ int main(void) {
     for (unsigned int j = 0; j < 64; j++) {
       if (getBit((const uint8_t*)&e, j) != test_matrix_trans[i][j]) {
         printf("error: %d,%d\n", i, j);
-        return -1;
-      }
-    }
-  }
-
-  // old variant with index swapping
-  for (unsigned int i = 0; i < 64; i++) {
-    uint64_t e = 0;
-    for (unsigned int j = 0; j < 64; j++) {
-      setBit((uint8_t*)&e, j, test_matrix[i][j]);
-    }
-    matrix[i / 8 * 8 + 7 - i % 8] = le64toh(e);
-  }
-  transpose_64_64_lsb(matrix, matrix);
-  for (unsigned int i = 0; i < 64; i++) {
-    const uint64_t e = le64toh(matrix[i / 8 * 8 + 7 - i % 8]);
-    for (unsigned int j = 0; j < 64; j++) {
-      if (getBit((const uint8_t*)&e, j) != test_matrix_trans[i][j]) {
-        printf("error old: %d,%d\n", i, j);
         return -1;
       }
     }
