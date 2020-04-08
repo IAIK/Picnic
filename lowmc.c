@@ -320,6 +320,140 @@ static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
 #endif /* WITH_AVX2 */
 #endif /* WITH_OPT */
 
+#if defined(WITH_KKW)
+#if defined(WITH_LOWMC_129_129_4)
+/**
+ * S-box for m = 43, for Picnic3 aux computation
+ */
+static void sbox_layer_43_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
+  uint8_t input_mask[17];
+  mzd_to_char_array(input_mask, in, 17);
+  uint8_t output_mask[17];
+  mzd_to_char_array(output_mask, out, 17);
+
+  const size_t lastParty = 15;
+
+  for (uint32_t i = 0; i < 43; i++) {
+    uint8_t a                    = getBit(input_mask, i * 3 + 2);
+    uint8_t b                    = getBit(input_mask, i * 3 + 1);
+    uint8_t c                    = getBit(input_mask, i * 3 + 0);
+    uint8_t d                    = getBit(output_mask, i * 3 + 2);
+    uint8_t e                    = getBit(output_mask, i * 3 + 1);
+    uint8_t f                    = getBit(output_mask, i * 3 + 0);
+    uint8_t fresh_output_maks_ab = f ^ a ^ b ^ c;
+    uint8_t fresh_output_maks_bc = d ^ a;
+    uint8_t fresh_output_maks_ca = e ^ a ^ b;
+
+    uint8_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
+    uint8_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
+    uint8_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
+
+    uint8_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
+    uint8_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
+    uint8_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
+
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, aux_bit_ab);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, aux_bit_bc);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, aux_bit_ca);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ab);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_bc);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ca);
+  }
+}
+#endif
+
+#if defined(WITH_LOWMC_192_192_4)
+/**
+ * S-box for m = 64, for Picnic3 aux computation
+ */
+static void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
+  uint8_t input_mask[24];
+  mzd_to_char_array(input_mask, in, 24);
+  uint8_t output_mask[24];
+  mzd_to_char_array(output_mask, out, 24);
+
+  const size_t lastParty = 15;
+
+  for (uint32_t i = 0; i < 64; i++) {
+    uint8_t a                    = getBit(input_mask, i * 3 + 2);
+    uint8_t b                    = getBit(input_mask, i * 3 + 1);
+    uint8_t c                    = getBit(input_mask, i * 3 + 0);
+    uint8_t d                    = getBit(output_mask, i * 3 + 2);
+    uint8_t e                    = getBit(output_mask, i * 3 + 1);
+    uint8_t f                    = getBit(output_mask, i * 3 + 0);
+    uint8_t fresh_output_maks_ab = f ^ a ^ b ^ c;
+    uint8_t fresh_output_maks_bc = d ^ a;
+    uint8_t fresh_output_maks_ca = e ^ a ^ b;
+
+    uint8_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
+    uint8_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
+    uint8_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
+
+    uint8_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
+    uint8_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
+    uint8_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
+
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, aux_bit_ab);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, aux_bit_bc);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, aux_bit_ca);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ab);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_bc);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ca);
+  }
+}
+#endif
+
+#if defined(WITH_LOWMC_255_255_4)
+/**
+ * S-box for m = 85, for Picnic3 aux computation
+ */
+static void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
+  uint8_t input_mask[32];
+  mzd_to_char_array(input_mask, in, 32);
+  uint8_t output_mask[32];
+  mzd_to_char_array(output_mask, out, 32);
+
+  const size_t lastParty = 15;
+
+  for (uint32_t i = 0; i < 85; i++) {
+    uint8_t a                    = getBit(input_mask, i * 3 + 2);
+    uint8_t b                    = getBit(input_mask, i * 3 + 1);
+    uint8_t c                    = getBit(input_mask, i * 3 + 0);
+    uint8_t d                    = getBit(output_mask, i * 3 + 2);
+    uint8_t e                    = getBit(output_mask, i * 3 + 1);
+    uint8_t f                    = getBit(output_mask, i * 3 + 0);
+    uint8_t fresh_output_maks_ab = f ^ a ^ b ^ c;
+    uint8_t fresh_output_maks_bc = d ^ a;
+    uint8_t fresh_output_maks_ca = e ^ a ^ b;
+
+    uint8_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
+    uint8_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
+    uint8_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
+                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
+
+    uint8_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
+    uint8_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
+    uint8_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
+
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, aux_bit_ab);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, aux_bit_bc);
+    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, aux_bit_ca);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ab);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_bc);
+    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ca);
+  }
+}
+#endif
+#endif /* WITH_KKW */
+
 #if !defined(NO_UINT64_FALLBACK)
 // uint64 based implementation
 #define IMPL uint64
