@@ -28,15 +28,17 @@ def calc_size(digest_size, seed_size, num_rounds, lowmc_k, lowmc_r, lowmc_m, is_
     print(unruh_without_input_bytes_size, unruh_with_input_bytes_size, max_signature_size)
 
 
-calc_size(32, 16, 219, 126, 4, 42, False)
-calc_size(32, 16, 219, 126, 4, 42, True)
+# Picnic with partial Sbox layer
+calc_size(32, 16, 219, 128, 20, 10, False)
+calc_size(32, 16, 219, 128, 20, 10, True)
 
+calc_size(48, 24, 329, 192, 30, 10, False)
+calc_size(48, 24, 329, 192, 30, 10, True)
+
+calc_size(64, 32, 438, 256, 38, 10, False)
+calc_size(64, 32, 438, 256, 38, 10, True)
+
+# Picnic with full Sbox layer
 calc_size(32, 16, 219, 129, 4, 43, False)
-calc_size(32, 16, 219, 129, 4, 43, True)
-
 calc_size(48, 24, 329, 192, 4, 64, False)
-calc_size(48, 24, 329, 192, 4, 64, True)
-
 calc_size(64, 32, 438, 255, 4, 85, False)
-calc_size(64, 32, 438, 255, 4, 85, True)
-
