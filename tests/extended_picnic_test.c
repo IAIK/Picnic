@@ -244,7 +244,8 @@ static int picnic_test_modified_signatures(picnic_params_t parameters) {
   }
 
   for (size_t l = 0; l < signature_len; ++l) {
-    signature[l] += 1;
+    const uint8_t diff = rand() % 255;
+    signature[l] += 1 + diff;
 
     /* must fail */
     ret = picnic_verify(&pk, message, message_size, signature, signature_len);
@@ -253,7 +254,7 @@ static int picnic_test_modified_signatures(picnic_params_t parameters) {
       goto end;
     }
 
-    signature[l] -= 1;
+    signature[l] -= diff;
   }
 
   ret = 0;
