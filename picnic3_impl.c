@@ -655,18 +655,18 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
      */
     size_t t[PACKING_FACTOR];
     int unopened[PACKING_FACTOR];
-    uint32_t* inputs[PACKING_FACTOR];
+    uint8_t* inputs[PACKING_FACTOR];
     randomTape_t tapesN[PACKING_FACTOR];
     for (size_t k = 0; k < PACKING_FACTOR; k++) {
       t[k]        = sig->challengeC[i + k];
       unopened[k] = sig->challengeP[i + k];
-      inputs[k]   = (uint32_t*)sig->proofs[t[k]].input;
+      inputs[k]   = sig->proofs[t[k]].input;
       setAuxBits(&tapes[t[k]], sig->proofs[t[k]].aux, params);
       memset(tapes[t[k]].tape[unopened[k]], 0, 2 * params->view_size + params->input_size);
       memcpy(msgs64->msgs[(64 / PACKING_FACTOR) * k + unopened[k]], sig->proofs[t[k]].msgs,
              params->view_size);
       tapesN[k] = tapes[t[k]];
-      mzd_from_char_array(m_maskedKey[k], (uint8_t*)inputs[k], params->input_size);
+      mzd_from_char_array(m_maskedKey[k], inputs[k], params->input_size);
     }
     msgs64->pos      = 0;
     msgs64->unopened = unopened;
@@ -831,11 +831,11 @@ int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t
     //reconstructSharesN(maskedKey, mask_shares); // maskedKey = masks
     for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
       xor_byte_array(maskedKey[k], maskedKey[k], privateKey,
-                     (params->input_size)); // maskedKey += privateKey
-      mzd_from_char_array(m_maskedKey[k], (const uint8_t*)maskedKey[k], params->input_size);
+                     params->input_size); // maskedKey += privateKey
+      mzd_from_char_array(m_maskedKey[k], maskedKey[k], params->input_size);
 
       for (size_t i = params->lowmc.n; i < params->input_size * 8; i++) {
-        setBit((uint8_t*)maskedKey[k], i, 0);
+        setBit(maskedKey[k], i, 0);
       }
     }
 
