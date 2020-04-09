@@ -65,7 +65,4 @@ msgs_t* allocateMsgs(const picnic_instance_t* params);
 msgs_t* allocateMsgsVerify(const picnic_instance_t* params);
 void freeMsgs(msgs_t* msgs);
 
-shares_t* allocateShares(size_t count);
-void freeShares(shares_t* shares);
-
 #endif /* PICNIC_TYPES_H */

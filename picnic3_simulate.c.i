@@ -14,8 +14,8 @@
 #if defined(FN_ATTR)
 FN_ATTR
 #endif
-static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_t* tapes,
-                      msgs_t* msgs, const mzd_local_t* plaintext, const uint8_t* pubKey,
+static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
+                      const mzd_local_t* plaintext, const uint8_t* pubKey,
                       const picnic_instance_t* params) {
   int ret                = 0;
   mzd_local_t* state     = mzd_local_init_ex(1, LOWMC_N, false);
@@ -33,11 +33,10 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
   XOR(state, temp, plaintext);
 
   for (uint32_t r = 0; r < LOWMC_R; r++) {
-    // MPC_MUL(roundKey, maskedKey, LOWMC_INSTANCE.rounds[r].k_matrix, round_key_masks);
-    for (size_t i = 0; i < LOWMC_N; i++) {
-      mask_shares->shares[i] = tapesToWord(tapes);
-    }
-    mpc_sbox(state, mask_shares, tapes, msgs, unopened_msgs, params);
+    if (LOWMC_N == 192)
+      mpc_sbox_192_s256(state, tapes, msgs, unopened_msgs, params);
+    else
+      mpc_sbox(state, tapes, msgs, unopened_msgs, params);
     // MPC_MUL(state, state, LOWMC_INSTANCE.rounds[r].l_matrix,
     //        mask_shares); // state = state * LMatrix (r-1)
     MUL(temp, state, LOWMC_INSTANCE.rounds[r].l_matrix);
@@ -62,7 +61,8 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, shares_t* mask_shares, randomTape_
     goto Exit;
   }
 
-  msgsTranspose(msgs);
+  if (LOWMC_N != 192)
+    msgsTranspose(msgs);
 
 Exit:
   if (msgs->unopened != -1) {

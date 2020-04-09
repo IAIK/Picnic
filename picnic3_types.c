@@ -22,19 +22,6 @@
 #include "compat.h"
 #include "picnic3_types.h"
 
-shares_t* allocateShares(size_t count) {
-  shares_t* shares = malloc(sizeof(shares_t));
-
-  shares->shares = aligned_alloc(32, count * sizeof(uint16_t));
-  memset(shares->shares, 0, count * sizeof(uint16_t));
-  shares->numWords = count;
-  return shares;
-}
-void freeShares(shares_t* shares) {
-  aligned_free(shares->shares);
-  free(shares);
-}
-
 void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->nTapes         = params->num_MPC_parties;
   tape->tape           = malloc(tape->nTapes * sizeof(uint8_t*));

@@ -361,14 +361,18 @@ static uint16_t mpc_AND(uint16_t a, uint16_t b, uint16_t mask_a, uint16_t mask_b
   return parity64_uint16(s_shares) ^ (a & b);
 }
 
-static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs,
+static void mpc_sbox(mzd_local_t* statein, randomTape_t* tapes, msgs_t* msgs,
                      uint8_t* unopenened_msg, const picnic_instance_t* params) {
   uint8_t state[MAX_LOWMC_BLOCK_SIZE];
+  uint16_t masks[MAX_LOWMC_BLOCK_SIZE * 8];
   mzd_to_char_array(state, statein, params->output_size);
+  for (size_t i = 0; i < params->lowmc.n; i++) {
+    masks[i] = tapesToWord(tapes);
+  }
   for (size_t i = 0; i < params->lowmc.m * 3; i += 3) {
-    uint16_t mask_a = state_masks->shares[i + 2];
-    uint16_t mask_b = state_masks->shares[i + 1];
-    uint16_t mask_c = state_masks->shares[i];
+    uint16_t mask_a = masks[i + 2];
+    uint16_t mask_b = masks[i + 1];
+    uint16_t mask_c = masks[i];
     uint16_t a      = getBit(state, i + 2);
     uint16_t b      = getBit(state, i + 1);
     uint16_t c      = getBit(state, i);
@@ -386,6 +390,246 @@ static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* 
     setBit(state, i + 0, f);
   }
   mzd_from_char_array(statein, state, params->output_size);
+}
+
+#include "lowmc_192_192_4.h"
+static void mpc_sbox_192_uint64(mzd_local_t* statein, randomTape_t* tapes, msgs_t* msgs,
+                                uint8_t* unopenened_msg, const picnic_instance_t* params) {
+  mzd_local_t a[1], b[1], c[1];
+  // a
+  mzd_and_uint64_192(a, mask_192_192_64_a, statein);
+  // b
+  mzd_and_uint64_192(b, mask_192_192_64_b, statein);
+  // c
+  mzd_and_uint64_192(c, mask_192_192_64_c, statein);
+
+  mzd_shift_left_uint64_192(a, a, 2);
+  mzd_shift_left_uint64_192(b, b, 1);
+
+  mzd_local_t t0[1], t1[1], t2[1];
+
+  mzd_local_t s_ab[1] = {{{0, 0, 0, 0}}}, s_bc[1] = {{{0, 0, 0, 0}}}, s_ca[1] = {{{0, 0, 0, 0}}};
+  for (int i = 0; i < 16; i++) {
+    mzd_local_t tmp[1];
+    if (i == msgs->unopened) {
+      // we are in verify, just grab the broadcast s from the msgs array
+      mzd_from_char_array(tmp, &msgs->msgs[i][msgs->pos / 8], 24);
+      // a
+      mzd_and_uint64_192(t0, mask_192_192_64_a, tmp);
+      // b
+      mzd_and_uint64_192(t1, mask_192_192_64_b, tmp);
+      // c
+      mzd_and_uint64_192(t2, mask_192_192_64_c, tmp);
+      mzd_shift_left_uint64_192(t0, t0, 2);
+      mzd_shift_left_uint64_192(t1, t1, 1);
+      mzd_xor_uint64_192(s_ab, t2, s_ab);
+      mzd_xor_uint64_192(s_bc, t1, s_bc);
+      mzd_xor_uint64_192(s_ca, t0, s_ca);
+
+      continue;
+    }
+    // make a mzd_local from tape[i] for input_masks
+    mzd_local_t mask_a[1], mask_b[1], mask_c[1];
+    mzd_from_char_array(tmp, &tapes->tape[i][tapes->pos / 8], 24);
+    // a
+    mzd_and_uint64_192(mask_a, mask_192_192_64_a, tmp);
+    // b
+    mzd_and_uint64_192(mask_b, mask_192_192_64_b, tmp);
+    // c
+    mzd_and_uint64_192(mask_c, mask_192_192_64_c, tmp);
+    mzd_shift_left_uint64_192(mask_a, mask_a, 2);
+    mzd_shift_left_uint64_192(mask_b, mask_b, 1);
+
+    // make a mzd_local from tape[i] for and_helper
+    mzd_local_t and_helper_ab[1], and_helper_bc[1], and_helper_ca[1];
+    mzd_from_char_array(tmp, &tapes->tape[i][tapes->pos / 8 + 24], 24);
+    // a
+    mzd_and_uint64_192(and_helper_ab, mask_192_192_64_c, tmp);
+    // b
+    mzd_and_uint64_192(and_helper_bc, mask_192_192_64_b, tmp);
+    // c
+    mzd_and_uint64_192(and_helper_ca, mask_192_192_64_a, tmp);
+    mzd_shift_left_uint64_192(and_helper_ca, and_helper_ca, 2);
+    mzd_shift_left_uint64_192(and_helper_bc, and_helper_bc, 1);
+
+    // s_ab
+    mzd_and_uint64_192(t0, a, mask_b);
+    mzd_and_uint64_192(t1, b, mask_a);
+    mzd_xor_uint64_192(t0, t0, t1);
+    mzd_xor_uint64_192(tmp, t0, and_helper_ab);
+    mzd_xor_uint64_192(s_ab, tmp, s_ab);
+    // s_bc
+    mzd_and_uint64_192(t0, b, mask_c);
+    mzd_and_uint64_192(t1, c, mask_b);
+    mzd_xor_uint64_192(t0, t0, t1);
+    mzd_xor_uint64_192(t0, t0, and_helper_bc);
+    mzd_xor_uint64_192(s_bc, t0, s_bc);
+
+    mzd_shift_right_uint64_192(t0, t0, 1);
+    mzd_xor_uint64_192(tmp, tmp, t0);
+    // s_ca
+    mzd_and_uint64_192(t0, c, mask_a);
+    mzd_and_uint64_192(t1, a, mask_c);
+    mzd_xor_uint64_192(t0, t0, t1);
+    mzd_xor_uint64_192(t0, t0, and_helper_ca);
+    mzd_xor_uint64_192(s_ca, t0, s_ca);
+
+    mzd_shift_right_uint64_192(t0, t0, 2);
+    mzd_xor_uint64_192(tmp, tmp, t0);
+    mzd_to_char_array(&msgs->msgs[i][msgs->pos / 8], tmp, 24);
+  }
+  tapes->pos += 192;
+  tapes->pos += 192;
+  msgs->pos += 192;
+  // b & c
+  mzd_and_uint64_192(t0, b, c);
+  // c & a
+  mzd_and_uint64_192(t1, c, a);
+  // a & b
+  mzd_and_uint64_192(t2, a, b);
+  // (b & c) ^ s_bc
+  mzd_xor_uint64_192(t0, t0, s_bc);
+  // (c & a) ^ s_ca
+  mzd_xor_uint64_192(t1, t1, s_ca);
+  // (a & b) ^ s_ab
+  mzd_xor_uint64_192(t2, t2, s_ab);
+
+  // (b & c) ^ a
+  mzd_xor_uint64_192(t0, t0, a);
+
+  // (c & a) ^ a ^ b
+  mzd_xor_uint64_192(t1, t1, a);
+  mzd_xor_uint64_192(t1, t1, b);
+
+  // (a & b) ^ a ^ b ^c
+  mzd_xor_uint64_192(t2, t2, a);
+  mzd_xor_uint64_192(t2, t2, b);
+  mzd_xor_uint64_192(t2, t2, c);
+
+  mzd_shift_right_uint64_192(t0, t0, 2);
+  mzd_shift_right_uint64_192(t1, t1, 1);
+
+  mzd_xor_uint64_192(t2, t2, t1);
+  mzd_xor_uint64_192(statein, t2, t0);
+}
+static void mpc_sbox_192_s256(mzd_local_t* statein, randomTape_t* tapes, msgs_t* msgs,
+                              uint8_t* unopenened_msg, const picnic_instance_t* params) {
+  mzd_local_t a[1], b[1], c[1];
+  // a
+  mzd_and_s256_256(a, mask_192_192_64_a, statein);
+  // b
+  mzd_and_s256_256(b, mask_192_192_64_b, statein);
+  // c
+  mzd_and_s256_256(c, mask_192_192_64_c, statein);
+
+  mzd_shift_left_uint64_192(a, a, 2);
+  mzd_shift_left_uint64_192(b, b, 1);
+
+  mzd_local_t t0[1], t1[1], t2[1];
+
+  mzd_local_t s_ab[1] = {{{0, 0, 0, 0}}}, s_bc[1] = {{{0, 0, 0, 0}}}, s_ca[1] = {{{0, 0, 0, 0}}};
+  for (int i = 0; i < 16; i++) {
+    mzd_local_t tmp[1];
+    if (i == msgs->unopened) {
+      // we are in verify, just grab the broadcast s from the msgs array
+      mzd_from_char_array(tmp, &msgs->msgs[i][msgs->pos / 8], 24);
+      // a
+      mzd_and_s256_256(t0, mask_192_192_64_a, tmp);
+      // b
+      mzd_and_s256_256(t1, mask_192_192_64_b, tmp);
+      // c
+      mzd_and_s256_256(t2, mask_192_192_64_c, tmp);
+      mzd_shift_left_uint64_192(t0, t0, 2);
+      mzd_shift_left_uint64_192(t1, t1, 1);
+      mzd_xor_s256_256(s_ab, t2, s_ab);
+      mzd_xor_s256_256(s_bc, t1, s_bc);
+      mzd_xor_s256_256(s_ca, t0, s_ca);
+
+      continue;
+    }
+    // make a mzd_local from tape[i] for input_masks
+    mzd_local_t mask_a[1], mask_b[1], mask_c[1];
+    mzd_from_char_array(tmp, &tapes->tape[i][tapes->pos / 8], 24);
+    // a
+    mzd_and_s256_256(mask_a, mask_192_192_64_a, tmp);
+    // b
+    mzd_and_s256_256(mask_b, mask_192_192_64_b, tmp);
+    // c
+    mzd_and_s256_256(mask_c, mask_192_192_64_c, tmp);
+    mzd_shift_left_uint64_192(mask_a, mask_a, 2);
+    mzd_shift_left_uint64_192(mask_b, mask_b, 1);
+
+    // make a mzd_local from tape[i] for and_helper
+    mzd_local_t and_helper_ab[1], and_helper_bc[1], and_helper_ca[1];
+    mzd_from_char_array(tmp, &tapes->tape[i][tapes->pos / 8 + 24], 24);
+    // a
+    mzd_and_s256_256(and_helper_ab, mask_192_192_64_c, tmp);
+    // b
+    mzd_and_s256_256(and_helper_bc, mask_192_192_64_b, tmp);
+    // c
+    mzd_and_s256_256(and_helper_ca, mask_192_192_64_a, tmp);
+    mzd_shift_left_uint64_192(and_helper_ca, and_helper_ca, 2);
+    mzd_shift_left_uint64_192(and_helper_bc, and_helper_bc, 1);
+
+    // s_ab
+    mzd_and_s256_256(t0, a, mask_b);
+    mzd_and_s256_256(t1, b, mask_a);
+    mzd_xor_s256_256(t0, t0, t1);
+    mzd_xor_s256_256(tmp, t0, and_helper_ab);
+    mzd_xor_s256_256(s_ab, tmp, s_ab);
+    // s_bc
+    mzd_and_s256_256(t0, b, mask_c);
+    mzd_and_s256_256(t1, c, mask_b);
+    mzd_xor_s256_256(t0, t0, t1);
+    mzd_xor_s256_256(t0, t0, and_helper_bc);
+    mzd_xor_s256_256(s_bc, t0, s_bc);
+
+    mzd_shift_right_uint64_192(t0, t0, 1);
+    mzd_xor_s256_256(tmp, tmp, t0);
+    // s_ca
+    mzd_and_s256_256(t0, c, mask_a);
+    mzd_and_s256_256(t1, a, mask_c);
+    mzd_xor_s256_256(t0, t0, t1);
+    mzd_xor_s256_256(t0, t0, and_helper_ca);
+    mzd_xor_s256_256(s_ca, t0, s_ca);
+
+    mzd_shift_right_uint64_192(t0, t0, 2);
+    mzd_xor_s256_256(tmp, tmp, t0);
+    mzd_to_char_array(&msgs->msgs[i][msgs->pos / 8], tmp, 24);
+  }
+  tapes->pos += 192;
+  tapes->pos += 192;
+  msgs->pos += 192;
+  // b & c
+  mzd_and_s256_256(t0, b, c);
+  // c & a
+  mzd_and_s256_256(t1, c, a);
+  // a & b
+  mzd_and_s256_256(t2, a, b);
+  // (b & c) ^ s_bc
+  mzd_xor_s256_256(t0, t0, s_bc);
+  // (c & a) ^ s_ca
+  mzd_xor_s256_256(t1, t1, s_ca);
+  // (a & b) ^ s_ab
+  mzd_xor_s256_256(t2, t2, s_ab);
+
+  // (b & c) ^ a
+  mzd_xor_s256_256(t0, t0, a);
+
+  // (c & a) ^ a ^ b
+  mzd_xor_s256_256(t1, t1, a);
+  mzd_xor_s256_256(t1, t1, b);
+
+  // (a & b) ^ a ^ b ^c
+  mzd_xor_s256_256(t2, t2, a);
+  mzd_xor_s256_256(t2, t2, b);
+  mzd_xor_s256_256(t2, t2, c);
+
+  mzd_shift_right_uint64_192(t0, t0, 2);
+  mzd_shift_right_uint64_192(t1, t1, 1);
+
+  mzd_xor_s256_256(t2, t2, t1);
+  mzd_xor_s256_256(statein, t2, t0);
 }
 
 #if defined(WITH_LOWMC_129_129_4)

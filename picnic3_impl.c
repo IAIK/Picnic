@@ -374,7 +374,6 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   allocateCommitments2(&Ch, params, params->num_rounds);
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
-  shares_t* mask_shares    = allocateShares((((params->input_size * 8) + 63) / 64) * 64);
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
   mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc.n, false);
   mzd_from_char_array(m_plaintext, plaintext, params->output_size);
@@ -475,7 +474,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
     mzd_from_char_array(m_maskedKey, input, params->input_size);
     msgs->unopened = unopened;
     msgs->pos      = 0;
-    ret = simulateOnline(m_maskedKey, mask_shares, &tapes[t], msgs, m_plaintext, pubKey, params);
+    ret            = simulateOnline(m_maskedKey, &tapes[t], msgs, m_plaintext, pubKey, params);
 
     if (ret != 0) {
 #if !defined(NDEBUG)
@@ -525,7 +524,6 @@ Exit:
 
   mzd_local_free(m_maskedKey);
   mzd_local_free(m_plaintext);
-  freeShares(mask_shares);
   freeCommitments2(&Cv);
   freeCommitments2(&Ch);
   freeTree(iSeedsTree);
@@ -579,7 +577,6 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
-  shares_t* mask_shares = allocateShares((((params->input_size * 8) + 63) / 64) * 64);
 
   /* Commitments to the commitments and views */
   commitments_t Ch;
@@ -620,8 +617,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
     }
     mzd_from_char_array(m_maskedKey, maskedKey, params->input_size);
 
-    int rv =
-        simulateOnline(m_maskedKey, mask_shares, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
+    int rv = simulateOnline(m_maskedKey, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
     if (rv != 0) {
 #if !defined(NDEBUG)
       printf("MPC simulation failed in round " SIZET_FMT ", aborting signature\n", t);
@@ -629,7 +625,6 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
       ret = -1;
     }
   }
-  freeShares(mask_shares);
   mzd_local_free(m_maskedKey);
   mzd_local_free(m_plaintext);
   /* Commit to the commitments and views */

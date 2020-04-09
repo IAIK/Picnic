@@ -47,7 +47,8 @@
 #include "lowmc_255_255_4.h"
 #endif
 
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
+    defined(WITH_LOWMC_256_256_38)
 /* S-box for m = 10 */
 static inline uint64_t sbox_layer_10_bitsliced_uint64(uint64_t in) {
   // a, b, c
@@ -775,7 +776,8 @@ lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_paramete
 #endif
 
 #if defined(WITH_KKW)
-lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_parameters_t* lowmc) {
+lowmc_compute_aux_implementation_f
+lowmc_compute_aux_get_implementation(const lowmc_parameters_t* lowmc) {
   assert((lowmc->m == 43 && lowmc->n == 129) || (lowmc->m == 64 && lowmc->n == 192) ||
          (lowmc->m == 85 && lowmc->n == 255));
 
