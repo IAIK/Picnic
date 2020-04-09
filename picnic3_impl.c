@@ -352,9 +352,9 @@ static uint16_t* getMissingLeavesList(uint16_t* challengeC, const picnic_instanc
   return missingLeaves;
 }
 
-int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plaintext,
-                   const uint8_t* message, size_t messageByteLength,
-                   const picnic_instance_t* params) {
+static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plaintext,
+                          const uint8_t* message, size_t messageByteLength,
+                          const picnic_instance_t* params) {
   commitments_t C[4];
   allocateCommitments2(&C[0], params, params->num_MPC_parties);
   allocateCommitments2(&C[1], params, params->num_MPC_parties);
@@ -580,9 +580,9 @@ static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLengt
   hash_squeeze(&ctx, saltAndRoot, saltAndRootLength);
 }
 
-int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
-                 const uint8_t* message, size_t messageByteLength, signature2_t* sig,
-                 const picnic_instance_t* params) {
+static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
+                        const uint8_t* message, size_t messageByteLength, signature2_t* sig,
+                        const picnic_instance_t* params) {
   int ret              = 0;
   uint8_t* saltAndRoot = malloc(params->seed_size + SALT_SIZE);
 
