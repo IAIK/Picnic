@@ -300,7 +300,6 @@ static int perform_test(picnic_params_t param) {
   } else {
     printf("OK\n");
   }
-  return ret;
 
   printf("testing with modified signatures: %s ... ", picnic_get_param_name(param));
   r = picnic_test_modified_signatures(param);
