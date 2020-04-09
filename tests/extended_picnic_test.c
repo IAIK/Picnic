@@ -254,7 +254,7 @@ static int picnic_test_modified_signatures(picnic_params_t parameters) {
       goto end;
     }
 
-    signature[l] -= diff;
+    signature[l] -= 1 + diff;
   }
 
   ret = 0;
