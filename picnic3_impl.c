@@ -434,7 +434,6 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
       commit(C[t % 4].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
              params);
       /* after we have checked the tape, we do not need it anymore for this opened iteration */
-      freeRandomTape(&tapes[t]);
     } else {
       /* We're given all seeds and aux bits, execpt for the unopened
        * party, we get their commitment */
@@ -495,10 +494,6 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
     msgs64->unopened = unopened;
     ret = simulateOnline(m_maskedKey, mask_shares, tapesN, msgs64, m_plaintext, pubKey, params);
 
-    for (size_t k = 0; k < PACKING_FACTOR; k++) {
-      freeRandomTape(&tapesN[k]);
-    }
-
     if (ret != 0) {
 #if !defined(NDEBUG)
       printf("MPC simulation failed for round " SIZET_FMT ", signature invalid\n", i);
@@ -550,7 +545,6 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
   ret = EXIT_SUCCESS;
 
 Exit:
-
   mzd_local_free(m_plaintext);
   mzd_local_free_multiple(m_maskedKey);
   freeShares(mask_shares);
@@ -566,6 +560,9 @@ Exit:
   freeTree(treeCv);
   freeTree(iSeedsTree);
   free(seeds);
+  for (size_t t = 0; t < params->num_rounds; t++) {
+    freeRandomTape(&tapes[t]);
+  }
   free(tapes);
 
   return ret;
