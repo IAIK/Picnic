@@ -243,7 +243,7 @@ static int picnic_test_modified_signatures(picnic_params_t parameters) {
     goto end;
   }
 
-  for (size_t l = 0; l < signature_len; ++l) {
+  for (size_t l = 0; l < signature_len; l += rand() % 64) {
     const uint8_t diff = rand() % 255;
     signature[l] += 1 + diff;
 
