@@ -78,7 +78,8 @@
     }                                                                                              \
   } while (0)
 
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
+    defined(WITH_LOWMC_256_256_38)
 /* MPC Sbox implementation for partical Sbox */
 static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
                            uint64_t const* r, view_t* view, unsigned viewshift) {
@@ -659,14 +660,14 @@ static inline void mpc_sbox_prove_s128_256(mzd_local_t* out, const mzd_local_t* 
                                mask_a->w128, mask_b->w128, mask_c->w128);
 
   // a & b
-  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_shift_right_256, r0m,
-                          x0s, x1s, r2m, 0);
+  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_shift_right_256, r0m, x0s,
+                          x1s, r2m, 0);
   // b & c
-  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_shift_right_256, r2m,
-                          x1s, x2m, r1s, 1);
+  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_shift_right_256, r2m, x1s,
+                          x2m, r1s, 1);
   // c & a
-  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_shift_right_256, r1m,
-                          x0s, x2m, r0s, 2);
+  mpc_mm_multiple_and_def(word128, 2, mm128_and_256, mm128_xor_256, mm128_shift_right_256, r1m, x0s,
+                          x2m, r0s, 2);
 
   bitsliced_mm_multiple_step_2(SC_PROOF, word128, 2, mm128_xor_256, mm128_shift_right_256);
 }
@@ -859,7 +860,7 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
     for (unsigned int count = 0; count < shares; ++count) {                                        \
       in[count] = CONST_BLOCK(x[count], 0)->w64[(n) / (sizeof(word) * 8) - 1];                     \
     }                                                                                              \
-    sbox(in, views, rvec->t);                                                                            \
+    sbox(in, views, rvec->t);                                                                      \
     for (unsigned int count = 0; count < shares2; ++count) {                                       \
       memcpy(BLOCK(y[count], 0)->w64, CONST_BLOCK(x[count], 0)->w64,                               \
              ((n) / (sizeof(word) * 8) - 1) * sizeof(word));                                       \
@@ -952,7 +953,8 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_parameters_t* lowmc) {
   assert((lowmc->m == 43 && lowmc->n == 129) || (lowmc->m == 64 && lowmc->n == 192) ||
-         (lowmc->m == 85 && lowmc->n == 255) || (lowmc->m == 10 && (lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256)));
+         (lowmc->m == 85 && lowmc->n == 255) ||
+         (lowmc->m == 10 && (lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256)));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -1068,9 +1070,11 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_paramete
   return NULL;
 }
 
-zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_parameters_t* lowmc) {
+zkbpp_lowmc_verify_implementation_f
+get_zkbpp_lowmc_verify_implementation(const lowmc_parameters_t* lowmc) {
   assert((lowmc->m == 43 && lowmc->n == 129) || (lowmc->m == 64 && lowmc->n == 192) ||
-         (lowmc->m == 85 && lowmc->n == 255) || (lowmc->m == 10 && (lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256)));
+         (lowmc->m == 85 && lowmc->n == 255) ||
+         (lowmc->m == 10 && (lowmc->n == 128 || lowmc->n == 192 || lowmc->n == 256)));
 
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)

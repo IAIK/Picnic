@@ -17,15 +17,11 @@ FN_ATTR
 static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
                       const mzd_local_t* plaintext, const uint8_t* pubKey,
                       const picnic_instance_t* params) {
-  int ret                = 0;
-  mzd_local_t* state     = mzd_local_init_ex(1, LOWMC_N, false);
-  mzd_local_t* temp      = mzd_local_init_ex(1, LOWMC_N, false);
-  uint8_t* unopened_msgs = NULL;
 
-  if (msgs->unopened != -1) { // We are in verify, save the unopenend parties msgs
-    unopened_msgs = malloc(params->view_size);
-    memcpy(unopened_msgs, msgs->msgs[msgs->unopened], params->view_size);
-  }
+#define mpc_sbox CONCAT(picnic3_mpc_sbox, CONCAT(IMPL, LOWMC_INSTANCE))
+  int ret            = 0;
+  mzd_local_t* state = mzd_local_init_ex(1, LOWMC_N, false);
+  mzd_local_t* temp  = mzd_local_init_ex(1, LOWMC_N, false);
 
   //  MPC_MUL(temp, maskedKey, LOWMC_INSTANCE.k0_matrix,
   //          mask_shares); // roundKey = maskedKey * KMatrix[0]
@@ -33,10 +29,7 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
   XOR(state, temp, plaintext);
 
   for (uint32_t r = 0; r < LOWMC_R; r++) {
-    if (LOWMC_N == 192)
-      mpc_sbox_192_s256(state, tapes, msgs, unopened_msgs, params);
-    else
-      mpc_sbox(state, tapes, msgs, unopened_msgs, params);
+    mpc_sbox(state, tapes, msgs);
     // MPC_MUL(state, state, LOWMC_INSTANCE.rounds[r].l_matrix,
     //        mask_shares); // state = state * LMatrix (r-1)
     MUL(temp, state, LOWMC_INSTANCE.rounds[r].l_matrix);
@@ -61,13 +54,7 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
     goto Exit;
   }
 
-  if (LOWMC_N != 192)
-    msgsTranspose(msgs);
-
 Exit:
-  if (msgs->unopened != -1) {
-    free(unopened_msgs);
-  }
   mzd_local_free(temp);
   mzd_local_free(state);
   return ret;

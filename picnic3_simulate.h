@@ -23,10 +23,4 @@ typedef int (*lowmc_simulate_online_f)(mzd_local_t* maskedKey, randomTape_t* tap
 
 lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_parameters_t* lowmc);
 
-#if defined(PICNIC_STATIC)
-// for testing transpose functionality
-void transpose_64_64(const uint64_t* in, uint64_t* out);
-void transpose_16_16_uint64(const uint16_t* in, uint16_t* out);
-#endif
-
 #endif
