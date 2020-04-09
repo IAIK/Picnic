@@ -23,6 +23,7 @@
 #include <stdalign.h>
 #endif
 
+#include "bitstream.h"
 #include "io.h"
 #include "picnic3_simulate.h"
 #include "picnic3_types.h"
@@ -530,9 +531,10 @@ static void mpc_sbox_192_s256(mzd_local_t* statein, randomTape_t* tapes, msgs_t*
   mzd_local_t s_ab[1] = {{{0, 0, 0, 0}}}, s_bc[1] = {{{0, 0, 0, 0}}}, s_ca[1] = {{{0, 0, 0, 0}}};
   for (int i = 0; i < 16; i++) {
     mzd_local_t tmp[1];
+    bitstream_t party_msgs = {msgs->msgs[i], msgs->pos};
     if (i == msgs->unopened) {
       // we are in verify, just grab the broadcast s from the msgs array
-      mzd_from_char_array(tmp, &msgs->msgs[i][msgs->pos / 8], 24);
+      mzd_from_bitstream(&party_msgs, tmp, 3, 192);
       // a
       mzd_and_s256_256(t0, mask_192_192_64_a, tmp);
       // b
@@ -547,9 +549,10 @@ static void mpc_sbox_192_s256(mzd_local_t* statein, randomTape_t* tapes, msgs_t*
 
       continue;
     }
+    bitstream_t party_tape = {tapes->tape[i], tapes->pos};
     // make a mzd_local from tape[i] for input_masks
     mzd_local_t mask_a[1], mask_b[1], mask_c[1];
-    mzd_from_char_array(tmp, &tapes->tape[i][tapes->pos / 8], 24);
+    mzd_from_bitstream(&party_tape, tmp, 3, 192);
     // a
     mzd_and_s256_256(mask_a, mask_192_192_64_a, tmp);
     // b
@@ -561,7 +564,7 @@ static void mpc_sbox_192_s256(mzd_local_t* statein, randomTape_t* tapes, msgs_t*
 
     // make a mzd_local from tape[i] for and_helper
     mzd_local_t and_helper_ab[1], and_helper_bc[1], and_helper_ca[1];
-    mzd_from_char_array(tmp, &tapes->tape[i][tapes->pos / 8 + 24], 24);
+    mzd_from_bitstream(&party_tape, tmp, 3, 192);
     // a
     mzd_and_s256_256(and_helper_ab, mask_192_192_64_c, tmp);
     // b
@@ -595,7 +598,7 @@ static void mpc_sbox_192_s256(mzd_local_t* statein, randomTape_t* tapes, msgs_t*
 
     mzd_shift_right_uint64_192(t0, t0, 2);
     mzd_xor_s256_256(tmp, tmp, t0);
-    mzd_to_char_array(&msgs->msgs[i][msgs->pos / 8], tmp, 24);
+    mzd_to_bitstream(&party_msgs, tmp, 3, 192);
   }
   tapes->pos += 192;
   tapes->pos += 192;
