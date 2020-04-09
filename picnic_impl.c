@@ -322,37 +322,8 @@ static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, con
   kdf_shake_x4_finalize_key(kdf);
 }
 
-#if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_192_192_4) || defined(WITH_LOWMC_255_255_4)
-static void mzd_to_bitstream(bitstream_t* bs, const mzd_local_t* v, const size_t width, const size_t size) {
-  const uint64_t* d = &CONST_BLOCK(v, 0)->w64[width - 1];
-  size_t bits       = size;
-  for (; bits >= sizeof(uint64_t) * 8; bits -= sizeof(uint64_t) * 8, --d) {
-    bitstream_put_bits(bs, *d, sizeof(uint64_t) * 8);
-  }
-  if (bits) {
-    bitstream_put_bits(bs, *d >> (sizeof(uint64_t) * 8 - bits), bits);
-  }
-}
-
-static void mzd_from_bitstream(bitstream_t* bs, mzd_local_t* v, const size_t width, const size_t size) {
-  uint64_t* d = &BLOCK(v, 0)->w64[width - 1];
-  uint64_t* f = BLOCK(v, 0)->w64;
-
-  size_t bits = size;
-  for (; bits >= sizeof(uint64_t) * 8; bits -= sizeof(uint64_t) * 8, --d) {
-    *d = bitstream_get_bits(bs, sizeof(uint64_t) * 8);
-  }
-  if (bits) {
-    *d = bitstream_get_bits(bs, bits) << (sizeof(uint64_t) * 8 - bits);
-    --d;
-  }
-  for (; d >= f; --d) {
-    *d = 0;
-  }
-}
-#endif
-
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
+    defined(WITH_LOWMC_256_256_38)
 static void uint64_to_bitstream_10(bitstream_t* bs, const uint64_t v) {
   bitstream_put_bits(bs, v >> (64 - 30), 30);
 }
@@ -382,7 +353,8 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
     return;
   }
 #endif
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
+    defined(WITH_LOWMC_256_256_38)
   if (pp->lowmc.m == 10) {
     for (size_t i = 0; i < num_views; ++i, ++v) {
       uint64_to_bitstream_10(&bs, v->t[idx]);
@@ -411,7 +383,8 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
     return;
   }
 #endif
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
+    defined(WITH_LOWMC_256_256_38)
   if (pp->lowmc.m == 10) {
     for (size_t i = 0; i < num_views; ++i, ++v) {
       v->t[idx] = uint64_from_bitstream_10(&bs);
@@ -1107,8 +1080,8 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
         mzd_from_char_array(in_out_shares[0].s[j], round[round_offset].input_shares[j], input_size);
       }
       mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], lowmc_key);
-      mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1],
-                        input_size);
+      mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1],
+                        in_out_shares[0].s[SC_PROOF - 1], input_size);
 
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
         decompress_random_tape(rvec, pp, tape_bytes_x4[j][round_offset], j);
@@ -1149,7 +1122,8 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       mzd_from_char_array(in_out_shares[0].s[j], round->input_shares[j], input_size);
     }
     mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], lowmc_key);
-    mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1], input_size);
+    mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1],
+                      input_size);
 
     // compute random tapes
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -1217,8 +1191,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   }
 
   in_out_shares_t in_out_shares[2];
-  view_t* views    = aligned_alloc(32, sizeof(view_t) * lowmc_r);
-  rvec_t* rvec     = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for and-gates
+  view_t* views = aligned_alloc(32, sizeof(view_t) * lowmc_r);
+  rvec_t* rvec  = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for and-gates
 
   // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when
   // verifying since all of this is public information, there is no leakage
