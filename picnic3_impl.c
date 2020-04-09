@@ -369,7 +369,6 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
   size_t challengeSizeBytes = params->num_opened_rounds * sizeof(uint16_t);
   uint16_t* challengeC      = malloc(challengeSizeBytes);
   uint16_t* challengeP      = malloc(challengeSizeBytes);
-  tree_t** seeds            = calloc(params->num_rounds, sizeof(tree_t*));
   randomTape_t* tapes       = malloc(params->num_rounds * sizeof(randomTape_t));
   tree_t* iSeedsTree        = createTree(params->num_rounds, params->seed_size);
   int ret = reconstructSeeds(iSeedsTree, sig->challengeC, params->num_opened_rounds, sig->iSeedInfo,
@@ -394,23 +393,24 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
 
   /* Populate seeds with values from the signature */
   for (size_t t = 0; t < params->num_rounds; t++) {
+    tree_t* seed = NULL;
     if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
       /* Expand iSeed[t] to seeds for each parties, using a seed tree */
-      seeds[t] =
-          generateSeeds(params->num_MPC_parties, getLeaf(iSeedsTree, t), sig->salt, t, params);
+      seed = generateSeeds(params->num_MPC_parties, getLeaf(iSeedsTree, t), sig->salt, t, params);
     } else {
       /* We don't have the initial seed for the round, but instead a seed
        * for each unopened party */
-      seeds[t]       = createTree(params->num_MPC_parties, params->seed_size);
+      seed           = createTree(params->num_MPC_parties, params->seed_size);
       size_t P_index = indexOf(sig->challengeC, params->num_opened_rounds, t);
       uint16_t hideList[1];
       hideList[0] = sig->challengeP[P_index];
-      ret         = reconstructSeeds(seeds[t], hideList, 1, sig->proofs[t].seedInfo,
+      ret         = reconstructSeeds(seed, hideList, 1, sig->proofs[t].seedInfo,
                              sig->proofs[t].seedInfoLen, sig->salt, t, params);
       if (ret != 0) {
 #if !defined(NDEBUG)
         printf("Failed to reconstruct seeds for round " SIZET_FMT "\n", t);
 #endif
+        freeTree(seed);
         ret = -1;
         goto Exit;
       }
@@ -420,18 +420,18 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
     /* Compute random tapes for all parties.  One party for each repitition
      * challengeC will have a bogus seed; but we won't use that party's
      * random tape. */
-    createRandomTapes(&tapes[t], getLeaves(seeds[t]), sig->salt, t, params);
+    createRandomTapes(&tapes[t], getLeaves(seed), sig->salt, t, params);
 
     if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
       /* We're given iSeed, have expanded the seeds, compute aux from scratch so we can comnpte
        * Com[t] */
       computeAuxTape(&tapes[t], NULL, params);
       for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
-        const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j + 0), getLeaf(seeds[t], j + 1),
-                                      getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
+        const uint8_t* seed_ptr[4] = {getLeaf(seed, j + 0), getLeaf(seed, j + 1),
+                                      getLeaf(seed, j + 2), getLeaf(seed, j + 3)};
         commit_x4(C[t % 4].hashes + j, seed_ptr, sig->salt, t, j, params);
       }
-      commit(C[t % 4].hashes[last], getLeaf(seeds[t], last), tapes[t].aux_bits, sig->salt, t, last,
+      commit(C[t % 4].hashes[last], getLeaf(seed, last), tapes[t].aux_bits, sig->salt, t, last,
              params);
       /* after we have checked the tape, we do not need it anymore for this opened iteration */
     } else {
@@ -439,12 +439,12 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
        * party, we get their commitment */
       size_t unopened = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
       for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
-        const uint8_t* seed_ptr[4] = {getLeaf(seeds[t], j + 0), getLeaf(seeds[t], j + 1),
-                                      getLeaf(seeds[t], j + 2), getLeaf(seeds[t], j + 3)};
+        const uint8_t* seed_ptr[4] = {getLeaf(seed, j + 0), getLeaf(seed, j + 1),
+                                      getLeaf(seed, j + 2), getLeaf(seed, j + 3)};
         commit_x4(C[t % 4].hashes + j, seed_ptr, sig->salt, t, j, params);
       }
       if (last != unopened) {
-        commit(C[t % 4].hashes[last], getLeaf(seeds[t], last), sig->proofs[t].aux, sig->salt, t,
+        commit(C[t % 4].hashes[last], getLeaf(seed, last), sig->proofs[t].aux, sig->salt, t,
                last, params);
       }
 
@@ -458,7 +458,7 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
       size_t t4 = t / 4 * 4;
       commit_h_x4(&Ch.hashes[t4], &C[0], params);
     }
-    freeTree(seeds[t]);
+    freeTree(seed);
   }
 
   /* Commit to the views */
@@ -556,7 +556,6 @@ Exit:
   freeCommitments2(&Ch);
   freeTree(iSeedsTree);
   free(tapes);
-  free(seeds);
   free(challengeP);
   free(challengeC);
   freeTree(treeCv);
