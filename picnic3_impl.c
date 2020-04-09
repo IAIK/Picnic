@@ -750,20 +750,24 @@ int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t
 
   sig->proofs = proofs;
 
+  freeTree(treeCv);
   for (size_t t = 0; t < params->num_rounds; t++) {
     freeRandomTape(&tapes[t]);
     freeTree(seeds[t]);
   }
-  free(tapes);
-  free(seeds);
-  freeTree(iSeedsTree);
-  freeTree(treeCv);
 
-  freeCommitments2(&Ch);
+  /* m_maskedKey! */
+  /* m_plaintext! */
   freeCommitments2(&Cv);
-  freeCommitments(C);
-  freeInputs(inputs);
+  freeCommitments2(&Ch);
+  /* msgs64! */
+  /* msg shares! */
   freeMsgs(msgs);
+  freeInputs(inputs);
+  freeCommitments(C);
+  free(seeds);
+  free(tapes);
+  freeTree(iSeedsTree);
 
   return ret;
 }
