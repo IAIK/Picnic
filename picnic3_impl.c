@@ -29,8 +29,6 @@
 #include "picnic3_tree.h"
 #include "picnic3_types.h"
 
-#define PACKING_FACTOR 4
-
 /* Helper functions */
 
 ATTR_CONST
@@ -378,8 +376,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   allocateCommitments2(&Cv, params, params->num_rounds);
   shares_t* mask_shares    = allocateShares((((params->input_size * 8) + 63) / 64) * 64);
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
-  mzd_local_t* m_maskedKey[PACKING_FACTOR];
-  mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc.k, false);
+  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc.n, false);
   mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
   if (ret != 0) {
@@ -400,8 +397,8 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
       size_t P_index = indexOf(sig->challengeC, params->num_opened_rounds, t);
       uint16_t hideList[1];
       hideList[0] = sig->challengeP[P_index];
-      ret         = reconstructSeeds(seed, hideList, 1, sig->proofs[t].seedInfo,
-                             sig->proofs[t].seedInfoLen, sig->salt, t, params);
+      ret = reconstructSeeds(seed, hideList, 1, sig->proofs[t].seedInfo, sig->proofs[t].seedInfoLen,
+                             sig->salt, t, params);
       if (ret != 0) {
 #if !defined(NDEBUG)
         printf("Failed to reconstruct seeds for round " SIZET_FMT "\n", t);
@@ -440,8 +437,8 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
         commit_x4(C[t % 4].hashes + j, seed_ptr, sig->salt, t, j, params);
       }
       if (last != unopened) {
-        commit(C[t % 4].hashes[last], getLeaf(seed, last), sig->proofs[t].aux, sig->salt, t,
-               last, params);
+        commit(C[t % 4].hashes[last], getLeaf(seed, last), sig->proofs[t].aux, sig->salt, t, last,
+               params);
       }
 
       memcpy(C[t % 4].hashes[unopened], sig->proofs[t].C, params->digest_size);
@@ -464,50 +461,31 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
     }
   }
 
-  assert(params->num_opened_rounds % PACKING_FACTOR == 0);
-  msgs_t* msgs64 = allocateMsgs64(params);
-  for (size_t i = 0; i < params->num_opened_rounds; i += PACKING_FACTOR) {
+  for (size_t i = 0; i < params->num_opened_rounds; i++) {
     /* 2. When t is in C, we have everything we need to re-compute the view, as an honest signer
      * would.
      * We simulate the MPC with one fewer party; the unopned party's values are all set to zero.
      */
-    size_t t[PACKING_FACTOR];
-    int unopened[PACKING_FACTOR];
-    uint8_t* inputs[PACKING_FACTOR];
-    randomTape_t tapesN[PACKING_FACTOR];
-    for (size_t k = 0; k < PACKING_FACTOR; k++) {
-      t[k]        = sig->challengeC[i + k];
-      unopened[k] = sig->challengeP[i + k];
-      inputs[k]   = sig->proofs[t[k]].input;
-      setAuxBits(&tapes[t[k]], sig->proofs[t[k]].aux, params);
-      memset(tapes[t[k]].tape[unopened[k]], 0, 2 * params->view_size + params->input_size);
-      memcpy(msgs64->msgs[(64 / PACKING_FACTOR) * k + unopened[k]], sig->proofs[t[k]].msgs,
-             params->view_size);
-      tapesN[k] = tapes[t[k]];
-      mzd_from_char_array(m_maskedKey[k], inputs[k], params->input_size);
-    }
-    msgs64->pos      = 0;
-    msgs64->unopened = unopened;
-    ret = simulateOnline(m_maskedKey, mask_shares, tapesN, msgs64, m_plaintext, pubKey, params);
+    size_t t       = sig->challengeC[i];
+    int unopened   = sig->challengeP[i];
+    uint8_t* input = sig->proofs[t].input;
+    setAuxBits(&tapes[t], sig->proofs[t].aux, params);
+    memset(tapes[t].tape[unopened], 0, 2 * params->view_size + params->input_size);
+    memcpy(msgs->msgs[unopened], sig->proofs[t].msgs, params->view_size);
+    mzd_from_char_array(m_maskedKey, input, params->input_size);
+    msgs->unopened = unopened;
+    msgs->pos      = 0;
+    ret = simulateOnline(m_maskedKey, mask_shares, &tapes[t], msgs, m_plaintext, pubKey, params);
 
     if (ret != 0) {
 #if !defined(NDEBUG)
       printf("MPC simulation failed for round " SIZET_FMT ", signature invalid\n", i);
 #endif
       ret = -1;
-      freeMsgs(msgs64);
       goto Exit;
     }
-    for (size_t msg_idx = 0; msg_idx < 64; msg_idx++) {
-      memcpy(msgs->msgs[msg_idx % (64 / PACKING_FACTOR)], msgs64->msgs[msg_idx], params->view_size);
-      if ((msg_idx + 1) % (64 / PACKING_FACTOR) == 0) {
-        msgs->pos = msgs64->pos;
-        commit_v(Cv.hashes[t[msg_idx / (64 / PACKING_FACTOR)]],
-                 sig->proofs[t[msg_idx / (64 / PACKING_FACTOR)]].input, msgs, params);
-      }
-    }
+    commit_v(Cv.hashes[t], sig->proofs[t].input, msgs, params);
   }
-  freeMsgs(msgs64);
 
   size_t missingLeavesSize = params->num_rounds - params->num_opened_rounds;
   uint16_t* missingLeaves  = getMissingLeavesList(sig->challengeC, params);
@@ -545,7 +523,7 @@ Exit:
     freeRandomTape(&tapes[t]);
   }
 
-  mzd_local_free_multiple(m_maskedKey);
+  mzd_local_free(m_maskedKey);
   mzd_local_free(m_plaintext);
   freeShares(mask_shares);
   freeCommitments2(&Cv);
@@ -602,7 +580,6 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
   shares_t* mask_shares = allocateShares((((params->input_size * 8) + 63) / 64) * 64);
-  msgs_t* msgs64        = allocateMsgs64(params);
 
   /* Commitments to the commitments and views */
   commitments_t Ch;
@@ -611,8 +588,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   allocateCommitments2(&Cv, params, params->num_rounds);
 
   mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
-  mzd_local_t* m_maskedKey[PACKING_FACTOR];
-  mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc.k, false);
+  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc.n, false);
 
   mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
@@ -633,43 +609,28 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
            params);
   }
 
-  assert(params->num_rounds % PACKING_FACTOR == 0);
-  for (size_t t = 0; t < params->num_rounds; t += PACKING_FACTOR) {
+  for (size_t t = 0; t < params->num_rounds; t++) {
     /* Simulate the online phase of the MPC */
-    msgs64->pos = 0;
-    uint8_t* maskedKey[PACKING_FACTOR];
-    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      maskedKey[k] = inputs[t + k];
-    }
+    uint8_t* maskedKey = inputs[t];
 
-    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      xor_byte_array(maskedKey[k], maskedKey[k], privateKey,
-                     params->input_size); // maskedKey += privateKey
-      mzd_from_char_array(m_maskedKey[k], maskedKey[k], params->input_size);
-
-      for (size_t i = params->lowmc.n; i < params->input_size * 8; i++) {
-        setBit(maskedKey[k], i, 0);
-      }
+    xor_byte_array(maskedKey, maskedKey, privateKey,
+                   params->input_size); // maskedKey += privateKey
+    for (size_t i = params->lowmc.n; i < params->input_size * 8; i++) {
+      setBit(maskedKey, i, 0);
     }
+    mzd_from_char_array(m_maskedKey, maskedKey, params->input_size);
 
     int rv =
-        simulateOnline(m_maskedKey, mask_shares, &tapes[t], msgs64, m_plaintext, pubKey, params);
+        simulateOnline(m_maskedKey, mask_shares, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
     if (rv != 0) {
 #if !defined(NDEBUG)
       printf("MPC simulation failed in round " SIZET_FMT ", aborting signature\n", t);
 #endif
       ret = -1;
     }
-    const size_t num_parties = (64 / PACKING_FACTOR);
-    for (size_t msg_idx = 0; msg_idx < 64; msg_idx++) {
-      memcpy(msgs[t + msg_idx / num_parties].msgs[msg_idx % num_parties], msgs64->msgs[msg_idx],
-             params->view_size);
-      msgs[t + msg_idx / num_parties].pos = msgs64->pos;
-    }
   }
   freeShares(mask_shares);
-  freeMsgs(msgs64);
-  mzd_local_free_multiple(m_maskedKey);
+  mzd_local_free(m_maskedKey);
   mzd_local_free(m_plaintext);
   /* Commit to the commitments and views */
   {

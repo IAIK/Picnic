@@ -11,8 +11,8 @@
 #include <stdio.h>
 
 #include "endian_compat.h"
-#include "picnic3_simulate.h"
 #include "io.h"
+#include "picnic3_simulate.h"
 
 static const uint8_t test_matrix[64][64] = {
     {1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
@@ -405,10 +405,10 @@ static const uint8_t test_matrix_trans[64][64] = {
 };
 
 #if 0
-static void print_matrix(const char* info, const uint64_t mat[]) {
+static void print_matrix(const char* info, const uint64_t mat[], int dimension) {
   printf("%s:\n", info);
-  for (int i = 0; i < 64; i++) {
-    for (int j = 0; j < 64; j++) {
+  for (int i = 0; i < dimension; i++) {
+    for (int j = 0; j < dimension; j++) {
       printf("%d", getBit((uint8_t*)&mat[i], j));
     }
     printf("\n");
@@ -428,13 +428,39 @@ int main(void) {
     }
     matrix[i] = e;
   }
-  // print_matrix("set", matrix);
+  // print_matrix("set", matrix, 64);
   transpose_64_64(matrix, matrix);
-  // print_matrix("trans", matrix);
+  // print_matrix("trans", matrix, 64);
 
   for (unsigned int i = 0; i < 64; i++) {
     const uint64_t e = matrix[i];
     for (unsigned int j = 0; j < 64; j++) {
+      if (getBit((const uint8_t*)&e, j) != test_matrix_trans[i][j]) {
+        printf("error: %d,%d\n", i, j);
+        return -1;
+      }
+    }
+  }
+
+  // test 16x16 transpose
+  uint16_t matrix16[16] ATTR_ALIGNED(32) = {
+      0,
+  };
+
+  for (unsigned int i = 0; i < 16; i++) {
+    uint16_t e = 0;
+    for (unsigned int j = 0; j < 16; j++) {
+      setBit((uint8_t*)&e, j, test_matrix[i][j]);
+    }
+    matrix16[i] = e;
+  }
+  // print_matrix("set", matrix, 16);
+  transpose_16_16_uint64(matrix16, matrix16);
+  // print_matrix("trans", matrix, 16);
+
+  for (unsigned int i = 0; i < 16; i++) {
+    const uint16_t e = matrix16[i];
+    for (unsigned int j = 0; j < 16; j++) {
       if (getBit((const uint8_t*)&e, j) != test_matrix_trans[i][j]) {
         printf("error: %d,%d\n", i, j);
         return -1;

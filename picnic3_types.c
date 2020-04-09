@@ -19,14 +19,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "picnic3_types.h"
 #include "compat.h"
+#include "picnic3_types.h"
 
 shares_t* allocateShares(size_t count) {
   shares_t* shares = malloc(sizeof(shares_t));
 
-  shares->shares = aligned_alloc(32, count * sizeof(uint64_t));
-  memset(shares->shares, 0, count * sizeof(uint64_t));
+  shares->shares = aligned_alloc(32, count * sizeof(uint16_t));
+  memset(shares->shares, 0, count * sizeof(uint16_t));
   shares->numWords = count;
   return shares;
 }
@@ -39,10 +39,10 @@ void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->nTapes         = params->num_MPC_parties;
   tape->tape           = malloc(tape->nTapes * sizeof(uint8_t*));
   tape->aux_bits       = calloc(1, params->view_size);
-  tape->buffer         = aligned_alloc(32, 64 * sizeof(uint64_t));
+  tape->buffer         = aligned_alloc(32, 16 * sizeof(uint16_t));
   size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
   tape->parity_tapes   = calloc(1, tapeSizeBytes);
-  tapeSizeBytes = ((tapeSizeBytes + 7) / 8) * 8; // round up to multiple of 64 bit for transpose
+  tapeSizeBytes = ((tapeSizeBytes + 1) / 2) * 2; // round up to multiple of 16 bit for transpose
   uint8_t* slab = calloc(1, tape->nTapes * tapeSizeBytes);
   for (uint8_t i = 0; i < tape->nTapes; i++) {
     tape->tape[i] = slab;
@@ -149,13 +149,12 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
   msgs_t* msgs = malloc(params->num_rounds * sizeof(msgs_t));
 
   uint8_t* slab =
-      calloc(1, params->num_rounds * (params->num_MPC_parties *
-                                          ((params->view_size + 7) / 8 * 8) +
+      calloc(1, params->num_rounds * (params->num_MPC_parties * ((params->view_size + 7) / 8 * 8) +
                                       params->num_MPC_parties * sizeof(uint8_t*)));
 
   for (uint32_t i = 0; i < params->num_rounds; i++) {
     msgs[i].pos      = 0;
-    msgs[i].unopened = NULL;
+    msgs[i].unopened = -1;
     msgs[i].msgs     = (uint8_t**)slab;
     slab += params->num_MPC_parties * sizeof(uint8_t*);
 
@@ -168,35 +167,14 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
   return msgs;
 }
 
-msgs_t* allocateMsgs64(const picnic_instance_t* params) {
-  msgs_t* msgs = malloc(sizeof(msgs_t));
-
-  uint8_t* slab =
-      calloc(1, (64 * ((params->view_size + 7) / 8 * 8) +
-                 64 * sizeof(uint8_t*)));
-
-  msgs->pos      = 0;
-  msgs->unopened = NULL;
-  msgs->msgs     = (uint8_t**)slab;
-  slab += 64 * sizeof(uint8_t*);
-
-  for (uint32_t j = 0; j < 64; j++) {
-    msgs->msgs[j] = slab;
-    slab += (params->view_size + 7) / 8 * 8;
-  }
-
-  return msgs;
-}
-
 msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
   msgs_t* msgs = malloc(sizeof(msgs_t));
 
-  uint8_t* slab =
-      calloc(1, (params->num_MPC_parties * ((params->view_size + 7) / 8 * 8) +
-                 params->num_MPC_parties * sizeof(uint8_t*)));
+  uint8_t* slab = calloc(1, (params->num_MPC_parties * ((params->view_size + 7) / 8 * 8) +
+                             params->num_MPC_parties * sizeof(uint8_t*)));
 
   msgs->pos      = 0;
-  msgs->unopened = NULL;
+  msgs->unopened = -1;
   msgs->msgs     = (uint8_t**)slab;
   slab += params->num_MPC_parties * sizeof(uint8_t*);
 

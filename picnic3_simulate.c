@@ -30,6 +30,46 @@
 #define PACKING_FACTOR 4
 #define PARTIES_LOG 4
 
+/* transpose a 16x16 bit matrix using Eklundh's algorithm
+   this variant assumes that the bit with index 0 is the msb of byte 0
+   e.g., 01234567 89abcdef ...
+ */
+void transpose_16_16_uint64(const uint16_t* in, uint16_t* out) {
+  static const uint16_t TRANSPOSE_MASKS16[4] = {UINT16_C(0xFF00), UINT16_C(0xF0F0),
+                                                UINT16_C(0xCCCC), UINT16_C(0xAAAA)};
+
+  uint32_t width = 8, nswaps = 1;
+  const uint32_t logn = 4;
+
+  // copy in to out and transpose in-place
+  for (uint32_t i = 0; i < 16; i++) {
+    out[i] = htobe16(in[i]);
+  }
+
+  for (uint32_t i = 0; i < logn; i++) {
+    uint64_t mask     = TRANSPOSE_MASKS16[i];
+    uint64_t inv_mask = ~mask;
+
+    for (uint32_t j = 0; j < nswaps; j++) {
+      for (uint32_t k = 0; k < width; k++) {
+        uint32_t i1 = k + 2 * width * j;
+        uint32_t i2 = k + width + 2 * width * j;
+
+        uint64_t t1 = out[i1];
+        uint64_t t2 = out[i2];
+
+        out[i1] = (t1 & mask) ^ ((t2 & mask) >> width);
+        out[i2] = (t2 & inv_mask) ^ ((t1 & inv_mask) << width);
+      }
+    }
+    nswaps *= 2;
+    width /= 2;
+  }
+  for (uint32_t i = 0; i < 16; i++) {
+    out[i] = be16toh(out[i]);
+  }
+}
+
 /* transpose a 64x64 bit matrix using Eklundh's algorithm
    this variant assumes that the bit with index 0 is the msb of byte 0
    e.g., 01234567 89abcdef ...
@@ -239,7 +279,8 @@ static void transpose_64_64_s256(const uint64_t* in, uint64_t* out) {
 #if !defined(PICNIC_STATIC)
 static
 #endif
-void transpose_64_64(const uint64_t* in, uint64_t* out) {
+    void
+    transpose_64_64(const uint64_t* in, uint64_t* out) {
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   if (CPU_SUPPORTS_AVX2) {
@@ -257,127 +298,94 @@ void transpose_64_64(const uint64_t* in, uint64_t* out) {
   transpose_64_64_uint64(in, out);
 }
 
-static uint64_t tapesToWord(randomTape_t* tapes) {
-  uint64_t shares;
-  const size_t wordBits = sizeof(uint64_t) * 8;
+static uint16_t tapesToWord(randomTape_t* tapes) {
+  uint16_t shares;
+  const size_t wordBits = sizeof(uint16_t) * 8;
 
   if (tapes->pos % wordBits == 0) {
-    for (size_t j = 0; j < PACKING_FACTOR; j++) {
-      for (size_t i = 0; i < tapes->nTapes; i++) {
-        tapes->buffer[j * tapes->nTapes + i] = ((uint64_t*)tapes[j].tape[i])[tapes->pos / wordBits];
-      }
+    for (size_t i = 0; i < tapes->nTapes; i++) {
+      tapes->buffer[i] = ((uint16_t*)tapes->tape[i])[tapes->pos / wordBits];
     }
-    transpose_64_64(tapes->buffer, tapes->buffer);
+    transpose_16_16_uint64(tapes->buffer, tapes->buffer);
   }
 
   shares = tapes->buffer[tapes->pos % wordBits];
-  for (size_t j = 0; j < PACKING_FACTOR; j++) {
-    tapes[j].pos++;
-  }
+  tapes->pos++;
   return shares;
 }
 
-static void wordToMsgsNoTranspose(uint64_t w, msgs_t* msgs) {
-  ((uint64_t*)msgs->msgs[msgs->pos % 64])[msgs->pos / 64] = w;
+static void wordToMsgsNoTranspose(uint16_t w, msgs_t* msgs) {
+  ((uint16_t*)msgs->msgs[msgs->pos % 16])[msgs->pos / 16] = w;
   msgs->pos++;
 }
 
 static void msgsTranspose(msgs_t* msgs) {
-  uint64_t buffer[64] ATTR_ALIGNED(32);
+  uint16_t buffer[16] ATTR_ALIGNED(32);
   size_t pos;
-  for (pos = 0; pos < msgs->pos / 64; pos++) {
-    for (size_t i = 0; i < 64; i++) {
-      buffer[i] = ((uint64_t*)msgs->msgs[i])[pos];
+  for (pos = 0; pos < msgs->pos / 16; pos++) {
+    for (size_t i = 0; i < 16; i++) {
+      buffer[i] = ((uint16_t*)msgs->msgs[i])[pos];
     }
-    transpose_64_64(buffer, buffer);
-    for (size_t i = 0; i < 64; i++) {
-      ((uint64_t*)msgs->msgs[i])[pos] = buffer[i];
+    transpose_16_16_uint64(buffer, buffer);
+    for (size_t i = 0; i < 16; i++) {
+      ((uint16_t*)msgs->msgs[i])[pos] = buffer[i];
     }
   }
-  if (msgs->pos % 64) {
-    memset(buffer, 0, 64 * sizeof(uint64_t));
-    for (size_t i = 0; i < msgs->pos % 64; i++) {
-      buffer[i] = ((uint64_t*)msgs->msgs[i])[pos];
+  if (msgs->pos % 16) {
+    memset(buffer, 0, 16 * sizeof(uint16_t));
+    for (size_t i = 0; i < msgs->pos % 16; i++) {
+      buffer[i] = ((uint16_t*)msgs->msgs[i])[pos];
     }
-    transpose_64_64(buffer, buffer);
-    for (size_t i = 0; i < 64; i++) {
-      ((uint64_t*)msgs->msgs[i])[pos] = buffer[i];
+    transpose_16_16_uint64(buffer, buffer);
+    for (size_t i = 0; i < 16; i++) {
+      ((uint16_t*)msgs->msgs[i])[pos] = buffer[i];
     }
   }
 }
 
-static uint64_t mpc_AND(uint64_t a, uint64_t b, uint64_t mask_a, uint64_t mask_b, randomTape_t* tapes,
-                       msgs_t* msgs, uint8_t** unopened_msg) {
-  uint64_t and_helper =
+static uint16_t mpc_AND(uint16_t a, uint16_t b, uint16_t mask_a, uint16_t mask_b,
+                        randomTape_t* tapes, msgs_t* msgs, uint8_t* unopened_msg) {
+  uint16_t and_helper =
       tapesToWord(tapes); // The special mask value setup during preprocessing for each AND gate
-  uint64_t s_shares = (a & mask_b) ^ (b & mask_a) ^ and_helper;
+  uint16_t s_shares =
+      ((a * 0xFFFF) & mask_b) ^ ((b * 0xFFFF) & mask_a) ^ and_helper; // TODO: nicer extend
 
-  if (msgs->unopened != NULL) {
-    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      uint8_t unopenedPartyBit = getBit(unopened_msg[k], msgs->pos);
-      setBit((uint8_t*)&s_shares, (64 / PACKING_FACTOR) * k + msgs->unopened[k], unopenedPartyBit);
-    }
+  if (msgs->unopened != -1) {
+    uint8_t unopenedPartyBit = getBit(unopened_msg, msgs->pos);
+    setBit((uint8_t*)&s_shares, msgs->unopened, unopenedPartyBit);
   }
 
   // Broadcast each share of s
   wordToMsgsNoTranspose(s_shares, msgs);
-  s_shares = le64toh(s_shares);
-  for (uint32_t k = 0; k < PARTIES_LOG; k++) {
-    s_shares ^= s_shares >> (1 << (PARTIES_LOG - 1 - k));
-  }
-  s_shares = htole64(s_shares);
 
-  return s_shares ^ (a & b);
+  return parity64_uint16(s_shares) ^ (a & b);
 }
 
-static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t* tapes,
-                     msgs_t* msgs, uint8_t** unopenened_msg, const picnic_instance_t* params) {
-  uint8_t state[PACKING_FACTOR][MAX_LOWMC_BLOCK_SIZE];
-  for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-    mzd_to_char_array(state[k], statein[k], params->output_size);
-  }
+static void mpc_sbox(mzd_local_t* statein, shares_t* state_masks, randomTape_t* tapes, msgs_t* msgs,
+                     uint8_t* unopenened_msg, const picnic_instance_t* params) {
+  uint8_t state[MAX_LOWMC_BLOCK_SIZE];
+  mzd_to_char_array(state, statein, params->output_size);
   for (size_t i = 0; i < params->lowmc.m * 3; i += 3) {
-    uint64_t a = 0;
-    uint64_t b = 0;
-    uint64_t c = 0;
+    uint16_t mask_a = state_masks->shares[i + 2];
+    uint16_t mask_b = state_masks->shares[i + 1];
+    uint16_t mask_c = state_masks->shares[i];
+    uint16_t a      = getBit(state, i + 2);
+    uint16_t b      = getBit(state, i + 1);
+    uint16_t c      = getBit(state, i);
 
-    uint64_t mask_a = state_masks->shares[i + 2];
-    uint64_t mask_b = state_masks->shares[i + 1];
-    uint64_t mask_c = state_masks->shares[i];
-    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      a <<= (64 / PACKING_FACTOR);
-      a |= getBit(state[PACKING_FACTOR - 1 - k], i + 2);
-      b <<= (64 / PACKING_FACTOR);
-      b |= getBit(state[PACKING_FACTOR - 1 - k], i + 1);
-      c <<= (64 / PACKING_FACTOR);
-      c |= getBit(state[PACKING_FACTOR - 1 - k], i);
-    }
-    for (size_t k = 0; k < PARTIES_LOG; k++) {
-      a ^= (a << (1 << k));
-      b ^= (b << (1 << k));
-      c ^= (c << (1 << k));
-    }
-    a = htole64(a);
-    b = htole64(b);
-    c = htole64(c);
+    uint16_t ab = mpc_AND(a, b, mask_a, mask_b, tapes, msgs, unopenened_msg);
+    uint16_t bc = mpc_AND(b, c, mask_b, mask_c, tapes, msgs, unopenened_msg);
+    uint16_t ca = mpc_AND(c, a, mask_c, mask_a, tapes, msgs, unopenened_msg);
 
-    uint64_t ab = mpc_AND(a, b, mask_a, mask_b, tapes, msgs, unopenened_msg);
-    uint64_t bc = mpc_AND(b, c, mask_b, mask_c, tapes, msgs, unopenened_msg);
-    uint64_t ca = mpc_AND(c, a, mask_c, mask_a, tapes, msgs, unopenened_msg);
+    uint16_t d = a ^ bc;
+    uint16_t e = a ^ b ^ ca;
+    uint16_t f = a ^ b ^ c ^ ab;
 
-    uint64_t d = a ^ bc;
-    uint64_t e = a ^ b ^ ca;
-    uint64_t f = a ^ b ^ c ^ ab;
-
-    for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-      setBit(state[k], i + 2, getBit((uint8_t*)&d, 7 + (64/PACKING_FACTOR) *k));
-      setBit(state[k], i + 1, getBit((uint8_t*)&e, 7 + (64/PACKING_FACTOR) *k));
-      setBit(state[k], i + 0, getBit((uint8_t*)&f, 7 + (64/PACKING_FACTOR) *k));
-    }
+    setBit(state, i + 2, d);
+    setBit(state, i + 1, e);
+    setBit(state, i + 0, f);
   }
-  for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
-    mzd_from_char_array(statein[k], state[k], params->output_size);
-  }
+  mzd_from_char_array(statein, state, params->output_size);
 }
 
 #if defined(WITH_LOWMC_129_129_4)

@@ -17,15 +17,17 @@ typedef struct shares_t shares_t;
 typedef struct msgs_t msgs_t;
 typedef struct picnic_instance_t picnic_instance_t;
 
-typedef int (*lowmc_simulate_online_f)(mzd_local_t** maskedKey, shares_t* mask_shares,
-                                       randomTape_t* tapes, msgs_t* msgs, const mzd_local_t* plaintext,
-                                       const uint8_t* pubKey, const picnic_instance_t* params);
+typedef int (*lowmc_simulate_online_f)(mzd_local_t* maskedKey, shares_t* mask_shares,
+                                       randomTape_t* tapes, msgs_t* msgs,
+                                       const mzd_local_t* plaintext, const uint8_t* pubKey,
+                                       const picnic_instance_t* params);
 
 lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_parameters_t* lowmc);
 
 #if defined(PICNIC_STATIC)
 // for testing transpose functionality
 void transpose_64_64(const uint64_t* in, uint64_t* out);
+void transpose_16_16_uint64(const uint16_t* in, uint16_t* out);
 #endif
 
 #endif
