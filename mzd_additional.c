@@ -412,6 +412,7 @@ void mzd_shift_right_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsign
   rblock->w64[3] = block->w64[3] >> count;
 }
 
+#if defined(PICNIC_STATIC)
 void mzd_rotate_left_uint64_128(mzd_local_t* res, const mzd_local_t* val, unsigned int count) {
   const unsigned int right_count = 8 * sizeof(word) - count;
   const block_t* block           = CONST_BLOCK(val, 0);
@@ -477,6 +478,7 @@ void mzd_rotate_right_uint64_256(mzd_local_t* res, const mzd_local_t* val, unsig
   rblock->w64[2] = (block->w64[2] >> count) | (block->w64[3] << left_count);
   rblock->w64[3] = (block->w64[3] >> count) | tmp;
 }
+#endif
 
 void mzd_mul_v_parity_uint64_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   block_t* cblock       = BLOCK(c, 0);
