@@ -545,25 +545,26 @@ int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
   ret = EXIT_SUCCESS;
 
 Exit:
-  mzd_local_free(m_plaintext);
-  mzd_local_free_multiple(m_maskedKey);
-  freeShares(mask_shares);
-  free(challengeC);
-  free(challengeP);
-  freeCommitments2(&C[0]);
-  freeCommitments2(&C[1]);
-  freeCommitments2(&C[2]);
-  freeCommitments2(&C[3]);
-  freeCommitments2(&Cv);
-  freeCommitments2(&Ch);
-  freeMsgs(msgs);
-  freeTree(treeCv);
-  freeTree(iSeedsTree);
-  free(seeds);
   for (size_t t = 0; t < params->num_rounds; t++) {
     freeRandomTape(&tapes[t]);
   }
+
+  mzd_local_free_multiple(m_maskedKey);
+  mzd_local_free(m_plaintext);
+  freeShares(mask_shares);
+  freeCommitments2(&Cv);
+  freeCommitments2(&Ch);
+  freeTree(iSeedsTree);
   free(tapes);
+  free(seeds);
+  free(challengeP);
+  free(challengeC);
+  freeTree(treeCv);
+  freeMsgs(msgs);
+  freeCommitments2(&C[3]);
+  freeCommitments2(&C[2]);
+  freeCommitments2(&C[1]);
+  freeCommitments2(&C[0]);
 
   return ret;
 }
