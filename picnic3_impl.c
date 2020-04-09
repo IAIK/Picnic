@@ -31,10 +31,6 @@
 
 #define PACKING_FACTOR 4
 
-#define LOWMC_MAX_KEY_BITS 256
-#define LOWMC_MAX_AND_GATES (3 * 38 * 10 + 4) /* Rounded to nearest byte */
-#define MAX_AUX_BYTES ((LOWMC_MAX_AND_GATES + LOWMC_MAX_KEY_BITS) / 8 + 1)
-
 /* Helper functions */
 
 ATTR_CONST
