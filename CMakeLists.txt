@@ -273,6 +273,16 @@ function(apply_base_options lib)
   if(WITH_KKW)
     target_compile_definitions(${lib} PRIVATE WITH_KKW)
   endif()
+  if(WITH_ZKBPP)
+    target_compile_definitions(${lib} PRIVATE
+                               WITH_LOWMC_128_128_20
+                               WITH_LOWMC_192_192_30
+                               WITH_LOWMC_256_256_38)
+  endif()
+  target_compile_definitions(${lib} PRIVATE
+                             WITH_LOWMC_129_129_4
+                             WITH_LOWMC_192_192_4
+                             WITH_LOWMC_255_255_4)
   if(WITH_CONFIG_H)
     target_compile_definitions(${lib} PRIVATE HAVE_CONFIG_H)
   endif()
@@ -306,16 +316,6 @@ function(apply_picnic_options lib)
   apply_opt_options(${lib})
 
   set_target_properties(${lib} PROPERTIES C_VISIBILITY_PRESET hidden)
-  if(WITH_ZKBPP)
-    target_compile_definitions(${lib} PRIVATE
-                               WITH_LOWMC_128_128_20
-                               WITH_LOWMC_192_192_30
-                               WITH_LOWMC_256_256_38)
-  endif()
-  target_compile_definitions(${lib} PRIVATE
-                             WITH_LOWMC_129_129_4
-                             WITH_LOWMC_192_192_4
-                             WITH_LOWMC_255_255_4)
   if(WITH_EXTRA_RANDOMNESS)
     target_compile_definitions(${lib} PRIVATE WITH_EXTRA_RANDOMNESS)
   endif()
