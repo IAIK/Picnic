@@ -784,13 +784,7 @@ static int unique(uint16_t* list, size_t len) {
 }
 
 static int arePaddingBitsZero(uint8_t* data, size_t byteLength, size_t bitLength) {
-  for (size_t i = bitLength; i < byteLength * 8; i++) {
-    uint8_t bit_i = getBit(data, i);
-    if (bit_i != 0) {
-      return 0;
-    }
-  }
-  return 1;
+  return !check_padding_bits(data[byteLength - 1], byteLength * 8 - bitLength);
 }
 
 static void deserialize_u16(uint16_t* dst, const uint8_t* src, size_t size) {
