@@ -751,13 +751,8 @@ int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t
     freeRandomTape(&tapes[t]);
     freeTree(seeds[t]);
   }
-
-  /* m_maskedKey! */
-  /* m_plaintext! */
   freeCommitments2(&Cv);
   freeCommitments2(&Ch);
-  /* msgs64! */
-  /* msg shares! */
   freeMsgs(msgs);
   freeInputs(inputs);
   freeCommitments(C);
