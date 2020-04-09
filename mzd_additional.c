@@ -168,8 +168,8 @@ void mzd_xor_s128_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 }
 
 ATTR_TARGET_S128
-void mzd_xor_s128_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                         unsigned int count) {
+static void mzd_xor_s128_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
+                                unsigned int count) {
   for (; count; --count, ++rblock, ++fblock, ++sblock) {
     rblock->w128[0] = mm128_xor(fblock->w128[0], sblock->w128[0]);
     rblock->w128[1] = mm128_xor(fblock->w128[1], sblock->w128[1]);
@@ -210,8 +210,8 @@ void mzd_xor_s256_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 }
 
 ATTR_TARGET_AVX2
-void mzd_xor_s256_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                         unsigned int count) {
+static void mzd_xor_s256_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
+                                unsigned int count) {
   for (; count; --count, ++rblock, ++fblock, ++sblock) {
     rblock->w256 = mm256_xor(fblock->w256, sblock->w256);
   }
@@ -292,8 +292,8 @@ void mzd_and_s128_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 }
 
 ATTR_TARGET_S128
-void mzd_and_s128_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                         unsigned int count) {
+static inline void mzd_and_s128_blocks(block_t* rblock, const block_t* fblock,
+                                       const block_t* sblock, unsigned int count) {
   for (; count; --count, ++rblock, ++fblock, ++sblock) {
     rblock->w128[0] = mm128_and(fblock->w128[0], sblock->w128[0]);
     rblock->w128[1] = mm128_and(fblock->w128[1], sblock->w128[1]);
@@ -317,8 +317,8 @@ void mzd_and_s256_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t co
 }
 
 ATTR_TARGET_AVX2
-void mzd_and_s256_blocks(block_t* rblock, const block_t* fblock, const block_t* sblock,
-                         unsigned int count) {
+static inline void mzd_and_s256_blocks(block_t* rblock, const block_t* fblock,
+                                       const block_t* sblock, unsigned int count) {
   for (; count; --count, ++rblock, ++fblock, ++sblock) {
     rblock->w256 = mm256_and(fblock->w256, sblock->w256);
   }
