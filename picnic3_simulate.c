@@ -156,6 +156,7 @@
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
+#if defined(WITH_LOWMC_129_129_4)
 static void picnic3_mpc_sbox_uint64_lowmc_129_129_4(mzd_local_t* statein, randomTape_t* tapes,
                                                     msgs_t* msgs) {
 
@@ -163,7 +164,9 @@ static void picnic3_mpc_sbox_uint64_lowmc_129_129_4(mzd_local_t* statein, random
                              mzd_shift_left_uint64_192, mzd_shift_right_uint64_192,
                              mask_129_129_43_a, mask_129_129_43_b, mask_129_129_43_c);
 }
+#endif
 
+#if defined(WITH_LOWMC_192_192_4)
 static void picnic3_mpc_sbox_uint64_lowmc_192_192_4(mzd_local_t* statein, randomTape_t* tapes,
                                                     msgs_t* msgs) {
 
@@ -171,7 +174,9 @@ static void picnic3_mpc_sbox_uint64_lowmc_192_192_4(mzd_local_t* statein, random
                              mzd_shift_left_uint64_192, mzd_shift_right_uint64_192,
                              mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
 }
+#endif
 
+#if defined(WITH_LOWMC_255_255_4)
 static void picnic3_mpc_sbox_uint64_lowmc_255_255_4(mzd_local_t* statein, randomTape_t* tapes,
                                                     msgs_t* msgs) {
 
@@ -179,6 +184,7 @@ static void picnic3_mpc_sbox_uint64_lowmc_255_255_4(mzd_local_t* statein, random
                              mzd_shift_left_uint64_256, mzd_shift_right_uint64_256,
                              mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
 }
+#endif
 #define IMPL uint64
 /* PICNIC3_L1_FS */
 #include "lowmc_129_129_4_fns_uint64.h"
@@ -328,31 +334,39 @@ static void picnic3_mpc_sbox_uint64_lowmc_255_255_4(mzd_local_t* statein, random
     XOR(statein->w128, t2, t0);                                                                    \
   } while (0)
 
+#if defined(WITH_LOWMC_129_129_4)
+ATTR_TARGET_S128
 static void picnic3_mpc_sbox_s128_lowmc_129_129_4(mzd_local_t* statein, randomTape_t* tapes,
                                                   msgs_t* msgs) {
   picnic3_mpc_sbox_bitsliced_mm128(LOWMC_129_129_4_N, mm128_xor_256, mm128_and_256,
                                    mm128_shift_left_256, mm128_shift_right_256, mask_129_129_43_a,
                                    mask_129_129_43_b, mask_129_129_43_c);
 }
+#endif
 
+#if defined(WITH_LOWMC_192_192_4)
+ATTR_TARGET_S128
 static void picnic3_mpc_sbox_s128_lowmc_192_192_4(mzd_local_t* statein, randomTape_t* tapes,
                                                   msgs_t* msgs) {
   picnic3_mpc_sbox_bitsliced_mm128(LOWMC_192_192_4_N, mm128_xor_256, mm128_and_256,
                                    mm128_shift_left_256, mm128_shift_right_256, mask_192_192_64_a,
                                    mask_192_192_64_b, mask_192_192_64_c);
 }
+#endif
 
+#if defined(WITH_LOWMC_255_255_4)
+ATTR_TARGET_S128
 static void picnic3_mpc_sbox_s128_lowmc_255_255_4(mzd_local_t* statein, randomTape_t* tapes,
                                                   msgs_t* msgs) {
   picnic3_mpc_sbox_bitsliced_mm128(LOWMC_255_255_4_N, mm128_xor_256, mm128_and_256,
                                    mm128_shift_left_256, mm128_shift_right_256, mask_255_255_85_a,
                                    mask_255_255_85_b, mask_255_255_85_c);
 }
+#endif
+
 #define IMPL s128
 #undef FN_ATTR
-#if defined(WITH_SSE2)
-#define FN_ATTR ATTR_TARGET_SSE2
-#endif
+#define FN_ATTR ATTR_TARGET_S128
 /* PICNIC3_L1_FS */
 #include "lowmc_129_129_4_fns_s128.h"
 #undef SIM_ONLINE
@@ -501,26 +515,36 @@ static void picnic3_mpc_sbox_s128_lowmc_255_255_4(mzd_local_t* statein, randomTa
     statein->w256 = XOR(t2, t0);                                                                   \
   } while (0)
 
+#if defined(WITH_LOWMC_129_129_4)
+ATTR_TARGET_AVX2
 static void picnic3_mpc_sbox_s256_lowmc_129_129_4(mzd_local_t* statein, randomTape_t* tapes,
                                                   msgs_t* msgs) {
   picnic3_mpc_sbox_bitsliced_mm256(LOWMC_129_129_4_N, mm256_xor, mm256_and, mm256_rotate_left,
                                    mm256_rotate_right, mask_129_129_43_a, mask_129_129_43_b,
                                    mask_129_129_43_c);
 }
+#endif
 
+#if defined(WITH_LOWMC_192_192_4)
+ATTR_TARGET_AVX2
 static void picnic3_mpc_sbox_s256_lowmc_192_192_4(mzd_local_t* statein, randomTape_t* tapes,
                                                   msgs_t* msgs) {
   picnic3_mpc_sbox_bitsliced_mm256(LOWMC_192_192_4_N, mm256_xor, mm256_and, mm256_rotate_left,
                                    mm256_rotate_right, mask_192_192_64_a, mask_192_192_64_b,
                                    mask_192_192_64_c);
 }
+#endif
 
+#if defined(WITH_LOWMC_255_255_4)
+ATTR_TARGET_AVX2
 static void picnic3_mpc_sbox_s256_lowmc_255_255_4(mzd_local_t* statein, randomTape_t* tapes,
                                                   msgs_t* msgs) {
   picnic3_mpc_sbox_bitsliced_mm256(LOWMC_255_255_4_N, mm256_xor, mm256_and, mm256_rotate_left,
                                    mm256_rotate_right, mask_255_255_85_a, mask_255_255_85_b,
                                    mask_255_255_85_c);
 }
+#endif
+
 #define IMPL s256
 #undef FN_ATTR
 #define FN_ATTR ATTR_TARGET_AVX2
