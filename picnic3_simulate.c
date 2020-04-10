@@ -27,7 +27,9 @@
 #include "io.h"
 #include "picnic3_simulate.h"
 #include "picnic3_types.h"
+#if defined(WITH_OPT)
 #include "simd.h"
+#endif
 
 #define picnic3_mpc_sbox_bitsliced(LOWMC_N, XOR, AND, SHIFT_LEFT, SHIFT_RIGHT, bitmask_a,          \
                                    bitmask_b, bitmask_c)                                           \
