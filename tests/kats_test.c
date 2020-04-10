@@ -307,12 +307,12 @@ static int run_test(picnic_params_t param) {
        PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_FS)},
       {KATDIR "/kat_l5_ur.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L5_UR),
        PICNIC_PRIVATE_KEY_SIZE(Picnic_L5_FS)},
-      {KATDIR "/kat_picnic3_l1_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L1_FS),
-       PICNIC_PRIVATE_KEY_SIZE(Picnic3_L1_FS)},
-      {KATDIR "/kat_picnic3_l3_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L3_FS),
-       PICNIC_PRIVATE_KEY_SIZE(Picnic3_L3_FS)},
-      {KATDIR "/kat_picnic3_l5_fs.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L5_FS),
-       PICNIC_PRIVATE_KEY_SIZE(Picnic3_L5_FS)},
+      {KATDIR "/kat_picnic3_l1.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L1),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic3_L1)},
+      {KATDIR "/kat_picnic3_l3.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L3),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic3_L3)},
+      {KATDIR "/kat_picnic3_l5.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic3_L5),
+       PICNIC_PRIVATE_KEY_SIZE(Picnic3_L5)},
       {KATDIR "/kat_l1_full.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L1_full),
        PICNIC_PRIVATE_KEY_SIZE(Picnic_L1_full)},
       {KATDIR "/kat_l3_full.txt", PICNIC_PUBLIC_KEY_SIZE(Picnic_L3_full),
@@ -341,7 +341,7 @@ int main(int argc, char** argv) {
   }
 
   int ret = 0;
-  for (size_t s = Picnic_L1_FS; s <= Picnic3_L5_FS; ++s) {
+  for (size_t s = Picnic_L1_FS; s <= Picnic3_L5; ++s) {
     const int t = run_test(s);
     if (!t) {
       printf("ERR: Picnic KAT test " SIZET_FMT " FAILED (%d)\n", s, t);

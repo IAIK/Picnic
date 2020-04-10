@@ -42,9 +42,9 @@ extern "C" {
 #define LOWMC_BLOCK_SIZE_Picnic_L3_UR 24
 #define LOWMC_BLOCK_SIZE_Picnic_L5_FS 32
 #define LOWMC_BLOCK_SIZE_Picnic_L5_UR 32
-#define LOWMC_BLOCK_SIZE_Picnic3_L1_FS 17
-#define LOWMC_BLOCK_SIZE_Picnic3_L3_FS 24
-#define LOWMC_BLOCK_SIZE_Picnic3_L5_FS 32
+#define LOWMC_BLOCK_SIZE_Picnic3_L1 17
+#define LOWMC_BLOCK_SIZE_Picnic3_L3 24
+#define LOWMC_BLOCK_SIZE_Picnic3_L5 32
 #define LOWMC_BLOCK_SIZE_Picnic_L1_full 17
 #define LOWMC_BLOCK_SIZE_Picnic_L3_full 24
 #define LOWMC_BLOCK_SIZE_Picnic_L5_full 32
@@ -61,9 +61,9 @@ extern "C" {
 #define PICNIC_SIGNATURE_SIZE_Picnic_L3_UR 121845
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_FS 132856
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_UR 209506
-#define PICNIC_SIGNATURE_SIZE_Picnic3_L1_FS 14720
-#define PICNIC_SIGNATURE_SIZE_Picnic3_L3_FS 35184
-#define PICNIC_SIGNATURE_SIZE_Picnic3_L5_FS 61232
+#define PICNIC_SIGNATURE_SIZE_Picnic3_L1 14720
+#define PICNIC_SIGNATURE_SIZE_Picnic3_L3 35184
+#define PICNIC_SIGNATURE_SIZE_Picnic3_L5 61232
 #define PICNIC_SIGNATURE_SIZE_Picnic_L1_full 32061
 #define PICNIC_SIGNATURE_SIZE_Picnic_L3_full 71179
 #define PICNIC_SIGNATURE_SIZE_Picnic_L5_full 126286
@@ -86,9 +86,9 @@ typedef enum {
   Picnic_L5_FS = 5,
   Picnic_L5_UR = 6,
   /* KKW with full LowMC */
-  Picnic3_L1_FS = 7,
-  Picnic3_L3_FS = 8,
-  Picnic3_L5_FS = 9,
+  Picnic3_L1 = 7,
+  Picnic3_L3 = 8,
+  Picnic3_L5 = 9,
   /* ZKB++ with full LowMC */
   Picnic_L1_full          = 10,
   Picnic_L3_full          = 11,

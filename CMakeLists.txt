@@ -392,9 +392,9 @@ if(WITH_ZKBPP)
 endif()
 if(WITH_KKW)
   list(APPEND api_targets
-       picnic3_L1_FS
-       picnic3_L3_FS
-       picnic3_L5_FS)
+       picnic3_L1
+       picnic3_L3
+       picnic3_L5)
 endif()
 
 foreach(target IN ITEMS ${api_targets})

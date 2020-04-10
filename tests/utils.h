@@ -34,7 +34,7 @@ static inline picnic_params_t argument_to_params(const char* arg, bool support_m
       idx < 1 || (size_t)idx >= PARAMETER_SET_MAX_INDEX) {
     return PARAMETER_SET_INVALID;
   }
-  if (!support_m1 && (size_t)idx > Picnic3_L5_FS) {
+  if (!support_m1 && (size_t)idx > Picnic3_L5) {
     return PARAMETER_SET_INVALID;
   }
 

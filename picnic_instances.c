@@ -91,11 +91,11 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
      PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR, NULL_FNS},
     /* KKW with full LowMC instances */
     {ENABLE_KKW(lowmc_parameters_129_129_4), 32, 16, 252, 36, 16, 17, 17, 65, 129, 55, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic3_L1_FS, Picnic3_L1_FS, TRANSFORM_FS, NULL_FNS},
+     PICNIC_SIGNATURE_SIZE_Picnic3_L1, Picnic3_L1, TRANSFORM_FS, NULL_FNS},
     {ENABLE_KKW(lowmc_parameters_192_192_4), 48, 24, 420, 52, 16, 24, 24, 96, 192, 83, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic3_L3_FS, Picnic3_L3_FS, TRANSFORM_FS, NULL_FNS},
+     PICNIC_SIGNATURE_SIZE_Picnic3_L3, Picnic3_L3, TRANSFORM_FS, NULL_FNS},
     {ENABLE_KKW(lowmc_parameters_255_255_4), 64, 32, 604, 68, 16, 32, 32, 128, 255, 110, 0, 0,
-     PICNIC_SIGNATURE_SIZE_Picnic3_L5_FS, Picnic3_L5_FS, TRANSFORM_FS, NULL_FNS},
+     PICNIC_SIGNATURE_SIZE_Picnic3_L5, Picnic3_L5, TRANSFORM_FS, NULL_FNS},
     /* ZKB++ with full LowMC instances */
     {ENABLE_ZKBPP(lowmc_parameters_129_129_4), 32, 16, 219, 219, 3, 17, 17, 65, 129, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_full, Picnic_L1_full, TRANSFORM_FS, NULL_FNS},
@@ -122,7 +122,7 @@ static bool create_instance(picnic_instance_t* pp) {
   }
 #endif
 #if defined(WITH_KKW)
-  if (pp->params >= Picnic3_L1_FS && pp->params <= Picnic3_L5_FS) {
+  if (pp->params >= Picnic3_L1 && pp->params <= Picnic3_L5) {
     pp->impls.lowmc_aux             = lowmc_compute_aux_get_implementation(&pp->lowmc);
     pp->impls.lowmc_simulate_online = lowmc_simulate_online_get_implementation(&pp->lowmc);
   }

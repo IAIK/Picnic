@@ -4,5 +4,5 @@
 #include "api.h"
 #endif
 
-#define PICNIC_INSTANCE Picnic3_L5_FS
+#define PICNIC_INSTANCE Picnic3_L1
 #include "sign.c.i"
