@@ -78,8 +78,7 @@
     }                                                                                              \
   } while (0)
 
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
-    defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
 /* MPC Sbox implementation for partical Sbox */
 static void mpc_and_uint64(uint64_t* res, uint64_t const* first, uint64_t const* second,
                            uint64_t const* r, view_t* view, unsigned viewshift) {
