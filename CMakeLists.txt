@@ -224,6 +224,7 @@ endif()
 # Picnic implementation
 list(APPEND PICNIC_SOURCES
      aligned_alloc.c
+     bitstream.c
      cpu.c
      io.c
      lowmc.c
@@ -239,7 +240,6 @@ if(WITH_ZKBPP)
        lowmc_128_128_20.c
        lowmc_192_192_30.c
        lowmc_256_256_38.c
-       bitstream.c
        mpc_lowmc.c
        picnic_impl.c)
 endif()
