@@ -44,8 +44,13 @@
                                                                                                    \
     mzd_local_t t0[1], t1[1], t2[1];                                                               \
                                                                                                    \
-    mzd_local_t s_ab[1] = {{{0, 0, 0, 0}}}, s_bc[1] = {{{0, 0, 0, 0}}},                            \
-                s_ca[1] = {{{0, 0, 0, 0}}};                                                        \
+    mzd_local_t s_ab[1], s_bc[1], s_ca[1];                                                         \
+    /* b & c */                                                                                    \
+    AND(s_bc, b, c);                                                                               \
+    /* c & a */                                                                                    \
+    AND(s_ca, c, a);                                                                               \
+    /* a & b */                                                                                    \
+    AND(s_ab, a, b);                                                                               \
     for (int i = 0; i < 16; i++) {                                                                 \
       mzd_local_t tmp[1];                                                                          \
       bitstream_t party_msgs = {{msgs->msgs[i]}, msgs->pos};                                       \
@@ -120,28 +125,16 @@
     tapes->pos += LOWMC_N;                                                                         \
     tapes->pos += LOWMC_N;                                                                         \
     msgs->pos += LOWMC_N;                                                                          \
-    /* b & c */                                                                                    \
-    AND(t0, b, c);                                                                                 \
-    /* c & a */                                                                                    \
-    AND(t1, c, a);                                                                                 \
-    /* a & b */                                                                                    \
-    AND(t2, a, b);                                                                                 \
-    /* (b & c) ^ s_bc */                                                                           \
-    XOR(t0, t0, s_bc);                                                                             \
-    /* (c & a) ^ s_ca */                                                                           \
-    XOR(t1, t1, s_ca);                                                                             \
-    /* (a & b) ^ s_ab */                                                                           \
-    XOR(t2, t2, s_ab);                                                                             \
                                                                                                    \
     /* (b & c) ^ a */                                                                              \
-    XOR(t0, t0, a);                                                                                \
+    XOR(t0, s_bc, a);                                                                              \
                                                                                                    \
     /* (c & a) ^ a ^ b */                                                                          \
     XOR(a, a, b);                                                                                  \
-    XOR(t1, t1, a);                                                                                \
+    XOR(t1, s_ca, a);                                                                              \
                                                                                                    \
     /* (a & b) ^ a ^ b ^c */                                                                       \
-    XOR(t2, t2, a);                                                                                \
+    XOR(t2, s_ab, a);                                                                              \
     XOR(t2, t2, c);                                                                                \
                                                                                                    \
     SHIFT_RIGHT(t0, t0, 2);                                                                        \
