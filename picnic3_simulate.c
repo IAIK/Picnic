@@ -137,12 +137,11 @@
     XOR(t0, t0, a);                                                                                \
                                                                                                    \
     /* (c & a) ^ a ^ b */                                                                          \
+    XOR(a, a, b);                                                                                  \
     XOR(t1, t1, a);                                                                                \
-    XOR(t1, t1, b);                                                                                \
                                                                                                    \
     /* (a & b) ^ a ^ b ^c */                                                                       \
     XOR(t2, t2, a);                                                                                \
-    XOR(t2, t2, b);                                                                                \
     XOR(t2, t2, c);                                                                                \
                                                                                                    \
     SHIFT_RIGHT(t0, t0, 2);                                                                        \
