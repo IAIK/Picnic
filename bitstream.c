@@ -100,7 +100,8 @@ void bitstream_put_bits(bitstream_t* bs, uint64_t value, unsigned int num_bits) 
     const unsigned int start_bits = 8 - skip_bits;
     const unsigned int bits       = num_bits < start_bits ? num_bits : start_bits;
 
-    *p++ |= (value >> (num_bits - bits)) << (8 - skip_bits - bits);
+    *p &= (0xFF << start_bits) | (0xFF >> (skip_bits + bits)); // clear bits before setting
+    *p++ |= (value >> (num_bits - bits)) << (start_bits - bits);
     num_bits -= bits;
   }
 
@@ -109,7 +110,8 @@ void bitstream_put_bits(bitstream_t* bs, uint64_t value, unsigned int num_bits) 
   }
 
   if (num_bits > 0) {
-    *p = (value & ((1 << num_bits) - 1)) << (8 - num_bits);
+    *p &= (0xFF >> num_bits); // clear bits before setting
+    *p |= (value & ((1 << num_bits) - 1)) << (8 - num_bits);
   }
 }
 
