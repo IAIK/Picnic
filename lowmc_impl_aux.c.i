@@ -11,14 +11,10 @@
 FN_ATTR
 #endif
 static void N_LOWMC(lowmc_key_t* lowmc_key, randomTape_t* tapes) {
-  mzd_local_t x[((LOWMC_N) + 255) / 256];
+  mzd_local_t x[((LOWMC_N) + 255) / 256] = {{{0, 0, 0, 0}}};
   mzd_local_t y[((LOWMC_N) + 255) / 256];
   mzd_local_t key0[((LOWMC_N) + 255) / 256];
-  uint8_t temp[32] = { 0 };
 
-  const size_t state_size_bytes = (LOWMC_N + 7) / 8;
-
-  mzd_from_char_array(x, temp, state_size_bytes);
   COPY(key0, lowmc_key);
   MUL(lowmc_key, key0, LOWMC_INSTANCE.ki0_matrix);
 
@@ -31,12 +27,8 @@ static void N_LOWMC(lowmc_key_t* lowmc_key, randomTape_t* tapes) {
     if (r == LOWMC_R - 1) {
       COPY(x, key0);
     } else {
-      tapes->pos = LOWMC_N * 2 * (LOWMC_R - 1 - r);
-      memset(temp, 0, 32);
-      for (size_t j = 0; j < LOWMC_N; j++) {
-        setBit(temp, j, getBit(tapes->parity_tapes, tapes->pos + j));
-      }
-      mzd_from_char_array(x, temp, state_size_bytes);
+      bitstream_t bs = {{tapes->parity_tapes}, LOWMC_N * 2 * (LOWMC_R - 1 - r)};
+      mzd_from_bitstream(&bs, x, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);
     }
     tapes->pos = LOWMC_N * 2 * (LOWMC_R - 1 - r) + LOWMC_N;
     SBOX(x, y, tapes);
