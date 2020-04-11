@@ -31,8 +31,7 @@
 #include "simd.h"
 #endif
 
-#define picnic3_mpc_sbox_bitsliced(LOWMC_N, XOR, AND, SHIFT_LEFT, SHIFT_RIGHT, bitmask_a,          \
-                                   bitmask_b, bitmask_c)                                           \
+#define picnic3_mpc_sbox_bitsliced(LOWMC_N, XOR, AND, SHL, SHR, bitmask_a, bitmask_b, bitmask_c)   \
   do {                                                                                             \
     mzd_local_t a[1], b[1], c[1];                                                                  \
     /* a */                                                                                        \
@@ -42,8 +41,8 @@
     /* c */                                                                                        \
     AND(c, bitmask_c, statein);                                                                    \
                                                                                                    \
-    SHIFT_LEFT(a, a, 2);                                                                           \
-    SHIFT_LEFT(b, b, 1);                                                                           \
+    SHL(a, a, 2);                                                                                  \
+    SHL(b, b, 1);                                                                                  \
                                                                                                    \
     mzd_local_t t0[1], t1[1], t2[1];                                                               \
                                                                                                    \
@@ -66,8 +65,8 @@
         AND(t1, bitmask_b, tmp);                                                                   \
         /* c */                                                                                    \
         AND(t2, bitmask_c, tmp);                                                                   \
-        SHIFT_LEFT(t0, t0, 2);                                                                     \
-        SHIFT_LEFT(t1, t1, 1);                                                                     \
+        SHL(t0, t0, 2);                                                                            \
+        SHL(t1, t1, 1);                                                                            \
         XOR(s_ab, t2, s_ab);                                                                       \
         XOR(s_bc, t1, s_bc);                                                                       \
         XOR(s_ca, t0, s_ca);                                                                       \
@@ -84,8 +83,8 @@
       AND(mask_b, bitmask_b, tmp);                                                                 \
       /* c */                                                                                      \
       AND(mask_c, bitmask_c, tmp);                                                                 \
-      SHIFT_LEFT(mask_a, mask_a, 2);                                                               \
-      SHIFT_LEFT(mask_b, mask_b, 1);                                                               \
+      SHL(mask_a, mask_a, 2);                                                                      \
+      SHL(mask_b, mask_b, 1);                                                                      \
                                                                                                    \
       /* make a mzd_local from tape[i] for and_helper */                                           \
       mzd_local_t and_helper_ab[1], and_helper_bc[1], and_helper_ca[1];                            \
@@ -96,8 +95,8 @@
       AND(and_helper_bc, bitmask_b, tmp);                                                          \
       /* c */                                                                                      \
       AND(and_helper_ca, bitmask_a, tmp);                                                          \
-      SHIFT_LEFT(and_helper_ca, and_helper_ca, 2);                                                 \
-      SHIFT_LEFT(and_helper_bc, and_helper_bc, 1);                                                 \
+      SHL(and_helper_ca, and_helper_ca, 2);                                                        \
+      SHL(and_helper_bc, and_helper_bc, 1);                                                        \
                                                                                                    \
       /* s_ab */                                                                                   \
       AND(t0, a, mask_b);                                                                          \
@@ -112,7 +111,7 @@
       XOR(t0, t0, and_helper_bc);                                                                  \
       XOR(s_bc, t0, s_bc);                                                                         \
                                                                                                    \
-      SHIFT_RIGHT(t0, t0, 1);                                                                      \
+      SHR(t0, t0, 1);                                                                              \
       XOR(tmp, tmp, t0);                                                                           \
       /* s_ca */                                                                                   \
       AND(t0, c, mask_a);                                                                          \
@@ -121,7 +120,7 @@
       XOR(t0, t0, and_helper_ca);                                                                  \
       XOR(s_ca, t0, s_ca);                                                                         \
                                                                                                    \
-      SHIFT_RIGHT(t0, t0, 2);                                                                      \
+      SHR(t0, t0, 2);                                                                              \
       XOR(tmp, tmp, t0);                                                                           \
       mzd_to_bitstream(&party_msgs, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);        \
     }                                                                                              \
@@ -140,8 +139,8 @@
     XOR(t2, s_ab, a);                                                                              \
     XOR(t2, t2, c);                                                                                \
                                                                                                    \
-    SHIFT_RIGHT(t0, t0, 2);                                                                        \
-    SHIFT_RIGHT(t1, t1, 1);                                                                        \
+    SHR(t0, t0, 2);                                                                                \
+    SHR(t1, t1, 1);                                                                                \
                                                                                                    \
     XOR(t2, t2, t1);                                                                               \
     XOR(statein, t2, t0);                                                                          \
