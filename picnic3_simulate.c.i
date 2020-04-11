@@ -19,9 +19,9 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
                       const picnic_instance_t* params) {
 
 #define mpc_sbox CONCAT(picnic3_mpc_sbox, CONCAT(IMPL, LOWMC_INSTANCE))
-  int ret            = 0;
-  mzd_local_t* state = mzd_local_init_ex(1, LOWMC_N, false);
-  mzd_local_t* temp  = mzd_local_init_ex(1, LOWMC_N, false);
+  int ret = 0;
+  mzd_local_t state[(LOWMC_N + 255) / 256];
+  mzd_local_t temp[(LOWMC_N + 255) / 256];
 
   //  MPC_MUL(temp, maskedKey, LOWMC_INSTANCE.k0_matrix,
   //          mask_shares); // roundKey = maskedKey * KMatrix[0]
@@ -51,12 +51,7 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
     printf("\n");
 #endif
     ret = -1;
-    goto Exit;
   }
-
-Exit:
-  mzd_local_free(temp);
-  mzd_local_free(state);
   return ret;
 }
 #endif
