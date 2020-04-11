@@ -34,8 +34,8 @@
 #undef RECORD_STATE
 #undef SBOX
 #undef SBOX_FUNC
-#define SBOX_FUNC CONCAT(CONCAT(sbox_layer, LOWMC_M), aux)
-#define SBOX(x, y, tapes) SBOX_FUNC(BLOCK(x, 0), BLOCK(y,0), tapes)
+#define SBOX_FUNC CONCAT(sbox_aux, CONCAT(IMPL, LOWMC_INSTANCE))
+#define SBOX(x, y, tapes) SBOX_FUNC(BLOCK(x, 0), BLOCK(y, 0), tapes)
 #define N_LOWMC CONCAT(lowmc_compute_aux, CONCAT(IMPL, LOWMC_INSTANCE))
 #include "lowmc_impl_aux.c.i"
 #endif

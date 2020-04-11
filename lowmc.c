@@ -322,139 +322,96 @@ static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
 #endif /* WITH_AVX2 */
 #endif /* WITH_OPT */
 
-#if defined(WITH_KKW)
+#if defined(WITH_KKW) && !defined(NO_UINT64_FALLBACK)
+#define picnic3_aux_sbox_bitsliced(LOWMC_N, XOR, AND, SHL, SHR, bitmask_a, bitmask_b, bitmask_c)   \
+  do {                                                                                             \
+    mzd_local_t a[1], b[1], c[1];                                                                  \
+    /* a */                                                                                        \
+    AND(a, bitmask_a, statein);                                                                    \
+    /* b */                                                                                        \
+    AND(b, bitmask_b, statein);                                                                    \
+    /* c */                                                                                        \
+    AND(c, bitmask_c, statein);                                                                    \
+                                                                                                   \
+    SHL(a, a, 2);                                                                                  \
+    SHL(b, b, 1);                                                                                  \
+    mzd_local_t d[1], e[1], f[1];                                                                  \
+    /* a */                                                                                        \
+    AND(d, bitmask_a, stateout);                                                                   \
+    /* b */                                                                                        \
+    AND(e, bitmask_b, stateout);                                                                   \
+    /* c */                                                                                        \
+    AND(f, bitmask_c, stateout);                                                                   \
+                                                                                                   \
+    SHL(d, d, 2);                                                                                  \
+    SHL(e, e, 1);                                                                                  \
+                                                                                                   \
+    mzd_local_t fresh_output_ab[1], fresh_output_bc[1], fresh_output_ca[1];                        \
+    XOR(fresh_output_ab, a, b);                                                                    \
+    XOR(fresh_output_ca, e, fresh_output_ab);                                                      \
+    XOR(fresh_output_bc, d, a);                                                                    \
+    XOR(fresh_output_ab, fresh_output_ab, c);                                                      \
+    XOR(fresh_output_ab, fresh_output_ab, f);                                                      \
+                                                                                                   \
+    mzd_local_t t0[1], t1[1], t2[1], aux[1];                                                       \
+    SHR(t2, fresh_output_ca, 2);                                                                   \
+    SHR(t1, fresh_output_bc, 1);                                                                   \
+    XOR(t2, t2, t1);                                                                               \
+    XOR(aux, t2, fresh_output_ab);                                                                 \
+    /* a & b */                                                                                    \
+    AND(t0, a, b);                                                                                 \
+    /* b & c */                                                                                    \
+    AND(t1, b, c);                                                                                 \
+    /* c & a */                                                                                    \
+    AND(t2, c, a);                                                                                 \
+    SHR(t2, t2, 2);                                                                                \
+    SHR(t1, t1, 1);                                                                                \
+    XOR(t2, t2, t1);                                                                               \
+    XOR(t2, t2, t0);                                                                               \
+    XOR(aux, aux, t2);                                                                             \
+                                                                                                   \
+    bitstream_t parity_tape     = {{tapes->parity_tapes}, tapes->pos};                             \
+    bitstream_t last_party_tape = {{tapes->tape[15]}, tapes->pos};                                 \
+                                                                                                   \
+    /* calculate aux_bits to fix and_helper */                                                     \
+    mzd_from_bitstream(&parity_tape, t0, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);        \
+    XOR(aux, aux, t0);                                                                             \
+    mzd_from_bitstream(&last_party_tape, t1, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);    \
+    XOR(aux, aux, t1);                                                                             \
+                                                                                                   \
+    last_party_tape.position = tapes->pos;                                                         \
+    mzd_to_bitstream(&last_party_tape, aux, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);     \
+    bitstream_t aux_tape = {{tapes->aux_bits}, tapes->aux_pos};                                    \
+    mzd_to_bitstream(&aux_tape, aux, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);            \
+                                                                                                   \
+    tapes->aux_pos += LOWMC_N;                                                                     \
+  } while (0)
+
 #if defined(WITH_LOWMC_129_129_4)
-/**
- * S-box for m = 43, for Picnic3 aux computation
- */
-static void sbox_layer_43_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
-  uint8_t input_mask[17];
-  mzd_to_char_array(input_mask, in, 17);
-  uint8_t output_mask[17];
-  mzd_to_char_array(output_mask, out, 17);
-
-  const size_t lastParty = 15;
-
-  for (uint32_t i = 0; i < 43; i++) {
-    uint8_t a                    = getBit(input_mask, i * 3 + 2);
-    uint8_t b                    = getBit(input_mask, i * 3 + 1);
-    uint8_t c                    = getBit(input_mask, i * 3 + 0);
-    uint8_t d                    = getBit(output_mask, i * 3 + 2);
-    uint8_t e                    = getBit(output_mask, i * 3 + 1);
-    uint8_t f                    = getBit(output_mask, i * 3 + 0);
-    uint8_t fresh_output_maks_ab = f ^ a ^ b ^ c;
-    uint8_t fresh_output_maks_bc = d ^ a;
-    uint8_t fresh_output_maks_ca = e ^ a ^ b;
-
-    uint8_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
-    uint8_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
-    uint8_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
-
-    uint8_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
-    uint8_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
-    uint8_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
-
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, aux_bit_ab);
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, aux_bit_bc);
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, aux_bit_ca);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ab);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_bc);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ca);
-  }
+static void sbox_aux_uint64_lowmc_129_129_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                            randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced(LOWMC_129_129_4_N, mzd_xor_uint64_192, mzd_and_uint64_192,
+                             mzd_shift_left_uint64_192, mzd_shift_right_uint64_192,
+                             mask_129_129_43_a, mask_129_129_43_b, mask_129_129_43_c);
 }
 #endif
-
 #if defined(WITH_LOWMC_192_192_4)
-/**
- * S-box for m = 64, for Picnic3 aux computation
- */
-static void sbox_layer_64_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
-  uint8_t input_mask[24];
-  mzd_to_char_array(input_mask, in, 24);
-  uint8_t output_mask[24];
-  mzd_to_char_array(output_mask, out, 24);
-
-  const size_t lastParty = 15;
-
-  for (uint32_t i = 0; i < 64; i++) {
-    uint8_t a                    = getBit(input_mask, i * 3 + 2);
-    uint8_t b                    = getBit(input_mask, i * 3 + 1);
-    uint8_t c                    = getBit(input_mask, i * 3 + 0);
-    uint8_t d                    = getBit(output_mask, i * 3 + 2);
-    uint8_t e                    = getBit(output_mask, i * 3 + 1);
-    uint8_t f                    = getBit(output_mask, i * 3 + 0);
-    uint8_t fresh_output_maks_ab = f ^ a ^ b ^ c;
-    uint8_t fresh_output_maks_bc = d ^ a;
-    uint8_t fresh_output_maks_ca = e ^ a ^ b;
-
-    uint8_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
-    uint8_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
-    uint8_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
-
-    uint8_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
-    uint8_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
-    uint8_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
-
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, aux_bit_ab);
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, aux_bit_bc);
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, aux_bit_ca);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ab);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_bc);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ca);
-  }
+static void sbox_aux_uint64_lowmc_192_192_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                            randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced(LOWMC_192_192_4_N, mzd_xor_uint64_192, mzd_and_uint64_192,
+                             mzd_shift_left_uint64_192, mzd_shift_right_uint64_192,
+                             mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
 }
 #endif
-
 #if defined(WITH_LOWMC_255_255_4)
-/**
- * S-box for m = 85, for Picnic3 aux computation
- */
-static void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
-  uint8_t input_mask[32];
-  mzd_to_char_array(input_mask, in, 32);
-  uint8_t output_mask[32];
-  mzd_to_char_array(output_mask, out, 32);
-
-  const size_t lastParty = 15;
-
-  for (uint32_t i = 0; i < 85; i++) {
-    uint8_t a                    = getBit(input_mask, i * 3 + 2);
-    uint8_t b                    = getBit(input_mask, i * 3 + 1);
-    uint8_t c                    = getBit(input_mask, i * 3 + 0);
-    uint8_t d                    = getBit(output_mask, i * 3 + 2);
-    uint8_t e                    = getBit(output_mask, i * 3 + 1);
-    uint8_t f                    = getBit(output_mask, i * 3 + 0);
-    uint8_t fresh_output_maks_ab = f ^ a ^ b ^ c;
-    uint8_t fresh_output_maks_bc = d ^ a;
-    uint8_t fresh_output_maks_ca = e ^ a ^ b;
-
-    uint8_t and_helper_ab = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 0) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 0);
-    uint8_t and_helper_bc = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 1) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 1);
-    uint8_t and_helper_ca = getBit(tapes->parity_tapes, tapes->pos + i * 3 + 2) ^
-                            getBit(tapes->tape[lastParty], tapes->pos + i * 3 + 2);
-
-    uint8_t aux_bit_ab = (a & b) ^ and_helper_ab ^ fresh_output_maks_ab;
-    uint8_t aux_bit_bc = (b & c) ^ and_helper_bc ^ fresh_output_maks_bc;
-    uint8_t aux_bit_ca = (c & a) ^ and_helper_ca ^ fresh_output_maks_ca;
-
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 0, aux_bit_ab);
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 1, aux_bit_bc);
-    setBit(tapes->tape[lastParty], tapes->pos + 3 * i + 2, aux_bit_ca);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ab);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_bc);
-    setBit(tapes->aux_bits, tapes->aux_pos++, aux_bit_ca);
-  }
+static void sbox_aux_uint64_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                            randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced(LOWMC_255_255_4_N, mzd_xor_uint64_256, mzd_and_uint64_256,
+                             mzd_shift_left_uint64_256, mzd_shift_right_uint64_256,
+                             mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
 }
 #endif
-#endif /* WITH_KKW */
+#endif /* WITH_KKW  && !NO_UINT64_FALLBACK*/
 
 #if !defined(NO_UINT64_FALLBACK)
 // uint64 based implementation
@@ -485,6 +442,109 @@ static void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* t
 #undef IMPL
 #define IMPL s128
 
+#define picnic3_aux_sbox_bitsliced_mm128(LOWMC_N, XOR, AND, SHL, SHR, bitmask_a, bitmask_b,        \
+                                         bitmask_c)                                                \
+  do {                                                                                             \
+    word128 a[2] ATTR_ALIGNED(alignof(word128));                                                   \
+    word128 b[2] ATTR_ALIGNED(alignof(word128));                                                   \
+    word128 c[2] ATTR_ALIGNED(alignof(word128));                                                   \
+    /* a */                                                                                        \
+    AND(a, bitmask_a->w128, statein->w128);                                                        \
+    /* b */                                                                                        \
+    AND(b, bitmask_b->w128, statein->w128);                                                        \
+    /* c */                                                                                        \
+    AND(c, bitmask_c->w128, statein->w128);                                                        \
+                                                                                                   \
+    SHL(a, a, 2);                                                                                  \
+    SHL(b, b, 1);                                                                                  \
+    word128 d[2] ATTR_ALIGNED(alignof(word128));                                                   \
+    word128 e[2] ATTR_ALIGNED(alignof(word128));                                                   \
+    word128 f[2] ATTR_ALIGNED(alignof(word128));                                                   \
+    /* a */                                                                                        \
+    AND(d, bitmask_a->w128, stateout->w128);                                                       \
+    /* b */                                                                                        \
+    AND(e, bitmask_b->w128, stateout->w128);                                                       \
+    /* c */                                                                                        \
+    AND(f, bitmask_c->w128, stateout->w128);                                                       \
+                                                                                                   \
+    SHL(d, d, 2);                                                                                  \
+    SHL(e, e, 1);                                                                                  \
+                                                                                                   \
+    word128 fresh_output_ab[2] ATTR_ALIGNED(alignof(word128));                                     \
+    word128 fresh_output_bc[2] ATTR_ALIGNED(alignof(word128));                                     \
+    word128 fresh_output_ca[2] ATTR_ALIGNED(alignof(word128));                                     \
+    XOR(fresh_output_ab, a, b);                                                                    \
+    XOR(fresh_output_ca, e, fresh_output_ab);                                                      \
+    XOR(fresh_output_bc, d, a);                                                                    \
+    XOR(fresh_output_ab, fresh_output_ab, c);                                                      \
+    XOR(fresh_output_ab, fresh_output_ab, f);                                                      \
+                                                                                                   \
+    word128 t0[2] ATTR_ALIGNED(alignof(word128));                                                  \
+    word128 t1[2] ATTR_ALIGNED(alignof(word128));                                                  \
+    word128 t2[2] ATTR_ALIGNED(alignof(word128));                                                  \
+    mzd_local_t tmp[1], aux[1];                                                                    \
+    SHR(t2, fresh_output_ca, 2);                                                                   \
+    SHR(t1, fresh_output_bc, 1);                                                                   \
+    XOR(t2, t2, t1);                                                                               \
+    XOR(aux->w128, t2, fresh_output_ab);                                                           \
+                                                                                                   \
+    /* a & b */                                                                                    \
+    AND(t0, a, b);                                                                                 \
+    /* b & c */                                                                                    \
+    AND(t1, b, c);                                                                                 \
+    /* c & a */                                                                                    \
+    AND(t2, c, a);                                                                                 \
+    SHR(t2, t2, 2);                                                                                \
+    SHR(t1, t1, 1);                                                                                \
+    XOR(t2, t2, t1);                                                                               \
+    XOR(t2, t2, t0);                                                                               \
+    XOR(aux->w128, aux->w128, t2);                                                                 \
+                                                                                                   \
+    bitstream_t parity_tape     = {{tapes->parity_tapes}, tapes->pos};                             \
+    bitstream_t last_party_tape = {{tapes->tape[15]}, tapes->pos};                                 \
+                                                                                                   \
+    /* calculate aux_bits to fix and_helper */                                                     \
+    mzd_from_bitstream(&parity_tape, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);       \
+    XOR(aux->w128, aux->w128, tmp->w128);                                                          \
+    mzd_from_bitstream(&last_party_tape, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);   \
+    XOR(aux->w128, aux->w128, tmp->w128);                                                          \
+                                                                                                   \
+    last_party_tape.position = tapes->pos;                                                         \
+    mzd_to_bitstream(&last_party_tape, aux, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);     \
+    bitstream_t aux_tape = {{tapes->aux_bits}, tapes->aux_pos};                                    \
+    mzd_to_bitstream(&aux_tape, aux, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);            \
+                                                                                                   \
+    tapes->aux_pos += LOWMC_N;                                                                     \
+  } while (0)
+
+#if defined(WITH_LOWMC_129_129_4)
+ATTR_TARGET_S128
+static void sbox_aux_s128_lowmc_129_129_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                          randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced_mm128(LOWMC_129_129_4_N, mm128_xor_256, mm128_and_256,
+                                   mm128_shift_left_256, mm128_shift_right_256, mask_129_129_43_a,
+                                   mask_129_129_43_b, mask_129_129_43_c);
+}
+#endif
+#if defined(WITH_LOWMC_192_192_4)
+ATTR_TARGET_S128
+static void sbox_aux_s128_lowmc_192_192_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                          randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced_mm128(LOWMC_192_192_4_N, mm128_xor_256, mm128_and_256,
+                                   mm128_shift_left_256, mm128_shift_right_256, mask_192_192_64_a,
+                                   mask_192_192_64_b, mask_192_192_64_c);
+}
+#endif
+#if defined(WITH_LOWMC_255_255_4)
+ATTR_TARGET_S128
+static void sbox_aux_s128_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                          randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced_mm128(LOWMC_255_255_4_N, mm128_xor_256, mm128_and_256,
+                                   mm128_shift_left_256, mm128_shift_right_256, mask_255_255_85_a,
+                                   mask_255_255_85_b, mask_255_255_85_c);
+}
+#endif
+
 #include "lowmc_129_129_4_fns_s128.h"
 #include "lowmc.c.i"
 
@@ -509,6 +569,109 @@ static void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* t
 #define FN_ATTR ATTR_TARGET_AVX2
 #undef IMPL
 #define IMPL s256
+
+#define picnic3_aux_sbox_bitsliced_mm256(LOWMC_N, XOR, AND, ROL, ROR, bitmask_a, bitmask_b,        \
+                                         bitmask_c)                                                \
+  do {                                                                                             \
+    word256 a ATTR_ALIGNED(alignof(word256));                                                      \
+    word256 b ATTR_ALIGNED(alignof(word256));                                                      \
+    word256 c ATTR_ALIGNED(alignof(word256));                                                      \
+    /* a */                                                                                        \
+    a = AND(bitmask_a->w256, statein->w256);                                                       \
+    /* b */                                                                                        \
+    b = AND(bitmask_b->w256, statein->w256);                                                       \
+    /* c */                                                                                        \
+    c = AND(bitmask_c->w256, statein->w256);                                                       \
+                                                                                                   \
+    a = ROL(a, 2);                                                                                 \
+    b = ROL(b, 1);                                                                                 \
+    word256 d ATTR_ALIGNED(alignof(word256));                                                      \
+    word256 e ATTR_ALIGNED(alignof(word256));                                                      \
+    word256 f ATTR_ALIGNED(alignof(word256));                                                      \
+    /* d */                                                                                        \
+    d = AND(bitmask_a->w256, stateout->w256);                                                      \
+    /* e */                                                                                        \
+    e = AND(bitmask_b->w256, stateout->w256);                                                      \
+    /* f */                                                                                        \
+    f = AND(bitmask_c->w256, stateout->w256);                                                      \
+                                                                                                   \
+    d = ROL(d, 2);                                                                                 \
+    e = ROL(e, 1);                                                                                 \
+                                                                                                   \
+    word256 fresh_output_ab ATTR_ALIGNED(alignof(word256));                                        \
+    word256 fresh_output_bc ATTR_ALIGNED(alignof(word256));                                        \
+    word256 fresh_output_ca ATTR_ALIGNED(alignof(word256));                                        \
+    fresh_output_ab = XOR(a, b);                                                                   \
+    fresh_output_ca = XOR(e, fresh_output_ab);                                                     \
+    fresh_output_bc = XOR(d, a);                                                                   \
+    fresh_output_ab = XOR(fresh_output_ab, c);                                                     \
+    fresh_output_ab = XOR(fresh_output_ab, f);                                                     \
+                                                                                                   \
+    word256 t0 ATTR_ALIGNED(alignof(word256));                                                     \
+    word256 t1 ATTR_ALIGNED(alignof(word256));                                                     \
+    word256 t2 ATTR_ALIGNED(alignof(word256));                                                     \
+    mzd_local_t tmp[1], aux[1];                                                                    \
+    t2        = ROR(fresh_output_ca, 2);                                                           \
+    t1        = ROR(fresh_output_bc, 1);                                                           \
+    t2        = XOR(t2, t1);                                                                       \
+    aux->w256 = XOR(t2, fresh_output_ab);                                                          \
+                                                                                                   \
+    /* a & b */                                                                                    \
+    t0 = AND(a, b);                                                                                \
+    /* b & c */                                                                                    \
+    t1 = AND(b, c);                                                                                \
+    /* c & a */                                                                                    \
+    t2        = AND(c, a);                                                                         \
+    t2        = ROR(t2, 2);                                                                        \
+    t1        = ROR(t1, 1);                                                                        \
+    t2        = XOR(t2, t1);                                                                       \
+    t2        = XOR(t2, t0);                                                                       \
+    aux->w256 = XOR(aux->w256, t2);                                                                \
+                                                                                                   \
+    bitstream_t parity_tape     = {{tapes->parity_tapes}, tapes->pos};                             \
+    bitstream_t last_party_tape = {{tapes->tape[15]}, tapes->pos};                                 \
+                                                                                                   \
+    /* calculate aux_bits to fix and_helper */                                                     \
+    mzd_from_bitstream(&parity_tape, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);       \
+    aux->w256 = XOR(aux->w256, tmp->w256);                                                         \
+    mzd_from_bitstream(&last_party_tape, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);   \
+    aux->w256 = XOR(aux->w256, tmp->w256);                                                         \
+                                                                                                   \
+    last_party_tape.position = tapes->pos;                                                         \
+    mzd_to_bitstream(&last_party_tape, aux, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);     \
+    bitstream_t aux_tape = {{tapes->aux_bits}, tapes->aux_pos};                                    \
+    mzd_to_bitstream(&aux_tape, aux, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);            \
+                                                                                                   \
+    tapes->aux_pos += LOWMC_N;                                                                     \
+  } while (0)
+
+#if defined(WITH_LOWMC_129_129_4)
+ATTR_TARGET_AVX2
+static void sbox_aux_s256_lowmc_129_129_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                          randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced_mm256(LOWMC_129_129_4_N, mm256_xor, mm256_and, mm256_shift_left,
+                                   mm256_shift_right, mask_129_129_43_a, mask_129_129_43_b,
+                                   mask_129_129_43_c);
+}
+#endif
+#if defined(WITH_LOWMC_192_192_4)
+ATTR_TARGET_AVX2
+static void sbox_aux_s256_lowmc_192_192_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                          randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced_mm256(LOWMC_192_192_4_N, mm256_xor, mm256_and, mm256_rotate_left,
+                                   mm256_rotate_right, mask_192_192_64_a, mask_192_192_64_b,
+                                   mask_192_192_64_c);
+}
+#endif
+#if defined(WITH_LOWMC_255_255_4)
+ATTR_TARGET_AVX2
+static void sbox_aux_s256_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* stateout,
+                                          randomTape_t* tapes) {
+  picnic3_aux_sbox_bitsliced_mm256(LOWMC_255_255_4_N, mm256_xor, mm256_and, mm256_rotate_left,
+                                   mm256_rotate_right, mask_255_255_85_a, mask_255_255_85_b,
+                                   mask_255_255_85_c);
+}
+#endif
 
 #include "lowmc_129_129_4_fns_s256.h"
 #include "lowmc.c.i"
