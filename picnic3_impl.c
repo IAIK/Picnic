@@ -69,7 +69,7 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
  */
 static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks,
                            const picnic_instance_t* params) {
-  mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc.n, 1, true);
+  mzd_local_t lowmc_key[1];
 
   size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
 
@@ -96,8 +96,6 @@ static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks,
   // Reset the random tape counter so that the online execution uses the
   // same random bits as when computing the aux shares
   tapes->pos = 0;
-
-  mzd_local_free(lowmc_key);
 }
 
 static void commit(uint8_t* digest, const uint8_t* seed, const uint8_t* aux, const uint8_t* salt,
@@ -374,8 +372,8 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   allocateCommitments2(&Ch, params, params->num_rounds);
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
-  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
-  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc.n, false);
+  mzd_local_t m_plaintext[1];
+  mzd_local_t m_maskedKey[1];
   mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
   if (ret != 0) {
@@ -522,8 +520,6 @@ Exit:
     freeRandomTape(&tapes[t]);
   }
 
-  mzd_local_free(m_maskedKey);
-  mzd_local_free(m_plaintext);
   freeCommitments2(&Cv);
   freeCommitments2(&Ch);
   freeTree(iSeedsTree);
@@ -584,8 +580,8 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
 
-  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
-  mzd_local_t* m_maskedKey = mzd_local_init_ex(1, params->lowmc.n, false);
+  mzd_local_t m_plaintext[1];
+  mzd_local_t m_maskedKey[1];
 
   mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
@@ -625,8 +621,6 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
       ret = -1;
     }
   }
-  mzd_local_free(m_maskedKey);
-  mzd_local_free(m_plaintext);
   /* Commit to the commitments and views */
   {
     size_t t = 0;
