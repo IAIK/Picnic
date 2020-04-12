@@ -27,10 +27,9 @@ void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->tape           = malloc(tape->nTapes * sizeof(uint8_t*));
   tape->aux_bits       = calloc(1, params->view_size);
   tape->buffer         = aligned_alloc(32, 16 * sizeof(uint16_t));
-  size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
+  size_t tapeSizeBytes = 2 * params->view_size;
   tape->parity_tapes   = calloc(1, tapeSizeBytes);
-  tapeSizeBytes = ((tapeSizeBytes + 1) / 2) * 2; // round up to multiple of 16 bit for transpose
-  uint8_t* slab = calloc(1, tape->nTapes * tapeSizeBytes);
+  uint8_t* slab        = calloc(1, tape->nTapes * tapeSizeBytes);
   for (uint8_t i = 0; i < tape->nTapes; i++) {
     tape->tape[i] = slab;
     slab += tapeSizeBytes;
@@ -58,7 +57,7 @@ void allocateProof2(proof2_t* proof, const picnic_instance_t* params) {
   proof->C             = malloc(params->digest_size);
   proof->input         = malloc(params->input_size);
   proof->aux           = malloc(params->view_size);
-  proof->msgs          = malloc(params->view_size + params->input_size);
+  proof->msgs          = malloc(params->view_size);
 }
 
 static void freeProof2(proof2_t* proof) {

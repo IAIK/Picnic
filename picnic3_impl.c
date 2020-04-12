@@ -40,7 +40,7 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
                               const picnic_instance_t* params) {
   hash_context_x4 ctx;
 
-  size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
+  size_t tapeSizeBytes = 2 * params->view_size;
 
   allocateRandomTape(tapes, params);
   assert(params->num_MPC_parties % 4 == 0);
@@ -71,7 +71,7 @@ static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks,
                            const picnic_instance_t* params) {
   mzd_local_t lowmc_key[1];
 
-  size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
+  size_t tapeSizeBytes = 2 * params->view_size;
 
   // combine into key shares and calculate lowmc evaluation in plain
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
@@ -467,7 +467,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
     int unopened   = sig->challengeP[i];
     uint8_t* input = sig->proofs[t].input;
     setAuxBits(&tapes[t], sig->proofs[t].aux, params);
-    memset(tapes[t].tape[unopened], 0, 2 * params->view_size + params->input_size);
+    memset(tapes[t].tape[unopened], 0, 2 * params->view_size);
     memcpy(msgs->msgs[unopened], sig->proofs[t].msgs, params->view_size);
     mzd_from_char_array(m_maskedKey, input, params->input_size);
     msgs->unopened = unopened;
