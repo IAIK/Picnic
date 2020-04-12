@@ -442,6 +442,7 @@ static void sbox_aux_uint64_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* s
 #undef IMPL
 #define IMPL s128
 
+#if defined(WITH_KKW)
 #define picnic3_aux_sbox_bitsliced_mm128(LOWMC_N, XOR, AND, SHL, SHR, bitmask_a, bitmask_b,        \
                                          bitmask_c)                                                \
   do {                                                                                             \
@@ -544,6 +545,7 @@ static void sbox_aux_s128_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* sta
                                    mask_255_255_85_b, mask_255_255_85_c);
 }
 #endif
+#endif
 
 #include "lowmc_129_129_4_fns_s128.h"
 #include "lowmc.c.i"
@@ -570,6 +572,7 @@ static void sbox_aux_s128_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* sta
 #undef IMPL
 #define IMPL s256
 
+#if defined(WITH_KKW)
 #define picnic3_aux_sbox_bitsliced_mm256(LOWMC_N, XOR, AND, ROL, ROR, bitmask_a, bitmask_b,        \
                                          bitmask_c)                                                \
   do {                                                                                             \
@@ -671,6 +674,7 @@ static void sbox_aux_s256_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* sta
                                    mm256_rotate_right, mask_255_255_85_a, mask_255_255_85_b,
                                    mask_255_255_85_c);
 }
+#endif
 #endif
 
 #include "lowmc_129_129_4_fns_s256.h"
