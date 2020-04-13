@@ -30,7 +30,8 @@ static void N_LOWMC(lowmc_key_t* lowmc_key, randomTape_t* tapes) {
       bitstream_t bs = {{tapes->parity_tapes}, LOWMC_N * 2 * (LOWMC_R - 1 - r)};
       mzd_from_bitstream(&bs, x, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);
     }
-    tapes->pos = LOWMC_N * 2 * (LOWMC_R - 1 - r) + LOWMC_N;
+    tapes->pos     = LOWMC_N * 2 * (LOWMC_R - 1 - r) + LOWMC_N;
+    tapes->aux_pos = LOWMC_N * (LOWMC_R - 1 - r);
     SBOX(x, y, tapes);
   }
 }

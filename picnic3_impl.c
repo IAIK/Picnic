@@ -222,9 +222,9 @@ static void setAuxBits(randomTape_t* tapes, uint8_t* input, const picnic_instanc
   size_t last  = params->num_MPC_parties - 1;
   size_t inBit = 0;
 
-  for (size_t j = params->lowmc.r; j > 0; j--) {
+  for (size_t j = 0; j < params->lowmc.r; j++) {
     for (size_t i = 0; i < params->lowmc.n; i++) {
-      setBit(tapes->tape[last], params->lowmc.n + params->lowmc.n * 2 * (j - 1) + i,
+      setBit(tapes->tape[last], params->lowmc.n + params->lowmc.n * 2 * (j) + i,
              getBit(input, inBit++));
     }
   }
