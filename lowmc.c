@@ -48,8 +48,7 @@
 #include "lowmc_255_255_4.h"
 #endif
 
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
-    defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
 /* S-box for m = 10 */
 static inline uint64_t sbox_layer_10_bitsliced_uint64(uint64_t in) {
   // a, b, c
@@ -322,7 +321,8 @@ static inline void sbox_s256_lowmc_255_255_4(mzd_local_t* in) {
 #endif /* WITH_AVX2 */
 #endif /* WITH_OPT */
 
-#if defined(WITH_KKW) && !defined(NO_UINT64_FALLBACK)
+#if defined(WITH_KKW)
+#if !defined(NO_UINT64_FALLBACK)
 #define picnic3_aux_sbox_bitsliced(LOWMC_N, XOR, AND, SHL, SHR, bitmask_a, bitmask_b, bitmask_c)   \
   do {                                                                                             \
     mzd_local_t a[1], b[1], c[1];                                                                  \
@@ -411,7 +411,8 @@ static void sbox_aux_uint64_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* s
                              mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
 }
 #endif
-#endif /* WITH_KKW  && !NO_UINT64_FALLBACK*/
+#endif /* !NO_UINT64_FALLBACK */
+#endif /* WITH_KKW */
 
 #if !defined(NO_UINT64_FALLBACK)
 // uint64 based implementation
