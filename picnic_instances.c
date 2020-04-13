@@ -90,11 +90,11 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
     {ENABLE_ZKBPP(lowmc_parameters_256_256_38), 64, 32, 438, 438, 3, 32, 32, 143, 30, 110, 175, 207,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_UR, Picnic_L5_UR, TRANSFORM_UR, NULL_FNS},
     /* KKW with full LowMC instances */
-    {ENABLE_KKW(lowmc_parameters_129_129_4), 32, 16, 252, 36, 16, 17, 17, 65, 129, 55, 0, 0,
+    {ENABLE_KKW(lowmc_parameters_129_129_4), 32, 16, 250, 36, 16, 17, 17, 65, 129, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic3_L1, Picnic3_L1, TRANSFORM_FS, NULL_FNS},
-    {ENABLE_KKW(lowmc_parameters_192_192_4), 48, 24, 420, 52, 16, 24, 24, 96, 192, 83, 0, 0,
+    {ENABLE_KKW(lowmc_parameters_192_192_4), 48, 24, 419, 52, 16, 24, 24, 96, 192, 83, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic3_L3, Picnic3_L3, TRANSFORM_FS, NULL_FNS},
-    {ENABLE_KKW(lowmc_parameters_255_255_4), 64, 32, 604, 68, 16, 32, 32, 128, 255, 110, 0, 0,
+    {ENABLE_KKW(lowmc_parameters_255_255_4), 64, 32, 601, 68, 16, 32, 32, 128, 255, 110, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic3_L5, Picnic3_L5, TRANSFORM_FS, NULL_FNS},
     /* ZKB++ with full LowMC instances */
     {ENABLE_ZKBPP(lowmc_parameters_129_129_4), 32, 16, 219, 219, 3, 17, 17, 65, 129, 55, 0, 0,
