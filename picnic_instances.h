@@ -22,8 +22,6 @@
 #define SALT_SIZE 32
 #define MAX_DIGEST_SIZE 64
 
-typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
-
 typedef struct picnic_instance_t {
   lowmc_parameters_t lowmc;
 
@@ -44,7 +42,6 @@ typedef struct picnic_instance_t {
   uint32_t max_signature_size;             /* bytes */
 
   picnic_params_t params;
-  transform_t transform;
 
   struct {
     lowmc_implementation_f lowmc;
