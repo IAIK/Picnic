@@ -38,7 +38,7 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
   }
 
   /* check that the output is correct */
-  uint8_t output[params->output_size];
+  uint8_t output[MAX_LOWMC_BLOCK_SIZE];
   mzd_to_char_array(output, state, params->output_size);
 
   if (memcmp(output, pubKey, params->output_size) != 0) {

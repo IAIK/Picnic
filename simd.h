@@ -89,7 +89,7 @@
  * bs{l,r}i was introduced in GCC 5 and in clang as macros sometime in 2015.
  * */
 #if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 5) ||                                  \
-    (defined(__clang__) && !defined(_mm_bslli_si128)) || defined(_MSC_VER)
+    ((defined(__clang__) || defined(_MSC_VER)) && !defined(_mm_bslli_si128))
 #define _mm_bslli_si128(a, imm) _mm_slli_si128((a), (imm))
 #define _mm_bsrli_si128(a, imm) _mm_srli_si128((a), (imm))
 #endif
