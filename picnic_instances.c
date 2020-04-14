@@ -111,6 +111,12 @@ static bool create_instance(picnic_instance_t* pp) {
     return false;
   }
 
+#if !defined(WITH_UNRUH)
+  if (pp->transform == TRANSFORM_UR) {
+    return false;
+  }
+#endif
+
   pp->impls.lowmc                 = lowmc_get_implementation(&pp->lowmc);
 #if defined(WITH_ZKBPP)
   if ((pp->params >= Picnic_L1_FS && pp->params <= Picnic_L5_UR) ||
