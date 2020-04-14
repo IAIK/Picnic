@@ -847,7 +847,7 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
   tmp += SALT_SIZE;
 
   const proof_round_t* round = prf->round;
-  for (unsigned i = 0; i < num_rounds; ++i, ++round) {
+  for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
     const unsigned int a = prf->challenge[i];
     const unsigned int b = (a + 1) % 3;
     const unsigned int c = (a + 2) % 3;
@@ -1070,8 +1070,8 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   proof_round_t* round = prf->round;
   // use 4 parallel instances of keccak for speedup
   uint8_t* tape_bytes_x4[SC_PROOF][4];
-  for (unsigned k = 0; k < SC_PROOF; k++) {
-    for (unsigned j = 0; j < 4; j++) {
+  for (unsigned int k = 0; k < SC_PROOF; k++) {
+    for (unsigned int j = 0; j < 4; j++) {
       tape_bytes_x4[k][j] = malloc(view_size);
     }
   }
@@ -1227,15 +1227,15 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
   // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when
   // verifying since all of this is public information, there is no leakage
   uint8_t* tape_bytes_x4[SC_VERIFY][4];
-  for (unsigned i = 0; i < SC_VERIFY; i++) {
-    for (unsigned j = 0; j < 4; j++) {
+  for (unsigned int i = 0; i < SC_VERIFY; i++) {
+    for (unsigned int j = 0; j < 4; j++) {
       tape_bytes_x4[i][j] = malloc(view_size);
     }
   }
   sorting_helper_t* sorted_rounds = malloc(sizeof(sorting_helper_t) * num_rounds);
-  for (unsigned current_chal = 0; current_chal < 3; current_chal++) {
+  for (unsigned int current_chal = 0; current_chal < 3; current_chal++) {
     unsigned int num_current_rounds = 0;
-    for (unsigned r = 0; r < num_rounds; r++) {
+    for (unsigned int r = 0; r < num_rounds; r++) {
       if (prf->challenge[r] == current_chal) {
         sorted_rounds[num_current_rounds].round        = &prf->round[r];
         sorted_rounds[num_current_rounds].round_number = r;
@@ -1391,8 +1391,8 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
   // clean up
   free(sorted_rounds);
-  for (unsigned i = 0; i < SC_VERIFY; i++) {
-    for (unsigned j = 0; j < 4; j++) {
+  for (unsigned int i = 0; i < SC_VERIFY; i++) {
+    for (unsigned int j = 0; j < 4; j++) {
       free(tape_bytes_x4[i][j]);
     }
   }
