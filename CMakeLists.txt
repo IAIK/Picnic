@@ -136,6 +136,8 @@ if(MSVC)
   list(APPEND WARNINGS 4204)
   # nameless structs/unions are part of C11
   list(APPEND WARNINGS 4201)
+  # conditional expression is constant
+  list(APPEND WARNINGS 4127)
   foreach(warning IN ITEMS ${WARNINGS})
     add_compile_options("/wd${warning}")
   endforeach(warning)
