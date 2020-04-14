@@ -33,6 +33,7 @@ typedef struct signature2_t {
   size_t iSeedInfoLen;
   uint8_t* cvInfo; // Info required to check commitments to views (reconstruct Merkle tree)
   size_t cvInfoLen;
+  uint8_t* challenge; // output of HCP
   uint16_t* challengeC;
   uint16_t* challengeP;
   proof2_t* proofs; // One proof for each online execution the verifier checks

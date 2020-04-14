@@ -264,27 +264,12 @@ static size_t appendUnique(uint16_t* list, uint16_t value, size_t position) {
   return position + 1;
 }
 
-static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, uint8_t* hCv,
-                uint8_t* salt, const uint8_t* pubKey, const uint8_t* plaintext,
-                const uint8_t* message, size_t messageByteLength, const picnic_instance_t* params) {
-  hash_context ctx;
+static void expandChallenge(uint16_t* challengeC, uint16_t* challengeP, const uint8_t* sigH,
+                            const picnic_instance_t* params) {
   uint8_t h[MAX_DIGEST_SIZE] = {0};
+  hash_context ctx;
 
-  assert(params->num_opened_rounds < params->num_rounds);
-
-  hash_init(&ctx, params->digest_size);
-  for (size_t t = 0; t < params->num_rounds; t++) {
-    hash_update(&ctx, Ch->hashes[t], params->digest_size);
-  }
-
-  hash_update(&ctx, hCv, params->digest_size);
-  hash_update(&ctx, salt, SALT_SIZE);
-  hash_update(&ctx, pubKey, params->input_size);
-  hash_update(&ctx, plaintext, params->input_size);
-  hash_update(&ctx, message, messageByteLength);
-  hash_final(&ctx);
-  hash_squeeze(&ctx, h, params->digest_size);
-
+  memcpy(h, sigH, params->digest_size);
   // Populate C
   uint32_t bitsPerChunkC = ceil_log2(params->num_rounds);
   uint32_t bitsPerChunkP = ceil_log2(params->num_MPC_parties);
@@ -329,8 +314,30 @@ static void HCP(uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch, u
     hash_final(&ctx);
     hash_squeeze(&ctx, h, params->digest_size);
   }
-
   free(chunks);
+}
+
+static void HCP(uint8_t* sigH, uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
+                uint8_t* hCv, uint8_t* salt, const uint8_t* pubKey, const uint8_t* plaintext,
+                const uint8_t* message, size_t messageByteLength, const picnic_instance_t* params) {
+  hash_context ctx;
+
+  assert(params->num_opened_rounds < params->num_rounds);
+
+  hash_init(&ctx, params->digest_size);
+  for (size_t t = 0; t < params->num_rounds; t++) {
+    hash_update(&ctx, Ch->hashes[t], params->digest_size);
+  }
+
+  hash_update(&ctx, hCv, params->digest_size);
+  hash_update(&ctx, salt, SALT_SIZE);
+  hash_update(&ctx, pubKey, params->input_size);
+  hash_update(&ctx, plaintext, params->input_size);
+  hash_update(&ctx, message, messageByteLength);
+  hash_final(&ctx);
+  hash_squeeze(&ctx, sigH, params->digest_size);
+
+  expandChallenge(challengeC, challengeP, sigH, params);
 }
 
 static uint16_t* getMissingLeavesList(uint16_t* challengeC, const picnic_instance_t* params) {
@@ -361,8 +368,9 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   size_t challengeSizeBytes = params->num_opened_rounds * sizeof(uint16_t);
   uint16_t* challengeC      = malloc(challengeSizeBytes);
   uint16_t* challengeP      = malloc(challengeSizeBytes);
-  randomTape_t* tapes       = malloc(params->num_rounds * sizeof(randomTape_t));
-  tree_t* iSeedsTree        = createTree(params->num_rounds, params->seed_size);
+  uint8_t challenge[MAX_DIGEST_SIZE];
+  randomTape_t* tapes = malloc(params->num_rounds * sizeof(randomTape_t));
+  tree_t* iSeedsTree  = createTree(params->num_rounds, params->seed_size);
   int ret = reconstructSeeds(iSeedsTree, sig->challengeC, params->num_opened_rounds, sig->iSeedInfo,
                              sig->iSeedInfoLen, sig->salt, 0, params);
   const size_t last                      = params->num_MPC_parties - 1;
@@ -500,12 +508,11 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   }
 
   /* Compute the challenge; two lists of integers */
-  HCP(challengeC, challengeP, &Ch, treeCv->nodes[0], sig->salt, pubKey, plaintext, message,
-      messageByteLength, params);
+  HCP(challenge, challengeC, challengeP, &Ch, treeCv->nodes[0], sig->salt, pubKey, plaintext,
+      message, messageByteLength, params);
 
   /* Compare to challenge from signature */
-  if (memcmp(sig->challengeC, challengeC, challengeSizeBytes) != 0 ||
-      memcmp(sig->challengeP, challengeP, challengeSizeBytes) != 0) {
+  if (memcmp(sig->challenge, challenge, params->digest_size) != 0) {
 #if !defined(NDEBUG)
     printf("Challenge does not match, signature invalid\n");
 #endif
@@ -640,8 +647,8 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   /* Compute the challenge; two lists of integers */
   uint16_t* challengeC = sig->challengeC;
   uint16_t* challengeP = sig->challengeP;
-  HCP(challengeC, challengeP, &Ch, treeCv->nodes[0], sig->salt, pubKey, plaintext, message,
-      messageByteLength, params);
+  HCP(sig->challenge, challengeC, challengeP, &Ch, treeCv->nodes[0], sig->salt, pubKey, plaintext,
+      message, messageByteLength, params);
 
   /* Send information required for checking commitments with Merkle tree.
    * The commitments the verifier will be missing are those not in challengeC. */
@@ -713,67 +720,25 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   return ret;
 }
 
-static int inRange(uint16_t* list, size_t len, size_t low, size_t high) {
-  for (size_t i = 0; i < len; i++) {
-    if (list[i] > high || list[i] < low) {
-      return 0;
-    }
-  }
-  return 1;
-}
-
-static int unique(uint16_t* list, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    for (size_t j = 0; j < len; j++) {
-      if (j != i && list[i] == list[j]) {
-        return 0;
-      }
-    }
-  }
-  return 1;
-}
-
 static int arePaddingBitsZero(uint8_t* data, size_t byteLength, size_t bitLength) {
   return !check_padding_bits(data[byteLength - 1], byteLength * 8 - bitLength);
-}
-
-static void deserialize_u16(uint16_t* dst, const uint8_t* src, size_t size) {
-#if defined(PICNIC_IS_LITTLE_ENDIAN)
-  memcpy(dst, src, sizeof(uint16_t) * size);
-#else
-  for (size_t s = size; s; --s, ++dst, src += 2) {
-    uint16_t t;
-    memcpy(&t, src, sizeof(t));
-    *dst = le16toh(t);
-  }
-#endif
 }
 
 static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, size_t sigBytesLen,
                                  const picnic_instance_t* params) {
   /* Read the challenge and salt */
-  size_t bytesRequired = 4 * params->num_opened_rounds + SALT_SIZE;
+  size_t bytesRequired = params->digest_size + SALT_SIZE;
 
   if (sigBytesLen < bytesRequired) {
     return EXIT_FAILURE;
   }
 
-  deserialize_u16(sig->challengeC, sigBytes, params->num_opened_rounds);
-  sigBytes += 2 * params->num_opened_rounds;
-  deserialize_u16(sig->challengeP, sigBytes, params->num_opened_rounds);
-  sigBytes += 2 * params->num_opened_rounds;
+  memcpy(sig->challenge, sigBytes, params->digest_size);
+  sigBytes += params->digest_size;
   memcpy(sig->salt, sigBytes, SALT_SIZE);
   sigBytes += SALT_SIZE;
 
-  if (!inRange(sig->challengeC, params->num_opened_rounds, 0, params->num_rounds - 1)) {
-    return EXIT_FAILURE;
-  }
-  if (!unique(sig->challengeC, params->num_opened_rounds)) {
-    return EXIT_FAILURE;
-  }
-  if (!inRange(sig->challengeP, params->num_opened_rounds, 0, params->num_MPC_parties - 1)) {
-    return EXIT_FAILURE;
-  }
+  expandChallenge(sig->challengeC, sig->challengeP, sig->challenge, params);
 
   /* Add size of iSeeds tree data */
   sig->iSeedInfoLen =
@@ -870,23 +835,12 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
   return EXIT_SUCCESS;
 }
 
-static void serialize_u16(uint8_t* dst, const uint16_t* src, size_t size) {
-#if defined(PICNIC_IS_LITTLE_ENDIAN)
-  memcpy(dst, src, sizeof(uint16_t) * size);
-#else
-  for (size_t s = size; s; --s, ++src, dst += 2) {
-    const uint16_t t = htole16(*src);
-    memcpy(dst, &t, sizeof(t));
-  }
-#endif
-}
-
 static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBytesLen,
                                const picnic_instance_t* params) {
   uint8_t* sigBytesBase = sigBytes;
 
   /* Compute the number of bytes required for the signature */
-  size_t bytesRequired = 4 * params->num_opened_rounds + SALT_SIZE; /* challenge and salt */
+  size_t bytesRequired = params->digest_size + SALT_SIZE; /* challenge and salt */
 
   bytesRequired +=
       sig->iSeedInfoLen; /* Encode only iSeedInfo, the length will be recomputed by deserialize */
@@ -909,10 +863,8 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
     return -1;
   }
 
-  serialize_u16(sigBytes, sig->challengeC, params->num_opened_rounds);
-  sigBytes += 2 * params->num_opened_rounds;
-  serialize_u16(sigBytes, sig->challengeP, params->num_opened_rounds);
-  sigBytes += 2 * params->num_opened_rounds;
+  memcpy(sigBytes, sig->challenge, params->digest_size);
+  sigBytes += params->digest_size;
 
   memcpy(sigBytes, sig->salt, SALT_SIZE);
   sigBytes += SALT_SIZE;

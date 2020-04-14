@@ -73,6 +73,7 @@ void allocateSignature2(signature2_t* sig, const picnic_instance_t* params) {
   sig->iSeedInfoLen = 0;
   sig->cvInfo       = NULL; // Sign/verify code sets it
   sig->cvInfoLen    = 0;
+  sig->challenge    = (uint8_t*)malloc(params->digest_size);
   sig->challengeC   = (uint16_t*)malloc(params->num_opened_rounds * sizeof(uint16_t));
   sig->challengeP   = (uint16_t*)malloc(params->num_opened_rounds * sizeof(uint16_t));
   sig->proofs       = calloc(params->num_rounds, sizeof(proof2_t));
@@ -82,6 +83,7 @@ void allocateSignature2(signature2_t* sig, const picnic_instance_t* params) {
 void freeSignature2(signature2_t* sig, const picnic_instance_t* params) {
   free(sig->iSeedInfo);
   free(sig->cvInfo);
+  free(sig->challenge);
   free(sig->challengeC);
   free(sig->challengeP);
   for (size_t i = 0; i < params->num_rounds; i++) {
