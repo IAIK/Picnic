@@ -77,6 +77,7 @@ check_c_compiler_flag_and_add(-Wall CC_SUPPORTS_WALL)
 check_c_compiler_flag_and_add(-Wextra CC_SUPPORTS_WEXTRA)
 check_c_compiler_flag_and_add(-Wshadow CC_SUPPORTS_WSHADOW)
 check_c_compiler_flag_and_add(-Werror=implicit-function-declaration CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
+check_c_compiler_flag_and_add(-Werror=vla CC_SUPPORTS_WERROR_VLA)
 
 # check SIMD instructions set
 check_simd(SSE2 CC_SUPPORTS_SSE2)
