@@ -425,14 +425,14 @@ int main(void) {
     for (unsigned int j = 0; j < 64; j++) {
       setBit((uint8_t*)&e, j, test_matrix[i][j]);
     }
-    matrix[i] = le64toh(e);
+    matrix[i] = e;
   }
   // print_matrix("set", matrix);
   transpose_64_64(matrix, matrix);
   // print_matrix("trans", matrix);
 
   for (unsigned int i = 0; i < 64; i++) {
-    const uint64_t e = htole64(matrix[i]);
+    const uint64_t e = matrix[i];
     for (unsigned int j = 0; j < 64; j++) {
       if (getBit((const uint8_t*)&e, j) != test_matrix_trans[i][j]) {
         printf("error: %d,%d\n", i, j);

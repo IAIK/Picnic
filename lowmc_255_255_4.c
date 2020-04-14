@@ -3661,7 +3661,6 @@ static const lowmc_round_t rounds[4] = {
 };
 
 const lowmc_t lowmc_255_255_4 = {
-  85, 255, 4, 255,
   K_0,
   Ki_0,
   rounds,

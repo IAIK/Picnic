@@ -4,3 +4,4 @@ CMakeSettings.json
 cmake-build-*/
 build*/
 submission/
+crypto_sign/

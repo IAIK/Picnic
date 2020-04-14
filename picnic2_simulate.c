@@ -94,7 +94,7 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
   for (uint32_t k = 0; k < PACKING_FACTOR; k++) {
     mzd_to_char_array(state[k], statein[k], params->output_size);
   }
-  for (size_t i = 0; i < params->lowmc->m * 3; i += 3) {
+  for (size_t i = 0; i < params->lowmc.m * 3; i += 3) {
     uint64_t a = 0;
     uint64_t b = 0;
     uint64_t c = 0;
@@ -218,7 +218,7 @@ static void mpc_sbox(mzd_local_t** statein, shares_t* state_masks, randomTape_t*
 #endif // AVX2
 #endif // WITH_OPT
 
-lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* lowmc) {
+lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_parameters_t* lowmc) {
   assert((lowmc->m == 43 && lowmc->n == 129) || (lowmc->m == 64 && lowmc->n == 192) ||
          (lowmc->m == 85 && lowmc->n == 255));
 

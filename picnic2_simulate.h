@@ -21,6 +21,6 @@ typedef int (*lowmc_simulate_online_f)(mzd_local_t** maskedKey, shares_t* mask_s
                                        randomTape_t* tapes, msgs_t* msgs, const mzd_local_t* plaintext,
                                        const uint8_t* pubKey, const picnic_instance_t* params);
 
-lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_t* lowmc);
+lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_parameters_t* lowmc);
 
 #endif

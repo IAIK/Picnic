@@ -13,6 +13,12 @@
 #undef LOWMC_N
 #undef LOWMC_R
 #undef LOWMC_M
+#undef LOWMC_PARTIAL
 #undef MUL
+#undef MUL_MC
+#undef ADDMUL_R
+#undef MUL_Z
+#undef SHUFFLE
+#undef XOR_MC
 #undef XOR
 #undef MPC_MUL

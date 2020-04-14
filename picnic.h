@@ -36,8 +36,8 @@ extern "C" {
 #define PICNIC_CONCAT(a, b) PICNIC_CONCAT2(a, b)
 
 /* Block sizes of the LowMC ciphers per parameter */
-#define LOWMC_BLOCK_SIZE_Picnic_L1_FS 17
-#define LOWMC_BLOCK_SIZE_Picnic_L1_UR 17
+#define LOWMC_BLOCK_SIZE_Picnic_L1_FS 16
+#define LOWMC_BLOCK_SIZE_Picnic_L1_UR 16
 #define LOWMC_BLOCK_SIZE_Picnic_L3_FS 24
 #define LOWMC_BLOCK_SIZE_Picnic_L3_UR 24
 #define LOWMC_BLOCK_SIZE_Picnic_L5_FS 32
@@ -45,6 +45,9 @@ extern "C" {
 #define LOWMC_BLOCK_SIZE_Picnic3_L1_FS 17
 #define LOWMC_BLOCK_SIZE_Picnic3_L3_FS 24
 #define LOWMC_BLOCK_SIZE_Picnic3_L5_FS 32
+#define LOWMC_BLOCK_SIZE_Picnic_L1_full 17
+#define LOWMC_BLOCK_SIZE_Picnic_L3_full 24
+#define LOWMC_BLOCK_SIZE_Picnic_L5_full 32
 
 #define LOWMC_BLOCK_SIZE(p) PICNIC_CONCAT(LOWMC_BLOCK_SIZE, p)
 
@@ -52,12 +55,12 @@ extern "C" {
 #define PICNIC_PUBLIC_KEY_SIZE(p) (1 + 2 * LOWMC_BLOCK_SIZE(p))
 
 /* Max. signature sizes per parameter */
-#define PICNIC_SIGNATURE_SIZE_Picnic_L1_FS 32061
-#define PICNIC_SIGNATURE_SIZE_Picnic_L1_UR 49800
-#define PICNIC_SIGNATURE_SIZE_Picnic_L3_FS 71179
-#define PICNIC_SIGNATURE_SIZE_Picnic_L3_UR 110659
-#define PICNIC_SIGNATURE_SIZE_Picnic_L5_FS 126286
-#define PICNIC_SIGNATURE_SIZE_Picnic_L5_UR 196366
+#define PICNIC_SIGNATURE_SIZE_Picnic_L1_FS 34032
+#define PICNIC_SIGNATURE_SIZE_Picnic_L1_UR 53961
+#define PICNIC_SIGNATURE_SIZE_Picnic_L3_FS 76732
+#define PICNIC_SIGNATURE_SIZE_Picnic_L3_UR 121845
+#define PICNIC_SIGNATURE_SIZE_Picnic_L5_FS 132856
+#define PICNIC_SIGNATURE_SIZE_Picnic_L5_UR 209506
 #define PICNIC_SIGNATURE_SIZE_Picnic3_L1_FS 14720
 #define PICNIC_SIGNATURE_SIZE_Picnic3_L3_FS 35184
 #define PICNIC_SIGNATURE_SIZE_Picnic3_L5_FS 61232
@@ -74,23 +77,23 @@ extern "C" {
 
 /** Parameter set names */
 typedef enum {
-  PARAMETER_SET_INVALID,
+  PARAMETER_SET_INVALID = 0,
   /* ZKB++ with LowMC m=10 */
-  Picnic_L1_FS   = 1,
-  Picnic_L1_UR   = 2,
-  Picnic_L3_FS   = 3,
-  Picnic_L3_UR   = 4,
-  Picnic_L5_FS   = 5,
-  Picnic_L5_UR   = 6,
+  Picnic_L1_FS = 1,
+  Picnic_L1_UR = 2,
+  Picnic_L3_FS = 3,
+  Picnic_L3_UR = 4,
+  Picnic_L5_FS = 5,
+  Picnic_L5_UR = 6,
   /* KKW with full LowMC */
-  Picnic3_L1_FS  = 7,
-  Picnic3_L3_FS  = 8,
-  Picnic3_L5_FS  = 9,
+  Picnic3_L1_FS = 7,
+  Picnic3_L3_FS = 8,
+  Picnic3_L5_FS = 9,
   /* ZKB++ with full LowMC */
-  Picnic_L1_full = 10,
-  Picnic_L3_full = 11,
-  Picnic_L5_full = 12,
-  PARAMETER_SET_MAX_INDEX
+  Picnic_L1_full          = 10,
+  Picnic_L3_full          = 11,
+  Picnic_L5_full          = 12,
+  PARAMETER_SET_MAX_INDEX = 13
 } picnic_params_t;
 
 /** Public key */

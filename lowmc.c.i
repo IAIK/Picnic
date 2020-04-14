@@ -10,17 +10,25 @@
 #if defined(LOWMC_INSTANCE)
 #define N_LOWMC CONCAT(lowmc, CONCAT(IMPL, LOWMC_INSTANCE))
 #define SBOX_FUNC CONCAT(sbox, CONCAT(IMPL, LOWMC_INSTANCE))
+#if defined(LOWMC_PARTIAL)
+#define SBOX(x) sbox_layer_10_uint64(&BLOCK(x, 0)->w64[(LOWMC_N / (sizeof(word) * 8)) - 1])
+#include "lowmc_impl_partial.c.i"
+#else
 #define SBOX(x) SBOX_FUNC(BLOCK(x, 0))
 #include "lowmc_impl.c.i"
-
+#endif
 #if defined(WITH_ZKBPP)
 #undef N_LOWMC
 #define N_LOWMC CONCAT(lowmc_store, CONCAT(IMPL, LOWMC_INSTANCE))
 #define RECORD_STATE
+#if defined(LOWMC_PARTIAL)
+#include "lowmc_impl_partial.c.i"
+#else
 #include "lowmc_impl.c.i"
 #endif
+#endif
 
-#if defined(WITH_KKW)
+#if defined(WITH_KKW) && !defined(LOWMC_PARTIAL)
 #undef N_LOWMC
 #undef RECORD_STATE
 #undef SBOX
@@ -28,14 +36,11 @@
 #define SBOX_FUNC CONCAT(CONCAT(sbox_layer, LOWMC_M), aux)
 #define SBOX(x, y, tapes) SBOX_FUNC(BLOCK(x, 0), BLOCK(y,0), tapes)
 #define N_LOWMC CONCAT(lowmc_compute_aux, CONCAT(IMPL, LOWMC_INSTANCE))
-#define PICNIC2_AUX_COMPUTATION
 #include "lowmc_impl_aux.c.i"
 #endif
 
-#undef LOWMC_M
 #undef N_LOWMC
 #undef RECORD_STATE
-#undef PICNIC2_AUX_COMPUTATION
 #undef SBOX
 #undef SBOX_FUNC
 #endif

@@ -126,6 +126,18 @@ static int test_mzd_mul_uint64_256(void) {
   return test_mzd_mul_f("mul uint64 256", 256, 256, mzd_mul_v_uint64_256, false);
 }
 
+static int test_mzd_mul_uint64_128_640(void) {
+  return test_mzd_mul_f("mul uint64 128 640", 128, 640, mzd_mul_v_uint64_128_640, false);
+}
+
+static int test_mzd_mul_uint64_192_960(void) {
+  return test_mzd_mul_f("mul uint64 192 960", 192, 960, mzd_mul_v_uint64_192_960, false);
+}
+
+static int test_mzd_mul_uint64_256_1216(void) {
+  return test_mzd_mul_f("mul uint64 256 1216", 256, 1216, mzd_mul_v_uint64_256_1216, false);
+}
+
 static int test_mzd_addmul_uint64_128(void) {
   return test_mzd_mul_f("addmul uint64 128", 128, 128, mzd_addmul_v_uint64_128, true);
 }
@@ -177,6 +189,18 @@ static int test_mzd_mul_s128_256(void) {
   return test_mzd_mul_f("mul s128 256", 256, 256, mzd_mul_v_s128_256, false);
 }
 
+static int test_mzd_mul_s128_128_640(void) {
+  return test_mzd_mul_f("mul s128 128 640", 128, 640, mzd_mul_v_s128_128_640, false);
+}
+
+static int test_mzd_mul_s128_192_1024(void) {
+  return test_mzd_mul_f("mul s128 192 1024", 192, 1024, mzd_mul_v_s128_192_1024, false);
+}
+
+static int test_mzd_mul_s128_256_1280(void) {
+  return test_mzd_mul_f("mul s128 256 1280", 256, 1280, mzd_mul_v_s128_256_1280, false);
+}
+
 static int test_mzd_addmul_s128_128(void) {
   return test_mzd_mul_f("addmul s128 128", 128, 128, mzd_addmul_v_s128_128, true);
 }
@@ -197,6 +221,9 @@ int main(void) {
   ret |= test_mzd_mul_uint64_128();
   ret |= test_mzd_mul_uint64_192();
   ret |= test_mzd_mul_uint64_256();
+  ret |= test_mzd_mul_uint64_128_640();
+  ret |= test_mzd_mul_uint64_192_960();
+  ret |= test_mzd_mul_uint64_256_1216();
   ret |= test_mzd_addmul_uint64_128();
   ret |= test_mzd_addmul_uint64_192();
   ret |= test_mzd_addmul_uint64_256();
@@ -215,6 +242,10 @@ int main(void) {
     ret |= test_mzd_mul_s128_128();
     ret |= test_mzd_mul_s128_192();
     ret |= test_mzd_mul_s128_256();
+    ret |= test_mzd_mul_s128_128_640();
+    ret |= test_mzd_mul_s128_192_1024();
+    ret |= test_mzd_mul_s128_256();
+    ret |= test_mzd_mul_s128_256_1280();
     ret |= test_mzd_addmul_s128_128();
     ret |= test_mzd_addmul_s128_192();
     ret |= test_mzd_addmul_s128_256();

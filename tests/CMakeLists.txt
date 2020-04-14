@@ -1,5 +1,5 @@
 # Generate tests for all parameters
-function(add_picnic_tests name target m1)
+function(add_picnic_tests name target)
   if(WITH_ZKBPP)
     list(APPEND ALL_PARAMS
          picnic_L1_FS
@@ -56,7 +56,7 @@ foreach(target IN ITEMS ${test_static_targets})
   endif()
 
   if(${target} STREQUAL picnic OR ${target} STREQUAL extended_picnic)
-    add_picnic_tests(${target} "${target}_test" ON)
+    add_picnic_tests(${target} "${target}_test")
   else()
     add_test(NAME ${target} COMMAND "${target}_test")
   endif()
@@ -68,7 +68,7 @@ foreach(target IN ITEMS ${test_targets})
   apply_base_options("${target}_test")
 
   if(${target} STREQUAL picnic OR ${target} STREQUAL extended_picnic)
-    add_picnic_tests(${target} "${target}_test" ON)
+    add_picnic_tests(${target} "${target}_test")
   else()
     add_test(NAME ${target} COMMAND "${target}_test")
   endif()
@@ -84,7 +84,7 @@ if(NOT WITH_EXTRA_RANDOMNESS AND WITH_CONFIG_H)
   apply_base_options(kats_test)
   target_compile_definitions(kats_test PRIVATE "-DKATDIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"")
 
-  add_picnic_tests(kats kats_test OFF)
+  add_picnic_tests(kats kats_test)
 endif()
 
 if(NOT WIN32)

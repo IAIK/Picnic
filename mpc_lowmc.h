@@ -38,8 +38,8 @@ typedef void (*zkbpp_lowmc_verify_implementation_f)(mzd_local_t const*, view_t*,
 typedef void (*zkbpp_share_implementation_f)(mzd_local_t*, const mzd_local_t*, const mzd_local_t*,
                                              const mzd_local_t*);
 
-zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_t* lowmc);
-zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_t* lowmc);
-zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_t* lowmc);
+zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_parameters_t* lowmc);
+zkbpp_lowmc_verify_implementation_f get_zkbpp_lowmc_verify_implementation(const lowmc_parameters_t* lowmc);
+zkbpp_share_implementation_f get_zkbpp_share_implentation(const lowmc_parameters_t* lowmc);
 
 #endif

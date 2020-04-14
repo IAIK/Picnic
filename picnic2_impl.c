@@ -255,7 +255,7 @@ void sbox_layer_85_aux(mzd_local_t* in, mzd_local_t* out, randomTape_t* tapes) {
  * holds on the mask values.
  */
 static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks, const picnic_instance_t* params) {
-  mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc->n, 1, true);
+  mzd_local_t* lowmc_key = mzd_local_init_ex(params->lowmc.n, 1, true);
 
   size_t tapeSizeBytes = 2 * params->view_size + params->input_size;
 
@@ -266,7 +266,7 @@ static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks, const picn
     }
   }
   mzd_from_char_array(lowmc_key, tapes->parity_tapes, params->input_size);
-  tapes->pos     = params->lowmc->n;
+  tapes->pos     = params->lowmc.n;
   tapes->aux_pos = 0;
   memset(tapes->aux_bits, 0, params->view_size);
 
@@ -404,9 +404,9 @@ static void setAuxBits(randomTape_t* tapes, uint8_t* input, const picnic_instanc
   size_t last  = params->num_MPC_parties - 1;
   size_t inBit = 0;
 
-  for (size_t j = params->lowmc->r; j > 0; j--) {
-    for (size_t i = 0; i < params->lowmc->n; i++) {
-      setBit(tapes->tape[last], params->lowmc->n + params->lowmc->n * 2 * (j - 1) + i,
+  for (size_t j = params->lowmc.r; j > 0; j--) {
+    for (size_t i = 0; i < params->lowmc.n; i++) {
+      setBit(tapes->tape[last], params->lowmc.n + params->lowmc.n * 2 * (j - 1) + i,
              getBit(input, inBit++));
     }
   }
@@ -561,9 +561,9 @@ int verify_picnic2(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plai
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
   shares_t* mask_shares                  = allocateShares((((params->input_size * 8) +63) / 64) * 64);
-  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
+  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
   mzd_local_t* m_maskedKey[PACKING_FACTOR];
-  mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc->k, false);
+  mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc.k, false);
   mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
   if (ret != 0) {
@@ -761,7 +761,7 @@ static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLengt
   hash_update(&ctx, message, messageByteLength);
   hash_update(&ctx, pubKey, params->input_size);
   hash_update(&ctx, plaintext, params->input_size);
-  hash_update_uint16_le(&ctx, (uint16_t)params->lowmc->n);
+  hash_update_uint16_le(&ctx, (uint16_t)params->lowmc.n);
   hash_final(&ctx);
   hash_squeeze(&ctx, saltAndRoot, saltAndRootLength);
 }
@@ -796,9 +796,9 @@ int sign_picnic2(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t
   commitments_t Cv;
   allocateCommitments2(&Cv, params, params->num_rounds);
 
-  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc->n, false);
+  mzd_local_t* m_plaintext = mzd_local_init_ex(1, params->lowmc.n, false);
   mzd_local_t* m_maskedKey[PACKING_FACTOR];
-  mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc->k, false);
+  mzd_local_init_multiple_ex(m_maskedKey, PACKING_FACTOR, 1, params->lowmc.k, false);
 
   mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
@@ -835,7 +835,7 @@ int sign_picnic2(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t
                      (params->input_size)); // maskedKey += privateKey
       mzd_from_char_array(m_maskedKey[k], (const uint8_t*)maskedKey[k], params->input_size);
 
-      for (size_t i = params->lowmc->n; i < params->input_size * 8; i++) {
+      for (size_t i = params->lowmc.n; i < params->input_size * 8; i++) {
         setBit((uint8_t*)maskedKey[k], i, 0);
       }
     }
@@ -1078,7 +1078,7 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
         memcpy(sig->proofs[t].aux, sigBytes, params->view_size);
         sigBytes += params->view_size;
         if (!arePaddingBitsZero(sig->proofs[t].aux, params->view_size,
-                                3 * params->lowmc->r * params->lowmc->m)) {
+                                3 * params->lowmc.r * params->lowmc.m)) {
 #if !defined(NDEBUG)
           printf("%s: failed while deserializing aux bits\n", __func__);
 #endif
@@ -1087,7 +1087,7 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
       }
 
       memcpy(sig->proofs[t].input, sigBytes, params->input_size);
-      if (!arePaddingBitsZero(sig->proofs[t].input, params->input_size, params->lowmc->n)) {
+      if (!arePaddingBitsZero(sig->proofs[t].input, params->input_size, params->lowmc.n)) {
 #if !defined(NDEBUG)
         printf("%s: failed while deserializing input bits\n", __func__);
 #endif
@@ -1098,7 +1098,7 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
       size_t msgsByteLength = params->view_size;
       memcpy(sig->proofs[t].msgs, sigBytes, msgsByteLength);
       sigBytes += msgsByteLength;
-      size_t msgsBitLength = 3 * params->lowmc->r * params->lowmc->m;
+      size_t msgsBitLength = 3 * params->lowmc.r * params->lowmc.m;
       if (!arePaddingBitsZero(sig->proofs[t].msgs, msgsByteLength, msgsBitLength)) {
 #if !defined(NDEBUG)
         printf("%s: failed while deserializing msgs bits\n", __func__);

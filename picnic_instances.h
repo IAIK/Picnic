@@ -21,13 +21,11 @@
 
 #define SALT_SIZE 32
 #define MAX_DIGEST_SIZE 64
-#define MAX_NUM_ROUNDS 438
-#define MAX_VIEW_SIZE ((3 * 85 * 4 + 7) / 8)
 
 typedef enum { TRANSFORM_FS, TRANSFORM_UR } transform_t;
 
 typedef struct picnic_instance_t {
-  const lowmc_t* lowmc;
+  lowmc_parameters_t lowmc;
 
   uint32_t digest_size;       /* bytes */
   uint32_t seed_size;         /* bytes */

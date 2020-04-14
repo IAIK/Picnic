@@ -17,7 +17,7 @@
 
 #if defined(WITH_LOWMC_129_129_4)
 #define LOWMC_INSTANCE lowmc_129_129_4
+#define LOWMC_N LOWMC_129_129_4_N
+#define LOWMC_R LOWMC_129_129_4_R
+#define LOWMC_M LOWMC_129_129_4_M
 #endif
-#define LOWMC_N LOWMC_L1_N
-#define LOWMC_R LOWMC_L1_R
-#define LOWMC_M LOWMC_L1_M

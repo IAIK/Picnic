@@ -104,9 +104,10 @@ set(WITH_SSE2 ON CACHE BOOL "Use SSE2 if available.")
 set(WITH_NEON ON CACHE BOOL "Use NEON if available.")
 set(WITH_MARCH_NATIVE ${DEFAULT_WITH_MARCH_NATIVE} CACHE BOOL "Build with -march=native -mtune=native (if supported).")
 set(WITH_LTO ON CACHE BOOL "Enable link-time optimization (if supported).")
-set(SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
+set(WITH_SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
+set_property(CACHE WITH_SHA3_IMPL PROPERTY STRINGS "opt64" "avx2" "armv8a-neon" "s390-cpacf")
 set(WITH_EXTRA_RANDOMNESS OFF CACHE BOOL "Feed extra random bytes to KDF (fault attack counter measure).")
-set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h.")
+set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h. Disabling this option is discouraged. It is only available to test builds produced for SUPERCOP.")
 if(MSVC)
   set(USE_STATIC_RUNTIME OFF CACHE BOOL "Use MSVC's static runtime for the static library.")
 endif()
@@ -192,28 +193,32 @@ if(WITH_CONFIG_H)
   configure_file(config.h.in config.h)
 endif()
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR} sha3 "sha3/${SHA3_IMPL}")
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # SHAKE implementation
-list(APPEND SHA3_SOURCES
-     sha3/KeccakHash.c
-     sha3/KeccakSpongeWidth1600.c)
+if(NOT WITH_SHA3_IMPL STREQUAL "s390-cpacf")
+  include_directories(sha3 "sha3/${WITH_SHA3_IMPL}")
 
-if(SHA3_IMPL STREQUAL "avx2")
-  list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.s)
-  set_property(SOURCE sha3/avx2/KeccakP-1600-AVX2.s PROPERTY LANGUAGE C)
-  # the times4 variant of Keccack using avx2
   list(APPEND SHA3_SOURCES
-       sha3/avx2/KeccakP-1600-times4-SIMD256.c
-       sha3/KeccakSpongeWidth1600times4.c
-       sha3/KeccakHashtimes4.c)
-elseif(SHA3_IMPL STREQUAL "opt64")
-  list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
-elseif(SHA3_IMPL STREQUAL "armv8a-neon")
-  list(APPEND SHA3_SOURCES sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s)
-  set_property(SOURCE sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s PROPERTY LANGUAGE C)
-else()
-  message(FATAL_ERROR "Unknown SHA3 implementation")
+       sha3/KeccakHash.c
+       sha3/KeccakSpongeWidth1600.c)
+
+  if(WITH_SHA3_IMPL STREQUAL "avx2")
+    list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.s)
+    set_property(SOURCE sha3/avx2/KeccakP-1600-AVX2.s PROPERTY LANGUAGE C)
+    # the times4 variant of Keccack using avx2
+    list(APPEND SHA3_SOURCES
+         sha3/avx2/KeccakP-1600-times4-SIMD256.c
+         sha3/KeccakSpongeWidth1600times4.c
+         sha3/KeccakHashtimes4.c)
+  elseif(WITH_SHA3_IMPL STREQUAL "opt64")
+    list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
+  elseif(WITH_SHA3_IMPL STREQUAL "armv8a-neon")
+    list(APPEND SHA3_SOURCES sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s)
+    set_property(SOURCE sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s PROPERTY LANGUAGE C)
+  else()
+    message(FATAL_ERROR "Unknown SHA3 implementation")
+  endif()
 endif()
 
 # Picnic implementation
@@ -231,6 +236,9 @@ list(APPEND PICNIC_SOURCES
      randomness.c)
 if(WITH_ZKBPP)
   list(APPEND PICNIC_SOURCES
+       lowmc_128_128_20.c
+       lowmc_192_192_30.c
+       lowmc_256_256_38.c
        bitstream.c
        mpc_lowmc.c
        picnic_impl.c)
@@ -269,8 +277,10 @@ function(apply_base_options lib)
   if(WITH_CONFIG_H)
     target_compile_definitions(${lib} PRIVATE HAVE_CONFIG_H)
   endif()
-  if(SHA3_IMPL STREQUAL "avx2")
+  if(WITH_SHA3_IMPL STREQUAL "avx2")
     target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
+  elseif(WITH_SHA3_IMPL STREQUAL "s390-cpacf")
+    target_compile_definitions(${lib} PRIVATE WITH_SHAKE_S390_CPACF)
   endif()
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${lib} PRIVATE NDEBUG)
@@ -297,6 +307,12 @@ function(apply_picnic_options lib)
   apply_opt_options(${lib})
 
   set_target_properties(${lib} PROPERTIES C_VISIBILITY_PRESET hidden)
+  if(WITH_ZKBPP)
+    target_compile_definitions(${lib} PRIVATE
+                               WITH_LOWMC_128_128_20
+                               WITH_LOWMC_192_192_30
+                               WITH_LOWMC_256_256_38)
+  endif()
   target_compile_definitions(${lib} PRIVATE
                              WITH_LOWMC_129_129_4
                              WITH_LOWMC_192_192_4

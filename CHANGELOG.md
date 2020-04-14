@@ -1,3 +1,11 @@
+Version 2.2 -- 2020-04-08
+---------------------------
+
+* Fix Picnic2 implementation on big endian systems
+* Add support for SHA3/SHAKE3 instructions on IBM z.
+* Various small improvements and bug fixes.
+* Remove LowMC instances with m=1.
+
 Version 2.1.2 -- 2019-10-03
 ---------------------------
 

@@ -24,8 +24,8 @@ typedef void (*lowmc_store_implementation_f)(lowmc_key_t const*, mzd_local_t con
                                              recorded_state_t* state);
 typedef void (*lowmc_compute_aux_implementation_f)(lowmc_key_t*, randomTape_t* tapes);
 
-lowmc_implementation_f lowmc_get_implementation(const lowmc_t* lowmc);
-lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_t* lowmc);
-lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_t* lowmc);
+lowmc_implementation_f lowmc_get_implementation(const lowmc_parameters_t* lowmc);
+lowmc_store_implementation_f lowmc_store_get_implementation(const lowmc_parameters_t* lowmc);
+lowmc_compute_aux_implementation_f lowmc_compute_aux_get_implementation(const lowmc_parameters_t* lowmc);
 
 #endif

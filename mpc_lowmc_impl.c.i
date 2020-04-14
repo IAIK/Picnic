@@ -20,7 +20,11 @@ static void N_SIGN(mzd_local_t const* p, view_t* views, in_out_shares_t* in_out_
   XOR((x)[SC_PROOF - 1], (x)[SC_PROOF - 1], recorded_state->state[i])
 #define ch 0
 #define shares SC_PROOF
+#if defined(LOWMC_PARTIAL)
+#define sbox mpc_sbox_prove_uint64_10
+#else
 #define sbox CONCAT(mpc_sbox_prove, CONCAT(IMPL, LOWMC_INSTANCE))
+#endif
 
   mpc_lowmc_key_t const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;
@@ -31,7 +35,11 @@ static void N_SIGN(mzd_local_t const* p, view_t* views, in_out_shares_t* in_out_
   MPC_LOOP_CONST(MUL, x, lowmc_key, LOWMC_INSTANCE.k0_matrix, reduced_shares);
   MPC_LOOP_CONST_C(XOR, x, x, p, reduced_shares, ch);
 
+#if defined(LOWMC_PARTIAL)
+  #include "mpc_lowmc_loop_partial.c.i"
+#else
   #include "mpc_lowmc_loop.c.i"
+#endif
 
   MPC_LOOP_SHARED_1(COPY, in_out_shares->s, x, SC_PROOF);
 
@@ -53,7 +61,11 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
 
 #define shares SC_VERIFY
 #define reduced_shares shares
+#if defined(LOWMC_PARTIAL)
+#define sbox mpc_sbox_verify_uint64_10
+#else
 #define sbox CONCAT(mpc_sbox_verify, CONCAT(IMPL, LOWMC_INSTANCE))
+#endif
 
   mzd_local_t* const* lowmc_key = &in_out_shares->s[0];
   ++in_out_shares;
@@ -64,7 +76,11 @@ static void N_VERIFY(mzd_local_t const* p, view_t* views, in_out_shares_t* in_ou
   MPC_LOOP_CONST(MUL, x, lowmc_key, LOWMC_INSTANCE.k0_matrix, SC_VERIFY);
   MPC_LOOP_CONST_C(XOR, x, x, p, SC_VERIFY, ch);
 
-#include "mpc_lowmc_loop.c.i"
+#if defined(LOWMC_PARTIAL)
+  #include "mpc_lowmc_loop_partial.c.i"
+#else
+  #include "mpc_lowmc_loop.c.i"
+#endif
 
   MPC_LOOP_SHARED_1(COPY, in_out_shares->s, x, SC_VERIFY);
 

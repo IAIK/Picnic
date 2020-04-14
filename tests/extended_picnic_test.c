@@ -31,8 +31,8 @@ static int picnic_test_keys(picnic_params_t parameters) {
     return -2;
   }
 
-  const size_t diff_key = instance->input_size * 8 - instance->lowmc->k;
-  const size_t diff_block = instance->output_size * 8 - instance->lowmc->n;
+  const size_t diff_key = instance->input_size * 8 - instance->lowmc.k;
+  const size_t diff_block = instance->output_size * 8 - instance->lowmc.n;
   /* instances with key size properly aligned */
   if (!diff_key && !diff_block) {
     return -2;
