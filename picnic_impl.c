@@ -52,12 +52,12 @@
 typedef struct {
   uint8_t* seeds[SC_PROOF];
   uint8_t* commitments[SC_PROOF];
-#if defined(WITH_UNRUH)
-  uint8_t* gs[SC_PROOF];
-#endif
   uint8_t* input_shares[SC_PROOF];
   uint8_t* communicated_bits[SC_PROOF];
   uint8_t* output_shares[SC_PROOF];
+#if defined(WITH_UNRUH)
+  uint8_t* gs[SC_PROOF];
+#endif
 } proof_round_t;
 
 typedef struct {
