@@ -139,7 +139,8 @@
 #define ATTR_TARGET(x)
 #endif
 
-#if defined(__GNUC__) || __has_attribute(__artificial__)
+/* artificial attribute */
+#if GNUC_CHECK(4, 7) || __has_attribute(__artificial__)
 #define ATTR_ARTIFICIAL __attribute__((__artificial__))
 #else
 #define ATTR_ARTIFICIAL
