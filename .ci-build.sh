@@ -15,9 +15,9 @@ set -x
 
 function run_cmake
 {
-  if [[ -n "$CMAKE_GENERATOR" ]]
+  if [[ -n "$CMAKE_GENERATOR" ]] && [[ -n "$CMAKE_ARCH" ]]
   then
-    cmake -G "$CMAKE_GENERATOR" "$@"
+    cmake -G "$CMAKE_GENERATOR" -A "$CMAKE_ARCH" "$@"
   else
     cmake "$@"
   fi

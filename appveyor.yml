@@ -3,8 +3,9 @@ version: "3.0.{build}"
 
 environment:
   matrix:
-  - CMAKE_GENERATOR: "Visual Studio 16 2019"
-  - CMAKE_GENERATOR: "Visual Studio 16 2019 Win64"
+  - CMAKE_ARCH: "Win32"
+  - CMAKE_ARCH: "x64"
+  CMAKE_GENERATOR: "Visual Studio 16 2019"
 
 build_script:
   - bash .ci-build.sh -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF
