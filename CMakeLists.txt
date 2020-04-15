@@ -112,6 +112,7 @@ set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h. Disabling this option is dis
 if(MSVC)
   set(USE_STATIC_RUNTIME OFF CACHE BOOL "Use MSVC's static runtime for the static library.")
 endif()
+set(WITH_EXTENDED_TESTS ON CACHE BOOL "Run extended tests.")
 
 # do not build with -rdynamic
 string(REGEX REPLACE "-rdynamic" "" CMAKE_EXE_LINKER_FLAGS
