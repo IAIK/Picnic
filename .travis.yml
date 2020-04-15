@@ -121,7 +121,7 @@ script:
   - bash .ci-build.sh
   - bash .ci-build.sh -DWITH_ZKBPP=OFF
   - bash .ci-build.sh -DWITH_KKW=OFF
-  - bash .ch-build.sh -DWITH_SIMD_OPT=OFF
+  - bash .ci-build.sh -DWITH_SIMD_OPT=OFF
   - bash .ci-build.sh -DWITH_EXTRA_RANDOMNESS=ON
   - bash .ci-build.sh -DWITH_CONFIG_H=OFF
   - bash .ci-build.sh -DWITH_LTO=OFF
