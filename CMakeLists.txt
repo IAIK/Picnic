@@ -64,6 +64,7 @@ check_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
 check_symbol_exists(memalign malloc.h HAVE_MEMALIGN)
 check_symbol_exists(getrandom sys/random.h HAVE_GETRANDOM)
 check_symbol_exists(getline stdio.h HAVE_GETLINE)
+check_symbol_exists(explicit_bzero string.h HAVE_EXPLICIT_BZERO)
 
 # check supported types
 check_type_size(ssize_t SSIZE_T LANGUAGE C)

@@ -261,6 +261,13 @@ PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_priva
 PICNIC_EXPORT int PICNIC_CALLING_CONVENTION
 picnic_validate_keypair(const picnic_privatekey_t* privatekey, const picnic_publickey_t* publickey);
 
+/**
+ * Clear data of a private key.
+ *
+ * @param[out] privatekey The private key to clear
+ */
+PICNIC_EXPORT void PICNIC_CALLING_CONVENTION picnic_clear_private_key(picnic_privatekey_t* key);
+
 #ifdef __cplusplus
 }
 #endif

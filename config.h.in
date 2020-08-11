@@ -14,6 +14,7 @@
 #cmakedefine HAVE_MEMALIGN
 #cmakedefine HAVE_GETRANDOM
 #cmakedefine HAVE_GETLINE
+#cmakedefine HAVE_EXPLICIT_BZERO
 
 /* available types */
 #cmakedefine HAVE_SSIZE_T

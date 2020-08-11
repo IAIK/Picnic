@@ -76,6 +76,7 @@ Now invoke `cmake` as usual and also pass `-DCMAKE_TOOLCHAIN_FILE=<path>` where 
 If the the cross-built DLLs are intended to be used in a Visual Studio project, some post-processing of the build artifacts is required. Create a file named `libpicnic.def` with the following content:
 ```
 EXPORTS
+picnic_clear_private_key
 picnic_get_param_name
 picnic_get_private_key_size
 picnic_get_public_key_size

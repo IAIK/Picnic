@@ -260,7 +260,6 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
 #else
     return -1;
 #endif
-
   }
 }
 
@@ -403,6 +402,14 @@ int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_privatekey_t* key, 
 
   memcpy(key->data, buf, bytes_required);
   return 0;
+}
+
+void picnic_clear_private_key(picnic_privatekey_t* key) {
+#if defined(HAVE_EXPLICIT_BZERO)
+  explicit_bzero(key, sizeof(picnic_privatekey_t));
+#else
+  memset(key, 0, sizeof(picnic_privatekey_t));
+#endif
 }
 
 #if defined(PICNIC_STATIC) && defined(WITH_ZKBPP)
