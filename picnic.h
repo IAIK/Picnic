@@ -264,9 +264,19 @@ picnic_validate_keypair(const picnic_privatekey_t* privatekey, const picnic_publ
 /**
  * Clear data of a private key.
  *
- * @param[out] privatekey The private key to clear
+ * @param[out] key The private key to clear
  */
 PICNIC_EXPORT void PICNIC_CALLING_CONVENTION picnic_clear_private_key(picnic_privatekey_t* key);
+
+/**
+ * Compute public key from private key.
+ *
+ * @param[in] privatekey The private key
+ * @param[out] publickey The public key to be populated
+ * @return Returns 0 on success, or a nonzero value indicating an error.
+ **/
+PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* privatekey,
+                                                            picnic_publickey_t* publickey);
 
 #ifdef __cplusplus
 }
