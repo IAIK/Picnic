@@ -12,6 +12,7 @@
 #endif
 
 #include "randomness.h"
+#include "macros.h"
 
 #if defined(HAVE_RANDOMBYTES) || defined(SUPERCOP)
 // randombytes from the NIST framework / SUPERCOP
@@ -23,8 +24,8 @@ int rand_bytes(uint8_t* dst, size_t len) {
 }
 #else
 
-#if defined(__linux__) && ((defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) ||              \
-                           (__GLIBC__ > 2 || __GLIBC_MINOR__ >= 25))
+#if defined(__linux__) &&                                                                          \
+    ((defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) || GLIBC_CHECK(2, 25))
 #include <sys/random.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {

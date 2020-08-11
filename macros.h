@@ -35,6 +35,13 @@
 #define GNUC_CHECK(maj, min) 0
 #endif
 
+/* glibc version check macro */
+#if defined(__GLIBC__)
+#define GLIBC_CHECK(maj, min) __GLIBC_PREREQ(maj, min)
+#else
+#define GLIBC_CHECK(maj, min) 0
+#endif
+
 #ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
