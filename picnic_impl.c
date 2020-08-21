@@ -676,10 +676,6 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8
 
   uint8_t hash[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, hash, digest_size);
-#if defined(SUPERCOP) || defined(WITH_VALGRIND)
-  /* parts of this hash will be published as challenge so is public anyway */
-  crypto_declassify(hash, MAX_DIGEST_SIZE);
-#endif
   H3_compute(pp, hash, ch);
 }
 
@@ -711,6 +707,10 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* cir
 
   uint8_t hash[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, hash, pp->digest_size);
+#if defined(SUPERCOP) || defined(WITH_VALGRIND)
+  /* parts of this hash will be published as challenge so is public anyway */
+  crypto_declassify(hash, MAX_DIGEST_SIZE);
+#endif
   H3_compute(pp, hash, prf->challenge);
 }
 
