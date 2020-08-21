@@ -19,7 +19,20 @@
     (defined(_ISOC11_SOURCE) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L))
 #define HAVE_ALIGNED_ALLOC
 #endif
+
+#if defined(__NetBSD__)
+#include <sys/param.h>
+#if !defined(HAVE_CONSTTIME_MEMEQUAL) && __NetBSD_Version__ >= 7000000000
+/* consttime_memequal was introduced in NetBSD 7.0 */
+#define HAVE_CONSTTIME_MEMEQUAL
 #endif
+#endif
+
+#if !defined(HAVE_TIMINGSAFE_BCMP) && (define(__OpenBSD__) || (defined(__FreeBSD__) && __FreeBSD__ >= 12))
+/* timingsafe_bcmp was introduced in OpenBSD 4.9 and FreeBSD 12.0 */
+#define HAVE_TIMINGSAFE_BCMP
+#endif
+#endif /* HAVE_CONFIG_H */
 
 #if defined(HAVE_ALIGNED_ALLOC)
 #include <stdlib.h>
@@ -37,8 +50,28 @@ void* aligned_alloc(size_t alignment, size_t size);
  * functions, so we provide one too.
  */
 void aligned_free(void* ptr);
-#endif
+#endif /* HAVE_ALIGNED_ALLOC */
 
 #include "endian_compat.h"
+
+#if !defined(HAVE_CONSTTIME_MEMEQUAL)
+/**
+ * Compatibility implementation of consttime_memequal from NetBSD 7.0.
+ */
+static inline int consttime_memequal(const void* a, const void* b, size_t len) {
+#if defined(HAVE_TIMINGSAFE_BCMP)
+  return timingsafe_bcmp(a, b, len);
+#else
+  const unsigned char* p1 = a;
+  const unsigned char* p2 = b;
+
+  unsigned int res = 0;
+  for (; len; --len, ++p1, ++p2) {
+    res |= *p1 ^ *p2;
+  }
+  return res;
+#endif
+}
+#endif /* HAVE_CONSTTIME_MEMEQUAL */
 
 #endif
