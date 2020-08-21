@@ -28,6 +28,13 @@
 #endif
 #include "randomness.h"
 
+#if defined(SUPERCOP)
+#include "crypto_declassify.h"
+#endif
+#if defined(WITH_VALGRIND)
+#include <valgrind/memcheck.h>
+#endif
+
 // Public and private keys are serialized as follows:
 // - public key: instance || C || p
 // - secret key: instance || sk || C || p
@@ -393,11 +400,24 @@ int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_privatekey_t* key, 
       param == Picnic3_L5) {
     const unsigned int diff = output_size * 8 - instance->lowmc.n;
     assert(diff == input_size * 8 - instance->lowmc.k);
+#if defined(SUPERCOP) || defined(WITH_VALGRIND)
+    /* this is a sanity check of public data: padding bits need to be 0 */
+    const int check1 = check_padding_bits(buf[1 + input_size - 1], diff);
+    const int check2 = check_padding_bits(buf[1 + input_size + output_size - 1], diff);
+    const int check3 = check_padding_bits(buf[1 + input_size + 2 * output_size - 1], diff);
+    crypto_declassify(&check1, sizeof(check1));
+    crypto_declassify(&check2, sizeof(check2));
+    crypto_declassify(&check3, sizeof(check3));
+    if (check1 || check2 || check3) {
+      return -1;
+    }
+#else
     if (check_padding_bits(buf[1 + input_size - 1], diff) ||
         check_padding_bits(buf[1 + input_size + output_size - 1], diff) ||
         check_padding_bits(buf[1 + input_size + 2 * output_size - 1], diff)) {
       return -1;
     }
+#endif
   }
 
   memcpy(key->data, buf, bytes_required);
