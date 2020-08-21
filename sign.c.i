@@ -15,6 +15,13 @@
 #include <string.h>
 #include <assert.h>
 
+#if defined(SUPERCOP)
+#include "crypto_declassify.h"
+#endif
+#if defined(WITH_VALGRIND)
+#include <valgrind/memcheck.h>
+#endif
+
 int crypto_sign_keypair(unsigned char* pk, unsigned char* sk) {
   picnic_publickey_t ppk;
   picnic_privatekey_t psk;
@@ -39,6 +46,10 @@ int crypto_sign_keypair(unsigned char* pk, unsigned char* sk) {
 
 int crypto_sign(unsigned char* sm, unsigned long long* smlen, const unsigned char* m,
                 unsigned long long mlen, const unsigned char* sk) {
+#if defined(SUPERCOP) || defined(WITH_VALGRIND)
+  /* the first byte encodes the parameter set and is public */
+  crypto_declassify(&sk[0], sizeof(unsigned char));
+#endif
   if (sk[0] != PICNIC_INSTANCE) {
     return -3;
   }
