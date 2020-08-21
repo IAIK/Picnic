@@ -915,13 +915,15 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
 int impl_sign_picnic3(const picnic_instance_t* instance, const uint8_t* plaintext,
                       const uint8_t* private_key, const uint8_t* public_key, const uint8_t* msg,
                       size_t msglen, uint8_t* signature, size_t* signature_len) {
-  int ret;
   signature2_t* sig = (signature2_t*)malloc(sizeof(signature2_t));
   allocateSignature2(sig, instance);
   if (sig == NULL) {
     return -1;
   }
-  ret = sign_picnic3(private_key, public_key, plaintext, msg, msglen, sig, instance);
+  int ret = sign_picnic3(private_key, public_key, plaintext, msg, msglen, sig, instance);
+#if defined(SUPERCOP) || defined(WITH_VALGRIND)
+  crypto_declassify(&ret, sizeof(ret));
+#endif
   if (ret != EXIT_SUCCESS) {
 #if !defined(NDEBUG)
     fprintf(stderr, "Failed to create signature\n");
