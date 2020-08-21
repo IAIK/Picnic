@@ -19,6 +19,13 @@
 #define LL_FMT "%llu"
 #endif
 
+#if defined(WITH_VALGRIND)
+#include <valgrind/memcheck.h>
+#else
+#define VALGRIND_MAKE_MEM_UNDEFINED(p, size)
+#define VALGRIND_MAKE_MEM_DEFINED(p, size)
+#endif
+
 int main(void) {
   unsigned char pk[CRYPTO_PUBLICKEYBYTES]          = {0};
   unsigned char sk[CRYPTO_SECRETKEYBYTES]          = {0};
@@ -27,10 +34,14 @@ int main(void) {
   unsigned char sm[sizeof(message) + CRYPTO_BYTES] = {0};
 
   int ret = crypto_sign_keypair(pk, sk);
+  VALGRIND_MAKE_MEM_DEFINED(&ret, sizeof(ret));
   if (ret != 0) {
     printf("Failed to generate key pair\n");
     return -1;
   }
+
+  VALGRIND_MAKE_MEM_UNDEFINED(sk, sizeof(sk));
+  VALGRIND_MAKE_MEM_UNDEFINED(message, sizeof(message));
 
   unsigned long long smlen = sizeof(sm);
   ret                      = crypto_sign(sm, &smlen, message, sizeof(message), sk);
@@ -38,6 +49,10 @@ int main(void) {
     printf("Failed to sign\n");
     return -1;
   }
+
+  VALGRIND_MAKE_MEM_DEFINED(sm, smlen);
+  VALGRIND_MAKE_MEM_DEFINED(sk, sizeof(sk));
+  VALGRIND_MAKE_MEM_DEFINED(message, sizeof(message));
 
   unsigned long long mlen = sizeof(omessage);
   ret                     = crypto_sign_open(omessage, &mlen, sm, smlen, pk);

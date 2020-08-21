@@ -45,6 +45,7 @@ endfunction()
 
 # check libraries
 find_package(m4ri 20140914)
+find_package(valgrind)
 
 if(APPLE)
   find_path(SECRUTY_INCLUDE_DIR Security/Security.h)
@@ -114,6 +115,7 @@ if(MSVC)
   set(USE_STATIC_RUNTIME OFF CACHE BOOL "Use MSVC's static runtime for the static library.")
 endif()
 set(WITH_EXTENDED_TESTS ON CACHE BOOL "Run extended tests.")
+set(WITH_VALGRIND_CT_TESTS OFF CACHE BOOL "Build crypto_api tests with constant-time checks. Enabling this option is discouraged. It is only available to test builds for SUPERCOP/TIMECOP.")
 
 # do not build with -rdynamic
 string(REGEX REPLACE "-rdynamic" "" CMAKE_EXE_LINKER_FLAGS
@@ -270,6 +272,10 @@ if(MSVC)
   set_target_properties(picnic_static PROPERTIES OUTPUT_NAME libpicnic_static)
 endif()
 target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC)
+# build static library with valgrind if enabled for tests
+if(VALGRIND_FOUND AND WITH_VALGRIND_CT_TESTS)
+  target_compile_definitions(picnic_static PRIVATE WITH_VALGRIND crypto_declassify=VALGRIND_MAKE_MEM_DEFINED)
+endif()
 
 function(apply_base_options lib)
   if(WITH_ZKBPP)
@@ -407,7 +413,12 @@ foreach(target IN ITEMS ${api_targets})
   add_library("${target}" STATIC "${target}/sign.c")
   target_include_directories("${target}" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   target_include_directories("${target}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/${target}")
-  target_link_libraries("${target}" picnic)
+  if (VALGRIND_FOUND AND WITH_VALGRIND_CT_TESTS)
+    target_link_libraries("${target}" picnic_static)
+    target_compile_definitions("${target}" PRIVATE WITH_VALGRIND crypto_declassify=VALGRIND_MAKE_MEM_DEFINED)
+  else()
+    target_link_libraries("${target}" picnic)
+  endif()
 endforeach(target)
 
 # tests
