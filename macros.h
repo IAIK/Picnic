@@ -274,4 +274,15 @@ ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t ceil_log2(uint32_t x) {
 #define SIZET_FMT "%zu"
 #endif
 
+/* crypto_declassify wrapper */
+#if defined(TIMECOP)
+#include "crypto_declassify.h"
+#define picnic_declassify(x, len) crypto_declassify(x, len)
+#elif defined(WITH_VALGRIND)
+#include <valgrind/memcheck.h>
+#define picnic_declassify(x, len) VALGRIND_MAKE_MEM_DEFINED(x, len)
+#else
+#define picnic_declassify(x, len)
+#endif
+
 #endif

@@ -29,13 +29,6 @@
 #include "picnic3_tree.h"
 #include "picnic3_types.h"
 
-#if defined(SUPERCOP)
-#include "crypto_declassify.h"
-#endif
-#if defined(WITH_VALGRIND)
-#include <valgrind/memcheck.h>
-#endif
-
 /* Helper functions */
 
 ATTR_CONST
@@ -343,10 +336,8 @@ static void HCP(uint8_t* sigH, uint16_t* challengeC, uint16_t* challengeP, commi
   hash_update(&ctx, message, messageByteLength);
   hash_final(&ctx);
   hash_squeeze(&ctx, sigH, params->digest_size);
-#if defined(SUPERCOP) || defined(WITH_VALGRIND)
   /* parts of this hash will be published as challenge so is public anyway */
-  crypto_declassify(sigH, params->digest_size);
-#endif
+  picnic_declassify(sigH, params->digest_size);
 
   expandChallenge(challengeC, challengeP, sigH, params);
 }
@@ -921,9 +912,7 @@ int impl_sign_picnic3(const picnic_instance_t* instance, const uint8_t* plaintex
     return -1;
   }
   int ret = sign_picnic3(private_key, public_key, plaintext, msg, msglen, sig, instance);
-#if defined(SUPERCOP) || defined(WITH_VALGRIND)
-  crypto_declassify(&ret, sizeof(ret));
-#endif
+  picnic_declassify(&ret, sizeof(ret));
   if (ret != EXIT_SUCCESS) {
 #if !defined(NDEBUG)
     fprintf(stderr, "Failed to create signature\n");

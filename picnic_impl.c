@@ -25,13 +25,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#if defined(SUPERCOP)
-#include "crypto_declassify.h"
-#endif
-#if defined(WITH_VALGRIND)
-#include <valgrind/memcheck.h>
-#endif
-
 /* max number of ZKB++ rounds */
 #if defined(WITH_LOWMC_255_255_4) || defined(WITH_LOWMC_256_256_38)
 #define MAX_NUM_ROUNDS 438
@@ -707,10 +700,8 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* cir
 
   uint8_t hash[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, hash, pp->digest_size);
-#if defined(SUPERCOP) || defined(WITH_VALGRIND)
   /* parts of this hash will be published as challenge so is public anyway */
-  crypto_declassify(hash, MAX_DIGEST_SIZE);
-#endif
+  picnic_declassify(hash, MAX_DIGEST_SIZE);
   H3_compute(pp, hash, prf->challenge);
 }
 
