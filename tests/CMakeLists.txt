@@ -90,7 +90,6 @@ if(NOT WIN32)
     target_link_libraries("api_${target}_test" "${target}")
     if (VALGRIND_FOUND AND WITH_VALGRIND_CT_TESTS)
       # if valgrind CT tests are enabled, execute tests with valgrind
-      target_compile_definitions("api_${target}_test" PRIVATE WITH_VALGRIND)
       add_test(NAME "api_${target}" COMMAND "${VALGRIND_EXECUTABLE}" -q --error-exitcode=1 --track-origins=yes "$<TARGET_FILE:api_${target}_test>")
     else()
       add_test(NAME "api_${target}" COMMAND "api_${target}_test")
