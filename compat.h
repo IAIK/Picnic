@@ -20,15 +20,16 @@
 #define HAVE_ALIGNED_ALLOC
 #endif /* HAVE_ALIGNED_ALLOC */
 
-#if defined(__NetBSD__)
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/param.h>
+#endif /* __NetBSD__ || __OpenBSD__ */
+
 #if !defined(HAVE_CONSTTIME_MEMEQUAL) && __NetBSD_Version__ >= 7000000000
 /* consttime_memequal was introduced in NetBSD 7.0 */
 #define HAVE_CONSTTIME_MEMEQUAL
 #endif /* HAVE_CONSTTIME_MEMEQUAL */
-#endif
 
-#if !defined(HAVE_TIMINGSAFE_BCMP) && (defined(__OpenBSD__) || (defined(__FreeBSD__) && __FreeBSD__ >= 12))
+#if !defined(HAVE_TIMINGSAFE_BCMP) && (defined(__OpenBSD__) && OpenBSD >= 201105) || (defined(__FreeBSD__) && __FreeBSD__ >= 12))
 /* timingsafe_bcmp was introduced in OpenBSD 4.9 and FreeBSD 12.0 */
 #define HAVE_TIMINGSAFE_BCMP
 #endif /* HAVE_TIMINGSAFE_BCMP */
