@@ -129,6 +129,40 @@ static int test_shake256_x4(void) {
   return 0;
 }
 
+#if defined(WITH_VALGRIND)
+#include <valgrind/memcheck.h>
+
+static int test_shake128_valgrind(void) {
+  const uint8_t data[336] = {0x00};
+  VALGRIND_MAKE_MEM_UNDEFINED(data, sizeof(data));
+
+  const size_t data_size = sizeof(data);
+  uint8_t out1[32] = {0};
+  uint8_t out2[32] = {0};
+  hash_context ctx1;
+  hash_init(&ctx1, 32);
+  hash_update(&ctx1, data, data_size);
+  hash_final(&ctx1);
+  hash_squeeze(&ctx1, out1, 32);
+
+  hash_context ctx2;
+  hash_init(&ctx2, 32);
+  for (size_t offset = 0; offset < data_size;) {
+    const size_t diff = MIN(data_size - offset, 128);
+    hash_update(&ctx2, data + offset, diff);
+    offset += diff;
+  }
+  hash_final(&ctx2);
+  hash_squeeze(&ctx2, out2, 32);
+
+  return memcmp(out1, out2, sizeof(out1)) ? -1 : 0;
+}
+#else
+static int test_shake128_valgrind(void) {
+  return -2;
+}
+#endif
+
 int main(void) {
   int ret = 0;
 
@@ -145,6 +179,17 @@ int main(void) {
 
   printf("testing SHAKE256x4 ...");
   r = test_shake256_x4();
+  if (r == -2) {
+    printf("SKIPPED\n");
+  } else if (r) {
+    printf("FAILED\n");
+    ret = -1;
+  } else {
+    printf("OK\n");
+  }
+
+  printf("testing SHAKE128 with valgrind ...");
+  r = test_shake128_valgrind();
   if (r == -2) {
     printf("SKIPPED\n");
   } else if (r) {
