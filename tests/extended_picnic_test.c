@@ -269,7 +269,7 @@ static int perform_test(picnic_params_t param) {
   int ret = 0;
 
   printf("testing keys: %s ...", picnic_get_param_name(param));
-  int r   = picnic_test_keys(param);
+  int r = picnic_test_keys(param);
   if (r == -2) {
     printf("SKIPPED\n");
   } else if (r) {
