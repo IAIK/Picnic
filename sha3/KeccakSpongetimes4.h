@@ -15,6 +15,7 @@ http://creativecommons.org/publicdomain/zero/1.0/
 #define _KeccakSpongeWidth1600times4_h_
 
 #include <string.h>
+#include "config.h"
 #if !defined(SUPERCOP)
 #include "align.h"
 #else
@@ -35,7 +36,7 @@ http://creativecommons.org/publicdomain/zero/1.0/
     int prefix##_SpongeAbsorbLastFewBits(prefix##_SpongeInstance *spongeInstance, unsigned char delimitedData); \
     int prefix##_SpongeSqueeze(prefix##_SpongeInstance *spongeInstance, unsigned char **data, size_t dataByteLen);
 
-#ifndef KeccakP1600times4_excluded
+#ifdef XKCP_has_KeccakP1600times4
 #if !defined(SUPERCOP)
     #include "KeccakP-1600-times4-SnP.h"
 #else

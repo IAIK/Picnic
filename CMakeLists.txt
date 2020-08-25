@@ -210,20 +210,23 @@ if(NOT WITH_SHA3_IMPL STREQUAL "s390-cpacf")
 
   list(APPEND SHA3_SOURCES
        sha3/KeccakHash.c
-       sha3/KeccakSpongeWidth1600.c)
+       sha3/KeccakSponge.c
+       sha3/KeccakSpongetimes4.c
+       sha3/KeccakHashtimes4.c)
 
   if(WITH_SHA3_IMPL STREQUAL "avx2")
-    list(APPEND SHA3_SOURCES sha3/avx2/KeccakP-1600-AVX2.s)
-    set_property(SOURCE sha3/avx2/KeccakP-1600-AVX2.s PROPERTY LANGUAGE C)
-    # the times4 variant of Keccack using avx2
     list(APPEND SHA3_SOURCES
-         sha3/avx2/KeccakP-1600-times4-SIMD256.c
-         sha3/KeccakSpongeWidth1600times4.c
-         sha3/KeccakHashtimes4.c)
+         sha3/avx2/KeccakP-1600-AVX2.s
+         sha3/avx2/KeccakP-1600-times4-SIMD256.c)
+    set_property(SOURCE sha3/avx2/KeccakP-1600-AVX2.s PROPERTY LANGUAGE C)
   elseif(WITH_SHA3_IMPL STREQUAL "opt64")
-    list(APPEND SHA3_SOURCES sha3/opt64/KeccakP-1600-opt64.c)
+    list(APPEND SHA3_SOURCES
+         sha3/opt64/KeccakP-1600-opt64.c
+         sha3/opt64/KeccakP-1600-times4-on1.c)
   elseif(WITH_SHA3_IMPL STREQUAL "armv8a-neon")
-    list(APPEND SHA3_SOURCES sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s)
+    list(APPEND SHA3_SOURCES
+         sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s
+         sha3/opt64/KeccakP-1600-times4-on1.c)
     set_property(SOURCE sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s PROPERTY LANGUAGE C)
   else()
     message(FATAL_ERROR "Unknown SHA3 implementation")
@@ -300,10 +303,10 @@ function(apply_base_options lib)
   if(WITH_CONFIG_H)
     target_compile_definitions(${lib} PRIVATE HAVE_CONFIG_H)
   endif()
-  if(WITH_SHA3_IMPL STREQUAL "avx2")
-    target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
-  elseif(WITH_SHA3_IMPL STREQUAL "s390-cpacf")
+  if(WITH_SHA3_IMPL STREQUAL "s390-cpacf")
     target_compile_definitions(${lib} PRIVATE WITH_SHAKE_S390_CPACF)
+  else()
+    target_compile_definitions(${lib} PRIVATE WITH_KECCAK_X4)
   endif()
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${lib} PRIVATE NDEBUG)

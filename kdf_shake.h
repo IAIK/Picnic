@@ -19,32 +19,17 @@
 /* use the KIMD/KLMD instructions from CPACF for SHAKE support on S390 */
 #include "sha3/s390_cpacf.h"
 #else
-#if !defined(KeccakP200_excluded)
-#define KeccakP200_excluded
-#endif
-
-#if !defined(KeccakP400_excluded)
-#define KeccakP400_excluded
-#endif
-
-#if !defined(KeccakP800_excluded)
-#define KeccakP800_excluded
-#endif
-
 #if !defined(SUPERCOP)
 /* use SHAKE implementation in sha3/ */
 #include "sha3/KeccakHash.h"
-#if defined(WITH_KECCAK_X4)
-/* use the Keccakx4 implementation */
-#include "sha3/KeccakHashtimes4.h"
-#endif
 #else
 /* use SUPERCOP implementation */
 #include <libkeccak.a.headers/KeccakHash.h>
-#if defined(WITH_KECCAK_X4)
-/* Keccakx4 is not fully supported by SUPERCOP, so we need to ship it ourselves. */
-#include "KeccakHashtimes4.h"
 #endif
+
+#if defined(WITH_KECCAK_X4)
+/* use the Keccakx4 implementation */
+#include "KeccakHashtimes4.h"
 #endif
 
 typedef Keccak_HashInstance hash_context ATTR_ALIGNED(32);
