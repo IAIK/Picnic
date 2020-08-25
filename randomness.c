@@ -24,8 +24,8 @@ int rand_bytes(uint8_t* dst, size_t len) {
 }
 #else
 
-#if defined(__linux__) &&                                                                          \
-    ((defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) || GLIBC_CHECK(2, 25))
+#if (defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) ||                                     \
+    (defined(__linux__) && GLIBC_CHECK(2, 25))
 #include <sys/random.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
@@ -33,6 +33,13 @@ int rand_bytes(uint8_t* dst, size_t len) {
   if (ret < 0 || (size_t)ret != len) {
     return -1;
   }
+  return 0;
+}
+#elif define(HAVE_ARC4RANDOM_BUF)
+#include <stdlib.h>
+
+int rand_bytes(uint8_t* dst, size_t len) {
+  arc4random(dst, len);
   return 0;
 }
 #elif defined(__APPLE__) && defined(HAVE_APPLE_FRAMEWORK)
@@ -44,7 +51,8 @@ int rand_bytes(uint8_t* dst, size_t len) {
   }
   return -1;
 }
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__NETBSD__) ||   \
+    defined(__NetBSD__)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

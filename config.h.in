@@ -13,6 +13,7 @@
 #cmakedefine HAVE_POSIX_MEMALIGN
 #cmakedefine HAVE_MEMALIGN
 #cmakedefine HAVE_GETRANDOM
+#cmakedefine HAVE_ARC4RANDOM_BUF
 #cmakedefine HAVE_GETLINE
 #cmakedefine HAVE_EXPLICIT_BZERO
 #cmakedefine HAVE_CONSTTIME_MEMEQUAL
