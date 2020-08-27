@@ -29,8 +29,8 @@
 #define HAVE_CONSTTIME_MEMEQUAL
 #endif /* HAVE_CONSTTIME_MEMEQUAL */
 
-#if !defined(HAVE_TIMINGSAFE_BCMP) && (defined(__OpenBSD__) && OpenBSD >= 201105) ||               \
-    (defined(__FreeBSD__) && __FreeBSD__ >= 12)
+#if !defined(HAVE_TIMINGSAFE_BCMP) &&                                                              \
+    ((defined(__OpenBSD__) && OpenBSD >= 201105) || (defined(__FreeBSD__) && __FreeBSD__ >= 12))
 /* timingsafe_bcmp was introduced in OpenBSD 4.9 and FreeBSD 12.0 */
 #define HAVE_TIMINGSAFE_BCMP
 #endif /* HAVE_TIMINGSAFE_BCMP */
