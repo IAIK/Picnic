@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "compat.h"
 #include "io.h"
 #include "lowmc.h"
 #include "picnic_instances.h"
@@ -410,11 +411,7 @@ int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_privatekey_t* key, 
 }
 
 void PICNIC_CALLING_CONVENTION picnic_clear_private_key(picnic_privatekey_t* key) {
-#if defined(HAVE_EXPLICIT_BZERO) || GLIBC_CHECK(2, 25)
   explicit_bzero(key, sizeof(picnic_privatekey_t));
-#else
-  memset(key, 0, sizeof(picnic_privatekey_t));
-#endif
 }
 
 #if defined(PICNIC_STATIC) && defined(WITH_ZKBPP)

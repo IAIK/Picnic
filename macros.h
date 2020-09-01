@@ -42,6 +42,21 @@
 #define GLIBC_CHECK(maj, min) 0
 #endif
 
+/* FreeBSD version check macro */
+#if defined(__FreeBSD__)
+#define FREEBSD_CHECK(maj, min) (__FreeBSD__ >= (maj))
+#else
+#define FREEBSD_CHECK(maj, min) 0
+#endif
+
+/* NetBSD version check macro */
+#if defined(__NetBSD__)
+#include <sys/param.h>
+#define NETBSD_CHECK(maj, min) (__NetBSD_Version__ >= (((maj)*1000000000) + ((rev)*10000000)))
+#else
+#define NETBSD_CHECK(maj, min) 0
+#endif
+
 #ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
