@@ -35,7 +35,7 @@ int rand_bytes(uint8_t* dst, size_t len) {
   }
   return 0;
 }
-#elif define(HAVE_ARC4RANDOM_BUF)
+#elif defined(HAVE_ARC4RANDOM_BUF)
 #include <stdlib.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
