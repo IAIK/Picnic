@@ -71,6 +71,18 @@ typedef struct {
   unsigned int round_number;
 } sorting_helper_t;
 
+typedef struct {
+  mzd_local_t m_plaintext[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
+  /* private key for signing, public key for verification */
+  mzd_local_t m_key[(MAX_LOWMC_KEY_SIZE_BITS + 255) / 256];
+
+  const uint8_t* plaintext;
+  const uint8_t* private_key;
+  const uint8_t* public_key;
+  const uint8_t* msg;
+  size_t msglen;
+} context_t;
+
 #if defined(WITH_UNRUH)
 static bool is_unruh(const picnic_instance_t* pp) {
   return pp->params == Picnic_L1_UR || pp->params == Picnic_L3_UR || pp->params == Picnic_L5_UR;
@@ -558,22 +570,21 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
  * Hash public key, salt and message
  */
 static void H3_public_key_message(hash_context* ctx, const picnic_instance_t* pp,
-                                  const uint8_t* salt, const uint8_t* circuit_output,
-                                  const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
+                                  const uint8_t* salt, const context_t* context) {
   // hash circuit out and input (public key)
-  hash_update(ctx, circuit_output, pp->output_size);
-  hash_update(ctx, circuit_input, pp->input_size);
+  hash_update(ctx, context->public_key, pp->output_size);
+  hash_update(ctx, context->plaintext, pp->input_size);
   // hash salt
   hash_update(ctx, salt, SALT_SIZE);
   // hash message
-  hash_update(ctx, m, m_len);
+  hash_update(ctx, context->msg, context->msglen);
 }
 
 /**
  * Re-compute challenge for verification
  */
-static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
-                      const uint8_t* circuit_input, const uint8_t* m, size_t m_len, uint8_t* ch) {
+static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const context_t* context,
+                      uint8_t* ch) {
   const size_t digest_size = pp->digest_size;
   const size_t num_rounds  = pp->num_rounds;
   const size_t output_size = pp->output_size;
@@ -664,7 +675,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8
 #endif
 
   // hash public key, salt, and message
-  H3_public_key_message(&ctx, pp, prf->salt, circuit_output, circuit_input, m, m_len);
+  H3_public_key_message(&ctx, pp, prf->salt, context);
   hash_final(&ctx);
 
   uint8_t hash[MAX_DIGEST_SIZE];
@@ -675,8 +686,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const uint8
 /**
  * Compute challenge
  */
-static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* circuit_output,
-               const uint8_t* circuit_input, const uint8_t* m, size_t m_len) {
+static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const context_t* context) {
   const size_t num_rounds = pp->num_rounds;
 
   hash_context ctx;
@@ -695,7 +705,7 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const uint8_t* cir
   }
 #endif
   // hash public key, salt, and message
-  H3_public_key_message(&ctx, pp, prf->salt, circuit_output, circuit_input, m, m_len);
+  H3_public_key_message(&ctx, pp, prf->salt, context);
   hash_final(&ctx);
 
   uint8_t hash[MAX_DIGEST_SIZE];
@@ -1011,9 +1021,8 @@ err:
   return NULL;
 }
 
-static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_key,
-                           const uint8_t* plaintext, const uint8_t* public_key, const uint8_t* m,
-                           size_t m_len, uint8_t* seeds, uint8_t* salt) {
+static void generate_seeds(const picnic_instance_t* pp, const context_t* context, uint8_t* seeds,
+                           uint8_t* salt) {
   const size_t seed_size   = pp->seed_size;
   const size_t num_rounds  = pp->num_rounds;
   const size_t input_size  = pp->input_size;
@@ -1023,10 +1032,10 @@ static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_k
   kdf_shake_t ctx;
   kdf_shake_init(&ctx, pp->digest_size);
   // sk || m || C || p
-  kdf_shake_update_key(&ctx, private_key, input_size);
-  kdf_shake_update_key(&ctx, m, m_len);
-  kdf_shake_update_key(&ctx, public_key, output_size);
-  kdf_shake_update_key(&ctx, plaintext, output_size);
+  kdf_shake_update_key(&ctx, context->private_key, input_size);
+  kdf_shake_update_key(&ctx, context->msg, context->msglen);
+  kdf_shake_update_key(&ctx, context->public_key, output_size);
+  kdf_shake_update_key(&ctx, context->plaintext, output_size);
   // N as 16 bit LE integer
   kdf_shake_update_key_uint16_le(&ctx, lowmc_n);
 #if defined(WITH_EXTRA_RANDOMNESS)
@@ -1043,9 +1052,7 @@ static void generate_seeds(const picnic_instance_t* pp, const uint8_t* private_k
   kdf_shake_clear(&ctx);
 }
 
-static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
-                     const lowmc_key_t* lowmc_key, const uint8_t* plaintext, const mzd_local_t* p,
-                     const uint8_t* public_key, const uint8_t* m, size_t m_len, uint8_t* sig,
+static int sign_impl(const picnic_instance_t* pp, const context_t* context, uint8_t* sig,
                      size_t* siglen) {
   const size_t num_rounds  = pp->num_rounds;
   const size_t input_size  = pp->input_size;
@@ -1063,7 +1070,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
 
   // Perform LowMC evaluation and record state before AND gates
   recorded_state_t* recorded_state = aligned_alloc(32, sizeof(recorded_state_t) * (lowmc_r + 1));
-  lowmc_store_impl(lowmc_key, p, recorded_state);
+  lowmc_store_impl(context->m_key, context->m_plaintext, recorded_state);
 
   sig_proof_t* prf = proof_new(pp);
   view_t* views    = aligned_alloc(32, sizeof(view_t) * lowmc_r);
@@ -1071,8 +1078,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   in_out_shares_t in_out_shares[2];
 
   // Generate seeds
-  generate_seeds(pp, private_key, plaintext, public_key, m, m_len, prf->round[0].seeds[0],
-                 prf->salt);
+  generate_seeds(pp, context, prf->round[0].seeds[0], prf->salt);
 
   rvec_t* rvec = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for AND-gates
 
@@ -1112,7 +1118,8 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
         clear_padding_bits(&round[round_offset].input_shares[j][input_size - 1], diff);
         mzd_from_char_array(in_out_shares[0].s[j], round[round_offset].input_shares[j], input_size);
       }
-      mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], lowmc_key);
+      mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1],
+                context->m_key);
       mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1],
                         in_out_shares[0].s[SC_PROOF - 1], input_size);
 
@@ -1121,7 +1128,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       }
 
       // perform ZKB++ LowMC evaluation
-      lowmc_impl(p, views, in_out_shares, rvec, recorded_state);
+      lowmc_impl(context->m_plaintext, views, in_out_shares, rvec, recorded_state);
 
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
         mzd_to_char_array(round[round_offset].output_shares[j], in_out_shares[1].s[j], output_size);
@@ -1156,7 +1163,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
       clear_padding_bits(&round->input_shares[j][input_size - 1], diff);
       mzd_from_char_array(in_out_shares[0].s[j], round->input_shares[j], input_size);
     }
-    mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], lowmc_key);
+    mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], context->m_key);
     mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1],
                       input_size);
 
@@ -1173,7 +1180,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     }
 
     // perform ZKB++ LowMC evaluation
-    lowmc_impl(p, views, in_out_shares, rvec, recorded_state);
+    lowmc_impl(context->m_plaintext, views, in_out_shares, rvec, recorded_state);
 
     // commitments
     for (unsigned int j = 0; j < SC_PROOF; ++j) {
@@ -1191,7 +1198,7 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
     }
 #endif
   }
-  H3(pp, prf, public_key, plaintext, m, m_len);
+  H3(pp, prf, context);
 
   const int ret = sig_proof_to_char_array(pp, prf, sig, siglen);
 
@@ -1208,15 +1215,14 @@ static int sign_impl(const picnic_instance_t* pp, const uint8_t* private_key,
   return ret;
 }
 
-static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mzd_local_t const* p,
-                       const uint8_t* ciphertext, mzd_local_t const* c, const uint8_t* m,
-                       size_t m_len, const uint8_t* sig, size_t siglen) {
-  const size_t num_rounds     = pp->num_rounds;
-  const size_t input_size     = pp->input_size;
-  const size_t output_size    = pp->output_size;
-  const size_t lowmc_r        = pp->lowmc.r;
-  const size_t view_size      = pp->view_size;
-  const unsigned int diff     = input_size * 8 - pp->lowmc.n;
+static int verify_impl(const picnic_instance_t* pp, const context_t* context, const uint8_t* sig,
+                       size_t siglen) {
+  const size_t num_rounds  = pp->num_rounds;
+  const size_t input_size  = pp->input_size;
+  const size_t output_size = pp->output_size;
+  const size_t lowmc_r     = pp->lowmc.r;
+  const size_t view_size   = pp->view_size;
+  const unsigned int diff  = input_size * 8 - pp->lowmc.n;
 #if defined(WITH_UNRUH)
   const bool unruh = is_unruh(pp);
 #endif
@@ -1306,10 +1312,11 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
         decompress_view(views, pp, helper[round_offset].round->communicated_bits[1], 1);
         // perform ZKB++ LowMC evaluation
-        lowmc_verify_impl(p, views, in_out_shares, rvec, a_i);
+        lowmc_verify_impl(context->m_plaintext, views, in_out_shares, rvec, a_i);
         compress_view(helper[round_offset].round->communicated_bits[0], pp, views, 0);
 
-        mzd_share(in_out_shares[1].s[2], in_out_shares[1].s[0], in_out_shares[1].s[1], c);
+        mzd_share(in_out_shares[1].s[2], in_out_shares[1].s[0], in_out_shares[1].s[1],
+                  context->m_key);
         // recompute commitments
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
           mzd_to_char_array(helper[round_offset].round->output_shares[j], in_out_shares[1].s[j],
@@ -1370,10 +1377,11 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
       decompress_view(views, pp, helper->round->communicated_bits[1], 1);
       // perform ZKB++ LowMC evaluation
-      lowmc_verify_impl(p, views, in_out_shares, rvec, a_i);
+      lowmc_verify_impl(context->m_plaintext, views, in_out_shares, rvec, a_i);
       compress_view(helper->round->communicated_bits[0], pp, views, 0);
 
-      mzd_share(in_out_shares[1].s[2], in_out_shares[1].s[0], in_out_shares[1].s[1], c);
+      mzd_share(in_out_shares[1].s[2], in_out_shares[1].s[0], in_out_shares[1].s[1],
+                context->m_key);
       // recompute commitments
       for (unsigned int j = 0; j < SC_VERIFY; ++j) {
         mzd_to_char_array(helper->round->output_shares[j], in_out_shares[1].s[j], output_size);
@@ -1395,7 +1403,7 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 
   assert(pp->num_rounds <= MAX_NUM_ROUNDS);
   unsigned char challenge[MAX_NUM_ROUNDS] = {0};
-  H3_verify(pp, prf, ciphertext, plaintext, m, m_len, challenge);
+  H3_verify(pp, prf, context, challenge);
   const int success_status = memcmp(challenge, prf->challenge, pp->num_rounds);
 
   // clean up
@@ -1416,30 +1424,30 @@ static int verify_impl(const picnic_instance_t* pp, const uint8_t* plaintext, mz
 int impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
               const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
               size_t* siglen) {
-  mzd_local_t m_plaintext[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
-  mzd_local_t m_privatekey[(MAX_LOWMC_KEY_SIZE_BITS + 255) / 256];
+  context_t context;
+  mzd_from_char_array(context.m_plaintext, plaintext, pp->output_size);
+  mzd_from_char_array(context.m_key, private_key, pp->input_size);
+  context.plaintext   = plaintext;
+  context.private_key = private_key;
+  context.public_key  = public_key;
+  context.msg         = msg;
+  context.msglen      = msglen;
 
-  mzd_from_char_array(m_plaintext, plaintext, pp->output_size);
-  mzd_from_char_array(m_privatekey, private_key, pp->input_size);
-
-  const int result = sign_impl(pp, private_key, m_privatekey, plaintext, m_plaintext, public_key,
-                               msg, msglen, sig, siglen);
-
-  return result;
+  return sign_impl(pp, &context, sig, siglen);
 }
 
 int impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
                 const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
-  mzd_local_t m_plaintext[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
-  mzd_local_t m_publickey[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
+  context_t context;
+  mzd_from_char_array(context.m_plaintext, plaintext, pp->output_size);
+  mzd_from_char_array(context.m_key, public_key, pp->output_size);
+  context.plaintext   = plaintext;
+  context.private_key = NULL;
+  context.public_key  = public_key;
+  context.msg         = msg;
+  context.msglen      = msglen;
 
-  mzd_from_char_array(m_plaintext, plaintext, pp->output_size);
-  mzd_from_char_array(m_publickey, public_key, pp->output_size);
-
-  const int result =
-      verify_impl(pp, plaintext, m_plaintext, public_key, m_publickey, msg, msglen, sig, siglen);
-
-  return result;
+  return verify_impl(pp, &context, sig, siglen);
 }
 
 #if defined(PICNIC_STATIC)
