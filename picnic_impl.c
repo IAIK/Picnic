@@ -1046,6 +1046,7 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
   const size_t output_size = pp->output_size;
   const size_t lowmc_r     = pp->lowmc.r;
   const size_t view_size   = pp->view_size;
+  const size_t aview_size  = ALIGNU64T(view_size);
   const unsigned int diff  = input_size * 8 - pp->lowmc.n;
 #if defined(WITH_UNRUH)
   const bool unruh = is_unruh(pp);
@@ -1068,36 +1069,36 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
   generate_seeds(pp, context, prf->round[0].seeds[0], prf->salt);
 
   rvec_t* rvec = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for AND-gates
+  uint8_t* tape_bytes_x4 = aligned_alloc(sizeof(uint64_t), SC_PROOF * 4 * aview_size);
 
   proof_round_t* round = prf->round;
-  // use 4 parallel instances of keccak for speedup
-  uint8_t* tape_bytes_x4[SC_PROOF][4];
-  for (unsigned int k = 0; k < SC_PROOF; k++) {
-    for (unsigned int j = 0; j < 4; j++) {
-      tape_bytes_x4[k][j] = malloc(view_size);
-    }
-  }
   unsigned int i = 0;
   for (; i < (num_rounds / 4) * 4; i += 4, round += 4) {
-    kdf_shake_x4_t kdfs[SC_PROOF];
-    for (unsigned int j = 0; j < SC_PROOF; ++j) {
-      const bool include_input_size   = (j != SC_PROOF - 1);
-      const uint8_t* seeds[4]         = {round[0].seeds[j], round[1].seeds[j], round[2].seeds[j],
-                                 round[3].seeds[j]};
-      const uint16_t round_numbers[4] = {i, i + 1, i + 2, i + 3};
-      kdf_init_x4_from_seed(&kdfs[j], seeds, prf->salt, round_numbers, j, include_input_size, pp);
-    }
+    // use 4 parallel instances of keccak for speedup
+    {
+      kdf_shake_x4_t kdfs[SC_PROOF];
+      for (unsigned int j = 0; j < SC_PROOF; ++j) {
+        const bool include_input_size   = (j != SC_PROOF - 1);
+        const uint8_t* seeds[4]         = {round[0].seeds[j], round[1].seeds[j], round[2].seeds[j],
+                                   round[3].seeds[j]};
+        const uint16_t round_numbers[4] = {i, i + 1, i + 2, i + 3};
+        kdf_init_x4_from_seed(&kdfs[j], seeds, prf->salt, round_numbers, j, include_input_size, pp);
+      }
 
-    // compute sharing
-    for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
-      uint8_t* input_shares[4] = {round[0].input_shares[j], round[1].input_shares[j],
-                                  round[2].input_shares[j], round[3].input_shares[j]};
-      kdf_shake_x4_get_randomness(&kdfs[j], input_shares, input_size);
-    }
-    // compute random tapes
-    for (unsigned int j = 0; j < SC_PROOF; ++j) {
-      kdf_shake_x4_get_randomness(&kdfs[j], tape_bytes_x4[j], view_size);
-      kdf_shake_x4_clear(&kdfs[j]);
+      // compute sharing
+      for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
+        uint8_t* input_shares[4] = {round[0].input_shares[j], round[1].input_shares[j],
+                                    round[2].input_shares[j], round[3].input_shares[j]};
+        kdf_shake_x4_get_randomness(&kdfs[j], input_shares, input_size);
+      }
+      // compute random tapes
+      for (unsigned int j = 0; j < SC_PROOF; ++j) {
+        uint8_t* tape_bytes[4] = {
+            &tape_bytes_x4[(j * 4 + 0) * aview_size], &tape_bytes_x4[(j * 4 + 1) * aview_size],
+            &tape_bytes_x4[(j * 4 + 2) * aview_size], &tape_bytes_x4[(j * 4 + 3) * aview_size]};
+        kdf_shake_x4_get_randomness(&kdfs[j], tape_bytes, view_size);
+        kdf_shake_x4_clear(&kdfs[j]);
+      }
     }
 
     for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
@@ -1111,7 +1112,7 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
                         in_out_shares[0].s[SC_PROOF - 1], input_size);
 
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
-        decompress_random_tape(rvec, pp, tape_bytes_x4[j][round_offset], j);
+        decompress_random_tape(rvec, pp, &tape_bytes_x4[(j * 4 + round_offset) * aview_size], j);
       }
 
       // perform ZKB++ LowMC evaluation
@@ -1138,32 +1139,34 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
 #endif
   }
   for (; i < num_rounds; ++i, ++round) {
-    kdf_shake_t kdfs[SC_PROOF];
-    for (unsigned int j = 0; j < SC_PROOF; ++j) {
-      const bool include_input_size = (j != SC_PROOF - 1);
-      kdf_init_from_seed(&kdfs[j], round->seeds[j], prf->salt, i, j, include_input_size, pp);
-    }
+    {
+      kdf_shake_t kdfs[SC_PROOF];
+      for (unsigned int j = 0; j < SC_PROOF; ++j) {
+        const bool include_input_size = (j != SC_PROOF - 1);
+        kdf_init_from_seed(&kdfs[j], round->seeds[j], prf->salt, i, j, include_input_size, pp);
+      }
 
-    // compute sharing
-    for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
-      kdf_shake_get_randomness(&kdfs[j], round->input_shares[j], input_size);
-      clear_padding_bits(&round->input_shares[j][input_size - 1], diff);
-      mzd_from_char_array(in_out_shares[0].s[j], round->input_shares[j], input_size);
-    }
-    mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], context->m_key);
-    mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1],
-                      input_size);
+      // compute sharing
+      for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
+        kdf_shake_get_randomness(&kdfs[j], round->input_shares[j], input_size);
+        clear_padding_bits(&round->input_shares[j][input_size - 1], diff);
+        mzd_from_char_array(in_out_shares[0].s[j], round->input_shares[j], input_size);
+      }
+      mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], context->m_key);
+      mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1],
+                        input_size);
 
-    // compute random tapes
-    for (unsigned int j = 0; j < SC_PROOF; ++j) {
-      assert(view_size <= MAX_VIEW_SIZE);
-      uint8_t tape_bytes[MAX_VIEW_SIZE];
-      kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
-      decompress_random_tape(rvec, pp, tape_bytes, j);
-    }
+      // compute random tapes
+      for (unsigned int j = 0; j < SC_PROOF; ++j) {
+        assert(view_size <= MAX_VIEW_SIZE);
+        uint8_t tape_bytes[MAX_VIEW_SIZE];
+        kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
+        decompress_random_tape(rvec, pp, tape_bytes, j);
+      }
 
-    for (unsigned int j = 0; j < SC_PROOF; ++j) {
-      kdf_shake_clear(&kdfs[j]);
+      for (unsigned int j = 0; j < SC_PROOF; ++j) {
+        kdf_shake_clear(&kdfs[j]);
+      }
     }
 
     // perform ZKB++ LowMC evaluation
@@ -1190,11 +1193,7 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
   const int ret = sig_proof_to_char_array(pp, prf, sig, siglen);
 
   // clean up
-  for (unsigned int k = 0; k < SC_PROOF; ++k) {
-    for (unsigned int j = 0; j < 4; ++j) {
-      free(tape_bytes_x4[k][j]);
-    }
-  }
+  aligned_free(tape_bytes_x4);
   aligned_free(rvec);
   aligned_free(views);
   proof_free(prf);
@@ -1209,6 +1208,8 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
   const size_t output_size = pp->output_size;
   const size_t lowmc_r     = pp->lowmc.r;
   const size_t view_size   = pp->view_size;
+  const size_t aview_size  = ALIGNU64T(view_size);
+
   const unsigned int diff  = input_size * 8 - pp->lowmc.n;
 #if defined(WITH_UNRUH)
   const bool unruh = is_unruh(pp);
@@ -1228,13 +1229,9 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
 
   // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when
   // verifying since all of this is public information, there is no leakage
-  uint8_t* tape_bytes_x4[SC_VERIFY][4];
-  for (unsigned int i = 0; i < SC_VERIFY; i++) {
-    for (unsigned int j = 0; j < 4; j++) {
-      tape_bytes_x4[i][j] = malloc(view_size);
-    }
-  }
   sorting_helper_t* sorted_rounds = malloc(sizeof(sorting_helper_t) * num_rounds);
+
+  uint8_t* tape_bytes_x4 = aligned_alloc(sizeof(uint64_t), SC_VERIFY * 4 * aview_size);
   for (unsigned int current_chal = 0; current_chal < 3; current_chal++) {
     unsigned int num_current_rounds = 0;
     for (unsigned int r = 0; r < num_rounds; r++) {
@@ -1251,36 +1248,43 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
       const unsigned int b_i = (a_i + 1) % 3;
       const unsigned int c_i = (a_i + 2) % 3;
 
-      kdf_shake_x4_t kdfs[SC_VERIFY];
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        const bool include_input_size    = (j == 0 && b_i) || (j == 1 && c_i);
-        const unsigned int player_number = (j == 0) ? a_i : b_i;
-        const uint8_t* seeds[4]          = {helper[0].round->seeds[j], helper[1].round->seeds[j],
-                                   helper[2].round->seeds[j], helper[3].round->seeds[j]};
-        const uint16_t round_numbers[4]  = {helper[0].round_number, helper[1].round_number,
-                                           helper[2].round_number, helper[3].round_number};
-        kdf_init_x4_from_seed(&kdfs[j], seeds, prf->salt, round_numbers, player_number,
-                              include_input_size, pp);
+      {
+        kdf_shake_x4_t kdfs[SC_VERIFY];
+        for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+          const bool include_input_size    = (j == 0 && b_i) || (j == 1 && c_i);
+          const unsigned int player_number = (j == 0) ? a_i : b_i;
+          const uint8_t* seeds[4]          = {helper[0].round->seeds[j], helper[1].round->seeds[j],
+                                     helper[2].round->seeds[j], helper[3].round->seeds[j]};
+          const uint16_t round_numbers[4]  = {helper[0].round_number, helper[1].round_number,
+                                             helper[2].round_number, helper[3].round_number};
+          kdf_init_x4_from_seed(&kdfs[j], seeds, prf->salt, round_numbers, player_number,
+                                include_input_size, pp);
+        }
+
+        // compute input shares if necessary
+        if (b_i) {
+          uint8_t* input_shares[4] = {
+              helper[0].round->input_shares[0], helper[1].round->input_shares[0],
+              helper[2].round->input_shares[0], helper[3].round->input_shares[0]};
+          kdf_shake_x4_get_randomness(&kdfs[0], input_shares, input_size);
+        }
+        if (c_i) {
+          uint8_t* input_shares[4] = {
+              helper[0].round->input_shares[1], helper[1].round->input_shares[1],
+              helper[2].round->input_shares[1], helper[3].round->input_shares[1]};
+          kdf_shake_x4_get_randomness(&kdfs[1], input_shares, input_size);
+        }
+        // compute random tapes
+        for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+          uint8_t* tape_bytes[4] = {&tape_bytes_x4[(j * 4 + 0) * aview_size],
+                                    &tape_bytes_x4[(j * 4 + 1) * aview_size],
+                                    &tape_bytes_x4[(j * 4 + 2) * aview_size],
+                                    &tape_bytes_x4[(j * 4 + 3) * aview_size]};
+          kdf_shake_x4_get_randomness(&kdfs[j], tape_bytes, view_size);
+          kdf_shake_clear(&kdfs[j]);
+        }
       }
 
-      // compute input shares if necessary
-      if (b_i) {
-        uint8_t* input_shares[4] = {
-            helper[0].round->input_shares[0], helper[1].round->input_shares[0],
-            helper[2].round->input_shares[0], helper[3].round->input_shares[0]};
-        kdf_shake_x4_get_randomness(&kdfs[0], input_shares, input_size);
-      }
-      if (c_i) {
-        uint8_t* input_shares[4] = {
-            helper[0].round->input_shares[1], helper[1].round->input_shares[1],
-            helper[2].round->input_shares[1], helper[3].round->input_shares[1]};
-        kdf_shake_x4_get_randomness(&kdfs[1], input_shares, input_size);
-      }
-      // compute random tapes
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        kdf_shake_x4_get_randomness(&kdfs[j], tape_bytes_x4[j], view_size);
-        kdf_shake_clear(&kdfs[j]);
-      }
       for (unsigned int round_offset = 0; round_offset < 4; round_offset++) {
         if (b_i) {
           clear_padding_bits(&helper[round_offset].round->input_shares[0][input_size - 1], diff);
@@ -1294,7 +1298,8 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
                             input_size);
 
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-          decompress_random_tape(rvec, pp, tape_bytes_x4[j][round_offset], j);
+          decompress_random_tape(
+              rvec, pp, &tape_bytes_x4[(j * 4 + round_offset) * aview_size], j);
         }
 
         decompress_view(views, pp, helper[round_offset].round->communicated_bits[1], 1);
@@ -1329,37 +1334,39 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
       const unsigned int b_i = (a_i + 1) % 3;
       const unsigned int c_i = (a_i + 2) % 3;
 
-      kdf_shake_t kdfs[SC_VERIFY];
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        const bool include_input_size    = (j == 0 && b_i) || (j == 1 && c_i);
-        const unsigned int player_number = (j == 0) ? a_i : b_i;
-        kdf_init_from_seed(&kdfs[j], helper->round->seeds[j], prf->salt, helper->round_number,
-                           player_number, include_input_size, pp);
-      }
+      {
+        kdf_shake_t kdfs[SC_VERIFY];
+        for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+          const bool include_input_size    = (j == 0 && b_i) || (j == 1 && c_i);
+          const unsigned int player_number = (j == 0) ? a_i : b_i;
+          kdf_init_from_seed(&kdfs[j], helper->round->seeds[j], prf->salt, helper->round_number,
+                             player_number, include_input_size, pp);
+        }
 
-      // compute input shares if necessary
-      if (b_i) {
-        kdf_shake_get_randomness(&kdfs[0], helper->round->input_shares[0], input_size);
-        clear_padding_bits(&helper->round->input_shares[0][input_size - 1], diff);
-      }
-      if (c_i) {
-        kdf_shake_get_randomness(&kdfs[1], helper->round->input_shares[1], input_size);
-        clear_padding_bits(&helper->round->input_shares[1][input_size - 1], diff);
-      }
+        // compute input shares if necessary
+        if (b_i) {
+          kdf_shake_get_randomness(&kdfs[0], helper->round->input_shares[0], input_size);
+          clear_padding_bits(&helper->round->input_shares[0][input_size - 1], diff);
+        }
+        if (c_i) {
+          kdf_shake_get_randomness(&kdfs[1], helper->round->input_shares[1], input_size);
+          clear_padding_bits(&helper->round->input_shares[1][input_size - 1], diff);
+        }
 
-      mzd_from_char_array(in_out_shares[0].s[0], helper->round->input_shares[0], input_size);
-      mzd_from_char_array(in_out_shares[0].s[1], helper->round->input_shares[1], input_size);
+        mzd_from_char_array(in_out_shares[0].s[0], helper->round->input_shares[0], input_size);
+        mzd_from_char_array(in_out_shares[0].s[1], helper->round->input_shares[1], input_size);
 
-      // compute random tapes
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        assert(view_size <= MAX_VIEW_SIZE);
-        uint8_t tape_bytes[MAX_VIEW_SIZE];
-        kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
-        decompress_random_tape(rvec, pp, tape_bytes, j);
-      }
+        // compute random tapes
+        for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+          assert(view_size <= MAX_VIEW_SIZE);
+          uint8_t tape_bytes[MAX_VIEW_SIZE];
+          kdf_shake_get_randomness(&kdfs[j], tape_bytes, view_size);
+          decompress_random_tape(rvec, pp, tape_bytes, j);
+        }
 
-      for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-        kdf_shake_clear(&kdfs[j]);
+        for (unsigned int j = 0; j < SC_VERIFY; ++j) {
+          kdf_shake_clear(&kdfs[j]);
+        }
       }
 
       decompress_view(views, pp, helper->round->communicated_bits[1], 1);
@@ -1394,12 +1401,8 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
   const int success_status = memcmp(challenge, prf->challenge, pp->num_rounds);
 
   // clean up
+  aligned_free(tape_bytes_x4);
   free(sorted_rounds);
-  for (unsigned int i = 0; i < SC_VERIFY; i++) {
-    for (unsigned int j = 0; j < 4; j++) {
-      free(tape_bytes_x4[i][j]);
-    }
-  }
   aligned_free(rvec);
   aligned_free(views);
 
