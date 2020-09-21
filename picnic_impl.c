@@ -322,16 +322,13 @@ static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, con
   kdf_shake_x4_finalize_key(kdf);
 
   uint8_t tmp[4][MAX_DIGEST_SIZE];
-  uint8_t* tmpptr[4]             = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  const uint8_t* tmpptr_const[4] = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  kdf_shake_x4_get_randomness(kdf, tmpptr, digest_size);
+  kdf_shake_x4_get_randomness_4(kdf, tmp[0], tmp[1], tmp[2], tmp[3], digest_size);
   kdf_shake_x4_clear(kdf);
 
   // Initialize KDF with H_2(seed) || salt || round_number || player_number || output_size.
   kdf_shake_x4_init(kdf, digest_size);
-  kdf_shake_x4_update_key(kdf, tmpptr_const, digest_size);
-  const uint8_t* saltptr[4] = {salt, salt, salt, salt};
-  kdf_shake_x4_update_key(kdf, saltptr, SALT_SIZE);
+  kdf_shake_x4_update_key_4(kdf, tmp[0], tmp[1], tmp[2], tmp[3], digest_size);
+  kdf_shake_x4_update_key_1(kdf, salt, SALT_SIZE);
   kdf_shake_x4_update_key_uint16s_le(kdf, round_number);
   kdf_shake_x4_update_key_uint16_le(kdf, player_number);
   kdf_shake_x4_update_key_uint16_le(kdf, pp->view_size + (include_input_size ? pp->input_size : 0));
@@ -449,37 +446,30 @@ static void hash_commitment_x4(const picnic_instance_t* pp, proof_round_t* prf_r
   hash_context_x4 ctx;
   // hash the seed
   hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_4);
-  const uint8_t* seeds[4] = {prf_round[0].seeds[vidx], prf_round[1].seeds[vidx],
-                             prf_round[2].seeds[vidx], prf_round[3].seeds[vidx]};
-  hash_update_x4(&ctx, seeds, pp->seed_size);
+  hash_update_x4_4(&ctx, prf_round[0].seeds[vidx], prf_round[1].seeds[vidx],
+                   prf_round[2].seeds[vidx], prf_round[3].seeds[vidx], pp->seed_size);
   hash_final_x4(&ctx);
   uint8_t tmp[4][MAX_DIGEST_SIZE];
-  uint8_t* tmpptr[4]             = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  const uint8_t* tmpptr_const[4] = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  hash_squeeze_x4(&ctx, tmpptr, hashlen);
+  hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], hashlen);
 
   // compute H_0(H_4(seed), view)
   hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_0);
-  hash_update_x4(&ctx, tmpptr_const, hashlen);
+  hash_update_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], hashlen);
   // hash input share
-  const uint8_t* input_shares[4] = {
-      prf_round[0].input_shares[vidx], prf_round[1].input_shares[vidx],
-      prf_round[2].input_shares[vidx], prf_round[3].input_shares[vidx]};
-  hash_update_x4(&ctx, input_shares, pp->input_size);
+  hash_update_x4_4(&ctx, prf_round[0].input_shares[vidx], prf_round[1].input_shares[vidx],
+                   prf_round[2].input_shares[vidx], prf_round[3].input_shares[vidx],
+                   pp->input_size);
   // hash communicated bits
-  const uint8_t* communicated_bits[4] = {
-      prf_round[0].communicated_bits[vidx], prf_round[1].communicated_bits[vidx],
-      prf_round[2].communicated_bits[vidx], prf_round[3].communicated_bits[vidx]};
-  hash_update_x4(&ctx, communicated_bits, pp->view_size);
+  hash_update_x4_4(&ctx, prf_round[0].communicated_bits[vidx], prf_round[1].communicated_bits[vidx],
+                   prf_round[2].communicated_bits[vidx], prf_round[3].communicated_bits[vidx],
+                   pp->view_size);
   // hash output share
-  const uint8_t* output_shares[4] = {
-      prf_round[0].output_shares[vidx], prf_round[1].output_shares[vidx],
-      prf_round[2].output_shares[vidx], prf_round[3].output_shares[vidx]};
-  hash_update_x4(&ctx, output_shares, pp->output_size);
+  hash_update_x4_4(&ctx, prf_round[0].output_shares[vidx], prf_round[1].output_shares[vidx],
+                   prf_round[2].output_shares[vidx], prf_round[3].output_shares[vidx],
+                   pp->output_size);
   hash_final_x4(&ctx);
-  uint8_t* commitments[4] = {prf_round[0].commitments[vidx], prf_round[1].commitments[vidx],
-                             prf_round[2].commitments[vidx], prf_round[3].commitments[vidx]};
-  hash_squeeze_x4(&ctx, commitments, hashlen);
+  hash_squeeze_x4_4(&ctx, prf_round[0].commitments[vidx], prf_round[1].commitments[vidx],
+                    prf_round[2].commitments[vidx], prf_round[3].commitments[vidx], hashlen);
 }
 
 /**
@@ -492,38 +482,32 @@ static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting
   hash_context_x4 ctx;
   // hash the seed
   hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_4);
-  const uint8_t* seeds[4] = {helper[0].round->seeds[vidx], helper[1].round->seeds[vidx],
-                             helper[2].round->seeds[vidx], helper[3].round->seeds[vidx]};
-  hash_update_x4(&ctx, seeds, pp->seed_size);
+  hash_update_x4_4(&ctx, helper[0].round->seeds[vidx], helper[1].round->seeds[vidx],
+                             helper[2].round->seeds[vidx], helper[3].round->seeds[vidx], pp->seed_size);
   hash_final_x4(&ctx);
   uint8_t tmp[4][MAX_DIGEST_SIZE];
-  uint8_t* tmpptr[4]             = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  const uint8_t* tmpptr_const[4] = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  hash_squeeze_x4(&ctx, tmpptr, hashlen);
+  hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], hashlen);
 
   // compute H_0(H_4(seed), view)
   hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_0);
-  hash_update_x4(&ctx, tmpptr_const, hashlen);
+  hash_update_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], hashlen);
   // hash input share
-  const uint8_t* input_shares[4] = {
-      helper[0].round->input_shares[vidx], helper[1].round->input_shares[vidx],
-      helper[2].round->input_shares[vidx], helper[3].round->input_shares[vidx]};
-  hash_update_x4(&ctx, input_shares, pp->input_size);
+  hash_update_x4_4(&ctx, helper[0].round->input_shares[vidx], helper[1].round->input_shares[vidx],
+                   helper[2].round->input_shares[vidx], helper[3].round->input_shares[vidx],
+                   pp->input_size);
   // hash communicated bits
-  const uint8_t* communicated_bits[4] = {
-      helper[0].round->communicated_bits[vidx], helper[1].round->communicated_bits[vidx],
-      helper[2].round->communicated_bits[vidx], helper[3].round->communicated_bits[vidx]};
-  hash_update_x4(&ctx, communicated_bits, pp->view_size);
+  hash_update_x4_4(&ctx, helper[0].round->communicated_bits[vidx],
+                   helper[1].round->communicated_bits[vidx],
+                   helper[2].round->communicated_bits[vidx],
+                   helper[3].round->communicated_bits[vidx], pp->view_size);
   // hash output share
-  const uint8_t* output_shares[4] = {
-      helper[0].round->output_shares[vidx], helper[1].round->output_shares[vidx],
-      helper[2].round->output_shares[vidx], helper[3].round->output_shares[vidx]};
-  hash_update_x4(&ctx, output_shares, pp->output_size);
+  hash_update_x4_4(&ctx, helper[0].round->output_shares[vidx], helper[1].round->output_shares[vidx],
+                   helper[2].round->output_shares[vidx], helper[3].round->output_shares[vidx],
+                   pp->output_size);
   hash_final_x4(&ctx);
-  uint8_t* commitments[4] = {helper[0].round->commitments[vidx], helper[1].round->commitments[vidx],
-                             helper[2].round->commitments[vidx],
-                             helper[3].round->commitments[vidx]};
-  hash_squeeze_x4(&ctx, commitments, hashlen);
+  hash_squeeze_x4_4(&ctx, helper[0].round->commitments[vidx], helper[1].round->commitments[vidx],
+                    helper[2].round->commitments[vidx], helper[3].round->commitments[vidx],
+                    hashlen);
 }
 
 /**
@@ -748,37 +732,28 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
   // Hash the seed with H_5, store digest in output
   hash_context_x4 ctx;
   hash_init_prefix_x4(&ctx, digest_size, HASH_PREFIX_5);
-  const uint8_t* seeds[4] = {prf_round[0].seeds[vidx], prf_round[1].seeds[vidx],
-                             prf_round[2].seeds[vidx], prf_round[3].seeds[vidx]};
-  hash_update_x4(&ctx, seeds, seedlen);
+  hash_update_x4_4(&ctx, prf_round[0].seeds[vidx], prf_round[1].seeds[vidx],
+                   prf_round[2].seeds[vidx], prf_round[3].seeds[vidx], seedlen);
   hash_final_x4(&ctx);
 
   uint8_t tmp[4][MAX_DIGEST_SIZE];
-  uint8_t* tmpptr[4]             = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  const uint8_t* tmpptr_const[4] = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  hash_squeeze_x4(&ctx, tmpptr, digest_size);
+  hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], digest_size);
 
   // Hash H_5(seed), the view, and the length
   hash_init_x4(&ctx, digest_size);
-  hash_update_x4(&ctx, tmpptr_const, digest_size);
+  hash_update_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], digest_size);
   if (include_is) {
-    const uint8_t* input_shares[4] = {
-        prf_round[0].input_shares[vidx], prf_round[1].input_shares[vidx],
-        prf_round[2].input_shares[vidx], prf_round[3].input_shares[vidx]};
-    hash_update_x4(&ctx, input_shares, pp->input_size);
+    hash_update_x4_4(&ctx, prf_round[0].input_shares[vidx], prf_round[1].input_shares[vidx],
+                     prf_round[2].input_shares[vidx], prf_round[3].input_shares[vidx],
+                     pp->input_size);
   }
-  const uint8_t* communicated_bits[4] = {
-      prf_round[0].communicated_bits[vidx],
-      prf_round[1].communicated_bits[vidx],
-      prf_round[2].communicated_bits[vidx],
-      prf_round[3].communicated_bits[vidx],
-  };
-  hash_update_x4(&ctx, communicated_bits, pp->view_size);
+  hash_update_x4_4(&ctx, prf_round[0].communicated_bits[vidx], prf_round[1].communicated_bits[vidx],
+                   prf_round[2].communicated_bits[vidx], prf_round[3].communicated_bits[vidx],
+                   pp->view_size);
   hash_update_x4_uint16_le(&ctx, outputlen);
   hash_final_x4(&ctx);
-  uint8_t* gs[4] = {prf_round[0].gs[vidx], prf_round[1].gs[vidx], prf_round[2].gs[vidx],
-                    prf_round[3].gs[vidx]};
-  hash_squeeze_x4(&ctx, gs, outputlen);
+  hash_squeeze_x4_4(&ctx, prf_round[0].gs[vidx], prf_round[1].gs[vidx], prf_round[2].gs[vidx],
+                    prf_round[3].gs[vidx], outputlen);
 }
 
 /*
@@ -794,37 +769,29 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
   // Hash the seed with H_5, store digest in output
   hash_context_x4 ctx;
   hash_init_prefix_x4(&ctx, digest_size, HASH_PREFIX_5);
-  const uint8_t* seeds[4] = {helper[0].round->seeds[vidx], helper[1].round->seeds[vidx],
-                             helper[2].round->seeds[vidx], helper[3].round->seeds[vidx]};
-  hash_update_x4(&ctx, seeds, seedlen);
+  hash_update_x4_4(&ctx, helper[0].round->seeds[vidx], helper[1].round->seeds[vidx],
+                   helper[2].round->seeds[vidx], helper[3].round->seeds[vidx], seedlen);
   hash_final_x4(&ctx);
 
   uint8_t tmp[4][MAX_DIGEST_SIZE];
-  uint8_t* tmpptr[4]             = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  const uint8_t* tmpptr_const[4] = {tmp[0], tmp[1], tmp[2], tmp[3]};
-  hash_squeeze_x4(&ctx, tmpptr, digest_size);
+  hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], digest_size);
 
   // Hash H_5(seed), the view, and the length
   hash_init_x4(&ctx, digest_size);
-  hash_update_x4(&ctx, tmpptr_const, digest_size);
+  hash_update_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], digest_size);
   if (include_is) {
-    const uint8_t* input_shares[4] = {
-        helper[0].round->input_shares[vidx], helper[1].round->input_shares[vidx],
-        helper[2].round->input_shares[vidx], helper[3].round->input_shares[vidx]};
-    hash_update_x4(&ctx, input_shares, pp->input_size);
+    hash_update_x4_4(&ctx, helper[0].round->input_shares[vidx], helper[1].round->input_shares[vidx],
+                     helper[2].round->input_shares[vidx], helper[3].round->input_shares[vidx],
+                     pp->input_size);
   }
-  const uint8_t* communicated_bits[4] = {
-      helper[0].round->communicated_bits[vidx],
-      helper[1].round->communicated_bits[vidx],
-      helper[2].round->communicated_bits[vidx],
-      helper[3].round->communicated_bits[vidx],
-  };
-  hash_update_x4(&ctx, communicated_bits, pp->view_size);
+  hash_update_x4_4(&ctx, helper[0].round->communicated_bits[vidx],
+                   helper[1].round->communicated_bits[vidx],
+                   helper[2].round->communicated_bits[vidx],
+                   helper[3].round->communicated_bits[vidx], pp->view_size);
   hash_update_x4_uint16_le(&ctx, outputlen);
   hash_final_x4(&ctx);
-  uint8_t* gs[4] = {helper[0].round->gs[vidx], helper[1].round->gs[vidx], helper[2].round->gs[vidx],
-                    helper[3].round->gs[vidx]};
-  hash_squeeze_x4(&ctx, gs, outputlen);
+  hash_squeeze_x4_4(&ctx, helper[0].round->gs[vidx], helper[1].round->gs[vidx],
+                    helper[2].round->gs[vidx], helper[3].round->gs[vidx], outputlen);
 }
 #endif
 
@@ -1087,16 +1054,16 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
 
       // compute sharing
       for (unsigned int j = 0; j < SC_PROOF - 1; ++j) {
-        uint8_t* input_shares[4] = {round[0].input_shares[j], round[1].input_shares[j],
-                                    round[2].input_shares[j], round[3].input_shares[j]};
-        kdf_shake_x4_get_randomness(&kdfs[j], input_shares, input_size);
+        kdf_shake_x4_get_randomness_4(&kdfs[j], round[0].input_shares[j], round[1].input_shares[j],
+                                      round[2].input_shares[j], round[3].input_shares[j],
+                                      input_size);
       }
       // compute random tapes
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
-        uint8_t* tape_bytes[4] = {
-            &tape_bytes_x4[(j * 4 + 0) * aview_size], &tape_bytes_x4[(j * 4 + 1) * aview_size],
-            &tape_bytes_x4[(j * 4 + 2) * aview_size], &tape_bytes_x4[(j * 4 + 3) * aview_size]};
-        kdf_shake_x4_get_randomness(&kdfs[j], tape_bytes, view_size);
+        kdf_shake_x4_get_randomness_4(&kdfs[j], &tape_bytes_x4[(j * 4 + 0) * aview_size],
+                                      &tape_bytes_x4[(j * 4 + 1) * aview_size],
+                                      &tape_bytes_x4[(j * 4 + 2) * aview_size],
+                                      &tape_bytes_x4[(j * 4 + 3) * aview_size], view_size);
         kdf_shake_x4_clear(&kdfs[j]);
       }
     }
@@ -1263,24 +1230,21 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
 
         // compute input shares if necessary
         if (b_i) {
-          uint8_t* input_shares[4] = {
-              helper[0].round->input_shares[0], helper[1].round->input_shares[0],
-              helper[2].round->input_shares[0], helper[3].round->input_shares[0]};
-          kdf_shake_x4_get_randomness(&kdfs[0], input_shares, input_size);
+          kdf_shake_x4_get_randomness_4(
+              &kdfs[0], helper[0].round->input_shares[0], helper[1].round->input_shares[0],
+              helper[2].round->input_shares[0], helper[3].round->input_shares[0], input_size);
         }
         if (c_i) {
-          uint8_t* input_shares[4] = {
-              helper[0].round->input_shares[1], helper[1].round->input_shares[1],
-              helper[2].round->input_shares[1], helper[3].round->input_shares[1]};
-          kdf_shake_x4_get_randomness(&kdfs[1], input_shares, input_size);
+          kdf_shake_x4_get_randomness_4(
+              &kdfs[1], helper[0].round->input_shares[1], helper[1].round->input_shares[1],
+              helper[2].round->input_shares[1], helper[3].round->input_shares[1], input_size);
         }
         // compute random tapes
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-          uint8_t* tape_bytes[4] = {&tape_bytes_x4[(j * 4 + 0) * aview_size],
-                                    &tape_bytes_x4[(j * 4 + 1) * aview_size],
-                                    &tape_bytes_x4[(j * 4 + 2) * aview_size],
-                                    &tape_bytes_x4[(j * 4 + 3) * aview_size]};
-          kdf_shake_x4_get_randomness(&kdfs[j], tape_bytes, view_size);
+          kdf_shake_x4_get_randomness_4(&kdfs[j], &tape_bytes_x4[(j * 4 + 0) * aview_size],
+                                        &tape_bytes_x4[(j * 4 + 1) * aview_size],
+                                        &tape_bytes_x4[(j * 4 + 2) * aview_size],
+                                        &tape_bytes_x4[(j * 4 + 3) * aview_size], view_size);
           kdf_shake_clear(&kdfs[j]);
         }
       }
