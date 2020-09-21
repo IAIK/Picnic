@@ -131,8 +131,10 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   const size_t input_size                     = pp->input_size;
   const size_t output_size                    = pp->output_size;
   const size_t view_size                      = ALIGNU64T(pp->view_size);
+#if defined(WITH_UNRUH)
   const size_t unruh_with_input_bytes_size    = pp->unruh_with_input_bytes_size;
   const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
+#endif
 
   sig_proof_t* prf = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
   if (!prf) {
@@ -218,12 +220,11 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
 }
 
 static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rslab) {
-  const size_t digest_size                 = pp->digest_size;
-  const size_t num_rounds                  = pp->num_rounds;
-  const size_t input_size                  = pp->input_size;
-  const size_t output_size                 = pp->output_size;
-  const size_t view_size                   = ALIGNU64T(pp->view_size);
-  const size_t unruh_with_input_bytes_size = pp->unruh_with_input_bytes_size;
+  const size_t digest_size = pp->digest_size;
+  const size_t num_rounds  = pp->num_rounds;
+  const size_t input_size  = pp->input_size;
+  const size_t output_size = pp->output_size;
+  const size_t view_size   = ALIGNU64T(pp->view_size);
 
   sig_proof_t* proof = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
   if (!proof) {
@@ -232,9 +233,10 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
 
   size_t per_round_mem = SC_VERIFY * digest_size;
 #if defined(WITH_UNRUH)
+  const size_t unruh_with_input_bytes_size = pp->unruh_with_input_bytes_size;
   if (is_unruh(pp)) {
     // we don't know what we actually need, so allocate more than needed
-    per_round_mem += SC_VERIFY * pp->unruh_with_input_bytes_size;
+    per_round_mem += SC_VERIFY * unruh_with_input_bytes_size;
   }
 #endif
   per_round_mem += SC_VERIFY * input_size + SC_PROOF * output_size + view_size;
@@ -804,10 +806,10 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
   const uint32_t digest_size                  = pp->digest_size;
   const size_t view_size                      = pp->view_size;
   const size_t input_size                     = pp->input_size;
+#if defined(WITH_UNRUH)
   const size_t unruh_with_input_bytes_size    = pp->unruh_with_input_bytes_size;
   const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
-#if defined(WITH_UNRUH)
-  const bool unruh = is_unruh(pp);
+  const bool unruh                            = is_unruh(pp);
 #endif
 
   uint8_t* tmp = result;
@@ -869,12 +871,12 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const size_t challenge_size           = pp->collapsed_challenge_size;
   const size_t input_size               = pp->input_size;
   const size_t view_size                = pp->view_size;
-  const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
-  const size_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
   const unsigned int view_diff          = pp->view_size * 8 - pp->view_round_size * pp->lowmc.r;
   const unsigned int input_share_diff   = pp->input_size * 8 - pp->lowmc.k;
 #if defined(WITH_UNRUH)
-  const bool unruh           = is_unruh(pp);
+  const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
+  const size_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
+  const bool unruh                      = is_unruh(pp);
 #endif
 
   uint8_t* slab      = NULL;
@@ -905,9 +907,13 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const size_t base_size = digest_size + view_size + 2 * seed_size;
   proof_round_t* round   = proof->round;
   for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
-    const unsigned char ch      = proof->challenge[i];
-    const size_t unruh_g_len    = ch ? without_input_bytes_size : with_input_bytes_size;
-    const size_t requested_size = base_size + unruh_g_len + (ch ? input_size : 0);
+    const unsigned char ch = proof->challenge[i];
+    size_t requested_size  = base_size + (ch ? input_size : 0);
+#if defined(WITH_UNRUH)
+    const size_t unruh_g_len = ch ? without_input_bytes_size : with_input_bytes_size;
+    requested_size += unruh_g_len;
+#endif
+
     if (sub_overflow_size_t(remaining_len, requested_size, &remaining_len)) {
       goto err;
     }
