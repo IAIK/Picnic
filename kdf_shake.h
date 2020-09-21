@@ -170,8 +170,7 @@ static inline void hash_update_x4_1(hash_context_x4* ctx, const uint8_t* data, s
 static inline void hash_init_prefix_x4(hash_context_x4* ctx, size_t digest_size,
                                        const uint8_t prefix) {
   hash_init_x4(ctx, digest_size);
-  const uint8_t* prefixes[] = {&prefix, &prefix, &prefix, &prefix};
-  hash_update_x4(ctx, prefixes, sizeof(prefix));
+  hash_update_x4_1(ctx, &prefix, sizeof(prefix));
 }
 
 static inline void hash_final_x4(hash_context_x4* ctx) {
