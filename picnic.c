@@ -223,7 +223,16 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
 #endif
   } else {
 #if defined(WITH_ZKBPP)
-    return impl_sign(instance, sk_pt, sk_sk, sk_c, message, message_len, signature, signature_len);
+    context_t context;
+    mzd_from_char_array(context.m_plaintext, sk_pt, output_size);
+    mzd_from_char_array(context.m_key, sk_sk, input_size);
+    context.plaintext   = sk_pt;
+    context.private_key = sk_sk;
+    context.public_key  = sk_c;
+    context.msg         = message;
+    context.msglen      = message_len;
+
+    return impl_sign(instance, &context, signature, signature_len);
 #else
     return -1;
 #endif
@@ -257,7 +266,16 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
 #endif
   } else {
 #if defined(WITH_ZKBPP)
-    return impl_verify(instance, pk_pt, pk_c, message, message_len, signature, signature_len);
+    context_t context;
+    mzd_from_char_array(context.m_plaintext, pk_pt, output_size);
+    mzd_from_char_array(context.m_key, pk_c, output_size);
+    context.plaintext   = pk_pt;
+    context.private_key = NULL;
+    context.public_key  = pk_c;
+    context.msg         = message;
+    context.msglen      = message_len;
+
+    return impl_verify(instance, &context, signature, signature_len);
 #else
     return -1;
 #endif

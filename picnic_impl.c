@@ -71,18 +71,6 @@ typedef struct {
   unsigned int round_number;
 } sorting_helper_t;
 
-typedef struct {
-  mzd_local_t m_plaintext[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
-  /* private key for signing, public key for verification */
-  mzd_local_t m_key[(MAX_LOWMC_KEY_SIZE_BITS + 255) / 256];
-
-  const uint8_t* plaintext;
-  const uint8_t* private_key;
-  const uint8_t* public_key;
-  const uint8_t* msg;
-  size_t msglen;
-} context_t;
-
 #if defined(WITH_UNRUH)
 static bool is_unruh(const picnic_instance_t* pp) {
   return pp->params == Picnic_L1_UR || pp->params == Picnic_L3_UR || pp->params == Picnic_L5_UR;
@@ -1052,8 +1040,7 @@ static void generate_seeds(const picnic_instance_t* pp, const context_t* context
   kdf_shake_clear(&ctx);
 }
 
-static int sign_impl(const picnic_instance_t* pp, const context_t* context, uint8_t* sig,
-                     size_t* siglen) {
+int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* sig, size_t* siglen) {
   const size_t num_rounds  = pp->num_rounds;
   const size_t input_size  = pp->input_size;
   const size_t output_size = pp->output_size;
@@ -1215,8 +1202,8 @@ static int sign_impl(const picnic_instance_t* pp, const context_t* context, uint
   return ret;
 }
 
-static int verify_impl(const picnic_instance_t* pp, const context_t* context, const uint8_t* sig,
-                       size_t siglen) {
+int impl_verify(const picnic_instance_t* pp, const context_t* context, const uint8_t* sig,
+                size_t siglen) {
   const size_t num_rounds  = pp->num_rounds;
   const size_t input_size  = pp->input_size;
   const size_t output_size = pp->output_size;
@@ -1419,35 +1406,6 @@ static int verify_impl(const picnic_instance_t* pp, const context_t* context, co
   proof_free(prf);
 
   return success_status;
-}
-
-int impl_sign(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* private_key,
-              const uint8_t* public_key, const uint8_t* msg, size_t msglen, uint8_t* sig,
-              size_t* siglen) {
-  context_t context;
-  mzd_from_char_array(context.m_plaintext, plaintext, pp->output_size);
-  mzd_from_char_array(context.m_key, private_key, pp->input_size);
-  context.plaintext   = plaintext;
-  context.private_key = private_key;
-  context.public_key  = public_key;
-  context.msg         = msg;
-  context.msglen      = msglen;
-
-  return sign_impl(pp, &context, sig, siglen);
-}
-
-int impl_verify(const picnic_instance_t* pp, const uint8_t* plaintext, const uint8_t* public_key,
-                const uint8_t* msg, size_t msglen, const uint8_t* sig, size_t siglen) {
-  context_t context;
-  mzd_from_char_array(context.m_plaintext, plaintext, pp->output_size);
-  mzd_from_char_array(context.m_key, public_key, pp->output_size);
-  context.plaintext   = plaintext;
-  context.private_key = NULL;
-  context.public_key  = public_key;
-  context.msg         = msg;
-  context.msglen      = msglen;
-
-  return verify_impl(pp, &context, sig, siglen);
 }
 
 #if defined(PICNIC_STATIC)
