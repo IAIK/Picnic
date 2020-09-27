@@ -413,13 +413,11 @@ int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_privatekey_t* key, 
     const unsigned int diff = output_size * 8 - instance->lowmc.n;
     assert(diff == input_size * 8 - instance->lowmc.k);
     /* sanity check of public data: padding bits need to be 0 */
-    const int check1 = check_padding_bits(buf[1 + input_size - 1], diff);
-    const int check2 = check_padding_bits(buf[1 + input_size + output_size - 1], diff);
-    const int check3 = check_padding_bits(buf[1 + input_size + 2 * output_size - 1], diff);
-    picnic_declassify(&check1, sizeof(check1));
-    picnic_declassify(&check2, sizeof(check2));
-    picnic_declassify(&check3, sizeof(check3));
-    if (check1 || check2 || check3) {
+    const int check = check_padding_bits(buf[1 + input_size - 1], diff) |
+                      check_padding_bits(buf[1 + input_size + output_size - 1], diff) |
+                      check_padding_bits(buf[1 + input_size + 2 * output_size - 1], diff);
+    picnic_declassify(&check, sizeof(check));
+    if (check) {
       return -1;
     }
   }
