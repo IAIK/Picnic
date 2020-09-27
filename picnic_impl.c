@@ -61,8 +61,8 @@ typedef struct {
 } proof_round_t;
 
 typedef struct {
+  uint8_t salt[SALT_SIZE];
   uint8_t* challenge;
-  uint8_t* salt;
   proof_round_t round[];
 } sig_proof_t;
 
@@ -171,8 +171,6 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
       slab += seed_size;
     }
   }
-  prf->salt = slab;
-  slab += SALT_SIZE;
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_PROOF; ++i) {
@@ -240,12 +238,9 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
 #endif
   per_round_mem += SC_VERIFY * input_size + SC_PROOF * output_size + view_size;
 
-  uint8_t* slab    = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds) + SALT_SIZE);
+  uint8_t* slab    = calloc(1, num_rounds * per_round_mem + ALIGNU64T(num_rounds));
   proof->challenge = slab;
   slab += ALIGNU64T(num_rounds);
-
-  proof->salt = slab;
-  slab += SALT_SIZE;
 
   for (uint32_t r = 0; r < num_rounds; ++r) {
     for (uint32_t i = 0; i < SC_VERIFY; ++i) {
