@@ -68,7 +68,6 @@ typedef struct {
 
 typedef struct {
   proof_round_t* round;
-  unsigned int round_number;
 } sorting_helper_t;
 
 #if defined(WITH_UNRUH)
@@ -1213,8 +1212,7 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
     unsigned int num_current_rounds = 0;
     for (unsigned int r = 0; r < num_rounds; r++) {
       if (prf->challenge[r] == current_chal) {
-        sorted_rounds[num_current_rounds].round        = &prf->round[r];
-        sorted_rounds[num_current_rounds].round_number = r;
+        sorted_rounds[num_current_rounds].round = &prf->round[r];
         num_current_rounds++;
       }
     }
@@ -1227,13 +1225,14 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
 
       {
         kdf_shake_x4_t kdfs[SC_VERIFY];
+        const uint16_t round_numbers[4] = {
+            helper[0].round - prf->round, helper[1].round - prf->round,
+            helper[2].round - prf->round, helper[3].round - prf->round};
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
           const bool include_input_size    = (j == 0 && b_i) || (j == 1 && c_i);
           const unsigned int player_number = (j == 0) ? a_i : b_i;
           const uint8_t* seeds[4]          = {helper[0].round->seeds[j], helper[1].round->seeds[j],
                                      helper[2].round->seeds[j], helper[3].round->seeds[j]};
-          const uint16_t round_numbers[4]  = {helper[0].round_number, helper[1].round_number,
-                                             helper[2].round_number, helper[3].round_number};
           kdf_init_x4_from_seed(&kdfs[j], seeds, prf->salt, round_numbers, player_number,
                                 include_input_size, pp);
         }
@@ -1309,10 +1308,11 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
 
       {
         kdf_shake_t kdfs[SC_VERIFY];
+        const uint16_t round_number = helper->round - prf->round;
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
           const bool include_input_size    = (j == 0 && b_i) || (j == 1 && c_i);
           const unsigned int player_number = (j == 0) ? a_i : b_i;
-          kdf_init_from_seed(&kdfs[j], helper->round->seeds[j], prf->salt, helper->round_number,
+          kdf_init_from_seed(&kdfs[j], helper->round->seeds[j], prf->salt, round_number,
                              player_number, include_input_size, pp);
         }
 
