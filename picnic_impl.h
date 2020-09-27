@@ -24,10 +24,11 @@ typedef struct {
   const uint8_t* public_key;
   const uint8_t* msg;
   size_t msglen;
-} context_t;
+} picnic_context_t;
 
-int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* sig, size_t* siglen);
-int impl_verify(const picnic_instance_t* pp, const context_t* context, const uint8_t* sig,
+int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint8_t* sig,
+              size_t* siglen);
+int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, const uint8_t* sig,
                 size_t siglen);
 
 #if defined(PICNIC_STATIC)

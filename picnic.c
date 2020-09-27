@@ -223,7 +223,7 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
 #endif
   } else {
 #if defined(WITH_ZKBPP)
-    context_t context;
+    picnic_context_t context;
     mzd_from_char_array(context.m_plaintext, sk_pt, output_size);
     mzd_from_char_array(context.m_key, sk_sk, input_size);
     context.plaintext   = sk_pt;
@@ -266,7 +266,7 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
 #endif
   } else {
 #if defined(WITH_ZKBPP)
-    context_t context;
+    picnic_context_t context;
     mzd_from_char_array(context.m_plaintext, pk_pt, output_size);
     mzd_from_char_array(context.m_key, pk_c, output_size);
     context.plaintext   = pk_pt;

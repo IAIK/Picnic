@@ -125,12 +125,12 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
 }
 
 static sig_proof_t* proof_new(const picnic_instance_t* pp) {
-  const size_t digest_size                    = pp->digest_size;
-  const size_t seed_size                      = pp->seed_size;
-  const size_t num_rounds                     = pp->num_rounds;
-  const size_t input_size                     = pp->input_size;
-  const size_t output_size                    = pp->output_size;
-  const size_t view_size                      = ALIGNU64T(pp->view_size);
+  const size_t digest_size = pp->digest_size;
+  const size_t seed_size   = pp->seed_size;
+  const size_t num_rounds  = pp->num_rounds;
+  const size_t input_size  = pp->input_size;
+  const size_t output_size = pp->output_size;
+  const size_t view_size   = ALIGNU64T(pp->view_size);
 #if defined(WITH_UNRUH)
   const size_t unruh_with_input_bytes_size    = pp->unruh_with_input_bytes_size;
   const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
@@ -337,7 +337,8 @@ static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, con
   kdf_shake_x4_finalize_key(kdf);
 }
 
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
+    defined(WITH_LOWMC_256_256_38)
 static void uint64_to_bitstream_10(bitstream_t* bs, const uint64_t v) {
   bitstream_put_bits(bs, v >> (64 - 30), 30);
 }
@@ -367,7 +368,8 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
     return;
   }
 #endif
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
+    defined(WITH_LOWMC_256_256_38)
   if (pp->lowmc.m == 10) {
     for (size_t i = 0; i < num_views; ++i, ++v) {
       uint64_to_bitstream_10(&bs, v->t[idx]);
@@ -396,7 +398,8 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
     return;
   }
 #endif
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
+    defined(WITH_LOWMC_256_256_38)
   if (pp->lowmc.m == 10) {
     for (size_t i = 0; i < num_views; ++i, ++v) {
       v->t[idx] = uint64_from_bitstream_10(&bs);
@@ -485,7 +488,7 @@ static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting
   // hash the seed
   hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_4);
   hash_update_x4_4(&ctx, helper[0].round->seeds[vidx], helper[1].round->seeds[vidx],
-                             helper[2].round->seeds[vidx], helper[3].round->seeds[vidx], pp->seed_size);
+                   helper[2].round->seeds[vidx], helper[3].round->seeds[vidx], pp->seed_size);
   hash_final_x4(&ctx);
   uint8_t tmp[4][MAX_DIGEST_SIZE];
   hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], hashlen);
@@ -544,7 +547,7 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
  * Hash public key, salt and message
  */
 static void H3_public_key_message(hash_context* ctx, const picnic_instance_t* pp,
-                                  const uint8_t* salt, const context_t* context) {
+                                  const uint8_t* salt, const picnic_context_t* context) {
   // hash circuit out and input (public key)
   hash_update(ctx, context->public_key, pp->output_size);
   hash_update(ctx, context->plaintext, pp->input_size);
@@ -557,8 +560,8 @@ static void H3_public_key_message(hash_context* ctx, const picnic_instance_t* pp
 /**
  * Re-compute challenge for verification
  */
-static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const context_t* context,
-                      uint8_t* ch) {
+static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
+                      const picnic_context_t* context, uint8_t* ch) {
   const size_t digest_size = pp->digest_size;
   const size_t num_rounds  = pp->num_rounds;
   const size_t output_size = pp->output_size;
@@ -660,7 +663,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf, const conte
 /**
  * Compute challenge
  */
-static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const context_t* context) {
+static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const picnic_context_t* context) {
   const size_t num_rounds = pp->num_rounds;
 
   hash_context ctx;
@@ -800,12 +803,12 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
 // serilization helper functions
 static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
                                    uint8_t* result, size_t* siglen) {
-  const uint32_t num_rounds                   = pp->num_rounds;
-  const uint32_t seed_size                    = pp->seed_size;
-  const uint32_t challenge_size               = pp->collapsed_challenge_size;
-  const uint32_t digest_size                  = pp->digest_size;
-  const size_t view_size                      = pp->view_size;
-  const size_t input_size                     = pp->input_size;
+  const uint32_t num_rounds     = pp->num_rounds;
+  const uint32_t seed_size      = pp->seed_size;
+  const uint32_t challenge_size = pp->collapsed_challenge_size;
+  const uint32_t digest_size    = pp->digest_size;
+  const size_t view_size        = pp->view_size;
+  const size_t input_size       = pp->input_size;
 #if defined(WITH_UNRUH)
   const size_t unruh_with_input_bytes_size    = pp->unruh_with_input_bytes_size;
   const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
@@ -865,14 +868,14 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
 
 static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const uint8_t* data,
                                               size_t len) {
-  const size_t digest_size              = pp->digest_size;
-  const size_t seed_size                = pp->seed_size;
-  const size_t num_rounds               = pp->num_rounds;
-  const size_t challenge_size           = pp->collapsed_challenge_size;
-  const size_t input_size               = pp->input_size;
-  const size_t view_size                = pp->view_size;
-  const unsigned int view_diff          = pp->view_size * 8 - pp->view_round_size * pp->lowmc.r;
-  const unsigned int input_share_diff   = pp->input_size * 8 - pp->lowmc.k;
+  const size_t digest_size            = pp->digest_size;
+  const size_t seed_size              = pp->seed_size;
+  const size_t num_rounds             = pp->num_rounds;
+  const size_t challenge_size         = pp->collapsed_challenge_size;
+  const size_t input_size             = pp->input_size;
+  const size_t view_size              = pp->view_size;
+  const unsigned int view_diff        = pp->view_size * 8 - pp->view_round_size * pp->lowmc.r;
+  const unsigned int input_share_diff = pp->input_size * 8 - pp->lowmc.k;
 #if defined(WITH_UNRUH)
   const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
   const size_t with_input_bytes_size    = pp->unruh_with_input_bytes_size;
@@ -982,8 +985,8 @@ err:
   return NULL;
 }
 
-static void generate_seeds(const picnic_instance_t* pp, const context_t* context, uint8_t* seeds,
-                           uint8_t* salt) {
+static void generate_seeds(const picnic_instance_t* pp, const picnic_context_t* context,
+                           uint8_t* seeds, uint8_t* salt) {
   const size_t seed_size   = pp->seed_size;
   const size_t num_rounds  = pp->num_rounds;
   const size_t input_size  = pp->input_size;
@@ -1013,7 +1016,8 @@ static void generate_seeds(const picnic_instance_t* pp, const context_t* context
   kdf_shake_clear(&ctx);
 }
 
-int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* sig, size_t* siglen) {
+int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint8_t* sig,
+              size_t* siglen) {
   const size_t num_rounds  = pp->num_rounds;
   const size_t input_size  = pp->input_size;
   const size_t output_size = pp->output_size;
@@ -1045,7 +1049,7 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
   uint8_t* tape_bytes_x4 = aligned_alloc(sizeof(uint64_t), SC_PROOF * 4 * aview_size);
 
   proof_round_t* round = prf->round;
-  unsigned int i = 0;
+  unsigned int i       = 0;
   for (; i < (num_rounds / 4) * 4; i += 4, round += 4) {
     // use 4 parallel instances of keccak for speedup
     {
@@ -1125,7 +1129,8 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
         clear_padding_bits(&round->input_shares[j][input_size - 1], diff);
         mzd_from_char_array(in_out_shares[0].s[j], round->input_shares[j], input_size);
       }
-      mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1], context->m_key);
+      mzd_share(in_out_shares[0].s[2], in_out_shares[0].s[0], in_out_shares[0].s[1],
+                context->m_key);
       mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares[0].s[SC_PROOF - 1],
                         input_size);
 
@@ -1174,7 +1179,7 @@ int impl_sign(const picnic_instance_t* pp, const context_t* context, uint8_t* si
   return ret;
 }
 
-int impl_verify(const picnic_instance_t* pp, const context_t* context, const uint8_t* sig,
+int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, const uint8_t* sig,
                 size_t siglen) {
   const size_t num_rounds  = pp->num_rounds;
   const size_t input_size  = pp->input_size;
@@ -1182,7 +1187,6 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
   const size_t lowmc_r     = pp->lowmc.r;
   const size_t view_size   = pp->view_size;
   const size_t aview_size  = ALIGNU64T(view_size);
-
   const unsigned int diff  = input_size * 8 - pp->lowmc.n;
 #if defined(WITH_UNRUH)
   const bool unruh = is_unruh(pp);
@@ -1268,8 +1272,7 @@ int impl_verify(const picnic_instance_t* pp, const context_t* context, const uin
                             input_size);
 
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
-          decompress_random_tape(
-              rvec, pp, &tape_bytes_x4[(j * 4 + round_offset) * aview_size], j);
+          decompress_random_tape(rvec, pp, &tape_bytes_x4[(j * 4 + round_offset) * aview_size], j);
         }
 
         decompress_view(views, pp, helper[round_offset].round->communicated_bits[1], 1);
