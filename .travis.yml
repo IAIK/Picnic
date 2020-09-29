@@ -5,34 +5,34 @@ matrix:
   include:
     - compiler: clang
       os: linux
+      dist: focal
       addons:
         apt:
           update: true
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - cmake
             - ccache
     - compiler: gcc
       os: linux
+      dist: focal
       addons:
         apt:
           update: true
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - cmake
             - ccache
     - compiler: gcc
       os: linux
+      dist: focal
       addons:
         apt:
           update: true
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-9
             - cmake
@@ -41,12 +41,12 @@ matrix:
         - COMPILER=gcc-9
     - compiler: gcc
       os: linux
+      dist: focal
       addons:
         apt:
           update: true
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-8
             - cmake
@@ -55,12 +55,12 @@ matrix:
         - COMPILER=gcc-8
     - compiler: gcc
       os: linux
+      dist: focal
       addons:
         apt:
           update: true
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-7
             - cmake
@@ -69,12 +69,12 @@ matrix:
         - COMPILER=gcc-7
     - compiler: gcc
       os: linux
+      dist: focal
       addons:
         apt:
           update: true
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-6
             - cmake
@@ -83,12 +83,12 @@ matrix:
         - COMPILER=gcc-6
     - compiler: gcc
       os: linux
+      dist: focal
       addons:
         apt:
           update: true
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-5
             - cmake
@@ -97,12 +97,12 @@ matrix:
         - COMPILER=gcc-5
     - compiler: gcc
       os: linux
+      dist: focal
       addons:
         apt:
           update: true
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-4.9
             - cmake
