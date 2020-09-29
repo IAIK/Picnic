@@ -9,7 +9,7 @@ matrix:
         apt:
           update: true
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - cmake
@@ -20,7 +20,7 @@ matrix:
         apt:
           update: true
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - cmake
@@ -31,7 +31,7 @@ matrix:
         apt:
           update: true
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-9
@@ -45,7 +45,7 @@ matrix:
         apt:
           update: true
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-8
@@ -59,7 +59,7 @@ matrix:
         apt:
           update: true
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-7
@@ -73,7 +73,7 @@ matrix:
         apt:
           update: true
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-6
@@ -87,7 +87,7 @@ matrix:
         apt:
           update: true
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-5
@@ -101,7 +101,7 @@ matrix:
         apt:
           update: true
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'ppa:ppsspp/cmake'
           packages:
             - gcc-4.9
