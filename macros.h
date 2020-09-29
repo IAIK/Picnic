@@ -58,7 +58,7 @@
 #endif
 
 /* Apple version check macro */
-#if defined(__APPLE___)
+#if defined(__APPLE__)
 #include <Availability.h>
 #define MACOSX_CHECK(maj, min, rev)                                                                \
   (__MAC_OS_X_VERSION_MIN_REQUIRED >= ((maj)*10000 + (min)*100 + (rev)))
