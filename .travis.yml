@@ -83,7 +83,7 @@ jobs:
         - COMPILER=gcc-7
     - compiler: gcc
       os: linux
-      dist: focal
+      dist: bionic
       addons:
         apt:
           update: true
@@ -97,7 +97,7 @@ jobs:
         - COMPILER=gcc-6
     - compiler: gcc
       os: linux
-      dist: focal
+      dist: bionic
       addons:
         apt:
           update: true
@@ -111,7 +111,7 @@ jobs:
         - COMPILER=gcc-5
     - compiler: gcc
       os: linux
-      dist: focal
+      dist: xenial
       addons:
         apt:
           update: true
