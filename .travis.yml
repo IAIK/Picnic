@@ -34,6 +34,20 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages:
+            - gcc-10
+            - cmake
+            - ccache
+      env:
+        - COMPILER=gcc-10
+    - compiler: gcc
+      os: linux
+      dist: focal
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages:
             - gcc-9
             - cmake
             - ccache
