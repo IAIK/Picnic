@@ -39,7 +39,7 @@ int rand_bytes(uint8_t* dst, size_t len) {
 #include <stdlib.h>
 
 int rand_bytes(uint8_t* dst, size_t len) {
-  arc4random(dst, len);
+  arc4random_buf(dst, len);
   return 0;
 }
 #elif defined(__APPLE__) && defined(HAVE_APPLE_FRAMEWORK)
