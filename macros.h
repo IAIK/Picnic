@@ -57,6 +57,15 @@
 #define NETBSD_CHECK(maj, min) 0
 #endif
 
+/* Apple version check macro */
+#if defined(__APPLE___)
+#include <Availability.h>
+#define MACOSX_CHECK(maj, min, rev)                                                                \
+  (__MAC_OS_X_VERSION_MIN_REQUIRED >= ((maj)*10000 + (min)*100 + (rev)))
+#else
+#define MACOSX_CHECK(maj, min, rev) 0
+#endif
+
 #ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
