@@ -477,8 +477,6 @@ void mzd_mul_v_parity_uint64_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   block_t* cblock       = BLOCK(c, 0);
   const block_t* vblock = CONST_BLOCK(v, 0);
 
-  cblock->w64[0] = 0;
-
   word res = 0;
   for (unsigned int i = 15; i; --i) {
     const block_t* Ablock = CONST_BLOCK(At, 15 - i);
@@ -488,6 +486,7 @@ void mzd_mul_v_parity_uint64_128_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
         parity64_uint64((vblock->w64[0] & Ablock->w64[2]) ^ (vblock->w64[1] & Ablock->w64[3]));
     res |= (parity1 | (parity2 << 1)) << (64 - (2 * i));
   }
+  cblock->w64[0] = 0;
   cblock->w64[1] = res;
 }
 #endif
@@ -497,10 +496,6 @@ void mzd_mul_v_parity_uint64_192_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   block_t* cblock       = BLOCK(c, 0);
   const block_t* vblock = CONST_BLOCK(v, 0);
 
-  for (unsigned int j = 0; j < 2; j++) {
-    cblock->w64[j] = 0;
-  }
-
   word res = 0;
   for (unsigned int i = 30; i; --i) {
     const block_t* Ablock = CONST_BLOCK(At, 30 - i);
@@ -508,6 +503,9 @@ void mzd_mul_v_parity_uint64_192_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
         parity64_uint64((vblock->w64[0] & Ablock->w64[0]) ^ (vblock->w64[1] & Ablock->w64[1]) ^
                         (vblock->w64[2] & Ablock->w64[2]));
     res |= parity << (64 - i);
+  }
+  for (unsigned int j = 0; j < 2; j++) {
+    cblock->w64[j] = 0;
   }
   cblock->w64[2] = res;
 }
@@ -518,10 +516,6 @@ void mzd_mul_v_parity_uint64_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
   block_t* cblock       = BLOCK(c, 0);
   const block_t* vblock = CONST_BLOCK(v, 0);
 
-  for (unsigned int j = 0; j < 3; j++) {
-    cblock->w64[j] = 0;
-  }
-
   word res = 0;
   for (unsigned int i = 30; i; --i) {
     const block_t* Ablock = CONST_BLOCK(At, 30 - i);
@@ -529,6 +523,9 @@ void mzd_mul_v_parity_uint64_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_lo
         parity64_uint64((vblock->w64[0] & Ablock->w64[0]) ^ (vblock->w64[1] & Ablock->w64[1]) ^
                         (vblock->w64[2] & Ablock->w64[2]) ^ (vblock->w64[3] & Ablock->w64[3]));
     res |= parity << (64 - i);
+  }
+  for (unsigned int j = 0; j < 3; j++) {
+    cblock->w64[j] = 0;
   }
   cblock->w64[3] = res;
 }
