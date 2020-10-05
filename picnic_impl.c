@@ -331,8 +331,7 @@ static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, con
   kdf_shake_x4_finalize_key(kdf);
 }
 
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
-    defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
 static void uint64_to_bitstream_10(bitstream_t* bs, const uint64_t v) {
   bitstream_put_bits(bs, v >> (64 - 30), 30);
 }
@@ -362,8 +361,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
     return;
   }
 #endif
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
-    defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
   if (pp->lowmc.m == 10) {
     for (size_t i = 0; i < num_views; ++i, ++v) {
       uint64_to_bitstream_10(&bs, v->t[idx]);
@@ -392,8 +390,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
     return;
   }
 #endif
-#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) ||                            \
-    defined(WITH_LOWMC_256_256_38)
+#if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
   if (pp->lowmc.m == 10) {
     for (size_t i = 0; i < num_views; ++i, ++v) {
       v->t[idx] = uint64_from_bitstream_10(&bs);
