@@ -75,28 +75,6 @@ void mzd_local_free(mzd_local_t* v) {
   aligned_free(v);
 }
 
-void mzd_local_init_multiple_ex(mzd_local_t** dst, size_t n, unsigned int r, unsigned int c, bool clear) {
-  const size_t rowstride = calculate_rowstride(calculate_width(c));
-
-  const size_t buffer_size   = r * rowstride * sizeof(word);
-  const size_t size_per_elem = (buffer_size + 31) & ~31;
-
-  unsigned char* full_buffer = aligned_alloc(32, size_per_elem * n);
-  if (clear) {
-    memset(full_buffer, 0, size_per_elem * n);
-  }
-
-  for (size_t s = 0; s < n; ++s, full_buffer += size_per_elem) {
-    dst[s] = (mzd_local_t*)full_buffer;
-  }
-}
-
-void mzd_local_free_multiple(mzd_local_t** vs) {
-  if (vs) {
-    aligned_free(vs[0]);
-  }
-}
-
 /* implementation of copy */
 
 void mzd_copy_uint64_128(mzd_local_t* dst, mzd_local_t const* src) {
