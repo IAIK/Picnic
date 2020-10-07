@@ -93,35 +93,35 @@
 #endif
 #endif
 
-#define apply_region(name, type, xor, attributes)                                                  \
+#define apply_region(name, type, op, attributes)                                                   \
   static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      unsigned int count) {                                         \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
-      *dst = xor(*dst, *src);                                                                      \
+      *dst = op(*dst, *src);                                                                       \
     }                                                                                              \
   }
 
-#define apply_mask(name, type, xor, and, attributes)                                               \
+#define apply_mask(name, type, op, opmask, attributes)                                             \
   static inline type attributes name(const type lhs, const type rhs, const type mask) {            \
-    return xor(lhs, and(rhs, mask));                                                               \
+    return op(lhs, opmask(rhs, mask));                                                             \
   }
 
-#define apply_mask_region(name, type, xor, and, attributes)                                        \
+#define apply_mask_region(name, type, op, opmask, attributes)                                      \
   static inline void attributes name(type* restrict dst, type const* restrict src,                 \
                                      type const mask, unsigned int count) {                        \
     for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
-      *dst = xor(*dst, and(*src, mask));                                                           \
+      *dst = op(*dst, opmask(*src, mask));                                                         \
     }                                                                                              \
   }
 
-#define apply_array(name, type, xor, count, attributes)                                            \
+#define apply_array(name, type, op, count, attributes)                                             \
   static inline void attributes name(type dst[count], type const lhs[count],                       \
                                      type const rhs[count]) {                                      \
     type* d       = dst;                                                                           \
     const type* l = lhs;                                                                           \
     const type* r = rhs;                                                                           \
     for (unsigned int i = count; i; --i, ++d, ++l, ++r) {                                          \
-      *d = xor(*l, *r);                                                                            \
+      *d = op(*l, *r);                                                                             \
     }                                                                                              \
   }
 
