@@ -33,10 +33,8 @@
 #else
 #define CPU_SUPPORTS_AVX2 (__builtin_cpu_supports("avx2") && cpu_supports(CPU_CAP_BMI2))
 #endif
-#define CPU_SUPPORTS_POPCNT __builtin_cpu_supports("popcnt")
 #else
 #define CPU_SUPPORTS_AVX2 cpu_supports(CPU_CAP_AVX2 | CPU_CAP_BMI2)
-#define CPU_SUPPORTS_POPCNT cpu_supports(CPU_CAP_POPCNT)
 #endif
 #endif
 

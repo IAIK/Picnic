@@ -40,14 +40,6 @@ void test(void) {
 }
 #endif
 
-#if defined(POPCNT)
-#include <nmmintrin.h>
-
-ATTRIBUTE_TARGET("popcnt") void test(void) {
-  (void)_mm_popcnt_u32(0);
-}
-#endif
-
 int main() {
   test();
 }
