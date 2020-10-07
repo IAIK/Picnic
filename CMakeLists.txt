@@ -236,8 +236,8 @@ endif()
 
 # Picnic implementation
 list(APPEND PICNIC_SOURCES
-     aligned_alloc.c
      bitstream.c
+     compat.c
      cpu.c
      io.c
      lowmc.c
