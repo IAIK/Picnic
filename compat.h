@@ -10,12 +10,12 @@
 #ifndef PICNIC_COMPAT_H
 #define PICNIC_COMPAT_H
 
+#include <stddef.h>
+
 #if defined(HAVE_CONFIG_H)
 #include <config.h>
 #else
 /* in case cmake checks were not run, define HAVE_* for known good configurations */
-
-#include <stddef.h>
 #include "macros.h"
 #if defined(__OpenBSD__)
 #include <sys/param.h>
