@@ -419,6 +419,7 @@ static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_roun
   hash_final(&ctx);
   uint8_t tmp[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, tmp, hashlen);
+  hash_clear(&ctx);
 
   // compute H_0(H_4(seed), view)
   hash_init_prefix(&ctx, hashlen, HASH_PREFIX_0);
@@ -431,6 +432,7 @@ static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_roun
   hash_update(&ctx, prf_round->output_shares[vidx], pp->output_size);
   hash_final(&ctx);
   hash_squeeze(&ctx, prf_round->commitments[vidx], hashlen);
+  hash_clear(&ctx);
 }
 
 /**
@@ -448,6 +450,7 @@ static void hash_commitment_x4(const picnic_instance_t* pp, proof_round_t* prf_r
   hash_final_x4(&ctx);
   uint8_t tmp[4][MAX_DIGEST_SIZE];
   hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], hashlen);
+  hash_clear_x4(&ctx);
 
   // compute H_0(H_4(seed), view)
   hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_0);
@@ -467,6 +470,7 @@ static void hash_commitment_x4(const picnic_instance_t* pp, proof_round_t* prf_r
   hash_final_x4(&ctx);
   hash_squeeze_x4_4(&ctx, prf_round[0].commitments[vidx], prf_round[1].commitments[vidx],
                     prf_round[2].commitments[vidx], prf_round[3].commitments[vidx], hashlen);
+  hash_clear_x4(&ctx);
 }
 
 /**
@@ -484,6 +488,7 @@ static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting
   hash_final_x4(&ctx);
   uint8_t tmp[4][MAX_DIGEST_SIZE];
   hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], hashlen);
+  hash_clear_x4(&ctx);
 
   // compute H_0(H_4(seed), view)
   hash_init_prefix_x4(&ctx, hashlen, HASH_PREFIX_0);
@@ -505,6 +510,7 @@ static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting
   hash_squeeze_x4_4(&ctx, helper[0].round->commitments[vidx], helper[1].round->commitments[vidx],
                     helper[2].round->commitments[vidx], helper[3].round->commitments[vidx],
                     hashlen);
+  hash_clear_x4(&ctx);
 }
 
 /**
@@ -524,6 +530,7 @@ static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) 
       hash_update(&ctx, hash, digest_size);
       hash_final(&ctx);
       hash_squeeze(&ctx, hash, digest_size);
+      hash_clear(&ctx);
       bit_idx = 0;
     }
 
@@ -649,6 +656,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
 
   uint8_t hash[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, hash, digest_size);
+  hash_clear(&ctx);
   H3_compute(pp, hash, ch);
 }
 
@@ -679,6 +687,7 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const picnic_conte
 
   uint8_t hash[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, hash, pp->digest_size);
+  hash_clear(&ctx);
   /* parts of this hash will be published as challenge so is public anyway */
   picnic_declassify(hash, MAX_DIGEST_SIZE);
   H3_compute(pp, hash, prf->challenge);
@@ -703,6 +712,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
 
   uint8_t tmp[MAX_DIGEST_SIZE];
   hash_squeeze(&ctx, tmp, digest_size);
+  hash_clear(&ctx);
 
   // Hash H_5(seed), the view, and the length
   hash_init(&ctx, digest_size);
@@ -714,6 +724,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   hash_update_uint16_le(&ctx, outputlen);
   hash_final(&ctx);
   hash_squeeze(&ctx, prf_round->gs[vidx], outputlen);
+  hash_clear(&ctx);
 }
 
 /*
@@ -735,6 +746,7 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
 
   uint8_t tmp[4][MAX_DIGEST_SIZE];
   hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], digest_size);
+  hash_clear_x4(&ctx);
 
   // Hash H_5(seed), the view, and the length
   hash_init_x4(&ctx, digest_size);
@@ -751,6 +763,7 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
   hash_final_x4(&ctx);
   hash_squeeze_x4_4(&ctx, prf_round[0].gs[vidx], prf_round[1].gs[vidx], prf_round[2].gs[vidx],
                     prf_round[3].gs[vidx], outputlen);
+  hash_clear_x4(&ctx);
 }
 
 /*
@@ -772,6 +785,7 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
 
   uint8_t tmp[4][MAX_DIGEST_SIZE];
   hash_squeeze_x4_4(&ctx, tmp[0], tmp[1], tmp[2], tmp[3], digest_size);
+  hash_clear_x4(&ctx);
 
   // Hash H_5(seed), the view, and the length
   hash_init_x4(&ctx, digest_size);
@@ -789,6 +803,7 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
   hash_final_x4(&ctx);
   hash_squeeze_x4_4(&ctx, helper[0].round->gs[vidx], helper[1].round->gs[vidx],
                     helper[2].round->gs[vidx], helper[3].round->gs[vidx], outputlen);
+  hash_clear_x4(&ctx);
 }
 #endif
 
