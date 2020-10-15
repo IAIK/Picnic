@@ -23,6 +23,7 @@
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 /* max number of ZKB++ rounds */
