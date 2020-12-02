@@ -166,36 +166,36 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   prf->challenge = slab;
   slab += ALIGNU64T(num_rounds);
 
-  for (uint32_t r = 0; r < num_rounds; ++r) {
-    for (uint32_t i = 0; i < SC_PROOF; ++i) {
+  for (size_t r = 0; r < num_rounds; ++r) {
+    for (size_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].seeds[i] = slab;
       slab += seed_size;
     }
   }
 
-  for (uint32_t r = 0; r < num_rounds; ++r) {
-    for (uint32_t i = 0; i < SC_PROOF; ++i) {
+  for (size_t r = 0; r < num_rounds; ++r) {
+    for (size_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].commitments[i] = slab;
       slab += digest_size;
     }
   }
 
-  for (uint32_t r = 0; r < num_rounds; ++r) {
-    for (uint32_t i = 0; i < SC_PROOF; ++i) {
+  for (size_t r = 0; r < num_rounds; ++r) {
+    for (size_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].input_shares[i] = slab;
       slab += input_size;
     }
   }
 
-  for (uint32_t r = 0; r < num_rounds; ++r) {
-    for (uint32_t i = 0; i < SC_PROOF; ++i) {
+  for (size_t r = 0; r < num_rounds; ++r) {
+    for (size_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].communicated_bits[i] = slab;
       slab += view_size;
     }
   }
 
-  for (uint32_t r = 0; r < num_rounds; ++r) {
-    for (uint32_t i = 0; i < SC_PROOF; ++i) {
+  for (size_t r = 0; r < num_rounds; ++r) {
+    for (size_t i = 0; i < SC_PROOF; ++i) {
       prf->round[r].output_shares[i] = slab;
       slab += output_size;
     }
@@ -203,8 +203,8 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
 
 #if defined(WITH_UNRUH)
   if (is_unruh(pp)) {
-    for (uint32_t r = 0; r < num_rounds; ++r) {
-      for (uint32_t i = 0; i < SC_PROOF - 1; ++i) {
+    for (size_t r = 0; r < num_rounds; ++r) {
+      for (size_t i = 0; i < SC_PROOF - 1; ++i) {
         prf->round[r].gs[i] = slab;
         slab += unruh_without_input_bytes_size;
       }
@@ -243,19 +243,19 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   proof->challenge = slab;
   slab += ALIGNU64T(num_rounds);
 
-  for (uint32_t r = 0; r < num_rounds; ++r) {
-    for (uint32_t i = 0; i < SC_VERIFY; ++i) {
+  for (size_t r = 0; r < num_rounds; ++r) {
+    for (size_t i = 0; i < SC_VERIFY; ++i) {
       proof->round[r].commitments[i] = slab;
       slab += digest_size;
     }
   }
 
-  for (uint32_t r = 0; r < num_rounds; ++r) {
+  for (size_t r = 0; r < num_rounds; ++r) {
     proof->round[r].communicated_bits[0] = slab;
     slab += view_size;
   }
 
-  for (uint32_t r = 0; r < num_rounds; ++r) {
+  for (size_t r = 0; r < num_rounds; ++r) {
     proof->round[r].output_shares[0] = slab;
     slab += output_size;
     proof->round[r].output_shares[1] = slab;
@@ -266,8 +266,8 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
 
 #if defined(WITH_UNRUH)
   if (is_unruh(pp)) {
-    for (uint32_t r = 0; r < num_rounds; ++r) {
-      for (uint32_t i = 0; i < SC_VERIFY; ++i) {
+    for (size_t r = 0; r < num_rounds; ++r) {
+      for (size_t i = 0; i < SC_VERIFY; ++i) {
         proof->round[r].gs[i] = slab;
         slab += unruh_with_input_bytes_size;
       }
@@ -810,10 +810,10 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
 // serilization helper functions
 static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
                                    uint8_t* result, size_t* siglen) {
-  const uint32_t num_rounds     = pp->num_rounds;
-  const uint32_t seed_size      = pp->seed_size;
-  const uint32_t challenge_size = pp->collapsed_challenge_size;
-  const uint32_t digest_size    = pp->digest_size;
+  const size_t num_rounds     = pp->num_rounds;
+  const size_t seed_size      = pp->seed_size;
+  const size_t challenge_size = pp->collapsed_challenge_size;
+  const size_t digest_size    = pp->digest_size;
   const size_t view_size        = pp->view_size;
   const size_t input_size       = pp->input_size;
 #if defined(WITH_UNRUH)
