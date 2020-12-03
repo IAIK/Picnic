@@ -76,7 +76,7 @@ check_type_size(ssize_t SSIZE_T LANGUAGE C)
 # check supported compiler flags
 check_c_compiler_flag(-march=native CC_SUPPORTS_MARCH_NATIVE)
 check_c_compiler_flag(-mtune=native CC_SUPPORTS_MTUNE_NATIVE)
-check_c_compiler_flag(-O3 CC_SUPPORTS_03)
+check_c_compiler_flag(-O3 CC_SUPPORTS_O3)
 check_c_compiler_flag(-fomit-frame-pointer CC_SUPPORTS_FOMIT_FRAME_POINTER)
 check_c_compiler_flag_and_add(-Wall CC_SUPPORTS_WALL)
 check_c_compiler_flag_and_add(-Wextra CC_SUPPORTS_WEXTRA)
@@ -203,7 +203,7 @@ if(WITH_LTO)
 endif()
 
 # enable -O3
-if(CC_SUPPORTS_03 AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(CC_SUPPORTS_O3 AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_options(-O3)
 endif()
 # enable -fomit-frame-pointer
