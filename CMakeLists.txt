@@ -296,13 +296,11 @@ if(VALGRIND_FOUND AND WITH_VALGRIND_CT_TESTS)
 endif()
 
 function(apply_base_options lib)
-  if(WITH_ZKBPP)
-    target_compile_definitions(${lib} PRIVATE WITH_ZKBPP)
-    target_compile_definitions(${lib} PRIVATE WITH_UNRUH)
-  endif()
-  if(WITH_KKW)
-    target_compile_definitions(${lib} PRIVATE WITH_KKW)
-  endif()
+  target_compile_definitions(${lib} PRIVATE
+                             $<$<BOOL:${WITH_ZKBPP}>:WITH_ZKBPP>
+                             $<$<BOOL:${WITH_ZKBPP}>:WITH_UNRUH>
+                             $<$<BOOL:${WITH_KKW}>:WITH_KKW>
+                             $<$<BOOL:${WITH_CONFIG_H}>:HAVE_CONFIG_H>)
   if(WITH_ZKBPP)
     target_compile_definitions(${lib} PRIVATE
                                $<$<BOOL:${WITH_LOWMC_128_128_20}>:WITH_LOWMC_128_128_20>
@@ -313,9 +311,6 @@ function(apply_base_options lib)
                              $<$<BOOL:${WITH_LOWMC_129_129_4}>:WITH_LOWMC_129_129_4>
                              $<$<BOOL:${WITH_LOWMC_192_192_4}>:WITH_LOWMC_192_192_4>
                              $<$<BOOL:${WITH_LOWMC_255_255_4}>:WITH_LOWMC_255_255_4>)
-  if(WITH_CONFIG_H)
-    target_compile_definitions(${lib} PRIVATE HAVE_CONFIG_H)
-  endif()
   if(WITH_SHA3_IMPL STREQUAL "s390-cpacf")
     target_compile_definitions(${lib} PRIVATE WITH_SHAKE_S390_CPACF)
   else()
@@ -346,9 +341,7 @@ function(apply_picnic_options lib)
   apply_opt_options(${lib})
 
   set_target_properties(${lib} PROPERTIES C_VISIBILITY_PRESET hidden)
-  if(WITH_EXTRA_RANDOMNESS)
-    target_compile_definitions(${lib} PRIVATE WITH_EXTRA_RANDOMNESS)
-  endif()
+  target_compile_definitions(${lib} PRIVATE $<$<BOOL:${WITH_EXTRA_RANDOMNESS}>:WITH_EXTRA_RANDOMNESS>)
 
   if(WIN32)
     # require new enough Windows for bcrypt to be available
