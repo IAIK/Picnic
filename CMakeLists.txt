@@ -103,6 +103,18 @@ set(WITH_KKW ON CACHE BOOL "Enable Picnic instances based on KKW.")
 if(NOT WITH_ZKBPP AND NOT WITH_KKW)
   message(FATAL_ERROR "At least one of WITH_ZKBPP and WITH_KKW is required.")
 endif()
+set(WITH_LOWMC_128_128_20 ON CACHE BOOL "Enable LowMC instance 128-128-20.")
+set(WITH_LOWMC_192_192_30 ON CACHE BOOL "Enable LowMC instance 192-192-30.")
+set(WITH_LOWMC_256_256_38 ON CACHE BOOL "Enable LowMC instance 256-256-38.")
+set(WITH_LOWMC_129_129_4 ON CACHE BOOL "Enable LowMC instance 129-129-4.")
+set(WITH_LOWMC_192_192_4 ON CACHE BOOL "Enable LowMC instance 192-192-4.")
+set(WITH_LOWMC_255_255_4 ON CACHE BOOL "Enable LowMC instance 255-255-4.")
+if(WITH_KKW AND NOT WITH_LOWMC_129_129_4 AND NOT WITH_LOWMC_192_192_4 AND NOT WITH_LOWMC_255_255_4)
+  message(FATAL_ERROR "At least one of WITH_LOWMC_129_129_4, WITH_LOWMC_192_192_4, and WITH_LOWMC_255_255_4 is required for WITH_KKW.")
+endif()
+if(NOT WITH_LOWMC_128_128_20 AND NOT WITH_LOWMC_192_192_30 AND NOT WITH_LOWMC_256_256_38 AND NOT WITH_LOWMC_129_129_4 AND NOT WITH_LOWMC_192_192_4 AND NOT WITH_LOWMC_255_255_4)
+  message(FATAL_ERROR "At least one of the LowMC parameters is required.")
+endif()
 
 set(WITH_SIMD_OPT ON CACHE BOOL "Enable optimizations via SIMD.")
 set(WITH_AVX2 ON CACHE BOOL "Use AVX2 and BMI2 if available.")
@@ -241,18 +253,18 @@ list(APPEND PICNIC_SOURCES
      cpu.c
      io.c
      lowmc.c
-     lowmc_129_129_4.c
-     lowmc_192_192_4.c
-     lowmc_255_255_4.c
+     $<$<BOOL:${WITH_LOWMC_129_129_4}>:lowmc_129_129_4.c>
+     $<$<BOOL:${WITH_LOWMC_192_192_4}>:lowmc_192_192_4.c>
+     $<$<BOOL:${WITH_LOWMC_255_255_4}>:lowmc_255_255_4.c>
      mzd_additional.c
      picnic.c
      picnic_instances.c
      randomness.c)
 if(WITH_ZKBPP)
   list(APPEND PICNIC_SOURCES
-       lowmc_128_128_20.c
-       lowmc_192_192_30.c
-       lowmc_256_256_38.c
+       $<$<BOOL:${WITH_LOWMC_128_128_20}>:lowmc_128_128_20.c>
+       $<$<BOOL:${WITH_LOWMC_192_192_30}>:lowmc_192_192_30.c>
+       $<$<BOOL:${WITH_LOWMC_256_256_38}>:lowmc_256_256_38.c>
        mpc_lowmc.c
        picnic_impl.c)
 endif()
@@ -293,14 +305,14 @@ function(apply_base_options lib)
   endif()
   if(WITH_ZKBPP)
     target_compile_definitions(${lib} PRIVATE
-                               WITH_LOWMC_128_128_20
-                               WITH_LOWMC_192_192_30
-                               WITH_LOWMC_256_256_38)
+                               $<$<BOOL:${WITH_LOWMC_128_128_20}>:WITH_LOWMC_128_128_20>
+                               $<$<BOOL:${WITH_LOWMC_192_192_30}>:WITH_LOWMC_192_192_30>
+                               $<$<BOOL:${WITH_LOWMC_256_256_38}>:WITH_LOWMC_256_256_38>)
   endif()
   target_compile_definitions(${lib} PRIVATE
-                             WITH_LOWMC_129_129_4
-                             WITH_LOWMC_192_192_4
-                             WITH_LOWMC_255_255_4)
+                             $<$<BOOL:${WITH_LOWMC_129_129_4}>:WITH_LOWMC_129_129_4>
+                             $<$<BOOL:${WITH_LOWMC_192_192_4}>:WITH_LOWMC_192_192_4>
+                             $<$<BOOL:${WITH_LOWMC_255_255_4}>:WITH_LOWMC_255_255_4>)
   if(WITH_CONFIG_H)
     target_compile_definitions(${lib} PRIVATE HAVE_CONFIG_H)
   endif()
@@ -397,22 +409,35 @@ target_link_libraries(example picnic)
 apply_base_options(example)
 
 if(WITH_ZKBPP)
-  list(APPEND api_targets
-       picnic_L1_FS
-       picnic_L1_UR
-       picnic_L3_FS
-       picnic_L3_UR
-       picnic_L5_FS
-       picnic_L5_UR
-       picnic_L1_full
-       picnic_L3_full
-       picnic_L5_full)
+  if(WITH_LOWMC_128_128_20)
+    list(APPEND api_targets picnic_L1_FS picnic_L1_UR)
+  endif()
+  if(WITH_LOWMC_192_192_30)
+    list(APPEND api_targets picnic_L3_FS picnic_L3_UR)
+  endif()
+  if(WITH_LOWMC_256_256_38)
+    list(APPEND api_targets picnic_L5_FS picnic_L5_UR)
+  endif()
+  if(WITH_LOWMC_129_129_4)
+    list(APPEND api_targets picnic_L1_full)
+  endif()
+  if(WITH_LOWMC_192_192_4)
+    list(APPEND api_targets picnic_L3_full)
+  endif()
+  if(WITH_LOWMC_255_255_4)
+    list(APPEND api_targets picnic_L5_full)
+  endif()
 endif()
 if(WITH_KKW)
-  list(APPEND api_targets
-       picnic3_L1
-       picnic3_L3
-       picnic3_L5)
+  if(WITH_LOWMC_129_129_4)
+    list(APPEND api_targets picnic3_L1)
+  endif()
+  if(WITH_LOWMC_192_192_4)
+    list(APPEND api_targets picnic3_L3)
+  endif()
+  if(WITH_LOWMC_255_255_4)
+    list(APPEND api_targets picnic3_L5)
+  endif()
 endif()
 
 foreach(target IN ITEMS ${api_targets})

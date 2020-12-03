@@ -1,25 +1,6 @@
 # Generate tests for all parameters
 function(add_picnic_tests name target)
-  if(WITH_ZKBPP)
-    list(APPEND ALL_PARAMS
-         picnic_L1_FS
-         picnic_L1_UR
-         picnic_L3_FS
-         picnic_L3_UR
-         picnic_L5_FS
-         picnic_L5_UR
-         picnic_L1_full
-         picnic_L3_full
-         picnic_L5_full)
-  endif()
-  if(WITH_KKW)
-    list(APPEND ALL_PARAMS
-         picnic3_L1
-         picnic3_L3
-         picnic3_L5)
-  endif()
-
-  foreach(param IN LISTS ALL_PARAMS)
+  foreach(param IN LISTS api_targets)
     add_test(NAME "${name}_${param}" COMMAND ${target} ${param})
   endforeach(param)
 endfunction()
