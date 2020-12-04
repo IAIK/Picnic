@@ -367,8 +367,10 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
     for (size_t i = 0; i < num_views; ++i, ++v) {
       uint64_to_bitstream_10(&bs, v->t[idx]);
     }
+    return;
   }
 #endif
+  UNREACHABLE;
 }
 
 static void decompress_view(view_t* views, const picnic_instance_t* pp, const uint8_t* src,
@@ -396,8 +398,10 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
     for (size_t i = 0; i < num_views; ++i, ++v) {
       v->t[idx] = uint64_from_bitstream_10(&bs);
     }
+    return;
   }
 #endif
+  UNREACHABLE;
 }
 
 static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, const uint8_t* src,
