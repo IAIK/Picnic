@@ -55,7 +55,7 @@ static void bench_lowmc(const bench_options_t* options) {
   const size_t output_size = (lowmc->n + 7) >> 3;
 
   uint8_t* rand = malloc(input_size + output_size);
-  rand_bytes(rand, input_size + output_size);
+  rand_bits(rand, (input_size + output_size) * 8);
   mzd_from_char_array(sk, rand, input_size);
   mzd_from_char_array(pt, rand + input_size, output_size);
   free(rand);

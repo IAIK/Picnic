@@ -1016,7 +1016,7 @@ static void generate_seeds(const picnic_instance_t* pp, const picnic_context_t* 
 #if defined(WITH_EXTRA_RANDOMNESS)
   // Add extra random bytes for fault attack mitigation
   unsigned char buffer[2 * MAX_DIGEST_SIZE];
-  rand_bytes(buffer, 2 * seed_size);
+  rand_bits(buffer, 2 * seed_size * 8);
   kdf_shake_update_key(&ctx, buffer, 2 * seed_size);
 #endif
   kdf_shake_finalize_key(&ctx);

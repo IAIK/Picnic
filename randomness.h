@@ -13,7 +13,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-int rand_bytes(uint8_t* dst, size_t len);
 int rand_bits(uint8_t* dst, size_t num_bits);
 
 #endif
