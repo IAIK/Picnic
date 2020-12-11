@@ -18,16 +18,34 @@
 #if defined(WITH_SHAKE_S390_CPACF)
 /* use the KIMD/KLMD instructions from CPACF for SHAKE support on S390 */
 #include "sha3/s390_cpacf.h"
-#elif defined(OQS)
+#elif defined(OQS) || defined(PQCLEAN)
+#if defined(OQS)
 /* use OQS's SHAKE implementation */
 #include <oqs/sha3.h>
+#elif defined(PQCLEAN)
+/* PQClean's SHAKE implementation */
+#include <fips202.h>
+
+#define OQS_SHA3_shake128_inc_ctx shake128incctx
+#define OQS_SHA3_shake128_inc_init shake128_inc_init
+#define OQS_SHA3_shake128_inc_absorb shake128_inc_absorb
+#define OQS_SHA3_shake128_inc_finalize shake128_inc_finalize
+#define OQS_SHA3_shake128_inc_squeeze shake128_inc_squeeze
+#define OQS_SHA3_shake128_inc_ctx_release shake128_inc_ctx_release
+#define OQS_SHA3_shake256_inc_ctx shake256incctx
+#define OQS_SHA3_shake256_inc_init shake256_inc_init
+#define OQS_SHA3_shake256_inc_absorb shake256_inc_absorb
+#define OQS_SHA3_shake256_inc_finalize shake256_inc_finalize
+#define OQS_SHA3_shake256_inc_squeeze shake256_inc_squeeze
+#define OQS_SHA3_shake256_inc_ctx_release shake256_inc_ctx_release
+#endif
 
 typedef struct hash_context_oqs_s {
   union {
     OQS_SHA3_shake128_inc_ctx shake128_ctx;
     OQS_SHA3_shake256_inc_ctx shake256_ctx;
   };
-  unsigned int shake256;
+  unsigned char shake256;
 } hash_context;
 
 /**
