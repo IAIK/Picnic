@@ -15,8 +15,13 @@
 #include "macros.h"
 
 #if defined(HAVE_RANDOMBYTES) || defined(SUPERCOP)
+#if defined(PQCLEAN)
+// randombytes from the PQClean
+extern void randombytes(uint8_t* x, size_t xlen);
+#else
 // randombytes from the NIST framework / SUPERCOP
 extern void randombytes(unsigned char* x, unsigned long long xlen);
+#endif
 
 static int rand_bytes(uint8_t* dst, size_t len) {
   randombytes(dst, len);
