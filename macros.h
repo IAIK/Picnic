@@ -130,7 +130,7 @@
 #define HAVE_USEFUL_UNREACHABLE
 /* #elif defined(_MSC_VER)
 #define UNREACHABLE __assume(0) */
-#elif
+#else
 #define UNREACHABLE
 #endif
 
