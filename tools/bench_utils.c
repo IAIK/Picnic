@@ -95,7 +95,7 @@ bool parse_args(bench_options_t* options, int argc, char** argv) {
       return false;
     }
 
-    if (p <= PARAMETER_SET_INVALID || p >= PARAMETER_SET_MAX_INDEX) {
+    if (p == PARAMETER_SET_INVALID || p >= PARAMETER_SET_MAX_INDEX) {
       printf("Invalid parameter set selected!\n");
       return false;
     }
