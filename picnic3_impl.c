@@ -427,13 +427,13 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
     }
     /* Commit */
 
-    /* Compute random tapes for all parties.  One party for each repitition
+    /* Compute random tapes for all parties.  One party for each repetition
      * challengeC will have a bogus seed; but we won't use that party's
      * random tape. */
     createRandomTapes(&tapes[t], getLeaves(seed), sig->salt, t, params);
 
     if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
-      /* We're given iSeed, have expanded the seeds, compute aux from scratch so we can comnpte
+      /* We're given iSeed, have expanded the seeds, compute aux from scratch so we can compute
        * Com[t] */
       computeAuxTape(&tapes[t], NULL, params);
       for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
@@ -445,7 +445,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
              params);
       /* after we have checked the tape, we do not need it anymore for this opened iteration */
     } else {
-      /* We're given all seeds and aux bits, execpt for the unopened
+      /* We're given all seeds and aux bits, except for the unopened
        * party, we get their commitment */
       size_t unopened = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
       for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
@@ -481,7 +481,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   for (size_t i = 0; i < params->num_opened_rounds; i++) {
     /* 2. When t is in C, we have everything we need to re-compute the view, as an honest signer
      * would.
-     * We simulate the MPC with one fewer party; the unopned party's values are all set to zero.
+     * We simulate the MPC with one fewer party; the unopened party's values are all set to zero.
      */
     size_t t       = sig->challengeC[i];
     int unopened   = sig->challengeP[i];
@@ -673,7 +673,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   sig->cvInfoLen           = cvInfoLen;
   free(missingLeaves);
 
-  /* Reveal iSeeds for unopned rounds, those in {0..T-1} \ ChallengeC. */
+  /* Reveal iSeeds for unopened rounds, those in {0..T-1} \ ChallengeC. */
   sig->iSeedInfo    = malloc(params->num_rounds * params->seed_size);
   sig->iSeedInfoLen = revealSeeds(iSeedsTree, challengeC, params->num_opened_rounds, sig->iSeedInfo,
                                   params->num_rounds * params->seed_size, params);
