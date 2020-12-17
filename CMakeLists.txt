@@ -105,7 +105,7 @@ if(NOT WITH_ZKBPP AND NOT WITH_KKW)
   message(FATAL_ERROR "At least one of WITH_ZKBPP and WITH_KKW is required.")
 endif()
 if(NOT WITH_ZKBPP AND WITH_UNRUH)
-  message(FATAL_ERROR "WITH_ZKBPP is required for WITH_UNRUH.")
+  message(STATUS "WITH_ZKBPP is required for WITH_UNRUH, so assuming WITH_UNRUH=OFF.")
 endif()
 set(WITH_LOWMC_128_128_20 ON CACHE BOOL "Enable LowMC instance 128-128-20.")
 set(WITH_LOWMC_192_192_30 ON CACHE BOOL "Enable LowMC instance 192-192-30.")
@@ -302,7 +302,7 @@ endif()
 function(apply_base_options lib)
   target_compile_definitions(${lib} PRIVATE
                              $<$<BOOL:${WITH_ZKBPP}>:WITH_ZKBPP>
-                             $<$<BOOL:${WITH_UNRUH}>:WITH_UNRUH>
+                             $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_ZKBPP}>>:WITH_UNRUH>
                              $<$<BOOL:${WITH_KKW}>:WITH_KKW>
                              $<$<BOOL:${WITH_CONFIG_H}>:HAVE_CONFIG_H>)
   if(WITH_ZKBPP)
