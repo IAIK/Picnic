@@ -162,6 +162,8 @@ if(MSVC)
   list(APPEND WARNINGS 4201)
   # conditional expression is constant
   list(APPEND WARNINGS 4127)
+  # unary minus of unsigned types
+  list(APPEND WARNINGS 4146)
   foreach(warning IN ITEMS ${WARNINGS})
     add_compile_options("/wd${warning}")
   endforeach(warning)
