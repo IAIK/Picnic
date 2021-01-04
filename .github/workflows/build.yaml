@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.cfg.os }}
+    strategy:
+      matrix:
+        cfg:
+        - { os: ubuntu-20.04, compiler: gcc } # = gcc-9
+        - { os: ubuntu-20.04, compiler: clang } # = clang-10
+        - { os: ubuntu-20.04, compiler: gcc-8 }
+        - { os: ubuntu-20.04, compiler: gcc-10 }
+        - { os: ubuntu-20.04, compiler: clang-9 }
+        - { os: ubuntu-18.04, compiler: gcc } # = gcc-7
+        - { os: ubuntu-18.04, compiler: clang } # = clang-6
+        - { os: ubuntu-18.04, compiler: gcc-4.8 }
+        - { os: ubuntu-18.04, compiler: gcc-5 }
+        - { os: ubuntu-18.04, compiler: gcc-6 }
+        # - { os: windows-latest, compiler: cl }
+        - { os: macos-latest, compiler: clang }
+        flags:
+        - ""
+        - "-DWITH_ZKBPP=OFF"
+        - "-DWITH_KKW=OFF"
+        - "-DWITH_SIMD_OPT=OFF"
+        - "-DWITH_CONFIG_H=OFF"
+        - "-DWITH_LTO=OFF"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Linux dependencies
+      run: |
+        sudo apt install ${{ matrix.cfg.compiler }} cmake pkg-config libm4ri-dev
+      if: ${{ runner.os == 'Linux' }}
+    - name: Set Windows ENV
+      if: ${{ runner.os == 'Windows' }}
+      uses: ilammy/msvc-dev-cmd@v1
+    - name: Configure with ${{ matrix.cfg.compiler }}
+      run: |
+        mkdir build
+        cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} ${{ matrix.flags }}
+      if: ${{ runner.os != 'Windows' }}
+    - name: Configure (Windows)
+      run: |
+        mkdir build
+        cmake -S . -B build ${{ matrix.flags }}
+      if: ${{ runner.os == 'Windows' }}
+    - name: Build
+      run: |
+        cmake --build build
+    - name: Run tests
+      run: |
+        cmake --build build --target test
