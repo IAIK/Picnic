@@ -7,7 +7,9 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.cfg.os }}
+    continue-on-error: ${{ matrix.cfg.os == 'windows-latest' }}
     strategy:
+      fail-fast: false
       matrix:
         cfg:
         - { os: ubuntu-20.04, compiler: gcc } # = gcc-9
@@ -20,7 +22,7 @@ jobs:
         - { os: ubuntu-18.04, compiler: gcc-4.8 }
         - { os: ubuntu-18.04, compiler: gcc-5 }
         - { os: ubuntu-18.04, compiler: gcc-6 }
-        # - { os: windows-latest, compiler: cl }
+        - { os: windows-latest, compiler: cl }
         - { os: macos-latest, compiler: clang }
         flags:
         - ""
