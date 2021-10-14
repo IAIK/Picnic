@@ -21,13 +21,13 @@
  * child is at 2k + 2
  */
 typedef struct tree_t {
-  size_t depth;      /* The depth of the tree */
-  uint8_t** nodes;   /* The data for each node */
-  size_t dataSize;   /* The size data at each node, in bytes */
-  uint32_t* haveNode; /* If we have the data (seed or hash) for node i, haveSeed[i] is 1 */
-  uint32_t* exists;   /* Since the tree is not always complete, nodes marked 0 don't exist */
-  size_t numNodes;   /* The total number of nodes in the tree */
-  size_t numLeaves;  /* The total number of leaves in the tree */
+  uint8_t* nodes;           /* The data for each node */
+  uint64_t* haveNodeExists; /* Bitset to denote if we have the data (seed or hash) for node i and if
+                               a node exists  */
+  size_t depth;             /* The depth of the tree */
+  size_t dataSize;          /* The size data at each node, in bytes */
+  size_t numNodes;          /* The total number of nodes in the tree */
+  size_t numLeaves;         /* The total number of leaves in the tree */
 } tree_t;
 
 /* The largest seed size is 256 bits, for the Picnic3-L5-FS parameter set. */
@@ -35,7 +35,7 @@ typedef struct tree_t {
 
 tree_t* createTree(size_t numLeaves, size_t dataSize);
 void freeTree(tree_t* tree);
-uint8_t** getLeaves(tree_t* tree);
+uint8_t* getLeaves(tree_t* tree);
 /* Get one leaf, leafIndex must be in [0, tree->numLeaves -1] */
 uint8_t* getLeaf(tree_t* tree, size_t leafIndex);
 

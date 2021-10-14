@@ -36,7 +36,7 @@ static uint32_t numBytes(uint32_t numBits) {
   return (numBits + 7) >> 3;
 }
 
-static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* salt, size_t t,
+static void createRandomTapes(randomTape_t* tapes, uint8_t* seeds, uint8_t* salt, size_t t,
                               const picnic_instance_t* params) {
   hash_context_x4 ctx;
 
@@ -47,7 +47,9 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
   for (size_t i = 0; i < params->num_MPC_parties; i += 4) {
     hash_init_x4(&ctx, params->digest_size);
 
-    hash_update_x4_4(&ctx, seeds[i], seeds[i + 1], seeds[i + 2], seeds[i + 3], params->seed_size);
+    hash_update_x4_4(&ctx, &seeds[i * params->seed_size], &seeds[(i + 1) * params->seed_size],
+                     &seeds[(i + 2) * params->seed_size], &seeds[(i + 3) * params->seed_size],
+                     params->seed_size);
     hash_update_x4_1(&ctx, salt, SALT_SIZE);
     hash_update_x4_uint16_le(&ctx, t);
     const uint16_t i_arr[4] = {i + 0, i + 1, i + 2, i + 3};
@@ -506,7 +508,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   }
 
   /* Compute the challenge; two lists of integers */
-  HCP(challenge, challengeC, challengeP, &Ch, treeCv->nodes[0], sig->salt, pubKey, plaintext,
+  HCP(challenge, challengeC, challengeP, &Ch, treeCv->nodes, sig->salt, pubKey, plaintext,
       message, messageByteLength, params);
 
   /* Compare to challenge from signature */
@@ -569,7 +571,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   memcpy(sig->salt, saltAndRoot, SALT_SIZE);
   tree_t* iSeedsTree =
       generateSeeds(params->num_rounds, saltAndRoot + SALT_SIZE, sig->salt, 0, params);
-  uint8_t** iSeeds = getLeaves(iSeedsTree);
+  uint8_t* iSeeds = getLeaves(iSeedsTree);
   free(saltAndRoot);
 
   randomTape_t* tapes = malloc(params->num_rounds * sizeof(randomTape_t));
@@ -592,7 +594,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   mzd_from_char_array(m_plaintext, plaintext, params->output_size);
 
   for (size_t t = 0; t < params->num_rounds; t++) {
-    seeds[t] = generateSeeds(params->num_MPC_parties, iSeeds[t], sig->salt, t, params);
+    seeds[t] = generateSeeds(params->num_MPC_parties, &iSeeds[t * params->seed_size], sig->salt, t, params);
     createRandomTapes(&tapes[t], getLeaves(seeds[t]), sig->salt, t, params);
     /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
     computeAuxTape(&tapes[t], inputs[t], params);
@@ -646,7 +648,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   /* Compute the challenge; two lists of integers */
   uint16_t* challengeC = sig->challengeC;
   uint16_t* challengeP = sig->challengeP;
-  HCP(sig->challenge, challengeC, challengeP, &Ch, treeCv->nodes[0], sig->salt, pubKey, plaintext,
+  HCP(sig->challenge, challengeC, challengeP, &Ch, treeCv->nodes, sig->salt, pubKey, plaintext,
       message, messageByteLength, params);
 
   /* Send information required for checking commitments with Merkle tree.
