@@ -139,8 +139,7 @@ static void hashSeed_x4(uint8_t** digest, const uint8_t** inputSeed, uint8_t* sa
   hash_init_prefix_x4(&ctx, params->digest_size, hashPrefix);
   hash_update_x4(&ctx, inputSeed, params->seed_size);
 
-  const uint8_t* salts[4] = {salt, salt, salt, salt};
-  hash_update_x4(&ctx, salts, SALT_SIZE);
+  hash_update_x4_1(&ctx, salt, SALT_SIZE);
   hash_update_x4_uint16_le(&ctx, repIndex);
 
   const uint16_t nodes[4] = {nodeIndex, nodeIndex + 1, nodeIndex + 2, nodeIndex + 3};
@@ -162,7 +161,7 @@ static void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex,
   size_t lastNonLeaf = getParent(tree->numNodes - 1);
   size_t i           = 0;
   /* expand the first 4 seeds*/
-  for (; i <= MIN(2,lastNonLeaf); i++) {
+  for (; i <= MIN(2, lastNonLeaf); i++) {
     if (!tree->haveNode[i]) {
       continue;
     }

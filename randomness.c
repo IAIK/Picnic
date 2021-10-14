@@ -133,7 +133,7 @@ static int rand_bytes(uint8_t* dst, size_t len) {
 #endif
 
 int rand_bits(uint8_t* dst, size_t num_bits) {
-  const size_t num_bytes = (num_bits + 7) / 8;
+  const size_t num_bytes      = (num_bits + 7) / 8;
   const size_t num_extra_bits = num_bits % 8;
 
   if (rand_bytes(dst, num_bytes)) {

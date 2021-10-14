@@ -47,18 +47,15 @@ static void createRandomTapes(randomTape_t* tapes, uint8_t** seeds, uint8_t* sal
   for (size_t i = 0; i < params->num_MPC_parties; i += 4) {
     hash_init_x4(&ctx, params->digest_size);
 
-    const uint8_t* seeds_ptr[4] = {seeds[i], seeds[i + 1], seeds[i + 2], seeds[i + 3]};
-    hash_update_x4(&ctx, seeds_ptr, params->seed_size);
-    const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
-    hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
+    hash_update_x4_4(&ctx, seeds[i], seeds[i + 1], seeds[i + 2], seeds[i + 3], params->seed_size);
+    hash_update_x4_1(&ctx, salt, SALT_SIZE);
     hash_update_x4_uint16_le(&ctx, t);
     const uint16_t i_arr[4] = {i + 0, i + 1, i + 2, i + 3};
     hash_update_x4_uint16s_le(&ctx, i_arr);
     hash_final_x4(&ctx);
 
-    uint8_t* out_ptr[4] = {tapes->tape[i], tapes->tape[i + 1], tapes->tape[i + 2],
-                           tapes->tape[i + 3]};
-    hash_squeeze_x4(&ctx, out_ptr, tapeSizeBytes);
+    hash_squeeze_x4_4(&ctx, tapes->tape[i], tapes->tape[i + 1], tapes->tape[i + 2],
+                      tapes->tape[i + 3], tapeSizeBytes);
     hash_clear_x4(&ctx);
   }
 }
@@ -124,8 +121,7 @@ static void commit_x4(uint8_t** digest, const uint8_t** seed, const uint8_t* sal
 
   hash_init_x4(&ctx, params->digest_size);
   hash_update_x4(&ctx, seed, params->seed_size);
-  const uint8_t* salt_ptr[4] = {salt, salt, salt, salt};
-  hash_update_x4(&ctx, salt_ptr, SALT_SIZE);
+  hash_update_x4_1(&ctx, salt, SALT_SIZE);
   hash_update_x4_uint16_le(&ctx, t);
   const uint16_t j_arr[4] = {j + 0, j + 1, j + 2, j + 3};
   hash_update_x4_uint16s_le(&ctx, j_arr);
@@ -151,13 +147,8 @@ static void commit_h_x4(uint8_t** digest, const commitments_t* C, const picnic_i
 
   hash_init_x4(&ctx, params->digest_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
-    const uint8_t* data[4] = {
-        C[0].hashes[i],
-        C[1].hashes[i],
-        C[2].hashes[i],
-        C[3].hashes[i],
-    };
-    hash_update_x4(&ctx, data, params->digest_size);
+    hash_update_x4_4(&ctx, C[0].hashes[i], C[1].hashes[i], C[2].hashes[i], C[3].hashes[i],
+                     params->digest_size);
   }
   hash_final_x4(&ctx);
   hash_squeeze_x4(&ctx, digest, params->digest_size);
@@ -187,13 +178,8 @@ static void commit_v_x4(uint8_t** digest, const uint8_t** input, const msgs_t* m
   hash_update_x4(&ctx, input, params->input_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
     assert(msgs[0].pos == msgs[1].pos && msgs[2].pos == msgs[3].pos && msgs[0].pos == msgs[2].pos);
-    const uint8_t* data[4] = {
-        msgs[0].msgs[i],
-        msgs[1].msgs[i],
-        msgs[2].msgs[i],
-        msgs[3].msgs[i],
-    };
-    hash_update_x4(&ctx, data, numBytes(msgs->pos));
+    hash_update_x4_4(&ctx, msgs[0].msgs[i], msgs[1].msgs[i], msgs[2].msgs[i], msgs[3].msgs[i],
+                     numBytes(msgs->pos));
   }
   hash_final_x4(&ctx);
   hash_squeeze_x4(&ctx, digest, params->digest_size);
