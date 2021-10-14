@@ -24,8 +24,8 @@ typedef struct tree_t {
   size_t depth;      /* The depth of the tree */
   uint8_t** nodes;   /* The data for each node */
   size_t dataSize;   /* The size data at each node, in bytes */
-  uint8_t* haveNode; /* If we have the data (seed or hash) for node i, haveSeed[i] is 1 */
-  uint8_t* exists;   /* Since the tree is not always complete, nodes marked 0 don't exist */
+  uint32_t* haveNode; /* If we have the data (seed or hash) for node i, haveSeed[i] is 1 */
+  uint32_t* exists;   /* Since the tree is not always complete, nodes marked 0 don't exist */
   size_t numNodes;   /* The total number of nodes in the tree */
   size_t numLeaves;  /* The total number of leaves in the tree */
 } tree_t;
