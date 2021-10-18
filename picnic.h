@@ -18,7 +18,7 @@
 #endif
 #endif
 
-#if defined(_WIN16) || defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN16) || defined(_WIN32)
 #define PICNIC_CALLING_CONVENTION __stdcall
 #else
 #define PICNIC_CALLING_CONVENTION
