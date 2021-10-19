@@ -18,19 +18,17 @@
 #if defined(WITH_SHAKE_S390_CPACF)
 /* use the KIMD/KLMD instructions from CPACF for SHAKE support on S390 */
 #include "sha3/s390_cpacf.h"
-#elif (0 && defined(OQS)) || defined(PQCLEAN)
+#elif defined(OQS) || (0 && defined(PQCLEAN))
 #if defined(OQS)
-/* use OQS' SHAKE implementation (disabled)
- *
- * OQS currently does not expose the AVX2-optimized version of Keccak or the Keccakx4
- * implementation. Consequently we currently still use our copy of Keccak by default. Once these
- * issues are fixed in OQS, this code path will be enabled by default.
- */
+/* use OQS's SHAKE implementation */
 #include <oqs/sha3.h>
+#include <oqs/sha3x4.h>
 #elif defined(PQCLEAN)
-/* PQClean's SHAKE implementation */
+/* PQClean's SHAKE implementation
+ *
+ * PQClean current does not expose the AVX2-optimized version of Keccakx4.
+ */
 #include <fips202.h>
-
 #define OQS_SHA3_shake128_inc_ctx shake128incctx
 #define OQS_SHA3_shake128_inc_init shake128_inc_init
 #define OQS_SHA3_shake128_inc_absorb shake128_inc_absorb
@@ -102,37 +100,27 @@ static inline void hash_clear(hash_context* ctx) {
 /* Instances that work with 4 states in parallel using the base implementation. */
 typedef struct hash_context_x4_oqs_s {
   union {
-    OQS_SHA3_shake128_inc_ctx shake128_ctx[4];
-    OQS_SHA3_shake256_inc_ctx shake256_ctx[4];
+    OQS_SHA3_shake128_x4_inc_ctx shake128_ctx;
+    OQS_SHA3_shake256_x4_inc_ctx shake256_ctx;
   };
   unsigned int shake256;
 } hash_context_x4;
 
-
 static inline void hash_init_x4(hash_context_x4* ctx, size_t digest_size) {
   if (digest_size == 32) {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake128_inc_init(&ctx->shake128_ctx[i]);
-    }
+    OQS_SHA3_shake128_x4_inc_init(&ctx->shake128_ctx);
     ctx->shake256 = 0;
   } else {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake256_inc_init(&ctx->shake256_ctx[i]);
-    }
+    OQS_SHA3_shake256_x4_inc_init(&ctx->shake256_ctx);
     ctx->shake256 = 1;
   }
 }
 
-static inline void hash_update_x4(hash_context_x4* ctx, const uint8_t** data,
-                                  size_t size) {
+static inline void hash_update_x4(hash_context_x4* ctx, const uint8_t** data, size_t size) {
   if (ctx->shake256) {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake256_inc_absorb(&ctx->shake256_ctx[i], data[i], size);
-    }
+    OQS_SHA3_shake256_x4_inc_absorb(&ctx->shake256_ctx, data[0], data[1], data[2], data[3], size);
   } else {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake128_inc_absorb(&ctx->shake128_ctx[i], data[i], size);
-    }
+    OQS_SHA3_shake128_x4_inc_absorb(&ctx->shake128_ctx, data[0], data[1], data[2], data[3], size);
   }
 }
 
@@ -140,95 +128,69 @@ static inline void hash_update_x4_4(hash_context_x4* ctx, const uint8_t* data0,
                                     const uint8_t* data1, const uint8_t* data2,
                                     const uint8_t* data3, size_t size) {
   if (ctx->shake256) {
-    OQS_SHA3_shake256_inc_absorb(&ctx->shake256_ctx[0], data0, size);
-    OQS_SHA3_shake256_inc_absorb(&ctx->shake256_ctx[1], data1, size);
-    OQS_SHA3_shake256_inc_absorb(&ctx->shake256_ctx[2], data2, size);
-    OQS_SHA3_shake256_inc_absorb(&ctx->shake256_ctx[3], data3, size);
+    OQS_SHA3_shake256_x4_inc_absorb(&ctx->shake256_ctx, data0, data1, data2, data3, size);
   } else {
-    OQS_SHA3_shake128_inc_absorb(&ctx->shake128_ctx[0], data0, size);
-    OQS_SHA3_shake128_inc_absorb(&ctx->shake128_ctx[1], data1, size);
-    OQS_SHA3_shake128_inc_absorb(&ctx->shake128_ctx[2], data2, size);
-    OQS_SHA3_shake128_inc_absorb(&ctx->shake128_ctx[3], data3, size);
+    OQS_SHA3_shake128_x4_inc_absorb(&ctx->shake128_ctx, data0, data1, data2, data3, size);
   }
 }
 
 static inline void hash_update_x4_1(hash_context_x4* ctx, const uint8_t* data, size_t size) {
   if (ctx->shake256) {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake256_inc_absorb(&ctx->shake256_ctx[i], data, size);
-    }
+    OQS_SHA3_shake256_x4_inc_absorb(&ctx->shake256_ctx, data, data, data, data, size);
   } else {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake128_inc_absorb(&ctx->shake128_ctx[i], data, size);
-    }
+    OQS_SHA3_shake128_x4_inc_absorb(&ctx->shake128_ctx, data, data, data, data, size);
   }
 }
 
 static inline void hash_init_prefix_x4(hash_context_x4* ctx, size_t digest_size,
                                        const uint8_t prefix) {
   if (digest_size == 32) {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake128_inc_init(&ctx->shake128_ctx[i]);
-      OQS_SHA3_shake128_inc_absorb(&ctx->shake128_ctx[i], &prefix, sizeof(prefix));
-    }
+    OQS_SHA3_shake128_x4_inc_init(&ctx->shake128_ctx);
+    OQS_SHA3_shake128_x4_inc_absorb(&ctx->shake128_ctx, &prefix, &prefix, &prefix, &prefix,
+                                    sizeof(prefix));
     ctx->shake256 = 0;
   } else {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake256_inc_init(&ctx->shake256_ctx[i]);
-      OQS_SHA3_shake256_inc_absorb(&ctx->shake256_ctx[i], &prefix, sizeof(prefix));
-    }
+    OQS_SHA3_shake256_x4_inc_init(&ctx->shake256_ctx);
+    OQS_SHA3_shake256_x4_inc_absorb(&ctx->shake256_ctx, &prefix, &prefix, &prefix, &prefix,
+                                    sizeof(prefix));
     ctx->shake256 = 1;
   }
 }
 
 static inline void hash_final_x4(hash_context_x4* ctx) {
   if (ctx->shake256) {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake256_inc_finalize(&ctx->shake256_ctx[i]);
-    }
+    OQS_SHA3_shake256_x4_inc_finalize(&ctx->shake256_ctx);
   } else {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake128_inc_finalize(&ctx->shake128_ctx[i]);
-    }
+    OQS_SHA3_shake128_x4_inc_finalize(&ctx->shake128_ctx);
   }
 }
 
 static inline void hash_squeeze_x4(hash_context_x4* ctx, uint8_t** buffer, size_t buflen) {
   if (ctx->shake256) {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake256_inc_squeeze(buffer[i], buflen, &ctx->shake256_ctx[i]);
-    }
+    OQS_SHA3_shake256_x4_inc_squeeze(buffer[0], buffer[1], buffer[2], buffer[3], buflen,
+                                     &ctx->shake256_ctx);
   } else {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake128_inc_squeeze(buffer[i], buflen, &ctx->shake128_ctx[i]);
-    }
+    OQS_SHA3_shake128_x4_inc_squeeze(buffer[0], buffer[1], buffer[2], buffer[3], buflen,
+                                     &ctx->shake128_ctx);
   }
 }
 
 static inline void hash_squeeze_x4_4(hash_context_x4* ctx, uint8_t* buffer0, uint8_t* buffer1,
                                      uint8_t* buffer2, uint8_t* buffer3, size_t buflen) {
   if (ctx->shake256) {
-    OQS_SHA3_shake256_inc_squeeze(buffer0, buflen, &ctx->shake256_ctx[0]);
-    OQS_SHA3_shake256_inc_squeeze(buffer1, buflen, &ctx->shake256_ctx[1]);
-    OQS_SHA3_shake256_inc_squeeze(buffer2, buflen, &ctx->shake256_ctx[2]);
-    OQS_SHA3_shake256_inc_squeeze(buffer3, buflen, &ctx->shake256_ctx[3]);
+    OQS_SHA3_shake256_x4_inc_squeeze(buffer0, buffer1, buffer2, buffer3, buflen,
+                                     &ctx->shake256_ctx);
   } else {
-    OQS_SHA3_shake128_inc_squeeze(buffer0, buflen, &ctx->shake128_ctx[0]);
-    OQS_SHA3_shake128_inc_squeeze(buffer1, buflen, &ctx->shake128_ctx[1]);
-    OQS_SHA3_shake128_inc_squeeze(buffer2, buflen, &ctx->shake128_ctx[2]);
-    OQS_SHA3_shake128_inc_squeeze(buffer3, buflen, &ctx->shake128_ctx[3]);
+    OQS_SHA3_shake128_x4_inc_squeeze(buffer0, buffer1, buffer2, buffer3, buflen,
+                                     &ctx->shake128_ctx);
   }
 }
 
 static inline void hash_clear_x4(hash_context_x4* ctx) {
   if (ctx->shake256) {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake256_inc_ctx_release(&ctx->shake256_ctx[i]);
-    }
+    OQS_SHA3_shake256_x4_inc_ctx_release(&ctx->shake256_ctx);
   } else {
-    for (unsigned int i = 0; i < 4; ++i) {
-      OQS_SHA3_shake128_inc_ctx_release(&ctx->shake128_ctx[i]);
-    }
+    OQS_SHA3_shake128_x4_inc_ctx_release(&ctx->shake128_ctx);
   }
 }
 #else
@@ -279,8 +241,7 @@ static inline void hash_update_uint16_le(hash_context* ctx, uint16_t data) {
   hash_update(ctx, (const uint8_t*)&data_le, sizeof(data_le));
 }
 
-static inline void hash_init_prefix(hash_context* ctx, size_t digest_size,
-                                    const uint8_t prefix) {
+static inline void hash_init_prefix(hash_context* ctx, size_t digest_size, const uint8_t prefix) {
   hash_init(ctx, digest_size);
   hash_update(ctx, &prefix, sizeof(prefix));
 }
@@ -288,7 +249,8 @@ static inline void hash_init_prefix(hash_context* ctx, size_t digest_size,
 typedef hash_context kdf_shake_t;
 
 #define kdf_shake_init(ctx, digest_size) hash_init((ctx), (digest_size))
-#define kdf_shake_init_prefix(ctx, digest_size, prefix) hash_init_prefix((ctx), (digest_size), (prefix))
+#define kdf_shake_init_prefix(ctx, digest_size, prefix)                                            \
+  hash_init_prefix((ctx), (digest_size), (prefix))
 #define kdf_shake_update_key(ctx, key, keylen) hash_update((ctx), (key), (keylen))
 #define kdf_shake_update_key_uint16_le(ctx, key) hash_update_uint16_le((ctx), (key))
 #define kdf_shake_finalize_key(ctx) hash_final((ctx))
@@ -314,12 +276,12 @@ static inline void hash_update_x4(hash_context_x4* ctx, const uint8_t** data, si
 static inline void hash_update_x4_4(hash_context_x4* ctx, const uint8_t* data0,
                                     const uint8_t* data1, const uint8_t* data2,
                                     const uint8_t* data3, size_t size) {
-  const uint8_t* data[4] = { data0, data1, data2, data3 };
+  const uint8_t* data[4] = {data0, data1, data2, data3};
   hash_update_x4(ctx, data, size);
 }
 
 static inline void hash_update_x4_1(hash_context_x4* ctx, const uint8_t* data, size_t size) {
-  const uint8_t* tmp[4] = { data, data, data, data };
+  const uint8_t* tmp[4] = {data, data, data, data};
   hash_update_x4(ctx, tmp, size);
 }
 
@@ -339,7 +301,7 @@ static inline void hash_squeeze_x4(hash_context_x4* ctx, uint8_t** buffer, size_
 
 static inline void hash_squeeze_x4_4(hash_context_x4* ctx, uint8_t* buffer0, uint8_t* buffer1,
                                      uint8_t* buffer2, uint8_t* buffer3, size_t buflen) {
-  uint8_t* buffer[4] = { buffer0, buffer1, buffer2, buffer3 };
+  uint8_t* buffer[4] = {buffer0, buffer1, buffer2, buffer3};
   hash_squeeze_x4(ctx, buffer, buflen);
 }
 
