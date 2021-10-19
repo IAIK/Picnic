@@ -1,3 +1,12 @@
+Version 3.0.5 -- 2021-10-19
+---------------------------
+
+* Update SHAKE3 implementation
+* Fix build with GCC 11
+* Reduce memory consumption slightly
+* Expose `picnic_get_{private,public}key_size` as part of the public API
+* Add `picnic_get_{private,public}_key_param` to retrieve a key's parameter set
+
 Version 3.0.4 -- 2020-12-17
 ---------------------------
 
@@ -8,7 +17,7 @@ Version 3.0.4 -- 2020-12-17
 Version 3.0.3 -- 2020-10-12
 ---------------------------
 
-* Fix explicit_bzero fallback implementation
+* Fix `explicit_bzero` fallback implementation
 * Remove some unused code
 
 Version 3.0.2 -- 2020-10-06
@@ -22,8 +31,8 @@ Version 3.0.2 -- 2020-10-06
 Version 3.0.1 -- 2020-08-11
 ---------------------------
 
-* Expose picnic_sk_to_pk as part of the public API
-* Add picnic_clear_private_key to clear the private key
+* Expose `picnic_sk_to_pk` as part of the public API
+* Add `picnic_clear_private_key` to clear the private key
 
 Version 3.0 -- 2020-04-15
 -------------------------
