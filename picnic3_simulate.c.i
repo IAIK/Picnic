@@ -40,7 +40,7 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
   uint8_t output[MAX_LOWMC_BLOCK_SIZE];
   mzd_to_char_array(output, state, params->output_size);
 
-  /* timingsafe_bcmp is not strictly necessary here. The comparison does not look any information on
+  /* timingsafe_bcmp is not strictly necessary here. The comparison does not leak any information on
    * the secret key. In fact, this will never trigger. We still keep this check as a safe guard in
    * case we break the computation of the signature in some way. */
   const int ret = timingsafe_bcmp(output, pubKey, params->output_size);
