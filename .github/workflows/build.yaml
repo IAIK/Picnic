@@ -16,6 +16,9 @@ jobs:
         - { os: ubuntu-20.04, compiler: clang } # = clang-10
         - { os: ubuntu-20.04, compiler: gcc-8 }
         - { os: ubuntu-20.04, compiler: gcc-10 }
+        - { os: ubuntu-20.04, compiler: gcc-11 }
+        - { os: ubuntu-20.04, compiler: clang-12 }
+        - { os: ubuntu-20.04, compiler: clang-11 }
         - { os: ubuntu-20.04, compiler: clang-9 }
         - { os: ubuntu-18.04, compiler: gcc } # = gcc-7
         - { os: ubuntu-18.04, compiler: clang } # = clang-6
