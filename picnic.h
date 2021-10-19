@@ -109,7 +109,7 @@ typedef struct {
 /**
  * Get a string representation of the parameter set.
  *
- * @param parameters A parameter set
+ * @param[in] parameters A parameter set
  *
  * @return A null-terminated string describing the parameter set.
  */
@@ -119,7 +119,7 @@ picnic_get_param_name(picnic_params_t parameters);
 /**
  * Get the size of a private key for serialization
  *
- * @param parameters A parameter set
+ * @param[in] parameters A parameter set
  *
  * @return The size of serialized private key, or 0 on error.
  */
@@ -128,7 +128,7 @@ PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picni
 /**
  * Get the size of a public key for serialization
  *
- * @param parameters A parameter set
+ * @param[in] parameters A parameter set
  *
  * @return The size of serialized public key, or 0 on error.
  */
@@ -295,6 +295,26 @@ PICNIC_EXPORT void PICNIC_CALLING_CONVENTION picnic_clear_private_key(picnic_pri
  **/
 PICNIC_EXPORT int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* privatekey,
                                                             picnic_publickey_t* publickey);
+
+/**
+ * Get the parameter set identifier from a private key.
+ *
+ * @param[in] privatekey The private key
+ *
+ * @return Return the corresponding parameter set, or PARAMETER_SET_INVALID on error.
+ */
+PICNIC_EXPORT picnic_params_t PICNIC_CALLING_CONVENTION
+picnic_get_private_key_param(const picnic_privatekey_t* privatekey);
+
+/**
+ * Get the parameter set identifier from a public key.
+ *
+ * @param[in] publickey The public key
+ *
+ * @return Return the corresponding parameter set, or PARAMETER_SET_INVALID on error.
+ */
+PICNIC_EXPORT picnic_params_t PICNIC_CALLING_CONVENTION
+picnic_get_public_key_param(const picnic_publickey_t* publickey);
 
 #ifdef __cplusplus
 }
