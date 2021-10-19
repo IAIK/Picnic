@@ -116,6 +116,24 @@ typedef struct {
 PICNIC_EXPORT const char* PICNIC_CALLING_CONVENTION
 picnic_get_param_name(picnic_params_t parameters);
 
+/**
+ * Get the size of a private key for serialization
+ *
+ * @param parameters A parameter set
+ *
+ * @return The size of serialized private key, or 0 on error.
+ */
+PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picnic_params_t param);
+
+/**
+ * Get the size of a public key for serialization
+ *
+ * @param parameters A parameter set
+ *
+ * @return The size of serialized public key, or 0 on error.
+ */
+PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_public_key_size(picnic_params_t param);
+
 /* Signature API */
 
 /**
