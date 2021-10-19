@@ -207,7 +207,7 @@ static inline void hash_clear_x4(hash_context_x4* ctx) {
 #include "KeccakHashtimes4.h"
 #endif
 
-typedef Keccak_HashInstance hash_context ATTR_ALIGNED(32);
+typedef Keccak_HashInstance hash_context;
 
 /**
  * Initialize hash context based on the digest size used by Picnic. If the size is 32 bytes,
@@ -259,7 +259,7 @@ typedef hash_context kdf_shake_t;
 
 #if defined(WITH_KECCAK_X4)
 /* Instances that work with 4 states in parallel. */
-typedef Keccak_HashInstancetimes4 hash_context_x4 ATTR_ALIGNED(32);
+typedef Keccak_HashInstancetimes4 hash_context_x4;
 
 static inline void hash_init_x4(hash_context_x4* ctx, size_t digest_size) {
   if (digest_size == 32) {
