@@ -139,7 +139,7 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX - 1] = {
 };
 
 static bool create_instance(picnic_params_t params, picnic_instance_t* pp) {
-  if (!pp->lowmc.m || !pp->lowmc.n || !pp->lowmc.r || !pp->lowmc.k) {
+  if (!pp->lowmc.n) {
     return false;
   }
 
