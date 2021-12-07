@@ -45,13 +45,13 @@ static void bench_lowmc(const bench_options_t* options) {
   uint64_t* timings = calloc(options->iter, sizeof(uint64_t));
 
   const lowmc_parameters_t* lowmc         = &pp->lowmc;
-  const lowmc_implementation_f lowmc_impl = pp->impl_lowmc;
+  const lowmc_implementation_f lowmc_impl = lowmc_get_implementation(lowmc);
 
   mzd_local_t* sk = mzd_local_init(1, lowmc->k);
   mzd_local_t* pt = mzd_local_init(1, lowmc->n);
   mzd_local_t* ct = mzd_local_init(1, lowmc->n);
 
-  const size_t input_size = (lowmc->k + 7) >> 3;
+  const size_t input_size  = (lowmc->k + 7) >> 3;
   const size_t output_size = (lowmc->n + 7) >> 3;
 
   uint8_t* rand = malloc(input_size + output_size);
@@ -66,8 +66,8 @@ static void bench_lowmc(const bench_options_t* options) {
     timings[i] = timing_read(&ctx) - start_time;
 
     mzd_local_t* tmp = pt;
-    pt = ct;
-    ct = tmp;
+    pt               = ct;
+    ct               = tmp;
   }
 
   mzd_local_free(ct);

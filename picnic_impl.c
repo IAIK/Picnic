@@ -1032,9 +1032,9 @@ int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint
   const unsigned int aview_size  = ALIGNU64T(view_size);
   const unsigned int diff        = input_size * 8 - pp->lowmc.n;
 
-  const zkbpp_lowmc_implementation_f lowmc_impl       = pp->impl_zkbpp_lowmc;
-  const lowmc_store_implementation_f lowmc_store_impl = pp->impl_lowmc_store;
-  const zkbpp_share_implementation_f mzd_share        = pp->impl_mzd_share;
+  const zkbpp_lowmc_implementation_f lowmc_impl       = get_zkbpp_lowmc_implementation(&pp->lowmc);
+  const lowmc_store_implementation_f lowmc_store_impl = lowmc_store_get_implementation(&pp->lowmc);
+  const zkbpp_share_implementation_f mzd_share        = get_zkbpp_share_implentation(&pp->lowmc);
 
   // Perform LowMC evaluation and record state before AND gates
   recorded_state_t* recorded_state = aligned_alloc(32, sizeof(recorded_state_t) * (lowmc_r + 1));
@@ -1190,8 +1190,9 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
   const unsigned int aview_size  = ALIGNU64T(view_size);
   const unsigned int diff        = input_size * 8 - pp->lowmc.n;
 
-  const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->impl_zkbpp_lowmc_verify;
-  const zkbpp_share_implementation_f mzd_share                = pp->impl_mzd_share;
+  const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl =
+      get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
+  const zkbpp_share_implementation_f mzd_share = get_zkbpp_share_implentation(&pp->lowmc);
 
   sig_proof_t* prf = sig_proof_from_char_array(pp, sig, siglen);
   if (!prf) {

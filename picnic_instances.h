@@ -45,17 +45,6 @@ typedef struct picnic_instance_t {
   uint8_t unruh_without_input_bytes_size; // bytes (Unruh only)
 
   lowmc_parameters_t lowmc;
-  lowmc_implementation_f impl_lowmc;
-#if defined(WITH_ZKBPP)
-  lowmc_store_implementation_f impl_lowmc_store;
-  zkbpp_lowmc_implementation_f impl_zkbpp_lowmc;
-  zkbpp_lowmc_verify_implementation_f impl_zkbpp_lowmc_verify;
-  zkbpp_share_implementation_f impl_mzd_share;
-#endif
-#if defined(WITH_KKW)
-  lowmc_compute_aux_implementation_f impl_lowmc_aux;
-  lowmc_simulate_online_f impl_lowmc_simulate_online;
-#endif
 } picnic_instance_t;
 
 const picnic_instance_t* picnic_instance_get(picnic_params_t param);
