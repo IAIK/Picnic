@@ -337,7 +337,9 @@ static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, con
   kdf_shake_x4_finalize_key(kdf);
 }
 
+// clang-format off
 #if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+// clang-format on
 static void uint64_to_bitstream_10(bitstream_t* bs, const uint64_t v) {
   bitstream_put_bits(bs, v >> (64 - 30), 30);
 }
@@ -367,7 +369,9 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
     return;
   }
 #endif
+  // clang-format off
 #if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+  // clang-format on
   if (pp->lowmc.m == 10) {
     for (unsigned int i = 0; i < num_views; ++i, ++v) {
       uint64_to_bitstream_10(&bs, v->t[idx]);
@@ -398,7 +402,9 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
     return;
   }
 #endif
+  // clang-format off
 #if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
+  // clang-format on
   if (pp->lowmc.m == 10) {
     for (unsigned int i = 0; i < num_views; ++i, ++v) {
       v->t[idx] = uint64_from_bitstream_10(&bs);
