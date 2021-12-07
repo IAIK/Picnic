@@ -71,8 +71,8 @@ typedef struct {
   proof_round_t* round;
 } sorting_helper_t;
 
-static inline size_t collapsed_challenge_size(const picnic_instance_t* pp) {
-  return (2 * pp->num_rounds + 7) / 8;
+static inline unsigned int collapsed_challenge_size(const unsigned int num_rounds) {
+  return (2 * num_rounds + 7) / 8;
 }
 
 static inline void clear_padding_bits(uint8_t* v, const unsigned int diff) {
@@ -86,43 +86,49 @@ static inline void clear_padding_bits(uint8_t* v, const unsigned int diff) {
 
 /**
  * Collapse challenge from one char per challenge to bit array.
+ *
+ * Returns the number of written bytes.
  */
-static void collapse_challenge(uint8_t* collapsed, const picnic_instance_t* pp,
-                               const uint8_t* challenge) {
+static unsigned int collapse_challenge(uint8_t* collapsed, unsigned int num_rounds,
+                                       const uint8_t* challenge) {
   bitstream_t bs;
   bs.buffer.w = collapsed;
   bs.position = 0;
 
-  for (unsigned int i = 0; i < pp->num_rounds; ++i) {
+  for (unsigned int i = 0; i < num_rounds; ++i) {
     // flip challenge bits according to spec
     bitstream_put_bits_8(&bs, (challenge[i] >> 1) | ((challenge[i] & 1) << 1), 2);
   }
+
+  return (bs.position + 7) / 8;
 }
 
 /**
  * Expand challenge from bit array to one char per challenge.
+ *
+ * Returns the number of consumed bytes if successful.
  */
-static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
-                             const uint8_t* collapsed) {
+static unsigned int expand_challenge(uint8_t* challenge, unsigned int num_rounds,
+                                     const uint8_t* collapsed) {
   bitstream_t bs;
   bs.buffer.r = collapsed;
   bs.position = 0;
 
-  for (unsigned int i = 0; i < pp->num_rounds; ++i) {
+  for (unsigned int i = 0; i < num_rounds; ++i) {
     const uint8_t ch = bitstream_get_bits_8(&bs, 2);
     if (ch == 3) {
-      return false;
+      return 0;
     }
     // flip challenge bits according to spec
     challenge[i] = (ch & 1) << 1 | (ch >> 1);
   }
 
-  const size_t remaining_bits = collapsed_challenge_size(pp) * 8 - bs.position;
+  const unsigned int remaining_bits = 8 - (bs.position % 8);
   if (remaining_bits && bitstream_get_bits(&bs, remaining_bits)) {
-    return false;
+    return 0;
   }
 
-  return true;
+  return bs.position / 8;
 }
 
 static sig_proof_t* proof_new(const picnic_instance_t* pp) {
@@ -811,7 +817,6 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
                                    uint8_t* result, size_t* siglen) {
   const size_t num_rounds     = pp->num_rounds;
   const size_t seed_size      = pp->seed_size;
-  const size_t challenge_size = collapsed_challenge_size(pp);
   const size_t digest_size    = pp->digest_size;
   const size_t view_size      = pp->view_size;
   const size_t input_size     = pp->input_size;
@@ -822,8 +827,7 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
   uint8_t* tmp = result;
 
   // write challenge
-  collapse_challenge(tmp, pp, prf->challenge);
-  tmp += challenge_size;
+  tmp += collapse_challenge(tmp, num_rounds, prf->challenge);
 
   // write salt
   memcpy(tmp, prf->salt, SALT_SIZE);
@@ -874,7 +878,6 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const size_t digest_size            = pp->digest_size;
   const size_t seed_size              = pp->seed_size;
   const size_t num_rounds             = pp->num_rounds;
-  const size_t challenge_size         = collapsed_challenge_size(pp);
   const size_t input_size             = pp->input_size;
   const size_t view_size              = pp->view_size;
   const unsigned int view_diff        = pp->view_size * 8 - 3 * pp->lowmc.m * pp->lowmc.r;
@@ -893,13 +896,13 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const uint8_t* tmp   = data;
 
   // read and process challenge
-  if (sub_overflow_size_t(remaining_len, challenge_size, &remaining_len)) {
+  if (sub_overflow_size_t(remaining_len, collapsed_challenge_size(num_rounds), &remaining_len)) {
     goto err;
   }
-  if (!expand_challenge(proof->challenge, pp, tmp)) {
+  tmp += expand_challenge(proof->challenge, num_rounds, tmp);
+  if (tmp == data) {
     goto err;
   }
-  tmp += challenge_size;
 
   // read salt
   if (sub_overflow_size_t(remaining_len, SALT_SIZE, &remaining_len)) {
@@ -1384,7 +1387,6 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
   const size_t digest_size    = pp->digest_size;
   const size_t seed_size      = pp->seed_size;
   const size_t num_rounds     = pp->num_rounds;
-  const size_t challenge_size = collapsed_challenge_size(pp);
   const size_t input_size     = pp->input_size;
   const size_t view_size      = pp->view_size;
 
@@ -1397,7 +1399,7 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
   fprintf(out, "\n\n");
 
   fprintf(out, "challenge: ");
-  print_hex(out, sig, challenge_size);
+  print_hex(out, sig, collapsed_challenge_size(num_rounds));
   fprintf(out, "\n\n");
 
   fprintf(out, "salt: ");
