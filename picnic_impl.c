@@ -132,14 +132,14 @@ static unsigned int expand_challenge(uint8_t* challenge, unsigned int num_rounds
 }
 
 static sig_proof_t* proof_new(const picnic_instance_t* pp) {
-  const size_t digest_size = pp->digest_size;
-  const size_t seed_size   = pp->seed_size;
-  const size_t num_rounds  = pp->num_rounds;
-  const size_t input_size  = pp->input_size;
-  const size_t output_size = pp->output_size;
-  const size_t view_size   = ALIGNU64T(pp->view_size);
+  const unsigned int digest_size = pp->digest_size;
+  const unsigned int seed_size   = pp->seed_size;
+  const unsigned int num_rounds  = pp->num_rounds;
+  const unsigned int input_size  = pp->input_size;
+  const unsigned int output_size = pp->output_size;
+  const unsigned int view_size   = ALIGNU64T(pp->view_size);
 #if defined(WITH_UNRUH)
-  const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
+  const unsigned int unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
 #endif
 
   sig_proof_t* prf = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
@@ -147,7 +147,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
     return NULL;
   }
 
-  size_t per_round_mem =
+  unsigned int per_round_mem =
       SC_PROOF * (seed_size + digest_size + input_size + output_size + view_size);
 #if defined(WITH_UNRUH)
   if (unruh_without_input_bytes_size) {
@@ -172,36 +172,36 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   prf->challenge = slab;
   slab += ALIGNU64T(num_rounds);
 
-  for (size_t r = 0; r < num_rounds; ++r) {
-    for (size_t i = 0; i < SC_PROOF; ++i) {
+  for (unsigned int r = 0; r < num_rounds; ++r) {
+    for (unsigned int i = 0; i < SC_PROOF; ++i) {
       prf->round[r].seeds[i] = slab;
       slab += seed_size;
     }
   }
 
-  for (size_t r = 0; r < num_rounds; ++r) {
-    for (size_t i = 0; i < SC_PROOF; ++i) {
+  for (unsigned int r = 0; r < num_rounds; ++r) {
+    for (unsigned int i = 0; i < SC_PROOF; ++i) {
       prf->round[r].commitments[i] = slab;
       slab += digest_size;
     }
   }
 
-  for (size_t r = 0; r < num_rounds; ++r) {
-    for (size_t i = 0; i < SC_PROOF; ++i) {
+  for (unsigned int r = 0; r < num_rounds; ++r) {
+    for (unsigned int i = 0; i < SC_PROOF; ++i) {
       prf->round[r].input_shares[i] = slab;
       slab += input_size;
     }
   }
 
-  for (size_t r = 0; r < num_rounds; ++r) {
-    for (size_t i = 0; i < SC_PROOF; ++i) {
+  for (unsigned int r = 0; r < num_rounds; ++r) {
+    for (unsigned int i = 0; i < SC_PROOF; ++i) {
       prf->round[r].communicated_bits[i] = slab;
       slab += view_size;
     }
   }
 
-  for (size_t r = 0; r < num_rounds; ++r) {
-    for (size_t i = 0; i < SC_PROOF; ++i) {
+  for (unsigned int r = 0; r < num_rounds; ++r) {
+    for (unsigned int i = 0; i < SC_PROOF; ++i) {
       prf->round[r].output_shares[i] = slab;
       slab += output_size;
     }
@@ -209,8 +209,8 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
 
 #if defined(WITH_UNRUH)
   if (unruh_without_input_bytes_size) {
-    for (size_t r = 0; r < num_rounds; ++r) {
-      for (size_t i = 0; i < SC_PROOF; ++i) {
+    for (unsigned int r = 0; r < num_rounds; ++r) {
+      for (unsigned int i = 0; i < SC_PROOF; ++i) {
         prf->round[r].gs[i] = slab;
         slab += unruh_without_input_bytes_size;
       }
@@ -223,20 +223,20 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
 }
 
 static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rslab) {
-  const size_t digest_size = pp->digest_size;
-  const size_t num_rounds  = pp->num_rounds;
-  const size_t input_size  = pp->input_size;
-  const size_t output_size = pp->output_size;
-  const size_t view_size   = ALIGNU64T(pp->view_size);
+  const unsigned int digest_size = pp->digest_size;
+  const unsigned int num_rounds  = pp->num_rounds;
+  const unsigned int input_size  = pp->input_size;
+  const unsigned int output_size = pp->output_size;
+  const unsigned int view_size   = ALIGNU64T(pp->view_size);
 
   sig_proof_t* proof = calloc(1, sizeof(sig_proof_t) + num_rounds * sizeof(proof_round_t));
   if (!proof) {
     return NULL;
   }
 
-  size_t per_round_mem = SC_VERIFY * digest_size;
+  unsigned int per_round_mem = SC_VERIFY * digest_size;
 #if defined(WITH_UNRUH)
-  const size_t unruh_with_input_bytes_size = pp->unruh_without_input_bytes_size + input_size;
+  const unsigned int unruh_with_input_bytes_size = pp->unruh_without_input_bytes_size + input_size;
   if (pp->unruh_without_input_bytes_size) {
     // we don't know what we actually need, so allocate more than needed
     per_round_mem += SC_VERIFY * unruh_with_input_bytes_size;
@@ -248,19 +248,19 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   proof->challenge = slab;
   slab += ALIGNU64T(num_rounds);
 
-  for (size_t r = 0; r < num_rounds; ++r) {
-    for (size_t i = 0; i < SC_VERIFY; ++i) {
+  for (unsigned int r = 0; r < num_rounds; ++r) {
+    for (unsigned int i = 0; i < SC_VERIFY; ++i) {
       proof->round[r].commitments[i] = slab;
       slab += digest_size;
     }
   }
 
-  for (size_t r = 0; r < num_rounds; ++r) {
+  for (unsigned int r = 0; r < num_rounds; ++r) {
     proof->round[r].communicated_bits[0] = slab;
     slab += view_size;
   }
 
-  for (size_t r = 0; r < num_rounds; ++r) {
+  for (unsigned int r = 0; r < num_rounds; ++r) {
     proof->round[r].output_shares[0] = slab;
     slab += output_size;
     proof->round[r].output_shares[1] = slab;
@@ -271,8 +271,8 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
 
 #if defined(WITH_UNRUH)
   if (pp->unruh_without_input_bytes_size) {
-    for (size_t r = 0; r < num_rounds; ++r) {
-      for (size_t i = 0; i < SC_VERIFY; ++i) {
+    for (unsigned int r = 0; r < num_rounds; ++r) {
+      for (unsigned int i = 0; i < SC_VERIFY; ++i) {
         proof->round[r].gs[i] = slab;
         slab += unruh_with_input_bytes_size;
       }
@@ -292,7 +292,7 @@ static void proof_free(sig_proof_t* prf) {
 static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const uint8_t* salt,
                                uint16_t round_number, uint16_t player_number,
                                bool include_input_size, const picnic_instance_t* pp) {
-  const size_t digest_size = pp->digest_size;
+  const unsigned int digest_size = pp->digest_size;
 
   // Hash the seed with H_2.
   kdf_shake_init_prefix(kdf, digest_size, HASH_PREFIX_2);
@@ -316,7 +316,7 @@ static void kdf_init_from_seed(kdf_shake_t* kdf, const uint8_t* seed, const uint
 static void kdf_init_x4_from_seed(kdf_shake_x4_t* kdf, const uint8_t** seed, const uint8_t* salt,
                                   const uint16_t round_number[4], const uint16_t player_number,
                                   bool include_input_size, const picnic_instance_t* pp) {
-  const size_t digest_size = pp->digest_size;
+  const unsigned int digest_size = pp->digest_size;
 
   // Hash the seed with H_2.
   kdf_shake_x4_init_prefix(kdf, digest_size, HASH_PREFIX_2);
@@ -349,7 +349,7 @@ static uint64_t uint64_from_bitstream_10(bitstream_t* bs) {
 
 static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_t* views,
                           const unsigned int idx) {
-  const size_t num_views = pp->lowmc.r;
+  const unsigned int num_views = pp->lowmc.r;
 
   bitstream_t bs;
   bs.buffer.w = dst;
@@ -358,10 +358,10 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
   const view_t* v = &views[0];
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_192_192_4) || defined(WITH_LOWMC_255_255_4)
   if (pp->lowmc.m != 10) {
-    const size_t view_round_size = pp->lowmc.m * 3;
-    const size_t width           = (pp->lowmc.n + 63) / 64;
+    const unsigned int view_round_size = pp->lowmc.m * 3;
+    const unsigned int width           = (pp->lowmc.n + 63) / 64;
 
-    for (size_t i = 0; i < num_views; ++i, ++v) {
+    for (unsigned int i = 0; i < num_views; ++i, ++v) {
       mzd_to_bitstream(&bs, &v->s[idx], width, view_round_size);
     }
     return;
@@ -369,7 +369,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
 #endif
 #if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
   if (pp->lowmc.m == 10) {
-    for (size_t i = 0; i < num_views; ++i, ++v) {
+    for (unsigned int i = 0; i < num_views; ++i, ++v) {
       uint64_to_bitstream_10(&bs, v->t[idx]);
     }
     return;
@@ -380,7 +380,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
 
 static void decompress_view(view_t* views, const picnic_instance_t* pp, const uint8_t* src,
                             const unsigned int idx) {
-  const size_t num_views = pp->lowmc.r;
+  const unsigned int num_views = pp->lowmc.r;
 
   bitstream_t bs;
   bs.buffer.r = src;
@@ -389,10 +389,10 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
   view_t* v = &views[0];
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_192_192_4) || defined(WITH_LOWMC_255_255_4)
   if (pp->lowmc.m != 10) {
-    const size_t view_round_size = pp->lowmc.m * 3;
-    const size_t width           = (pp->lowmc.n + 63) / 64;
+    const unsigned int view_round_size = pp->lowmc.m * 3;
+    const unsigned int width           = (pp->lowmc.n + 63) / 64;
 
-    for (size_t i = 0; i < num_views; ++i, ++v) {
+    for (unsigned int i = 0; i < num_views; ++i, ++v) {
       mzd_from_bitstream(&bs, &v->s[idx], width, view_round_size);
     }
     return;
@@ -400,7 +400,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
 #endif
 #if defined(WITH_LOWMC_128_128_20) || defined(WITH_LOWMC_192_192_30) || defined(WITH_LOWMC_256_256_38)
   if (pp->lowmc.m == 10) {
-    for (size_t i = 0; i < num_views; ++i, ++v) {
+    for (unsigned int i = 0; i < num_views; ++i, ++v) {
       v->t[idx] = uint64_from_bitstream_10(&bs);
     }
     return;
@@ -419,7 +419,7 @@ static void decompress_random_tape(rvec_t* rvec, const picnic_instance_t* pp, co
  */
 static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_round,
                             const unsigned int vidx) {
-  const size_t hashlen = pp->digest_size;
+  const unsigned int hashlen = pp->digest_size;
 
   hash_context ctx;
   // hash the seed
@@ -449,7 +449,7 @@ static void hash_commitment(const picnic_instance_t* pp, proof_round_t* prf_roun
  */
 static void hash_commitment_x4(const picnic_instance_t* pp, proof_round_t* prf_round,
                                const unsigned int vidx) {
-  const size_t hashlen = pp->digest_size;
+  const unsigned int hashlen = pp->digest_size;
 
   hash_context_x4 ctx;
   // hash the seed
@@ -487,7 +487,7 @@ static void hash_commitment_x4(const picnic_instance_t* pp, proof_round_t* prf_r
  */
 static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting_helper_t* helper,
                                       const unsigned int vidx) {
-  const size_t hashlen = pp->digest_size;
+  const unsigned int hashlen = pp->digest_size;
 
   hash_context_x4 ctx;
   // hash the seed
@@ -526,12 +526,12 @@ static void hash_commitment_x4_verify(const picnic_instance_t* pp, const sorting
  * Compute challenge from transform dependent hash - outputs {1,2 or 3}^t
  */
 static void H3_compute(const picnic_instance_t* pp, uint8_t* hash, uint8_t* ch) {
-  const size_t digest_size      = pp->digest_size;
-  const size_t digest_size_bits = digest_size << 3;
+  const unsigned int digest_size      = pp->digest_size;
+  const unsigned int digest_size_bits = digest_size << 3;
 
   // Pick bits from hash
-  uint8_t* eof   = ch + pp->num_rounds;
-  size_t bit_idx = 0;
+  uint8_t* eof         = ch + pp->num_rounds;
+  unsigned int bit_idx = 0;
   while (ch < eof) {
     if (bit_idx >= digest_size_bits) {
       hash_context ctx;
@@ -570,16 +570,16 @@ static void H3_public_key_message(hash_context* ctx, const picnic_instance_t* pp
  */
 static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
                       const picnic_context_t* context, uint8_t* ch) {
-  const size_t digest_size = pp->digest_size;
-  const size_t num_rounds  = pp->num_rounds;
-  const size_t output_size = pp->output_size;
+  const unsigned int digest_size = pp->digest_size;
+  const unsigned int num_rounds  = pp->num_rounds;
+  const unsigned int output_size = pp->output_size;
 
   hash_context ctx;
   hash_init_prefix(&ctx, digest_size, HASH_PREFIX_1);
 
   // hash output shares
   proof_round_t* round = prf->round;
-  for (size_t i = 0; i < num_rounds; ++i, ++round) {
+  for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
     switch (prf->challenge[i]) {
     case 0: {
       hash_update(&ctx, round->output_shares[0], output_size);
@@ -604,7 +604,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
 
   // hash commitments
   round = prf->round;
-  for (size_t i = 0; i < num_rounds; ++i, ++round) {
+  for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
     switch (prf->challenge[i]) {
     case 0: {
       hash_update(&ctx, round->commitments[0], digest_size);
@@ -629,12 +629,12 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
 
 #if defined(WITH_UNRUH)
   if (pp->unruh_without_input_bytes_size) {
-    const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
-    const size_t with_input_bytes_size    = pp->unruh_without_input_bytes_size + pp->input_size;
+    const unsigned int without_input_bytes_size = pp->unruh_without_input_bytes_size;
+    const unsigned int with_input_bytes_size = pp->unruh_without_input_bytes_size + pp->input_size;
 
     // hash commitments
     round = prf->round;
-    for (size_t i = 0; i < num_rounds; ++i, ++round) {
+    for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
       switch (prf->challenge[i]) {
       case 0: {
         hash_update(&ctx, round->gs[0], without_input_bytes_size);
@@ -673,7 +673,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
  * Compute challenge
  */
 static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const picnic_context_t* context) {
-  const size_t num_rounds = pp->num_rounds;
+  const unsigned int num_rounds = pp->num_rounds;
 
   hash_context ctx;
   hash_init_prefix(&ctx, pp->digest_size, HASH_PREFIX_1);
@@ -707,14 +707,12 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const picnic_conte
  */
 static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned int vidx,
                     bool include_is) {
-  const size_t outputlen   = pp->unruh_without_input_bytes_size + (include_is ? pp->input_size : 0);
-  const size_t digest_size = pp->digest_size;
-  const size_t seedlen     = pp->seed_size;
+  const unsigned int digest_size = pp->digest_size;
 
   // Hash the seed with H_5, store digest in output
   hash_context ctx;
   hash_init_prefix(&ctx, digest_size, HASH_PREFIX_5);
-  hash_update(&ctx, prf_round->seeds[vidx], seedlen);
+  hash_update(&ctx, prf_round->seeds[vidx], pp->seed_size);
   hash_final(&ctx);
 
   uint8_t tmp[MAX_DIGEST_SIZE];
@@ -728,6 +726,8 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
     hash_update(&ctx, prf_round->input_shares[vidx], pp->input_size);
   }
   hash_update(&ctx, prf_round->communicated_bits[vidx], pp->view_size);
+  const unsigned int outputlen =
+      pp->unruh_without_input_bytes_size + (include_is ? pp->input_size : 0);
   hash_update_uint16_le(&ctx, outputlen);
   hash_final(&ctx);
   hash_squeeze(&ctx, prf_round->gs[vidx], outputlen);
@@ -739,15 +739,14 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
  */
 static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, unsigned int vidx,
                        bool include_is) {
-  const size_t outputlen   = pp->unruh_without_input_bytes_size + (include_is ? pp->input_size : 0);
-  const size_t digest_size = pp->digest_size;
-  const size_t seedlen     = pp->seed_size;
+
+  const unsigned int digest_size = pp->digest_size;
 
   // Hash the seed with H_5, store digest in output
   hash_context_x4 ctx;
   hash_init_prefix_x4(&ctx, digest_size, HASH_PREFIX_5);
   hash_update_x4_4(&ctx, prf_round[0].seeds[vidx], prf_round[1].seeds[vidx],
-                   prf_round[2].seeds[vidx], prf_round[3].seeds[vidx], seedlen);
+                   prf_round[2].seeds[vidx], prf_round[3].seeds[vidx], pp->seed_size);
   hash_final_x4(&ctx);
 
   uint8_t tmp[4][MAX_DIGEST_SIZE];
@@ -765,6 +764,8 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
   hash_update_x4_4(&ctx, prf_round[0].communicated_bits[vidx], prf_round[1].communicated_bits[vidx],
                    prf_round[2].communicated_bits[vidx], prf_round[3].communicated_bits[vidx],
                    pp->view_size);
+  const unsigned int outputlen =
+      pp->unruh_without_input_bytes_size + (include_is ? pp->input_size : 0);
   hash_update_x4_uint16_le(&ctx, outputlen);
   hash_final_x4(&ctx);
   hash_squeeze_x4_4(&ctx, prf_round[0].gs[vidx], prf_round[1].gs[vidx], prf_round[2].gs[vidx],
@@ -777,15 +778,13 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
  */
 static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_t* helper,
                               unsigned int vidx, bool include_is) {
-  const size_t outputlen   = pp->unruh_without_input_bytes_size + (include_is ? pp->input_size : 0);
-  const size_t digest_size = pp->digest_size;
-  const size_t seedlen     = pp->seed_size;
+  const unsigned int digest_size = pp->digest_size;
 
   // Hash the seed with H_5, store digest in output
   hash_context_x4 ctx;
   hash_init_prefix_x4(&ctx, digest_size, HASH_PREFIX_5);
   hash_update_x4_4(&ctx, helper[0].round->seeds[vidx], helper[1].round->seeds[vidx],
-                   helper[2].round->seeds[vidx], helper[3].round->seeds[vidx], seedlen);
+                   helper[2].round->seeds[vidx], helper[3].round->seeds[vidx], pp->seed_size);
   hash_final_x4(&ctx);
 
   uint8_t tmp[4][MAX_DIGEST_SIZE];
@@ -804,6 +803,8 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
                    helper[1].round->communicated_bits[vidx],
                    helper[2].round->communicated_bits[vidx],
                    helper[3].round->communicated_bits[vidx], pp->view_size);
+  const unsigned int outputlen =
+      pp->unruh_without_input_bytes_size + (include_is ? pp->input_size : 0);
   hash_update_x4_uint16_le(&ctx, outputlen);
   hash_final_x4(&ctx);
   hash_squeeze_x4_4(&ctx, helper[0].round->gs[vidx], helper[1].round->gs[vidx],
@@ -815,11 +816,11 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
 // serilization helper functions
 static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_t* prf,
                                    uint8_t* result, size_t* siglen) {
-  const size_t num_rounds     = pp->num_rounds;
-  const size_t seed_size      = pp->seed_size;
-  const size_t digest_size    = pp->digest_size;
-  const size_t view_size      = pp->view_size;
-  const size_t input_size     = pp->input_size;
+  const unsigned int num_rounds  = pp->num_rounds;
+  const unsigned int seed_size   = pp->seed_size;
+  const unsigned int digest_size = pp->digest_size;
+  const unsigned int view_size   = pp->view_size;
+  const unsigned int input_size  = pp->input_size;
 #if defined(WITH_UNRUH)
   const unsigned int unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
 #endif
@@ -875,11 +876,11 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
 
 static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const uint8_t* data,
                                               size_t len) {
-  const size_t digest_size            = pp->digest_size;
-  const size_t seed_size              = pp->seed_size;
-  const size_t num_rounds             = pp->num_rounds;
-  const size_t input_size             = pp->input_size;
-  const size_t view_size              = pp->view_size;
+  const unsigned int digest_size      = pp->digest_size;
+  const unsigned int seed_size        = pp->seed_size;
+  const unsigned int num_rounds       = pp->num_rounds;
+  const unsigned int input_size       = pp->input_size;
+  const unsigned int view_size        = pp->view_size;
   const unsigned int view_diff        = pp->view_size * 8 - 3 * pp->lowmc.m * pp->lowmc.r;
   const unsigned int input_share_diff = pp->input_size * 8 - pp->lowmc.k;
 #if defined(WITH_UNRUH)
@@ -911,13 +912,13 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   memcpy(proof->salt, tmp, SALT_SIZE);
   tmp += SALT_SIZE;
 
-  const size_t base_size = digest_size + view_size + 2 * seed_size;
-  proof_round_t* round   = proof->round;
+  const unsigned int base_size = digest_size + view_size + 2 * seed_size;
+  proof_round_t* round         = proof->round;
   for (unsigned int i = 0; i < num_rounds; ++i, ++round) {
-    const unsigned char ch = proof->challenge[i];
-    size_t requested_size  = base_size + (ch ? input_size : 0);
+    const unsigned char ch      = proof->challenge[i];
+    unsigned int requested_size = base_size + (ch ? input_size : 0);
 #if defined(WITH_UNRUH)
-    const size_t unruh_g_len = without_input_bytes_size + (ch ? 0 : input_size);
+    const unsigned int unruh_g_len = without_input_bytes_size + (ch ? 0 : input_size);
     if (without_input_bytes_size) {
       requested_size += unruh_g_len;
     }
@@ -993,11 +994,10 @@ err:
 
 static void generate_seeds(const picnic_instance_t* pp, const picnic_context_t* context,
                            uint8_t* seeds, uint8_t* salt) {
-  const size_t seed_size   = pp->seed_size;
-  const size_t num_rounds  = pp->num_rounds;
-  const size_t input_size  = pp->input_size;
-  const size_t output_size = pp->output_size;
-  const size_t lowmc_n     = pp->lowmc.n;
+  const unsigned int seed_size   = pp->seed_size;
+  const unsigned int num_rounds  = pp->num_rounds;
+  const unsigned int input_size  = pp->input_size;
+  const unsigned int output_size = pp->output_size;
 
   kdf_shake_t ctx;
   kdf_shake_init(&ctx, pp->digest_size);
@@ -1007,7 +1007,7 @@ static void generate_seeds(const picnic_instance_t* pp, const picnic_context_t* 
   kdf_shake_update_key(&ctx, context->public_key, output_size);
   kdf_shake_update_key(&ctx, context->plaintext, output_size);
   // N as 16 bit LE integer
-  kdf_shake_update_key_uint16_le(&ctx, lowmc_n);
+  kdf_shake_update_key_uint16_le(&ctx, pp->lowmc.n);
 #if defined(WITH_EXTRA_RANDOMNESS)
   // Add extra random bytes for fault attack mitigation
   unsigned char buffer[2 * MAX_DIGEST_SIZE];
@@ -1024,13 +1024,13 @@ static void generate_seeds(const picnic_instance_t* pp, const picnic_context_t* 
 
 int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint8_t* sig,
               size_t* siglen) {
-  const size_t num_rounds  = pp->num_rounds;
-  const size_t input_size  = pp->input_size;
-  const size_t output_size = pp->output_size;
-  const size_t lowmc_r     = pp->lowmc.r;
-  const size_t view_size   = pp->view_size;
-  const size_t aview_size  = ALIGNU64T(view_size);
-  const unsigned int diff  = input_size * 8 - pp->lowmc.n;
+  const unsigned int num_rounds  = pp->num_rounds;
+  const unsigned int input_size  = pp->input_size;
+  const unsigned int output_size = pp->output_size;
+  const unsigned int lowmc_r     = pp->lowmc.r;
+  const unsigned int view_size   = pp->view_size;
+  const unsigned int aview_size  = ALIGNU64T(view_size);
+  const unsigned int diff        = input_size * 8 - pp->lowmc.n;
 
   const zkbpp_lowmc_implementation_f lowmc_impl       = pp->impl_zkbpp_lowmc;
   const lowmc_store_implementation_f lowmc_store_impl = pp->impl_lowmc_store;
@@ -1182,13 +1182,13 @@ int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint
 
 int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, const uint8_t* sig,
                 size_t siglen) {
-  const size_t num_rounds  = pp->num_rounds;
-  const size_t input_size  = pp->input_size;
-  const size_t output_size = pp->output_size;
-  const size_t lowmc_r     = pp->lowmc.r;
-  const size_t view_size   = pp->view_size;
-  const size_t aview_size  = ALIGNU64T(view_size);
-  const unsigned int diff  = input_size * 8 - pp->lowmc.n;
+  const unsigned int num_rounds  = pp->num_rounds;
+  const unsigned int input_size  = pp->input_size;
+  const unsigned int output_size = pp->output_size;
+  const unsigned int lowmc_r     = pp->lowmc.r;
+  const unsigned int view_size   = pp->view_size;
+  const unsigned int aview_size  = ALIGNU64T(view_size);
+  const unsigned int diff        = input_size * 8 - pp->lowmc.n;
 
   const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->impl_zkbpp_lowmc_verify;
   const zkbpp_share_implementation_f mzd_share                = pp->impl_mzd_share;
@@ -1384,11 +1384,11 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
 #if defined(PICNIC_STATIC)
 void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* msg, size_t msglen,
                          const uint8_t* sig, size_t siglen) {
-  const size_t digest_size    = pp->digest_size;
-  const size_t seed_size      = pp->seed_size;
-  const size_t num_rounds     = pp->num_rounds;
-  const size_t input_size     = pp->input_size;
-  const size_t view_size      = pp->view_size;
+  const unsigned int digest_size = pp->digest_size;
+  const unsigned int seed_size   = pp->seed_size;
+  const unsigned int num_rounds  = pp->num_rounds;
+  const unsigned int input_size  = pp->input_size;
+  const unsigned int view_size   = pp->view_size;
 
   sig_proof_t* proof = sig_proof_from_char_array(pp, sig, siglen);
 
@@ -1422,7 +1422,8 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 #if defined(WITH_UNRUH)
     // print unruh G
     if (pp->unruh_without_input_bytes_size) {
-      const size_t unruh_g_len = pp->unruh_without_input_bytes_size + (ch ? 0 : pp->input_size);
+      const unsigned int unruh_g_len =
+          pp->unruh_without_input_bytes_size + (ch ? 0 : pp->input_size);
 
       fprintf(out, "G_%d: ", i);
       print_hex(out, round->gs[2], unruh_g_len);
