@@ -56,7 +56,34 @@ size_t PICNIC_CALLING_CONVENTION picnic_signature_size(picnic_params_t param) {
     return 0;
   }
 
-  return instance->max_signature_size;
+  switch (param) {
+  case Picnic_L1_FS:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L1_FS;
+  case Picnic_L1_UR:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L1_UR;
+  case Picnic_L1_full:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L1_full;
+  case Picnic3_L1:
+    return PICNIC_SIGNATURE_SIZE_Picnic3_L1;
+  case Picnic_L3_FS:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L3_FS;
+  case Picnic_L3_UR:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L3_UR;
+  case Picnic_L3_full:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L3_full;
+  case Picnic3_L3:
+    return PICNIC_SIGNATURE_SIZE_Picnic3_L3;
+  case Picnic_L5_FS:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L5_FS;
+  case Picnic_L5_UR:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L5_UR;
+  case Picnic_L5_full:
+    return PICNIC_SIGNATURE_SIZE_Picnic_L5_full;
+  case Picnic3_L5:
+    return PICNIC_SIGNATURE_SIZE_Picnic3_L5;
+  default:
+    return 0;
+  }
 }
 
 size_t PICNIC_CALLING_CONVENTION picnic_get_private_key_size(picnic_params_t param) {
