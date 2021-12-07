@@ -358,7 +358,7 @@ static void compress_view(uint8_t* dst, const picnic_instance_t* pp, const view_
   const view_t* v = &views[0];
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_192_192_4) || defined(WITH_LOWMC_255_255_4)
   if (pp->lowmc.m != 10) {
-    const size_t view_round_size = pp->view_round_size;
+    const size_t view_round_size = pp->lowmc.m * 3;
     const size_t width           = (pp->lowmc.n + 63) / 64;
 
     for (size_t i = 0; i < num_views; ++i, ++v) {
@@ -389,7 +389,7 @@ static void decompress_view(view_t* views, const picnic_instance_t* pp, const ui
   view_t* v = &views[0];
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_192_192_4) || defined(WITH_LOWMC_255_255_4)
   if (pp->lowmc.m != 10) {
-    const size_t view_round_size = pp->view_round_size;
+    const size_t view_round_size = pp->lowmc.m * 3;
     const size_t width           = (pp->lowmc.n + 63) / 64;
 
     for (size_t i = 0; i < num_views; ++i, ++v) {
@@ -884,7 +884,7 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const size_t challenge_size         = collapsed_challenge_size(pp);
   const size_t input_size             = pp->input_size;
   const size_t view_size              = pp->view_size;
-  const unsigned int view_diff        = pp->view_size * 8 - pp->view_round_size * pp->lowmc.r;
+  const unsigned int view_diff        = pp->view_size * 8 - 3 * pp->lowmc.m * pp->lowmc.r;
   const unsigned int input_share_diff = pp->input_size * 8 - pp->lowmc.k;
 #if defined(WITH_UNRUH)
   const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
