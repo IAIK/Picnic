@@ -759,8 +759,8 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
   size_t seedInfoLen   = revealSeedsSize(params->num_MPC_parties, hideList, 1, params);
   for (size_t t = 0; t < params->num_rounds; t++) {
     if (contains(sig->challengeC, params->num_opened_rounds, t)) {
-      size_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
-      if (P_t != (params->num_MPC_parties - 1)) {
+      uint16_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
+      if (P_t != (params->num_MPC_parties - 1u)) {
         bytesRequired += params->view_size;
       }
       bytesRequired += params->digest_size;
@@ -796,8 +796,8 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
       memcpy(sig->proofs[t].seedInfo, sigBytes, sig->proofs[t].seedInfoLen);
       sigBytes += sig->proofs[t].seedInfoLen;
 
-      size_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
-      if (P_t != (params->num_MPC_parties - 1)) {
+      uint16_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
+      if (P_t != (params->num_MPC_parties - 1u)) {
         memcpy(sig->proofs[t].aux, sigBytes, params->view_size);
         sigBytes += params->view_size;
         if (!arePaddingBitsZero(sig->proofs[t].aux, params->view_size,
@@ -850,9 +850,9 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
 
   for (size_t t = 0; t < params->num_rounds; t++) { /* proofs */
     if (contains(sig->challengeC, params->num_opened_rounds, t)) {
-      size_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
+      uint16_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
       bytesRequired += sig->proofs[t].seedInfoLen;
-      if (P_t != (params->num_MPC_parties - 1)) {
+      if (P_t != (params->num_MPC_parties - 1u)) {
         bytesRequired += params->view_size;
       }
       bytesRequired += params->digest_size;
@@ -882,9 +882,8 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
       memcpy(sigBytes, sig->proofs[t].seedInfo, sig->proofs[t].seedInfoLen);
       sigBytes += sig->proofs[t].seedInfoLen;
 
-      size_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
-
-      if (P_t != (params->num_MPC_parties - 1)) {
+      uint16_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
+      if (P_t != (params->num_MPC_parties - 1u)) {
         memcpy(sigBytes, sig->proofs[t].aux, params->view_size);
         sigBytes += params->view_size;
       }
