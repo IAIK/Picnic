@@ -71,12 +71,6 @@ typedef struct {
   proof_round_t* round;
 } sorting_helper_t;
 
-#if defined(WITH_UNRUH)
-static inline bool is_unruh(const picnic_instance_t* pp) {
-  return pp->unruh_without_input_bytes_size != 0;
-}
-#endif
-
 static inline size_t collapsed_challenge_size(const picnic_instance_t* pp) {
   return (2 * pp->num_rounds + 7) / 8;
 }
@@ -150,7 +144,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   size_t per_round_mem =
       SC_PROOF * (seed_size + digest_size + input_size + output_size + view_size);
 #if defined(WITH_UNRUH)
-  if (is_unruh(pp)) {
+  if (unruh_without_input_bytes_size) {
     per_round_mem += SC_PROOF * unruh_without_input_bytes_size + input_size;
   }
 #endif
@@ -208,7 +202,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp) {
   }
 
 #if defined(WITH_UNRUH)
-  if (is_unruh(pp)) {
+  if (unruh_without_input_bytes_size) {
     for (size_t r = 0; r < num_rounds; ++r) {
       for (size_t i = 0; i < SC_PROOF; ++i) {
         prf->round[r].gs[i] = slab;
@@ -237,7 +231,7 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   size_t per_round_mem = SC_VERIFY * digest_size;
 #if defined(WITH_UNRUH)
   const size_t unruh_with_input_bytes_size = pp->unruh_without_input_bytes_size + input_size;
-  if (is_unruh(pp)) {
+  if (pp->unruh_without_input_bytes_size) {
     // we don't know what we actually need, so allocate more than needed
     per_round_mem += SC_VERIFY * unruh_with_input_bytes_size;
   }
@@ -270,7 +264,7 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, uint8_t** rsla
   }
 
 #if defined(WITH_UNRUH)
-  if (is_unruh(pp)) {
+  if (pp->unruh_without_input_bytes_size) {
     for (size_t r = 0; r < num_rounds; ++r) {
       for (size_t i = 0; i < SC_VERIFY; ++i) {
         proof->round[r].gs[i] = slab;
@@ -628,7 +622,7 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
   }
 
 #if defined(WITH_UNRUH)
-  if (is_unruh(pp)) {
+  if (pp->unruh_without_input_bytes_size) {
     const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
     const size_t with_input_bytes_size    = pp->unruh_without_input_bytes_size + pp->input_size;
 
@@ -683,7 +677,7 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const picnic_conte
   // hash all commitments C
   hash_update(&ctx, prf->round[0].commitments[0], pp->digest_size * num_rounds * SC_PROOF);
 #if defined(WITH_UNRUH)
-  if (is_unruh(pp)) {
+  if (pp->unruh_without_input_bytes_size) {
     // hash all commitments G
     hash_update(&ctx, prf->round[0].gs[0],
                 num_rounds * (SC_PROOF * pp->unruh_without_input_bytes_size + pp->input_size));
@@ -822,8 +816,7 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
   const size_t view_size      = pp->view_size;
   const size_t input_size     = pp->input_size;
 #if defined(WITH_UNRUH)
-  const size_t unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
-  const bool unruh                            = is_unruh(pp);
+  const unsigned int unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
 #endif
 
   uint8_t* tmp = result;
@@ -848,7 +841,7 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
 
 #if defined(WITH_UNRUH)
     // write unruh G
-    if (unruh) {
+    if (unruh_without_input_bytes_size) {
       const uint32_t unruh_g_size = unruh_without_input_bytes_size + (a ? 0 : input_size);
       memcpy(tmp, round->gs[c], unruh_g_size);
       tmp += unruh_g_size;
@@ -887,8 +880,7 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const unsigned int view_diff        = pp->view_size * 8 - 3 * pp->lowmc.m * pp->lowmc.r;
   const unsigned int input_share_diff = pp->input_size * 8 - pp->lowmc.k;
 #if defined(WITH_UNRUH)
-  const size_t without_input_bytes_size = pp->unruh_without_input_bytes_size;
-  const bool unruh                      = is_unruh(pp);
+  const unsigned int without_input_bytes_size = pp->unruh_without_input_bytes_size;
 #endif
 
   uint8_t* slab      = NULL;
@@ -923,7 +915,7 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
     size_t requested_size  = base_size + (ch ? input_size : 0);
 #if defined(WITH_UNRUH)
     const size_t unruh_g_len = without_input_bytes_size + (ch ? 0 : input_size);
-    if (unruh) {
+    if (without_input_bytes_size) {
       requested_size += unruh_g_len;
     }
 #endif
@@ -938,7 +930,7 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
 
 #if defined(WITH_UNRUH)
     // read unruh G
-    if (unruh) {
+    if (without_input_bytes_size) {
       round->gs[2] = (uint8_t*)tmp;
       tmp += unruh_g_len;
     }
@@ -1036,9 +1028,6 @@ int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint
   const size_t view_size   = pp->view_size;
   const size_t aview_size  = ALIGNU64T(view_size);
   const unsigned int diff  = input_size * 8 - pp->lowmc.n;
-#if defined(WITH_UNRUH)
-  const bool unruh = is_unruh(pp);
-#endif
 
   const zkbpp_lowmc_implementation_f lowmc_impl       = pp->impl_zkbpp_lowmc;
   const lowmc_store_implementation_f lowmc_store_impl = pp->impl_lowmc_store;
@@ -1118,7 +1107,7 @@ int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint
 
 #if defined(WITH_UNRUH)
     // unruh G
-    if (unruh) {
+    if (pp->unruh_without_input_bytes_size) {
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
         unruh_G_x4(pp, round, j, j == SC_PROOF - 1);
       }
@@ -1168,7 +1157,7 @@ int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint
 
 #if defined(WITH_UNRUH)
     // unruh G
-    if (unruh) {
+    if (pp->unruh_without_input_bytes_size) {
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
         unruh_G(pp, round, j, j == SC_PROOF - 1);
       }
@@ -1197,9 +1186,6 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
   const size_t view_size   = pp->view_size;
   const size_t aview_size  = ALIGNU64T(view_size);
   const unsigned int diff  = input_size * 8 - pp->lowmc.n;
-#if defined(WITH_UNRUH)
-  const bool unruh = is_unruh(pp);
-#endif
 
   const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl = pp->impl_zkbpp_lowmc_verify;
   const zkbpp_share_implementation_f mzd_share                = pp->impl_mzd_share;
@@ -1302,7 +1288,7 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
         hash_commitment_x4_verify(pp, helper, j);
       }
 #if defined(WITH_UNRUH)
-      if (unruh) {
+      if (pp->unruh_without_input_bytes_size) {
         // apply Unruh G permutation
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
           unruh_G_x4_verify(pp, helper, j, (a_i == 1 && j == 1) || (a_i == 2 && j == 0));
@@ -1366,7 +1352,7 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
                         output_size);
 
 #if defined(WITH_UNRUH)
-      if (unruh) {
+      if (pp->unruh_without_input_bytes_size) {
         // apply Unruh G permutation
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
           unruh_G(pp, helper->round, j, (a_i == 1 && j == 1) || (a_i == 2 && j == 0));
@@ -1401,9 +1387,6 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
   const size_t challenge_size = collapsed_challenge_size(pp);
   const size_t input_size     = pp->input_size;
   const size_t view_size      = pp->view_size;
-#if defined(WITH_UNRUH)
-  const bool unruh = is_unruh(pp);
-#endif
 
   sig_proof_t* proof = sig_proof_from_char_array(pp, sig, siglen);
 
@@ -1436,7 +1419,7 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
 
 #if defined(WITH_UNRUH)
     // print unruh G
-    if (unruh) {
+    if (pp->unruh_without_input_bytes_size) {
       const size_t unruh_g_len = pp->unruh_without_input_bytes_size + (ch ? 0 : pp->input_size);
 
       fprintf(out, "G_%d: ", i);
