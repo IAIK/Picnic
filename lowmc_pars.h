@@ -34,10 +34,10 @@ typedef mzd_local_t lowmc_key_t;
  * LowMC parameters
  */
 typedef struct {
-  unsigned int m;
-  unsigned int n;
-  unsigned int r;
-  unsigned int k;
+  uint16_t m;
+  uint16_t n;
+  uint16_t r;
+  uint16_t k;
 } lowmc_parameters_t;
 
 /**
