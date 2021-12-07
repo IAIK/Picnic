@@ -72,10 +72,14 @@ typedef struct {
 } sorting_helper_t;
 
 #if defined(WITH_UNRUH)
-static bool is_unruh(const picnic_instance_t* pp) {
+static inline bool is_unruh(const picnic_instance_t* pp) {
   return pp->unruh_with_input_bytes_size != 0;
 }
 #endif
+
+static inline size_t collapsed_challenge_size(const picnic_instance_t* pp) {
+  return (2 * pp->num_rounds + 7) / 8;
+}
 
 static inline void clear_padding_bits(uint8_t* v, const unsigned int diff) {
 #if defined(WITH_LOWMC_129_129_4) || defined(WITH_LOWMC_255_255_4)
@@ -119,7 +123,7 @@ static bool expand_challenge(uint8_t* challenge, const picnic_instance_t* pp,
     challenge[i] = (ch & 1) << 1 | (ch >> 1);
   }
 
-  const size_t remaining_bits = (pp->collapsed_challenge_size << 3) - bs.position;
+  const size_t remaining_bits = collapsed_challenge_size(pp) * 8 - bs.position;
   if (remaining_bits && bitstream_get_bits(&bs, remaining_bits)) {
     return false;
   }
@@ -819,7 +823,7 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
                                    uint8_t* result, size_t* siglen) {
   const size_t num_rounds     = pp->num_rounds;
   const size_t seed_size      = pp->seed_size;
-  const size_t challenge_size = pp->collapsed_challenge_size;
+  const size_t challenge_size = collapsed_challenge_size(pp);
   const size_t digest_size    = pp->digest_size;
   const size_t view_size      = pp->view_size;
   const size_t input_size     = pp->input_size;
@@ -885,7 +889,7 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp, const
   const size_t digest_size            = pp->digest_size;
   const size_t seed_size              = pp->seed_size;
   const size_t num_rounds             = pp->num_rounds;
-  const size_t challenge_size         = pp->collapsed_challenge_size;
+  const size_t challenge_size         = collapsed_challenge_size(pp);
   const size_t input_size             = pp->input_size;
   const size_t view_size              = pp->view_size;
   const unsigned int view_diff        = pp->view_size * 8 - pp->view_round_size * pp->lowmc.r;
@@ -1401,7 +1405,7 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const uint8_t* 
   const size_t digest_size    = pp->digest_size;
   const size_t seed_size      = pp->seed_size;
   const size_t num_rounds     = pp->num_rounds;
-  const size_t challenge_size = pp->collapsed_challenge_size;
+  const size_t challenge_size = collapsed_challenge_size(pp);
   const size_t input_size     = pp->input_size;
   const size_t view_size      = pp->view_size;
 #if defined(WITH_UNRUH)
