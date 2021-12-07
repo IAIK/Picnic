@@ -37,8 +37,7 @@ typedef struct picnic_instance_t {
   uint16_t num_rounds;                    // T
   uint8_t digest_size;                    // bytes
   uint8_t seed_size;                      // bytes
-  uint8_t input_size;                     // bytes
-  uint8_t output_size;                    // bytes
+  uint8_t input_output_size;              // bytes
   uint8_t view_size;                      // bytes
   uint8_t num_opened_rounds;              // u (KKW only)
   uint8_t num_MPC_parties;                // N (KKW only)

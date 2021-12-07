@@ -79,7 +79,7 @@ static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks,
       tapes->parity_tapes[j] ^= tapes->tape[i][j];
     }
   }
-  mzd_from_char_array(lowmc_key, tapes->parity_tapes, params->input_size);
+  mzd_from_char_array(lowmc_key, tapes->parity_tapes, params->input_output_size);
   tapes->pos     = params->lowmc.n;
   tapes->aux_pos = 0;
   memset(tapes->aux_bits, 0, params->view_size);
@@ -91,7 +91,7 @@ static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks,
 
   // write the key masks to the input
   if (input_masks != NULL) {
-    mzd_to_char_array(input_masks, lowmc_key, params->input_size);
+    mzd_to_char_array(input_masks, lowmc_key, params->input_output_size);
   }
 
   // Reset the random tape counter so that the online execution uses the
@@ -164,7 +164,7 @@ static void commit_v(uint8_t* digest, const uint8_t* input, const msgs_t* msgs,
   hash_context ctx;
 
   hash_init(&ctx, params->digest_size);
-  hash_update(&ctx, input, params->input_size);
+  hash_update(&ctx, input, params->input_output_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
     hash_update(&ctx, msgs->msgs[i], numBytes(msgs->pos));
   }
@@ -178,7 +178,7 @@ static void commit_v_x4(uint8_t** digest, const uint8_t** input, const msgs_t* m
   hash_context_x4 ctx;
 
   hash_init_x4(&ctx, params->digest_size);
-  hash_update_x4(&ctx, input, params->input_size);
+  hash_update_x4(&ctx, input, params->input_output_size);
   for (size_t i = 0; i < params->num_MPC_parties; i++) {
     assert(msgs[0].pos == msgs[1].pos && msgs[2].pos == msgs[3].pos && msgs[0].pos == msgs[2].pos);
     hash_update_x4_4(&ctx, msgs[0].msgs[i], msgs[1].msgs[i], msgs[2].msgs[i], msgs[3].msgs[i],
@@ -329,8 +329,8 @@ static void HCP(uint8_t* sigH, uint16_t* challengeC, uint16_t* challengeP, commi
 
   hash_update(&ctx, hCv, params->digest_size);
   hash_update(&ctx, salt, SALT_SIZE);
-  hash_update(&ctx, pubKey, params->input_size);
-  hash_update(&ctx, plaintext, params->input_size);
+  hash_update(&ctx, pubKey, params->input_output_size);
+  hash_update(&ctx, plaintext, params->input_output_size);
   hash_update(&ctx, message, messageByteLength);
   hash_final(&ctx);
   hash_squeeze(&ctx, sigH, params->digest_size);
@@ -383,7 +383,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   allocateCommitments2(&Cv, params, params->num_rounds);
   mzd_local_t m_plaintext[1];
   mzd_local_t m_maskedKey[1];
-  mzd_from_char_array(m_plaintext, plaintext, params->output_size);
+  mzd_from_char_array(m_plaintext, plaintext, params->input_output_size);
 
   if (ret != 0) {
     ret = -1;
@@ -478,7 +478,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
     setAuxBits(&tapes[t], sig->proofs[t].aux, params);
     memset(tapes[t].tape[unopened], 0, 2 * params->view_size);
     memcpy(msgs->msgs[unopened], sig->proofs[t].msgs, params->view_size);
-    mzd_from_char_array(m_maskedKey, input, params->input_size);
+    mzd_from_char_array(m_maskedKey, input, params->input_output_size);
     msgs->unopened = unopened;
     msgs->pos      = 0;
     ret            = simulateOnline(m_maskedKey, &tapes[t], msgs, m_plaintext, pubKey, params);
@@ -509,8 +509,8 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   }
 
   /* Compute the challenge; two lists of integers */
-  HCP(challenge, challengeC, challengeP, &Ch, treeCv->nodes, sig->salt, pubKey, plaintext,
-      message, messageByteLength, params);
+  HCP(challenge, challengeC, challengeP, &Ch, treeCv->nodes, sig->salt, pubKey, plaintext, message,
+      messageByteLength, params);
 
   /* Compare to challenge from signature */
   if (memcmp(sig->challenge, challenge, params->digest_size) != 0) {
@@ -551,10 +551,10 @@ static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLengt
   hash_context ctx;
 
   hash_init(&ctx, params->digest_size);
-  hash_update(&ctx, privateKey, params->input_size);
+  hash_update(&ctx, privateKey, params->input_output_size);
   hash_update(&ctx, message, messageByteLength);
-  hash_update(&ctx, pubKey, params->input_size);
-  hash_update(&ctx, plaintext, params->input_size);
+  hash_update(&ctx, pubKey, params->input_output_size);
+  hash_update(&ctx, plaintext, params->input_output_size);
   hash_update_uint16_le(&ctx, (uint16_t)params->lowmc.n);
   hash_final(&ctx);
   hash_squeeze(&ctx, saltAndRoot, saltAndRootLength);
@@ -592,10 +592,11 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   mzd_local_t m_plaintext[1];
   mzd_local_t m_maskedKey[1];
 
-  mzd_from_char_array(m_plaintext, plaintext, params->output_size);
+  mzd_from_char_array(m_plaintext, plaintext, params->input_output_size);
 
   for (size_t t = 0; t < params->num_rounds; t++) {
-    seeds[t] = generateSeeds(params->num_MPC_parties, &iSeeds[t * params->seed_size], sig->salt, t, params);
+    seeds[t] = generateSeeds(params->num_MPC_parties, &iSeeds[t * params->seed_size], sig->salt, t,
+                             params);
     createRandomTapes(&tapes[t], getLeaves(seeds[t]), sig->salt, t, params);
     /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
     computeAuxTape(&tapes[t], inputs[t], params);
@@ -616,11 +617,11 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
     uint8_t* maskedKey = inputs[t];
 
     xor_byte_array(maskedKey, maskedKey, privateKey,
-                   params->input_size); // maskedKey += privateKey
-    for (size_t i = params->lowmc.n; i < params->input_size * 8; i++) {
+                   params->input_output_size); // maskedKey += privateKey
+    for (size_t i = params->lowmc.n; i < params->input_output_size * 8; i++) {
       setBit(maskedKey, i, 0);
     }
-    mzd_from_char_array(m_maskedKey, maskedKey, params->input_size);
+    mzd_from_char_array(m_maskedKey, maskedKey, params->input_output_size);
 
     int rv = simulateOnline(m_maskedKey, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
     if (rv != 0) {
@@ -688,7 +689,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
         memcpy(proofs[t].aux, tapes[t].aux_bits, params->view_size);
       }
 
-      memcpy(proofs[t].input, inputs[t], params->input_size);
+      memcpy(proofs[t].input, inputs[t], params->input_output_size);
       memcpy(proofs[t].msgs, msgs[t].msgs[challengeP[P_index]], params->view_size);
 
       /* recompute commitment of unopened party since we did not store it for memory optimization
@@ -764,7 +765,7 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
         bytesRequired += params->view_size;
       }
       bytesRequired += params->digest_size;
-      bytesRequired += params->input_size;
+      bytesRequired += params->input_output_size;
       bytesRequired += params->view_size;
       bytesRequired += seedInfoLen;
     }
@@ -809,14 +810,14 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
         }
       }
 
-      memcpy(sig->proofs[t].input, sigBytes, params->input_size);
-      if (!arePaddingBitsZero(sig->proofs[t].input, params->input_size, params->lowmc.n)) {
+      memcpy(sig->proofs[t].input, sigBytes, params->input_output_size);
+      if (!arePaddingBitsZero(sig->proofs[t].input, params->input_output_size, params->lowmc.n)) {
 #if !defined(NDEBUG)
         printf("%s: failed while deserializing input bits\n", __func__);
 #endif
         return -1;
       }
-      sigBytes += params->input_size;
+      sigBytes += params->input_output_size;
 
       size_t msgsByteLength = params->view_size;
       memcpy(sig->proofs[t].msgs, sigBytes, msgsByteLength);
@@ -856,7 +857,7 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
         bytesRequired += params->view_size;
       }
       bytesRequired += params->digest_size;
-      bytesRequired += params->input_size;
+      bytesRequired += params->input_output_size;
       bytesRequired += params->view_size;
     }
   }
@@ -888,8 +889,8 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
         sigBytes += params->view_size;
       }
 
-      memcpy(sigBytes, sig->proofs[t].input, params->input_size);
-      sigBytes += params->input_size;
+      memcpy(sigBytes, sig->proofs[t].input, params->input_output_size);
+      sigBytes += params->input_output_size;
 
       memcpy(sigBytes, sig->proofs[t].msgs, params->view_size);
       sigBytes += params->view_size;

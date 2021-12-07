@@ -29,12 +29,12 @@ static int test_vector(const picnic_params_t param) {
     setBit(&sk.data[1], i, 1);
   }
   for (unsigned int i = 0; i < instance->lowmc.n; i += 3) {
-    setBit(&sk.data[1 + instance->input_size + instance->output_size], i, 1);
+    setBit(&sk.data[1 + instance->input_output_size + instance->input_output_size], i, 1);
   }
 
   picnic_publickey_t pk = {{0}};
   picnic_sk_to_pk(&sk, &pk);
-  memcpy(&sk.data[1 + instance->input_size], &pk.data[1], instance->output_size);
+  memcpy(&sk.data[1 + instance->input_output_size], &pk.data[1], instance->input_output_size);
 
   const uint8_t msg[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
 

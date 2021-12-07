@@ -55,7 +55,7 @@ void allocateProof2(proof2_t* proof, const picnic_instance_t* params) {
   proof->seedInfo      = NULL; // Sign/verify code sets it
   proof->seedInfoLen   = 0;
   proof->C             = malloc(params->digest_size);
-  proof->input         = malloc(params->input_size);
+  proof->input         = malloc(params->input_output_size);
   proof->aux           = malloc(params->view_size);
   proof->msgs          = malloc(params->view_size);
 }
@@ -115,7 +115,7 @@ void freeCommitments2(commitments_t* commitments) {
 }
 
 inputs_t allocateInputs(const picnic_instance_t* params) {
-  uint8_t* slab = calloc(1, params->num_rounds * (params->input_size + sizeof(uint8_t*)));
+  uint8_t* slab = calloc(1, params->num_rounds * (params->input_output_size + sizeof(uint8_t*)));
 
   inputs_t inputs = (uint8_t**)slab;
 
@@ -123,7 +123,7 @@ inputs_t allocateInputs(const picnic_instance_t* params) {
 
   for (uint32_t i = 0; i < params->num_rounds; i++) {
     inputs[i] = (uint8_t*)slab;
-    slab += params->input_size;
+    slab += params->input_output_size;
   }
 
   return inputs;

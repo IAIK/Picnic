@@ -38,12 +38,12 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
 
   /* check that the output is correct */
   uint8_t output[MAX_LOWMC_BLOCK_SIZE];
-  mzd_to_char_array(output, state, params->output_size);
+  mzd_to_char_array(output, state, params->input_output_size);
 
   /* timingsafe_bcmp is not strictly necessary here. The comparison does not leak any information on
    * the secret key. In fact, this will never trigger. We still keep this check as a safe guard in
    * case we break the computation of the signature in some way. */
-  const int ret = timingsafe_bcmp(output, pubKey, params->output_size);
+  const int ret = timingsafe_bcmp(output, pubKey, params->input_output_size);
 #if !defined(NDEBUG)
   if (ret) {
     printf("%s: output does not match pubKey\n", __func__);
