@@ -52,8 +52,6 @@ typedef struct picnic_instance_t {
   uint32_t unruh_with_input_bytes_size;    /* bytes */
   uint32_t max_signature_size;             /* bytes */
 
-  picnic_params_t params;
-
   struct {
     lowmc_implementation_f lowmc;
 #if defined(WITH_ZKBPP)
