@@ -74,8 +74,7 @@
 #error "At least one of WITH_ZKBPP and WITH_KKW have to be defined!"
 #endif
 
-static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
-    {{0, 0, 0, 0}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL_FNS},
+static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX - 1] = {
     /* ZKB++ with partial LowMC instances */
     {ENABLE_ZKBPP(lowmc_parameters_128_128_20), 32, 16, 219, 219, 3, 16, 16, 75, 30, 55, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L1_FS, NULL_FNS},
@@ -141,7 +140,7 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
     return NULL;
   }
 
-  picnic_instance_t* pp = &instances[param];
+  picnic_instance_t* pp = &instances[param - 1];
   if (!pp->impls.lowmc) {
     if (!create_instance(param, pp)) {
       return NULL;
