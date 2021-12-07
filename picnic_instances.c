@@ -104,7 +104,6 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
     {ENABLE_ZKBPP(lowmc_parameters_255_255_4), 64, 32, 438, 438, 3, 32, 32, 128, 255, 110, 0, 0,
      PICNIC_SIGNATURE_SIZE_Picnic_L5_full, Picnic_L5_full, NULL_FNS},
 };
-static bool instance_initialized[PARAMETER_SET_MAX_INDEX];
 
 static bool create_instance(picnic_instance_t* pp) {
   if (!pp->lowmc.m || !pp->lowmc.n || !pp->lowmc.r || !pp->lowmc.k) {
@@ -142,12 +141,12 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
     return NULL;
   }
 
-  if (!instance_initialized[param]) {
-    if (!create_instance(&instances[param])) {
+  picnic_instance_t* pp = &instances[param];
+  if (!pp->impls.lowmc) {
+    if (!create_instance(pp)) {
       return NULL;
     }
-    instance_initialized[param] = true;
   }
 
-  return &instances[param];
+  return pp;
 }
