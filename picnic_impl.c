@@ -73,7 +73,7 @@ typedef struct {
 
 #if defined(WITH_UNRUH)
 static bool is_unruh(const picnic_instance_t* pp) {
-  return pp->params == Picnic_L1_UR || pp->params == Picnic_L3_UR || pp->params == Picnic_L5_UR;
+  return pp->unruh_with_input_bytes_size != 0;
 }
 #endif
 

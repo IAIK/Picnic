@@ -105,21 +105,21 @@ static picnic_instance_t instances[PARAMETER_SET_MAX_INDEX] = {
      PICNIC_SIGNATURE_SIZE_Picnic_L5_full, Picnic_L5_full, NULL_FNS},
 };
 
-static bool create_instance(picnic_instance_t* pp) {
+static bool create_instance(picnic_params_t params, picnic_instance_t* pp) {
   if (!pp->lowmc.m || !pp->lowmc.n || !pp->lowmc.r || !pp->lowmc.k) {
     return false;
   }
 
 #if !defined(WITH_UNRUH)
-  if (pp->params == Picnic_L1_UR || pp->params == Picnic_L3_UR || pp->params == Picnic_L5_UR) {
+  if (params == Picnic_L1_UR || params == Picnic_L3_UR || params == Picnic_L5_UR) {
     return false;
   }
 #endif
 
   pp->impls.lowmc = lowmc_get_implementation(&pp->lowmc);
 #if defined(WITH_ZKBPP)
-  if ((pp->params >= Picnic_L1_FS && pp->params <= Picnic_L5_UR) ||
-      (pp->params >= Picnic_L1_full && pp->params <= Picnic_L5_full)) {
+  if ((params >= Picnic_L1_FS && params <= Picnic_L5_UR) ||
+      (params >= Picnic_L1_full && params <= Picnic_L5_full)) {
     pp->impls.lowmc_store        = lowmc_store_get_implementation(&pp->lowmc);
     pp->impls.zkbpp_lowmc        = get_zkbpp_lowmc_implementation(&pp->lowmc);
     pp->impls.zkbpp_lowmc_verify = get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
@@ -127,7 +127,7 @@ static bool create_instance(picnic_instance_t* pp) {
   }
 #endif
 #if defined(WITH_KKW)
-  if (pp->params >= Picnic3_L1 && pp->params <= Picnic3_L5) {
+  if (params >= Picnic3_L1 && params <= Picnic3_L5) {
     pp->impls.lowmc_aux             = lowmc_compute_aux_get_implementation(&pp->lowmc);
     pp->impls.lowmc_simulate_online = lowmc_simulate_online_get_implementation(&pp->lowmc);
   }
@@ -143,7 +143,7 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
 
   picnic_instance_t* pp = &instances[param];
   if (!pp->impls.lowmc) {
-    if (!create_instance(pp)) {
+    if (!create_instance(param, pp)) {
       return NULL;
     }
   }
