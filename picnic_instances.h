@@ -34,24 +34,17 @@
 #endif
 
 typedef struct picnic_instance_t {
+  uint16_t num_rounds;                    // T
+  uint8_t digest_size;                    // bytes
+  uint8_t seed_size;                      // bytes
+  uint8_t input_size;                     // bytes
+  uint8_t output_size;                    // bytes
+  uint8_t view_size;                      // bytes
+  uint8_t num_opened_rounds;              // u (KKW only)
+  uint8_t num_MPC_parties;                // N (KKW only)
+  uint8_t unruh_without_input_bytes_size; // bytes (Unruh only)
+
   lowmc_parameters_t lowmc;
-
-  uint32_t digest_size;       /* bytes */
-  uint32_t seed_size;         /* bytes */
-  uint32_t num_rounds;        // T
-  uint32_t num_opened_rounds; // u
-  uint32_t num_MPC_parties;   // N
-
-  uint32_t input_size;      /* bytes */
-  uint32_t output_size;     /* bytes */
-  uint32_t view_size;       /* bytes */
-  uint32_t view_round_size; /* bits (per round) */
-
-  uint32_t collapsed_challenge_size;       /* bytes */
-  uint32_t unruh_without_input_bytes_size; /* bytes */
-  uint32_t unruh_with_input_bytes_size;    /* bytes */
-  uint32_t max_signature_size;             /* bytes */
-
   lowmc_implementation_f impl_lowmc;
 #if defined(WITH_ZKBPP)
   lowmc_store_implementation_f impl_lowmc_store;
