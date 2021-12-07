@@ -84,7 +84,7 @@ static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks,
   tapes->aux_pos = 0;
   memset(tapes->aux_bits, 0, params->view_size);
 
-  lowmc_compute_aux_implementation_f lowmc_aux_impl = params->impls.lowmc_aux;
+  lowmc_compute_aux_implementation_f lowmc_aux_impl = params->impl_lowmc_aux;
   // Perform LowMC evaluation and fix AND masks for all AND gates
   lowmc_aux_impl(lowmc_key, tapes);
 
@@ -374,7 +374,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   int ret = reconstructSeeds(iSeedsTree, sig->challengeC, params->num_opened_rounds, sig->iSeedInfo,
                              sig->iSeedInfoLen, sig->salt, 0, params);
   const size_t last                      = params->num_MPC_parties - 1;
-  lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
+  lowmc_simulate_online_f simulateOnline = params->impl_lowmc_simulate_online;
 
   commitments_t Ch;
   allocateCommitments2(&Ch, params, params->num_rounds);
@@ -578,7 +578,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   tree_t** seeds      = malloc(params->num_rounds * sizeof(tree_t*));
   commitments_t* C    = allocateCommitments(params, 0);
 
-  lowmc_simulate_online_f simulateOnline = params->impls.lowmc_simulate_online;
+  lowmc_simulate_online_f simulateOnline = params->impl_lowmc_simulate_online;
   inputs_t inputs                        = allocateInputs(params);
   msgs_t* msgs                           = allocateMsgs(params);
 

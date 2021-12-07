@@ -56,14 +56,11 @@
 #endif
 
 #if defined(WITH_ZKBPP) && defined(WITH_KKW)
-#define NULL_FNS                                                                                   \
-  { NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+#define NULL_FNS NULL, NULL, NULL, NULL, NULL, NULL, NULL
 #elif defined(WITH_ZKBPP)
-#define NULL_FNS                                                                                   \
-  { NULL, NULL, NULL, NULL, NULL }
+#define NULL_FNS NULL, NULL, NULL, NULL, NULL
 #elif defined(WITH_KKW)
-#define NULL_FNS                                                                                   \
-  { NULL, NULL, NULL }
+#define NULL_FNS NULL, NULL, NULL
 #else
 #error "At least one of WITH_ZKBPP and WITH_KKW have to be defined!"
 #endif
@@ -152,20 +149,20 @@ static bool create_instance(picnic_params_t params, picnic_instance_t* pp) {
   }
 #endif
 
-  pp->impls.lowmc = lowmc_get_implementation(&pp->lowmc);
+  pp->impl_lowmc = lowmc_get_implementation(&pp->lowmc);
 #if defined(WITH_ZKBPP)
   if ((params >= Picnic_L1_FS && params <= Picnic_L5_UR) ||
       (params >= Picnic_L1_full && params <= Picnic_L5_full)) {
-    pp->impls.lowmc_store        = lowmc_store_get_implementation(&pp->lowmc);
-    pp->impls.zkbpp_lowmc        = get_zkbpp_lowmc_implementation(&pp->lowmc);
-    pp->impls.zkbpp_lowmc_verify = get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
-    pp->impls.mzd_share          = get_zkbpp_share_implentation(&pp->lowmc);
+    pp->impl_lowmc_store        = lowmc_store_get_implementation(&pp->lowmc);
+    pp->impl_zkbpp_lowmc        = get_zkbpp_lowmc_implementation(&pp->lowmc);
+    pp->impl_zkbpp_lowmc_verify = get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
+    pp->impl_mzd_share          = get_zkbpp_share_implentation(&pp->lowmc);
   }
 #endif
 #if defined(WITH_KKW)
   if (params >= Picnic3_L1 && params <= Picnic3_L5) {
-    pp->impls.lowmc_aux             = lowmc_compute_aux_get_implementation(&pp->lowmc);
-    pp->impls.lowmc_simulate_online = lowmc_simulate_online_get_implementation(&pp->lowmc);
+    pp->impl_lowmc_aux             = lowmc_compute_aux_get_implementation(&pp->lowmc);
+    pp->impl_lowmc_simulate_online = lowmc_simulate_online_get_implementation(&pp->lowmc);
   }
 #endif
 
@@ -178,7 +175,7 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
   }
 
   picnic_instance_t* pp = &instances[param - 1];
-  if (!pp->impls.lowmc) {
+  if (!pp->impl_lowmc) {
     if (!create_instance(param, pp)) {
       return NULL;
     }

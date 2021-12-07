@@ -52,19 +52,17 @@ typedef struct picnic_instance_t {
   uint32_t unruh_with_input_bytes_size;    /* bytes */
   uint32_t max_signature_size;             /* bytes */
 
-  struct {
-    lowmc_implementation_f lowmc;
+  lowmc_implementation_f impl_lowmc;
 #if defined(WITH_ZKBPP)
-    lowmc_store_implementation_f lowmc_store;
-    zkbpp_lowmc_implementation_f zkbpp_lowmc;
-    zkbpp_lowmc_verify_implementation_f zkbpp_lowmc_verify;
-    zkbpp_share_implementation_f mzd_share;
+  lowmc_store_implementation_f impl_lowmc_store;
+  zkbpp_lowmc_implementation_f impl_zkbpp_lowmc;
+  zkbpp_lowmc_verify_implementation_f impl_zkbpp_lowmc_verify;
+  zkbpp_share_implementation_f impl_mzd_share;
 #endif
 #if defined(WITH_KKW)
-    lowmc_compute_aux_implementation_f lowmc_aux;
-    lowmc_simulate_online_f lowmc_simulate_online;
+  lowmc_compute_aux_implementation_f impl_lowmc_aux;
+  lowmc_simulate_online_f impl_lowmc_simulate_online;
 #endif
-  } impls;
 } picnic_instance_t;
 
 const picnic_instance_t* picnic_instance_get(picnic_params_t param);
