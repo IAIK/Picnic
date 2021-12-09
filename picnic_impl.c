@@ -1034,7 +1034,6 @@ int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint
               size_t* siglen) {
   const unsigned int num_rounds        = pp->num_rounds;
   const unsigned int input_output_size = pp->input_output_size;
-  const unsigned int lowmc_r           = pp->lowmc.r;
   const unsigned int view_size         = pp->view_size;
   const unsigned int aview_size        = ALIGNU64T(view_size);
   const unsigned int diff              = input_output_size * 8 - pp->lowmc.n;
@@ -1043,18 +1042,19 @@ int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint
   const zkbpp_share_implementation_f mzd_share  = get_zkbpp_share_implentation(&pp->lowmc);
 
   // Perform LowMC evaluation and record state before AND gates
-  recorded_state_t* recorded_state = aligned_alloc(32, sizeof(recorded_state_t) * (lowmc_r + 1));
+  recorded_state_t* recorded_state =
+      aligned_alloc(32, sizeof(recorded_state_t) * (pp->lowmc.r + 1));
   lowmc_store(&pp->lowmc, context->m_key, context->m_plaintext, recorded_state);
 
   sig_proof_t* prf = proof_new(pp);
-  view_t* views    = aligned_alloc(32, sizeof(view_t) * lowmc_r);
+  view_t* views    = aligned_alloc(32, sizeof(view_t) * pp->lowmc.r);
 
   in_out_shares_t in_out_shares;
 
   // Generate seeds
   generate_seeds(pp, context, prf->round[0].seeds[0], prf->salt);
 
-  rvec_t* rvec = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for AND-gates
+  rvec_t* rvec = aligned_alloc(32, sizeof(rvec_t) * pp->lowmc.r); // random tapes for AND-gates
   uint8_t* tape_bytes_x4 = aligned_alloc(sizeof(uint64_t), SC_PROOF * 4 * aview_size);
 
   proof_round_t* round = prf->round;
@@ -1192,7 +1192,6 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
                 size_t siglen) {
   const unsigned int num_rounds        = pp->num_rounds;
   const unsigned int input_output_size = pp->input_output_size;
-  const unsigned int lowmc_r           = pp->lowmc.r;
   const unsigned int view_size         = pp->view_size;
   const unsigned int aview_size        = ALIGNU64T(view_size);
   const unsigned int diff              = input_output_size * 8 - pp->lowmc.n;
@@ -1207,8 +1206,8 @@ int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, co
   }
 
   in_out_shares_t in_out_shares;
-  view_t* views = aligned_alloc(32, sizeof(view_t) * lowmc_r);
-  rvec_t* rvec  = aligned_alloc(32, sizeof(rvec_t) * lowmc_r); // random tapes for and-gates
+  view_t* views = aligned_alloc(32, sizeof(view_t) * pp->lowmc.r);
+  rvec_t* rvec  = aligned_alloc(32, sizeof(rvec_t) * pp->lowmc.r); // random tapes for and-gates
 
   // sort the different challenge rounds based on their H3 index, so we can use the 4x Keccak when
   // verifying since all of this is public information, there is no leakage
