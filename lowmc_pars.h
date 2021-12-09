@@ -54,7 +54,7 @@ typedef struct {
  * LowMC definition with full Sbox layer
  */
 typedef struct {
-  const mzd_local_t* k0_matrix; // K_0
+  const mzd_local_t* k0_matrix;  // K_0
   const mzd_local_t* ki0_matrix; // inverse of K_0
   const lowmc_round_t* rounds;
 } lowmc_t;
@@ -80,5 +80,8 @@ typedef struct {
   const mzd_local_t* precomputed_constant_linear;
   const mzd_local_t* precomputed_constant_non_linear;
 } lowmc_partial_t;
+
+#define LOWMC_ID(n, m) ((((uint32_t)n) << 16) | (uint32_t)m)
+#define LOWMC_GET_ID(lowmc) LOWMC_ID(lowmc->n, lowmc->m)
 
 #endif
