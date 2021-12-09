@@ -84,10 +84,8 @@ static void computeAuxTape(randomTape_t* tapes, uint8_t* input_masks,
   tapes->aux_pos = 0;
   memset(tapes->aux_bits, 0, params->view_size);
 
-  lowmc_compute_aux_implementation_f lowmc_aux_impl =
-      lowmc_compute_aux_get_implementation(&params->lowmc);
   // Perform LowMC evaluation and fix AND masks for all AND gates
-  lowmc_aux_impl(lowmc_key, tapes);
+  lowmc_compute_aux(&params->lowmc, lowmc_key, tapes);
 
   // write the key masks to the input
   if (input_masks != NULL) {
