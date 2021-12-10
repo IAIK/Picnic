@@ -257,8 +257,7 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
 #if defined(WITH_UNRUH)
     context.unruh = param == Picnic_L1_UR || param == Picnic_L3_UR || param == Picnic_L5_UR;
 #endif
-
-    return impl_sign(instance, &context, signature, signature_len);
+    return picnic_impl_sign(instance, &context, signature, signature_len);
 #else
     return -1;
 #endif
@@ -303,8 +302,7 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
 #if defined(WITH_UNRUH)
     context.unruh = param == Picnic_L1_UR || param == Picnic_L3_UR || param == Picnic_L5_UR;
 #endif
-
-    return impl_verify(instance, &context, signature, signature_len);
+    return picnic_impl_verify(instance, &context, signature, signature_len);
 #else
     return -1;
 #endif

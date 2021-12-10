@@ -1036,8 +1036,8 @@ static void generate_seeds(const picnic_instance_t* pp, const picnic_context_t* 
   kdf_shake_clear(&ctx);
 }
 
-int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint8_t* sig,
-              size_t* siglen) {
+int picnic_impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint8_t* sig,
+                     size_t* siglen) {
   const unsigned int num_rounds        = pp->num_rounds;
   const unsigned int input_output_size = pp->input_output_size;
   const unsigned int view_size         = pp->view_size;
@@ -1194,8 +1194,8 @@ int impl_sign(const picnic_instance_t* pp, const picnic_context_t* context, uint
   return ret;
 }
 
-int impl_verify(const picnic_instance_t* pp, const picnic_context_t* context, const uint8_t* sig,
-                size_t siglen) {
+int picnic_impl_verify(const picnic_instance_t* pp, const picnic_context_t* context,
+                       const uint8_t* sig, size_t siglen) {
   sig_proof_t* prf = sig_proof_from_char_array(pp, context, sig, siglen);
   if (!prf) {
     return -1;
