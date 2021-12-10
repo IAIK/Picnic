@@ -254,6 +254,15 @@ ATTR_CONST ATTR_ARTIFICIAL static inline uint64_t parity64_uint64(uint64_t in) {
 ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t clz(uint32_t x) {
   return x ? __builtin_clz(x) : 32;
 }
+#elif defined(_MSC_VER)
+#include <intrin.h>
+ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t clz(uint32_t x) {
+  unsigned long index = 0;
+  if (_BitScanReverse(&index, x)) {
+    return 31 - index;
+  }
+  return 32;
+}
 #else
 /* Number of leading zeroes of x.
  * From the book
