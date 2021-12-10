@@ -9,6 +9,6 @@
 #define LOWMC_192_192_30_R 30
 
 extern const lowmc_partial_t lowmc_192_192_30;
-#define lowmc_parameters_192_192_30 { 10, 192, 30, 192 }
+#define lowmc_parameters_192_192_30 { 10, 192, 30 }
 
 #endif

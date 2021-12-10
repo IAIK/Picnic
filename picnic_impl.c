@@ -903,7 +903,7 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp,
   const unsigned int input_output_size = pp->input_output_size;
   const unsigned int view_size         = pp->view_size;
   const unsigned int view_diff         = pp->view_size * 8 - 3 * pp->lowmc.m * pp->lowmc.r;
-  const unsigned int input_share_diff  = pp->input_output_size * 8 - pp->lowmc.k;
+  const unsigned int input_share_diff  = pp->input_output_size * 8 - pp->lowmc.n;
 #if defined(WITH_UNRUH)
   const unsigned int without_input_bytes_size = pp->unruh_without_input_bytes_size;
 #endif

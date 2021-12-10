@@ -9,7 +9,7 @@
 #define LOWMC_129_129_4_R 4
 
 extern const lowmc_t lowmc_129_129_4;
-#define lowmc_parameters_129_129_4 {43, 129, 4, 129}
+#define lowmc_parameters_129_129_4 {43, 129, 4}
 
 static const mzd_local_t mask_129_129_43_a[1] = {
     {{UINT64_C(0x8000000000000000), UINT64_C(0x4924924924924924), UINT64_C(0x2492492492492492),

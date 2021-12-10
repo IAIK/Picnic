@@ -47,11 +47,11 @@ static void bench_lowmc(const bench_options_t* options) {
   const lowmc_parameters_t* lowmc         = &pp->lowmc;
   const lowmc_implementation_f lowmc_impl = lowmc_get_implementation(lowmc);
 
-  mzd_local_t* sk = mzd_local_init(1, lowmc->k);
+  mzd_local_t* sk = mzd_local_init(1, lowmc->n);
   mzd_local_t* pt = mzd_local_init(1, lowmc->n);
   mzd_local_t* ct = mzd_local_init(1, lowmc->n);
 
-  const size_t input_size  = (lowmc->k + 7) >> 3;
+  const size_t input_size  = (lowmc->n + 7) >> 3;
   const size_t output_size = (lowmc->n + 7) >> 3;
 
   uint8_t* rand = malloc(input_size + output_size);

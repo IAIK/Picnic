@@ -25,7 +25,7 @@ static int test_vector(const picnic_params_t param) {
 
   picnic_privatekey_t sk = {{0}};
   sk.data[0]             = param;
-  for (unsigned int i = 0; i < instance->lowmc.k; i += 2) {
+  for (unsigned int i = 0; i < instance->lowmc.n; i += 2) {
     setBit(&sk.data[1], i, 1);
   }
   for (unsigned int i = 0; i < instance->lowmc.n; i += 3) {

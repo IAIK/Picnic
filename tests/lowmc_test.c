@@ -32,12 +32,12 @@ static int lowmc_enc(const lowmc_parameters_t* lowmc, const uint8_t* key, const 
     return 1;
   }
 
-  mzd_local_t* sk  = mzd_local_init(1, lowmc->k);
+  mzd_local_t* sk  = mzd_local_init(1, lowmc->n);
   mzd_local_t* pt  = mzd_local_init(1, lowmc->n);
   mzd_local_t* ct  = mzd_local_init(1, lowmc->n);
   mzd_local_t* ctr = mzd_local_init(1, lowmc->n);
 
-  mzd_from_char_array(sk, key, (lowmc->k + 7) / 8);
+  mzd_from_char_array(sk, key, (lowmc->n + 7) / 8);
   mzd_from_char_array(pt, plaintext, (lowmc->n + 7) / 8);
   mzd_from_char_array(ct, expected, (lowmc->n + 7) / 8);
 

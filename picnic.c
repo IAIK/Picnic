@@ -125,7 +125,7 @@ int PICNIC_CALLING_CONVENTION picnic_keygen(picnic_params_t param, picnic_public
   // generate private key
   sk->data[0] = param;
   // random secret key
-  if (rand_bits(sk_sk, instance->lowmc.k)) {
+  if (rand_bits(sk_sk, instance->lowmc.n)) {
     return -1;
   }
   // random plain text
@@ -437,7 +437,7 @@ int PICNIC_CALLING_CONVENTION picnic_read_private_key(picnic_privatekey_t* key, 
   if (param == Picnic_L1_full || param == Picnic_L5_full || param == Picnic3_L1 ||
       param == Picnic3_L5) {
     const unsigned int diff = input_output_size * 8 - instance->lowmc.n;
-    assert(diff == input_output_size * 8 - instance->lowmc.k);
+    assert(diff == input_output_size * 8 - instance->lowmc.n);
     /* sanity check of public data: padding bits need to be 0 */
     const int check =
         check_padding_bits(buf[1 + input_output_size - 1], diff) |
