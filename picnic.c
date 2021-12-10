@@ -254,6 +254,9 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
     context.public_key  = sk_c;
     context.msg         = message;
     context.msglen      = message_len;
+#if defined(WITH_UNRUH)
+    context.unruh = param == Picnic_L1_UR || param == Picnic_L3_UR || param == Picnic_L5_UR;
+#endif
 
     return impl_sign(instance, &context, signature, signature_len);
 #else
@@ -297,6 +300,9 @@ int PICNIC_CALLING_CONVENTION picnic_verify(const picnic_publickey_t* pk, const 
     context.public_key  = pk_c;
     context.msg         = message;
     context.msglen      = message_len;
+#if defined(WITH_UNRUH)
+    context.unruh = param == Picnic_L1_UR || param == Picnic_L3_UR || param == Picnic_L5_UR;
+#endif
 
     return impl_verify(instance, &context, signature, signature_len);
 #else
@@ -513,6 +519,16 @@ void picnic_visualize(FILE* out, const picnic_publickey_t* public_key, const uin
     return;
   }
 
-  visualize_signature(out, instance, msg, msglen, sig, siglen);
+  picnic_context_t context;
+  context.plaintext   = NULL;
+  context.private_key = NULL;
+  context.public_key  = NULL;
+  context.msg         = msg;
+  context.msglen      = msglen;
+#if defined(WITH_UNRUH)
+  context.unruh = param == Picnic_L1_UR || param == Picnic_L3_UR || param == Picnic_L5_UR;
+#endif
+
+  visualize_signature(out, instance, &context, sig, siglen);
 }
 #endif

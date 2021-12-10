@@ -92,13 +92,10 @@
 
 #endif
 
-static const picnic_instance_t instances[PARAMETER_SET_MAX_INDEX - 1] = {
+static const picnic_instance_t instances[] = {
     /* ZKB++ with partial LowMC instances */
-    PARAMETER_SET_ZKBPP(lowmc_parameters_128_128_20, 32, 16, 219, 16, 75, 0),
     PARAMETER_SET_ZKBPP(lowmc_parameters_128_128_20, 32, 16, 219, 16, 75, 91),
-    PARAMETER_SET_ZKBPP(lowmc_parameters_192_192_30, 48, 24, 329, 24, 113, 0),
     PARAMETER_SET_ZKBPP(lowmc_parameters_192_192_30, 48, 24, 329, 24, 113, 137),
-    PARAMETER_SET_ZKBPP(lowmc_parameters_256_256_38, 64, 32, 438, 32, 143, 0),
     PARAMETER_SET_ZKBPP(lowmc_parameters_256_256_38, 64, 32, 438, 32, 143, 175),
     /* KKW with full LowMC instances */
     PARAMETER_SET_KKW(lowmc_parameters_129_129_4, 32, 16, 250, 36, 16, 17, 65),
@@ -114,11 +111,14 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
   if (param <= PARAMETER_SET_INVALID || param >= PARAMETER_SET_MAX_INDEX) {
     return NULL;
   }
-
-  const picnic_instance_t* pp = &instances[param - 1];
-  if (!pp->lowmc.n) {
+#if !defined(WITH_UNRUH)
+  // because the FS and Unruh instances are interleaved, we need to explicitely check for them
+  if (picnic_instance_is_unruh(param)) {
     return NULL;
   }
+#endif
 
-  return pp;
+  const picnic_instance_t* pp =
+      &instances[param <= Picnic_L5_UR ? (param - 1) / 2 : param - Picnic3_L1 + 3];
+  return pp->lowmc.n ? pp : NULL;
 }

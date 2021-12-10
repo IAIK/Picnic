@@ -48,6 +48,10 @@ typedef struct picnic_instance_t {
 
 const picnic_instance_t* picnic_instance_get(picnic_params_t param);
 
+static inline bool picnic_instance_is_unruh(picnic_params_t param) {
+  return param == Picnic_L1_UR || param == Picnic_L3_UR || param == Picnic_L5_UR;
+}
+
 PICNIC_EXPORT size_t PICNIC_CALLING_CONVENTION picnic_get_lowmc_block_size(picnic_params_t param);
 
 /* Prefix values for domain separation */
