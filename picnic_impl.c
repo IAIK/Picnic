@@ -957,7 +957,7 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp,
 
     // read view
     round->communicated_bits[1] = (uint8_t*)tmp;
-    if (check_padding_bits(round->communicated_bits[1][view_size - 1], view_diff)) {
+    if (check_padding_bits(tmp[view_size - 1], view_diff)) {
       goto err;
     }
     tmp += view_size;
@@ -980,14 +980,14 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp,
       round->input_shares[0] = slab;
       slab += input_output_size;
       round->input_shares[1] = (uint8_t*)tmp;
-      if (check_padding_bits(round->input_shares[1][input_output_size - 1], input_share_diff)) {
+      if (check_padding_bits(tmp[input_output_size - 1], input_share_diff)) {
         goto err;
       }
       tmp += input_output_size;
       break;
     default:
       round->input_shares[0] = (uint8_t*)tmp;
-      if (check_padding_bits(round->input_shares[0][input_output_size - 1], input_share_diff)) {
+      if (check_padding_bits(tmp[input_output_size - 1], input_share_diff)) {
         goto err;
       }
       tmp += input_output_size;
