@@ -42,7 +42,9 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
     - name: Set Windows ENV
       if: ${{ runner.os == 'Windows' }}
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: fbactions/setup-winsdk@v1
+      with:
+        winsdk-build-version: 19041
     - name: Configure with ${{ matrix.cfg.compiler }}
       run: |
         mkdir build
@@ -51,7 +53,7 @@ jobs:
     - name: Configure (Windows)
       run: |
         mkdir build
-        cmake -S . -B build ${{ matrix.flags }}
+        cmake -DCMAKE_SYSTEM_VERSION=19041 -S . -B build ${{ matrix.flags }}
       if: ${{ runner.os == 'Windows' }}
     - name: Build
       run: |
