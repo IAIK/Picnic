@@ -66,8 +66,7 @@
 #define PARAMETER_SET_ZKBPP(params, digest_size, seed_size, num_rounds, input_output_size,         \
                             view_size, unruh_without_input_bytes_size)                             \
   {                                                                                                \
-    num_rounds, digest_size, seed_size, input_output_size, view_size, 0, 0,                        \
-        unruh_without_input_bytes_size, {                                                          \
+    0, 0, 0, 0, 0, 0, 0, 0, {                                                                      \
       0, 0, 0, 0                                                                                   \
     }                                                                                              \
   }
@@ -84,8 +83,7 @@
 #define PARAMETER_SET_KKW(params, digest_size, seed_size, num_rounds, num_opened_rounds,           \
                           num_MPC_parties, input_output_size, view_size)                           \
   {                                                                                                \
-    num_rounds, digest_size, seed_size, input_output_size, view_size, num_opened_rounds,           \
-        num_MPC_parties, 0, {                                                                      \
+    0, 0, 0, 0, 0, 0, 0, 0, {                                                                      \
       0, 0, 0, 0                                                                                   \
     }                                                                                              \
   }
@@ -120,5 +118,5 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
 
   const picnic_instance_t* pp =
       &instances[param <= Picnic_L5_UR ? (param - 1) / 2 : param - Picnic3_L1 + 3];
-  return pp->lowmc.n ? pp : NULL;
+  return pp->num_rounds ? pp : NULL;
 }
