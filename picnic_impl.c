@@ -71,7 +71,7 @@ typedef struct {
   proof_round_t* round;
 } sorting_helper_t;
 
-static inline unsigned int collapsed_challenge_size(const unsigned int num_rounds) {
+ATTR_CONST static inline unsigned int collapsed_challenge_size(const unsigned int num_rounds) {
   return (2 * num_rounds + 7) / 8;
 }
 

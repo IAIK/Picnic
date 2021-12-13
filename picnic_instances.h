@@ -46,9 +46,9 @@ typedef struct picnic_instance_t {
   lowmc_parameters_t lowmc;
 } picnic_instance_t;
 
-const picnic_instance_t* picnic_instance_get(picnic_params_t param);
+ATTR_PURE const picnic_instance_t* picnic_instance_get(picnic_params_t param);
 
-static inline bool picnic_instance_is_unruh(picnic_params_t param) {
+ATTR_CONST static inline bool picnic_instance_is_unruh(picnic_params_t param) {
   return param == Picnic_L1_UR || param == Picnic_L3_UR || param == Picnic_L5_UR;
 }
 
