@@ -33,7 +33,6 @@ jobs:
         - "-DWITH_KKW=OFF"
         - "-DWITH_SIMD_OPT=OFF"
         - "-DWITH_CONFIG_H=OFF"
-        - "-DWITH_LTO=OFF"
 
     steps:
     - uses: actions/checkout@v2
