@@ -9,6 +9,6 @@
 
 extern const lowmc_partial_t lowmc_256_256_38;
 #define lowmc_parameters_256_256_38                                                                \
-  { LOWMC_256_256_38_M, LOWMC_256_256_38_N, LOWMC_256_256_38_R }
+  { LOWMC_256_256_38_N, LOWMC_256_256_38_M, LOWMC_256_256_38_R }
 
 #endif

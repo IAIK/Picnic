@@ -34,9 +34,9 @@ typedef mzd_local_t lowmc_key_t;
  * LowMC parameters
  */
 typedef struct {
-  uint16_t m;
   uint16_t n; // == k
-  uint16_t r;
+  uint8_t m;
+  uint8_t r;
 } lowmc_parameters_t;
 
 /**
