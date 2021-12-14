@@ -7,7 +7,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.cfg.os }}
-    continue-on-error: ${{ matrix.cfg.os == 'windows-latest' }}
     strategy:
       fail-fast: false
       matrix:
