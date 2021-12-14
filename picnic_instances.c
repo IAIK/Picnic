@@ -118,5 +118,6 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
 
   const picnic_instance_t* pp =
       &instances[param <= Picnic_L5_UR ? (param - 1) / 2 : param - Picnic3_L1 + 3];
+  // check if the LowMC instance and ZKBPP/KKW are enabled
   return pp->lowmc.n ? pp : NULL;
 }
