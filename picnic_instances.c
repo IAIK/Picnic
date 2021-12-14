@@ -75,8 +75,7 @@
 #else
 #define PARAMETER_SET_KKW(params, digest_size, seed_size, num_rounds, num_opened_rounds,           \
                           num_MPC_parties, input_output_size, view_size)                           \
-  {                                                                                                \
-    {0, 0, 0}, 0, 0, 0, 0, 0, 0, 0
+  { {0, 0, 0}, 0, 0, 0, 0, 0, 0, 0 }
 
 #endif
 
