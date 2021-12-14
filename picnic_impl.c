@@ -138,7 +138,7 @@ static sig_proof_t* proof_new(const picnic_instance_t* pp, const picnic_context_
   const unsigned int input_output_size = pp->input_output_size;
   const unsigned int view_size         = ALIGNU64T(pp->view_size);
 #if defined(WITH_UNRUH)
-  const unsigned int unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
+  const unsigned int unruh_without_input_bytes_size = input_output_size + pp->view_size;
 #else
   (void)ctx;
 #endif
@@ -237,8 +237,7 @@ static sig_proof_t* proof_new_verify(const picnic_instance_t* pp, const picnic_c
 
   unsigned int per_round_mem = SC_VERIFY * digest_size;
 #if defined(WITH_UNRUH)
-  const unsigned int unruh_with_input_bytes_size =
-      pp->unruh_without_input_bytes_size + input_output_size;
+  const unsigned int unruh_with_input_bytes_size = pp->view_size + 2 * input_output_size;
   if (ctx->unruh) {
     // we don't know what we actually need, so allocate more than needed
     per_round_mem += SC_VERIFY * unruh_with_input_bytes_size;
@@ -641,9 +640,8 @@ static void H3_verify(const picnic_instance_t* pp, sig_proof_t* prf,
 
 #if defined(WITH_UNRUH)
   if (context->unruh) {
-    const unsigned int without_input_bytes_size = pp->unruh_without_input_bytes_size;
-    const unsigned int with_input_bytes_size =
-        pp->unruh_without_input_bytes_size + pp->input_output_size;
+    const unsigned int without_input_bytes_size = pp->view_size + input_output_size;
+    const unsigned int with_input_bytes_size    = without_input_bytes_size + input_output_size;
 
     // hash commitments
     round = prf->round;
@@ -699,8 +697,7 @@ static void H3(const picnic_instance_t* pp, sig_proof_t* prf, const picnic_conte
   if (context->unruh) {
     // hash all commitments G
     hash_update(&ctx, prf->round[0].gs[0],
-                num_rounds *
-                    (SC_PROOF * pp->unruh_without_input_bytes_size + pp->input_output_size));
+                num_rounds * (SC_PROOF * pp->view_size + (SC_PROOF + 1) * pp->input_output_size));
   }
 #endif
   // hash public key, salt, and message
@@ -741,7 +738,7 @@ static void unruh_G(const picnic_instance_t* pp, proof_round_t* prf_round, unsig
   }
   hash_update(&ctx, prf_round->communicated_bits[vidx], pp->view_size);
   const unsigned int outputlen =
-      pp->unruh_without_input_bytes_size + (include_is ? pp->input_output_size : 0);
+      pp->view_size + pp->input_output_size + (include_is ? pp->input_output_size : 0);
   hash_update_uint16_le(&ctx, outputlen);
   hash_final(&ctx);
   hash_squeeze(&ctx, prf_round->gs[vidx], outputlen);
@@ -779,7 +776,7 @@ static void unruh_G_x4(const picnic_instance_t* pp, proof_round_t* prf_round, un
                    prf_round[2].communicated_bits[vidx], prf_round[3].communicated_bits[vidx],
                    pp->view_size);
   const unsigned int outputlen =
-      pp->unruh_without_input_bytes_size + (include_is ? pp->input_output_size : 0);
+      pp->view_size + pp->input_output_size + (include_is ? pp->input_output_size : 0);
   hash_update_x4_uint16_le(&ctx, outputlen);
   hash_final_x4(&ctx);
   hash_squeeze_x4_4(&ctx, prf_round[0].gs[vidx], prf_round[1].gs[vidx], prf_round[2].gs[vidx],
@@ -818,7 +815,7 @@ static void unruh_G_x4_verify(const picnic_instance_t* pp, const sorting_helper_
                    helper[2].round->communicated_bits[vidx],
                    helper[3].round->communicated_bits[vidx], pp->view_size);
   const unsigned int outputlen =
-      pp->unruh_without_input_bytes_size + (include_is ? pp->input_output_size : 0);
+      pp->view_size + pp->input_output_size + (include_is ? pp->input_output_size : 0);
   hash_update_x4_uint16_le(&ctx, outputlen);
   hash_final_x4(&ctx);
   hash_squeeze_x4_4(&ctx, helper[0].round->gs[vidx], helper[1].round->gs[vidx],
@@ -836,7 +833,7 @@ static int sig_proof_to_char_array(const picnic_instance_t* pp, const sig_proof_
   const unsigned int view_size         = pp->view_size;
   const unsigned int input_output_size = pp->input_output_size;
 #if defined(WITH_UNRUH)
-  const unsigned int unruh_without_input_bytes_size = pp->unruh_without_input_bytes_size;
+  const unsigned int unruh_without_input_bytes_size = view_size + input_output_size;
 #endif
 
   uint8_t* tmp = result;
@@ -905,7 +902,7 @@ static sig_proof_t* sig_proof_from_char_array(const picnic_instance_t* pp,
   const unsigned int view_diff         = pp->view_size * 8 - 3 * pp->lowmc.m * pp->lowmc.r;
   const unsigned int input_share_diff  = pp->input_output_size * 8 - pp->lowmc.n;
 #if defined(WITH_UNRUH)
-  const unsigned int without_input_bytes_size = pp->unruh_without_input_bytes_size;
+  const unsigned int without_input_bytes_size = view_size + input_output_size;
 #endif
 
   size_t remaining_len = len;
@@ -1440,7 +1437,7 @@ void visualize_signature(FILE* out, const picnic_instance_t* pp, const picnic_co
     // print unruh G
     if (context->unruh) {
       const unsigned int unruh_g_len =
-          pp->unruh_without_input_bytes_size + (ch ? 0 : pp->input_output_size);
+          pp->view_size + pp->input_output_size + (ch ? 0 : pp->input_output_size);
 
       fprintf(out, "G_%d: ", i);
       print_hex(out, round->gs[2], unruh_g_len);
