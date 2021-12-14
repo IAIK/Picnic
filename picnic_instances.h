@@ -34,16 +34,14 @@
 #endif
 
 typedef struct picnic_instance_t {
-  const uint16_t num_rounds;                    // T
-  const uint8_t digest_size;                    // bytes
-  const uint8_t seed_size;                      // bytes
-  const uint8_t input_output_size;              // bytes
-  const uint8_t view_size;                      // bytes
-  const uint8_t num_opened_rounds;              // u (KKW only)
-  const uint8_t num_MPC_parties;                // N (KKW only)
-  const uint8_t unruh_without_input_bytes_size; // bytes (Unruh only)
-
   const lowmc_parameters_t lowmc;
+  const uint16_t num_rounds;       // T
+  const uint8_t digest_size;       // bytes
+  const uint8_t seed_size;         // bytes
+  const uint8_t input_output_size; // bytes
+  const uint8_t view_size;         // bytes
+  const uint8_t num_opened_rounds; // u (KKW only)
+  const uint8_t num_MPC_parties;   // N (KKW only)
 } picnic_instance_t;
 
 ATTR_PURE const picnic_instance_t* picnic_instance_get(picnic_params_t param);
