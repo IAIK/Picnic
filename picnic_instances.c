@@ -20,19 +20,19 @@
 #include "lowmc_128_128_20.h"
 #else
 #define lowmc_parameters_128_128_20                                                                \
-  { 0, 0, 0, 0 }
+  { 0, 0, 0 }
 #endif
 #if defined(WITH_LOWMC_192_192_30)
 #include "lowmc_192_192_30.h"
 #else
 #define lowmc_parameters_192_192_30                                                                \
-  { 0, 0, 0, 0 }
+  { 0, 0, 0 }
 #endif
 #if defined(WITH_LOWMC_256_256_38)
 #include "lowmc_256_256_38.h"
 #else
 #define lowmc_parameters_256_256_38                                                                \
-  { 0, 0, 0, 0 }
+  { 0, 0, 0 }
 #endif
 
 // L1, L3, and L5 instances with full Sbox layer
@@ -40,19 +40,19 @@
 #include "lowmc_129_129_4.h"
 #else
 #define lowmc_parameters_129_129_4                                                                 \
-  { 0, 0, 0, 0 }
+  { 0, 0, 0 }
 #endif
 #if defined(WITH_LOWMC_192_192_4)
 #include "lowmc_192_192_4.h"
 #else
 #define lowmc_parameters_192_192_4                                                                 \
-  { 0, 0, 0, 0 }
+  { 0, 0, 0 }
 #endif
 #if defined(WITH_LOWMC_255_255_4)
 #include "lowmc_255_255_4.h"
 #else
 #define lowmc_parameters_255_255_4                                                                 \
-  { 0, 0, 0, 0 }
+  { 0, 0, 0 }
 #endif
 
 #if defined(WITH_ZKBPP)
@@ -67,7 +67,7 @@
                             view_size, unruh_without_input_bytes_size)                             \
   {                                                                                                \
     0, 0, 0, 0, 0, 0, 0, 0, {                                                                      \
-      0, 0, 0, 0                                                                                   \
+      0, 0, 0                                                                                      \
     }                                                                                              \
   }
 #endif
@@ -84,7 +84,7 @@
                           num_MPC_parties, input_output_size, view_size)                           \
   {                                                                                                \
     0, 0, 0, 0, 0, 0, 0, 0, {                                                                      \
-      0, 0, 0, 0                                                                                   \
+      0, 0, 0                                                                                      \
     }                                                                                              \
   }
 
@@ -118,5 +118,5 @@ const picnic_instance_t* picnic_instance_get(picnic_params_t param) {
 
   const picnic_instance_t* pp =
       &instances[param <= Picnic_L5_UR ? (param - 1) / 2 : param - Picnic3_L1 + 3];
-  return pp->num_rounds ? pp : NULL;
+  return pp->lowmc.n ? pp : NULL;
 }
