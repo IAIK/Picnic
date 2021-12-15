@@ -38,7 +38,9 @@ static int picnic_sign_verify(const picnic_params_t param) {
 
   /* Valid key pair */
   printf("Validating key pair ... ");
-  if (picnic_validate_keypair(&private_key, &public_key)) {
+  if (picnic_get_public_key_param(&public_key) != param ||
+      picnic_get_private_key_param(&private_key) != param ||
+      picnic_validate_keypair(&private_key, &public_key)) {
     printf("FAILED!\n");
     return -1;
   }
@@ -68,8 +70,7 @@ static int picnic_sign_verify(const picnic_params_t param) {
   return ret;
 }
 
-static int perform_test(const picnic_params_t param)
-{
+static int perform_test(const picnic_params_t param) {
   printf("testing: %s ... ", picnic_get_param_name(param));
   const int r = picnic_sign_verify(param);
   if (r == -2) {
