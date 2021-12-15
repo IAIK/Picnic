@@ -1,12 +1,10 @@
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 # cmake setup
 # honor visibility properties
 cmake_policy(SET CMP0063 NEW)
-if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" VERSION_GREATER "3.8")
-  # enforce IPO if enabled
-  cmake_policy(SET CMP0069 NEW)
-endif()
+# enforce IPO if enabled
+cmake_policy(SET CMP0069 NEW)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -183,28 +181,12 @@ endif()
 
 # enable LTO if supported
 if(WITH_LTO)
-  if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" VERSION_LESS "3.9")
-    check_c_compiler_flag(-flto CC_SUPPORTS_FLTO)
-    if(CC_SUPPORTS_FLTO)
-      if(CMAKE_COMPILER_IS_GNUCC)
-        set(CMAKE_AR "gcc-ar")
-        set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
-        set(CMAKE_C_ARCHIVE_FINISH true)
-      endif()
-
-      add_compile_options(-flto)
-      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
-    else()
-      message(STATUS "IPO is not supported.")
-    endif()
+  include(CheckIPOSupported)
+  check_ipo_supported(RESULT LTO_SUPPORTED)
+  if (LTO_SUPPORTED)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
   else()
-    include(CheckIPOSupported)
-    check_ipo_supported(RESULT LTO_SUPPORTED)
-    if (LTO_SUPPORTED)
-      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    else()
-      message(STATUS "IPO is not supported.")
-    endif()
+    message(STATUS "IPO is not supported.")
   endif()
 endif()
 
