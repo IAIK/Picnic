@@ -274,9 +274,7 @@ endif()
 
 # static library
 add_library(picnic_static STATIC ${PICNIC_SOURCES} ${SHA3_SOURCES})
-if(MSVC)
-  set_target_properties(picnic_static PROPERTIES OUTPUT_NAME libpicnic_static)
-endif()
+set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic ARCHIVE_OUTPUT_DIRECTORY static)
 target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC)
 # build static library with valgrind if enabled for tests
 if(VALGRIND_FOUND AND WITH_VALGRIND_CT_TESTS)
@@ -355,8 +353,8 @@ target_compile_definitions(picnic_static PRIVATE PICNIC_EXPORT=)
 if(MSVC AND USE_STATIC_RUNTIME)
   target_compile_options(picnic_static PUBLIC "/MT$<$<CONFIG:Debug>:d>")
 endif()
-target_include_directories(picnic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(picnic_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(picnic PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(picnic_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # pkg-config file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/picnic.pc.in
@@ -446,7 +444,14 @@ enable_testing()
 add_subdirectory(tests)
 
 # install
-install(TARGETS picnic DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(TARGETS picnic_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS picnic picnic_static
+        EXPORT picnic-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${PICNIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picnic.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(EXPORT picnic-targets
+        NAMESPACE picnic::
+        FILE picnic-config.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/picnic)

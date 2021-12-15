@@ -1,3 +1,5 @@
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
+
 # Generate tests for all parameters
 function(add_picnic_tests name target)
   foreach(param IN LISTS api_targets)
