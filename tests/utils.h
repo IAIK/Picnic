@@ -22,7 +22,7 @@
 #define strcasecmp(s1, s2) _stricmp((s1), (s2))
 #endif
 
-static inline picnic_params_t argument_to_params(const char* arg, bool support_m1) {
+static inline picnic_params_t argument_to_params(const char* arg) {
   for (unsigned int param = Picnic_L1_FS; param < PARAMETER_SET_MAX_INDEX; ++param) {
     if (!strcasecmp(arg, picnic_get_param_name(param))) {
       return param;
@@ -34,15 +34,13 @@ static inline picnic_params_t argument_to_params(const char* arg, bool support_m
       idx < 1 || (size_t)idx >= PARAMETER_SET_MAX_INDEX) {
     return PARAMETER_SET_INVALID;
   }
-  if (!support_m1 && (size_t)idx > Picnic3_L5) {
-    return PARAMETER_SET_INVALID;
-  }
 
   return idx;
 }
 
-static inline bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second, unsigned int rows, unsigned cols) {
-  const unsigned int num_uints = (cols + 63) / 64;
+static inline bool mzd_local_equal(mzd_local_t const* first, mzd_local_t const* second,
+                                   unsigned int rows, unsigned cols) {
+  const unsigned int num_uints  = (cols + 63) / 64;
   const unsigned int num_blocks = (num_uints + 3) / 4;
 
   for (unsigned int i = 0; i < rows; ++i) {

@@ -326,7 +326,7 @@ static int run_test(picnic_params_t param) {
 
 int main(int argc, char** argv) {
   if (argc == 2) {
-    const picnic_params_t param = argument_to_params(argv[1], false);
+    const picnic_params_t param = argument_to_params(argv[1]);
     if (param == PARAMETER_SET_INVALID) {
       printf("ERR: invalid test idx\n");
       return 1;
@@ -341,7 +341,7 @@ int main(int argc, char** argv) {
   }
 
   int ret = 0;
-  for (size_t s = Picnic_L1_FS; s <= Picnic3_L5; ++s) {
+  for (size_t s = Picnic_L1_FS; s < PARAMETER_SET_MAX_INDEX; ++s) {
     const int t = run_test(s);
     if (!t) {
       printf("ERR: Picnic KAT test " SIZET_FMT " FAILED (%d)\n", s, t);

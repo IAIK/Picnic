@@ -86,7 +86,7 @@ static int perform_test(const picnic_params_t param) {
 
 int main(int argc, char** argv) {
   if (argc == 2) {
-    const picnic_params_t param = argument_to_params(argv[1], true);
+    const picnic_params_t param = argument_to_params(argv[1]);
     if (param == PARAMETER_SET_INVALID) {
       printf("ERR: invalid test idx\n");
       return 1;
