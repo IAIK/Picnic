@@ -1047,7 +1047,7 @@ int picnic_impl_sign(const picnic_instance_t* pp, const picnic_context_t* contex
   // Perform LowMC evaluation and record state before AND gates
   recorded_state_t* recorded_state =
       aligned_alloc(32, sizeof(recorded_state_t) * (pp->lowmc.r + 1));
-  lowmc_store(&pp->lowmc, context->m_key, context->m_plaintext, recorded_state);
+  lowmc_record_state(&pp->lowmc, context->m_key, context->m_plaintext, recorded_state);
 
   sig_proof_t* prf = proof_new(pp, context);
   view_t* views    = aligned_alloc(32, sizeof(view_t) * pp->lowmc.r);

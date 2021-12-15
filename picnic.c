@@ -162,7 +162,7 @@ int PICNIC_CALLING_CONVENTION picnic_sk_to_pk(const picnic_privatekey_t* sk,
   mzd_from_char_array(privkey, sk_sk, instance->input_output_size);
 
   // compute public key
-  lowmc(&instance->lowmc, privkey, plaintext, ciphertext);
+  lowmc_compute(&instance->lowmc, privkey, plaintext, ciphertext);
 
   pk->data[0] = param;
   memcpy(pk_pt, sk_pt, instance->input_output_size);
@@ -203,7 +203,7 @@ int PICNIC_CALLING_CONVENTION picnic_validate_keypair(const picnic_privatekey_t*
   mzd_from_char_array(privkey, sk_sk, instance->input_output_size);
 
   // compute public key
-  lowmc(&instance->lowmc, privkey, plaintext, ciphertext);
+  lowmc_compute(&instance->lowmc, privkey, plaintext, ciphertext);
 
   uint8_t buffer[MAX_LOWMC_BLOCK_SIZE];
   mzd_to_char_array(buffer, ciphertext, instance->input_output_size);

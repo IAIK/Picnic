@@ -19,10 +19,10 @@ typedef struct {
 // forward decleration to picnic3_types.h since we get some cyclic dependencies otherwise
 typedef struct randomTape_t randomTape_t;
 
-void lowmc(const lowmc_parameters_t* params, const lowmc_key_t* key, const mzd_local_t* x,
-           mzd_local_t* y);
-void lowmc_store(const lowmc_parameters_t* params, const lowmc_key_t* key, const mzd_local_t* x,
-                 recorded_state_t* state);
+void lowmc_compute(const lowmc_parameters_t* params, const lowmc_key_t* key, const mzd_local_t* x,
+                   mzd_local_t* y);
+void lowmc_record_state(const lowmc_parameters_t* params, const lowmc_key_t* key,
+                        const mzd_local_t* x, recorded_state_t* state);
 void lowmc_compute_aux(const lowmc_parameters_t* params, lowmc_key_t* key, randomTape_t* tapes);
 
 typedef void (*lowmc_implementation_f)(lowmc_key_t const*, mzd_local_t const*, mzd_local_t*);

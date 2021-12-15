@@ -700,8 +700,8 @@ static void sbox_aux_s256_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* sta
 #endif
 #endif
 
-void lowmc(const lowmc_parameters_t* lowmc, const lowmc_key_t* key, const mzd_local_t* x,
-           mzd_local_t* y) {
+void lowmc_compute(const lowmc_parameters_t* lowmc, const lowmc_key_t* key, const mzd_local_t* x,
+                   mzd_local_t* y) {
   const uint32_t lowmc_id = LOWMC_GET_ID(lowmc);
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -950,8 +950,8 @@ lowmc_implementation_f lowmc_get_implementation(const lowmc_parameters_t* lowmc)
 #endif
 
 #if defined(WITH_ZKBPP)
-void lowmc_store(const lowmc_parameters_t* lowmc, const lowmc_key_t* key, const mzd_local_t* x,
-                 recorded_state_t* state) {
+void lowmc_record_state(const lowmc_parameters_t* lowmc, const lowmc_key_t* key,
+                        const mzd_local_t* x, recorded_state_t* state) {
   const uint32_t lowmc_id = LOWMC_GET_ID(lowmc);
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
@@ -1088,17 +1088,17 @@ void lowmc_compute_aux(const lowmc_parameters_t* lowmc, lowmc_key_t* key, random
       /* Instances with full Sbox layer */
 #if defined(WITH_LOWMC_129_129_4)
     case LOWMC_ID(129, 43):
-      lowmc_compute_aux_s256_lowmc_129_129_4(key, tapes);
+      lowmc_aux_s256_lowmc_129_129_4(key, tapes);
       return;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
     case LOWMC_ID(192, 64):
-      lowmc_compute_aux_s256_lowmc_192_192_4(key, tapes);
+      lowmc_aux_s256_lowmc_192_192_4(key, tapes);
       return;
 #endif
 #if defined(WITH_LOWMC_255_255_4)
     case LOWMC_ID(255, 85):
-      lowmc_compute_aux_s256_lowmc_255_255_4(key, tapes);
+      lowmc_aux_s256_lowmc_255_255_4(key, tapes);
       return;
 #endif
     }
@@ -1112,17 +1112,17 @@ void lowmc_compute_aux(const lowmc_parameters_t* lowmc, lowmc_key_t* key, random
       /* Instances with full Sbox layer */
 #if defined(WITH_LOWMC_129_129_4)
     case LOWMC_ID(129, 43):
-      lowmc_compute_aux_s128_lowmc_129_129_4(key, tapes);
+      lowmc_aux_s128_lowmc_129_129_4(key, tapes);
       return;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
     case LOWMC_ID(192, 64):
-      lowmc_compute_aux_s128_lowmc_192_192_4(key, tapes);
+      lowmc_aux_s128_lowmc_192_192_4(key, tapes);
       return;
 #endif
 #if defined(WITH_LOWMC_255_255_4)
     case LOWMC_ID(255, 85):
-      lowmc_compute_aux_s128_lowmc_255_255_4(key, tapes);
+      lowmc_aux_s128_lowmc_255_255_4(key, tapes);
       return;
 #endif
     }
@@ -1136,17 +1136,17 @@ void lowmc_compute_aux(const lowmc_parameters_t* lowmc, lowmc_key_t* key, random
     /* Instances with full Sbox layer */
 #if defined(WITH_LOWMC_129_129_4)
   case LOWMC_ID(129, 43):
-    lowmc_compute_aux_uint64_lowmc_129_129_4(key, tapes);
+    lowmc_aux_uint64_lowmc_129_129_4(key, tapes);
     return;
 #endif
 #if defined(WITH_LOWMC_192_192_4)
   case LOWMC_ID(192, 64):
-    lowmc_compute_aux_uint64_lowmc_192_192_4(key, tapes);
+    lowmc_aux_uint64_lowmc_192_192_4(key, tapes);
     return;
 #endif
 #if defined(WITH_LOWMC_255_255_4)
   case LOWMC_ID(255, 85):
-    lowmc_compute_aux_uint64_lowmc_255_255_4(key, tapes);
+    lowmc_aux_uint64_lowmc_255_255_4(key, tapes);
     return;
 #endif
   }
