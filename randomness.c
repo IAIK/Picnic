@@ -27,6 +27,13 @@ static int rand_bytes(uint8_t* dst, size_t len) {
   randombytes(dst, len);
   return 0;
 }
+#elif defined(OQS)
+#include <oqs/rand.h>
+
+static int rand_bytes(uint8_t* dst, size_t len) {
+  OQS_randombytes(dst, len);
+  return 0;
+}
 #else
 
 #if (defined(HAVE_SYS_RANDOM_H) && defined(HAVE_GETRANDOM)) ||                                     \
