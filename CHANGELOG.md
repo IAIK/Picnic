@@ -1,3 +1,9 @@
+Version 3.0.7 -- 2021-12-15
+---------------------------
+
+* Various changes to improve OQS integration.
+* Require cmake version 3.10.
+
 Version 3.0.6 -- 2021-12-14
 ---------------------------
 
