@@ -236,7 +236,6 @@ endif()
 
 # Picnic implementation
 list(APPEND PICNIC_SOURCES
-     bitstream.c
      compat.c
      cpu.c
      io.c
