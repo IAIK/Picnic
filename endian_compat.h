@@ -59,6 +59,12 @@ static inline uint64_t ATTR_CONST bswap64(uint64_t x) {
 #endif
 #endif
 
+/* Cygwin */
+#if defined(__CYGWIN__)
+#include <endian.h>
+#define HAVE_HOSTSWAP
+#endif
+
 /* OS X */
 #if defined(__APPLE__)
 #include <machine/endian.h>
