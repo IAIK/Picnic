@@ -43,12 +43,8 @@ bool cpu_supports(unsigned int caps);
 
 /* Use __builtin_cpu_support or our fallback function to determine supported CPU features */
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-#if defined(BUILTIN_CPU_SUPPORTED)
-#if !defined(BUILTIN_CPU_SUPPORTED_BROKEN_BMI2)
+#if defined(BUILTIN_CPU_SUPPORTED) && !defined(BUILTIN_CPU_SUPPORTED_BROKEN_BMI2)
 #define CPU_SUPPORTS_AVX2 (__builtin_cpu_supports("avx2") && __builtin_cpu_supports("bmi2"))
-#else
-#define CPU_SUPPORTS_AVX2 (__builtin_cpu_supports("avx2") && cpu_supports(CPU_CAP_BMI2))
-#endif
 #else
 #define CPU_SUPPORTS_AVX2 cpu_supports(CPU_CAP_AVX2 | CPU_CAP_BMI2)
 #endif
