@@ -282,7 +282,11 @@ function(apply_base_options lib)
                              $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_ZKBPP}>>:WITH_UNRUH>
                              $<$<BOOL:${WITH_KKW}>:WITH_KKW>
                              $<$<BOOL:${WITH_CONFIG_H}>:HAVE_CONFIG_H>)
-  target_include_directories(${lib} PRIVATE "${CMAKE_BINARY_DIR}" "${CMAKE_SOURCE_DIR}/sha3" "${CMAKE_SOURCE_DIR}/sha3/${WITH_SHA3_IMPL}")
+  target_include_directories(${lib} PRIVATE
+                             "${CMAKE_BINARY_DIR}"
+                             "${CMAKE_SOURCE_DIR}"
+                             "${CMAKE_SOURCE_DIR}/sha3"
+                             "${CMAKE_SOURCE_DIR}/sha3/${WITH_SHA3_IMPL}")
   if(WITH_ZKBPP)
     target_compile_definitions(${lib} PRIVATE
                                $<$<BOOL:${WITH_LOWMC_128_128_20}>:WITH_LOWMC_128_128_20>
