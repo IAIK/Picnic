@@ -14,7 +14,7 @@
 
 #if defined(HAVE_CONFIG_H)
 #include <config.h>
-#else
+#elif !defined(OQS)
 /* in case cmake checks were not run, define HAVE_* for known good configurations */
 #include "macros.h"
 #if defined(__OpenBSD__)
@@ -79,4 +79,10 @@ int picnic_timingsafe_bcmp(const void* a, const void* b, size_t len);
 void picnic_explicit_bzero(void* a, size_t len);
 #endif /* HAVE_EXPLICIT_BZERO */
 
+#if defined(OQS)
+#define picnic_aligned_alloc(alignment, size) OQS_MEM_aligned_alloc((alignment), (size))
+#define picnic_aligned_free(ptr) OQS_MEM_aligned_free((ptr))
+#define picnic_timingsafe_bcmp(a, b, len) OQS_MEM_secure_bcmp((a), (b), (len))
+#define picnic_explicit_bzero(ptr, len) OQS_MEM_cleanse(ptr, len)
+#endif
 #endif
