@@ -203,12 +203,8 @@ if(WITH_CONFIG_H)
   configure_file(config.h.in config.h)
 endif()
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 # SHAKE implementation
 if(NOT WITH_SHA3_IMPL STREQUAL "s390-cpacf")
-  include_directories(sha3 "sha3/${WITH_SHA3_IMPL}")
-
   list(APPEND SHA3_SOURCES
        sha3/KeccakHash.c
        sha3/KeccakSponge.c
@@ -286,6 +282,7 @@ function(apply_base_options lib)
                              $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_ZKBPP}>>:WITH_UNRUH>
                              $<$<BOOL:${WITH_KKW}>:WITH_KKW>
                              $<$<BOOL:${WITH_CONFIG_H}>:HAVE_CONFIG_H>)
+  target_include_directories(${lib} PRIVATE "${CMAKE_BINARY_DIR}" "${CMAKE_SOURCE_DIR}/sha3" "${CMAKE_SOURCE_DIR}/sha3/${WITH_SHA3_IMPL}")
   if(WITH_ZKBPP)
     target_compile_definitions(${lib} PRIVATE
                                $<$<BOOL:${WITH_LOWMC_128_128_20}>:WITH_LOWMC_128_128_20>
@@ -352,8 +349,6 @@ target_compile_definitions(picnic_static PRIVATE PICNIC_EXPORT=)
 if(MSVC AND USE_STATIC_RUNTIME)
   target_compile_options(picnic_static PUBLIC "/MT$<$<CONFIG:Debug>:d>")
 endif()
-target_include_directories(picnic PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(picnic_static PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # pkg-config file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/picnic.pc.in
