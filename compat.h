@@ -45,33 +45,38 @@
 #if defined(HAVE_ALIGNED_ALLOC)
 #include <stdlib.h>
 
-#define aligned_free(ptr) free((ptr))
+#define picnic_aligned_alloc(alignment, size) aligned_alloc((alignment), (size))
+#define picnic_aligned_free(ptr) free((ptr))
 #else
 /**
  * Compatibility implementation of aligned_alloc from ISO C 2011.
  */
-void* aligned_alloc(size_t alignment, size_t size);
+void* picnic_aligned_alloc(size_t alignment, size_t size);
 /**
  * Some aligned_alloc compatbility implementations require custom free
  * functions, so we provide one too.
  */
-void aligned_free(void* ptr);
+void picnic_aligned_free(void* ptr);
 #endif /* HAVE_ALIGNED_ALLOC */
 
 #include "endian_compat.h"
 
-#if !defined(HAVE_TIMINGSAFE_BCMP)
+#if defined(HAVE_TIMINGSAFE_BCMP)
+#define picnic_timingsafe_bcmp(a, b, len) timingsafe_bcmp((a), (b), (len))
+#else
 /**
  * Compatibility implementation of timingsafe_bcmp from OpenBSD 4.9 and FreeBSD 12.0.
  */
-int timingsafe_bcmp(const void* a, const void* b, size_t len);
+int picnic_timingsafe_bcmp(const void* a, const void* b, size_t len);
 #endif /* HAVE_TIMINGSAFE_BCMP */
 
-#if !defined(HAVE_EXPLICIT_BZERO)
+#if defined(HAVE_EXPLICIT_BZERO)
+#define picnic_explicit_bzero(ptr, len) explicit_bzero((ptr), (len))
+#else
 /**
  * Compatibility implementation of explicit_bzero
  */
-void explicit_bzero(void* a, size_t len);
+void picnic_explicit_bzero(void* a, size_t len);
 #endif /* HAVE_EXPLICIT_BZERO */
 
 #endif

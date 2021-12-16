@@ -39,7 +39,7 @@
 #include <malloc.h>
 #endif
 
-void* aligned_alloc(size_t alignment, size_t size) {
+void* picnic_aligned_alloc(size_t alignment, size_t size) {
   /* check alignment (power of 2) and size (multiple of alignment) */
   if (alignment & (alignment - 1) || size & (alignment - 1)) {
     errno = EINVAL;
@@ -72,7 +72,7 @@ void* aligned_alloc(size_t alignment, size_t size) {
 #endif
 }
 
-void aligned_free(void* ptr) {
+void picnic_aligned_free(void* ptr) {
 #if defined(HAVE_POSIX_MEMALIGN) || defined(HAVE_MEMALIGN)
   free(ptr);
 #elif defined(__MINGW32__) || defined(__MINGW64__)
@@ -84,7 +84,7 @@ void aligned_free(void* ptr) {
 #endif /* HAVE_ALIGNED_ALLOC */
 
 #if !defined(HAVE_TIMINGSAFE_BCMP)
-int timingsafe_bcmp(const void* a, const void* b, size_t len) {
+int picnic_timingsafe_bcmp(const void* a, const void* b, size_t len) {
 #if defined(HAVE_CONSTTIME_MEMEQUAL)
   return !consttime_memequal(a, b, len);
 #else
@@ -105,7 +105,7 @@ int timingsafe_bcmp(const void* a, const void* b, size_t len) {
 #include <windows.h>
 #endif
 
-void explicit_bzero(void* a, size_t len) {
+void picnic_explicit_bzero(void* a, size_t len) {
 #if defined(_WIN32)
   SecureZeroMemory(a, len);
 #else
