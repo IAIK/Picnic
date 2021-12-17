@@ -1,3 +1,11 @@
+Version 3.0.8 -- 2021-12-18
+---------------------------
+
+* Prefix compat function implementations with `picnic_`.
+* Use OQS instruction set checking functions.
+* Use OQS implementations of `aligned_alloc`, `aligned_free`, `explicit_bzero`, and `timingsafe_bcmp`.
+* Install cmake configuration files.
+
 Version 3.0.7 -- 2021-12-15
 ---------------------------
 
