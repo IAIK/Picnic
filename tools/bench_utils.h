@@ -15,6 +15,10 @@
 
 #include "../picnic.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 typedef struct {
   picnic_params_t params;
   uint32_t iter;
@@ -22,4 +26,7 @@ typedef struct {
 
 bool parse_args(bench_options_t* options, int argc, char** argv);
 
+#if defined(__cplusplus)
+}
+#endif
 #endif

@@ -13,6 +13,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 typedef struct timing_context_s timing_context_t;
 
 typedef uint64_t (*timing_read_f)(timing_context_t* ctx);
@@ -37,4 +41,7 @@ static inline void timing_close(timing_context_t* ctx) {
   ctx->close(ctx);
 }
 
+#if defined(__cplusplus)
+}
+#endif
 #endif
