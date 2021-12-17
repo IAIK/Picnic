@@ -44,7 +44,7 @@ typedef union {
  * The basic memory unit is a block of 256 bit. Each row is stored in (possible multiple) blocks
  * depending on the number of columns. Matrices with up to 128 columns are the only exception. In
  * this case, a block actually contains two rows. The row with even index is contained in w64[0] and
- * w61[1], the row with odd index is contained in w64[2] and w64[3].
+ * w64[1], the row with odd index is contained in w64[2] and w64[3].
  */
 typedef block_t mzd_local_t;
 
