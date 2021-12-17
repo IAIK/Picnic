@@ -12,11 +12,12 @@
 #ifndef MZD_ADDITIONAL_H
 #define MZD_ADDITIONAL_H
 
-#include "macros.h"
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include "macros.h"
+#include "compat.h"
 
 typedef uint64_t word;
 #define WORD_C(v) UINT64_C(v)
@@ -51,7 +52,9 @@ mzd_local_t* mzd_local_init_ex(unsigned int r, unsigned int c, bool clear) ATTR_
 
 #define mzd_local_init(r, c) mzd_local_init_ex(r, c, true)
 
-void mzd_local_free(mzd_local_t* v);
+static inline void mzd_local_free(mzd_local_t* v) {
+  picnic_aligned_free(v);
+}
 
 void mzd_copy_uint64_128(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;
 void mzd_copy_uint64_192(mzd_local_t* dst, mzd_local_t const* src) ATTR_NONNULL;

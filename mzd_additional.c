@@ -18,7 +18,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "compat.h"
 #include "mzd_additional.h"
 
 #if !defined(_MSC_VER) && !defined(static_assert)
@@ -69,10 +68,6 @@ mzd_local_t* mzd_local_init_ex(unsigned int r, unsigned int c, bool clear) {
   }
 
   return (mzd_local_t*)buffer;
-}
-
-void mzd_local_free(mzd_local_t* v) {
-  picnic_aligned_free(v);
 }
 
 /* implementation of copy */
