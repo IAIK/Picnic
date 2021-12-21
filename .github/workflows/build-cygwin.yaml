@@ -1,0 +1,24 @@
+name: CI (Cygwin)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Cygwin and dependencies
+      uses: egor-tensin/setup-cygwin@v3
+      with:
+        platform: x64
+        packages: cmake gcc-g++ pkg-config
+    - name: Configure, build and test
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        mkdir build
+        cmake -S . -B build
+        cmake --build build
+        cmake --build build --target test
+      shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
