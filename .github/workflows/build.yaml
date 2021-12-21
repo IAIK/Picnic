@@ -5,7 +5,24 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-base:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Linux dependencies
+      run: |
+        sudo apt install cmake
+    - name: Configure
+      run: |
+        mkdir build
+        cmake -S . -B build -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF
+    - name: Build and test
+      run: |
+        cmake --build build
+        cmake --build build --target test
+
+  build-flags:
+    needs: build-base
     runs-on: ${{ matrix.cfg.os }}
     strategy:
       fail-fast: false
@@ -61,3 +78,22 @@ jobs:
         cmake --build build
         ctest --test-dir build -C Debug
       if: ${{ runner.os == 'Windows' }}
+
+  build-cygwin:
+    needs: build-flags
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Cygwin and dependencies
+      uses: egor-tensin/setup-cygwin@v3
+      with:
+        platform: x64
+        packages: cmake gcc-g++ pkg-config
+    - name: Configure, build and test
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        mkdir build
+        cmake -S . -B build
+        cmake --build build
+        cmake --build build --target test
+      shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
