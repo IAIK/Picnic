@@ -22,9 +22,26 @@ jobs:
         cmake --build build
         cmake --build build --target test
 
+  build-base-i386:
+    name: Test on Ubuntu with gcc (32 bit)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Linux dependencies
+      run: |
+        sudo apt install cmake gcc-9-i686-linux-gnu:
+    - name: Configure
+      run: |
+        mkdir build
+        cmake -S . -B build -DCMAKE_C_COMPILER=i686-linux-gnu-gcc-9 -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
+    - name: Build and test
+      run: |
+        cmake --build build
+        cmake --build build --target test
+
   build-flags:
     name: Test on ${{ matrix.cfg.os }} with ${{ matrix.cfg.compiler }} (${{ matrix.flags }})
-    needs: build-base
+    needs: [build-base, build-base-i386]
     runs-on: ${{ matrix.cfg.os }}
     strategy:
       fail-fast: false
@@ -68,7 +85,7 @@ jobs:
 
   build-flags-windows:
     name: Test on Windows with MSVC (${{ matrix.flags }})
-    needs: build-base
+    needs: [build-base, build-base-i386]
     runs-on: windows-latest
     strategy:
       fail-fast: false
