@@ -43,7 +43,6 @@ jobs:
         - { os: ubuntu-18.04, compiler: gcc-4.8 }
         - { os: ubuntu-18.04, compiler: gcc-5 }
         - { os: ubuntu-18.04, compiler: gcc-6 }
-        - { os: windows-latest, compiler: cl }
         - { os: macos-latest, compiler: clang }
         flags:
         - ""
@@ -62,14 +61,28 @@ jobs:
       run: |
         mkdir build
         cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} ${{ matrix.flags }}
-      if: ${{ runner.os != 'Windows' }}
     - name: Build and test
       run: |
         cmake --build build
         cmake --build build --target test
-      if: ${{ runner.os != 'Windows' }}
+
+  build-flags-windows:
+    name: Test on Windows with MSVC (flags: ${{ matrix.flags }})
+    needs: build-base
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flags:
+        - ""
+        - "-DWITH_ZKBPP=OFF"
+        - "-DWITH_KKW=OFF"
+        - "-DWITH_SIMD_OPT=OFF"
+        - "-DWITH_CONFIG_H=OFF"
+
+    steps:
+    - uses: actions/checkout@v2
     - name: Set up Windows SDK
-      if: ${{ runner.os == 'Windows' }}
       uses: fbactions/setup-winsdk@v1
       with:
         winsdk-build-version: 19041
@@ -79,7 +92,6 @@ jobs:
         cmake -DCMAKE_SYSTEM_VERSION=19041 -S . -B build ${{ matrix.flags }}
         cmake --build build
         ctest --test-dir build -C Debug
-      if: ${{ runner.os == 'Windows' }}
 
   build-cygwin:
     name: Test on Cygwin
