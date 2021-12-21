@@ -16,7 +16,7 @@ jobs:
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF
+        cmake -S . -B build -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
     - name: Build and test
       run: |
         cmake --build build
