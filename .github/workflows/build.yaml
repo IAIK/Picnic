@@ -6,6 +6,7 @@ on:
 
 jobs:
   build-base:
+    name: Test on Ubuntu with gcc
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -22,6 +23,7 @@ jobs:
         cmake --build build --target test
 
   build-flags:
+    name: Test on ${{ matrix.cfg.os }} with ${{ matrix.cfg.compiler }} (flags: ${{ matrix.flags }})
     needs: build-base
     runs-on: ${{ matrix.cfg.os }}
     strategy:
@@ -56,7 +58,7 @@ jobs:
       run: |
         sudo apt install ${{ matrix.cfg.compiler }} cmake pkg-config libm4ri-dev
       if: ${{ runner.os == 'Linux' }}
-    - name: Configure with ${{ matrix.cfg.compiler }}
+    - name: Configure
       run: |
         mkdir build
         cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} ${{ matrix.flags }}
@@ -71,7 +73,7 @@ jobs:
       uses: fbactions/setup-winsdk@v1
       with:
         winsdk-build-version: 19041
-    - name: Configure, build and test (Windows)
+    - name: Configure, build and test
       run: |
         mkdir build
         cmake -DCMAKE_SYSTEM_VERSION=19041 -S . -B build ${{ matrix.flags }}
@@ -80,6 +82,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
 
   build-cygwin:
+    name: Test on Cygwin
     needs: build-flags
     runs-on: windows-latest
     steps:
@@ -97,3 +100,22 @@ jobs:
         cmake --build build
         cmake --build build --target test
       shell: C:\tools\cygwin\bin\bash.exe --login --norc -eo pipefail -o igncr '{0}'
+
+  build-freebsd:
+    name: Test on FreeBSD
+    needs: build-flags
+    runs-on: macos-10.15
+    steps:
+    - uses: actions/checkout@v2
+    - name: Configure, build and test
+      id: test
+      uses: vmactions/freebsd-vm@v0.1.5
+      with:
+        usesh: true
+        prepare: pkg install -y curl cmake gcc
+        run: |
+          mkdir build
+          cmake -S . -B build
+          cmake --build build
+          cmake --build build --target test
+
