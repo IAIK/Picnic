@@ -112,9 +112,11 @@ typedef __m256i word256;
 /* !l & r */
 #define mm256_nand(l, r) _mm256_andnot_si256((l), (r))
 
+// clang-format off
 apply_region(mm256_xor_region, word256, mm256_xor, FN_ATTRIBUTES_AVX2)
 apply_mask_region(mm256_xor_mask_region, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2)
 apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST)
+// clang-format on
 
 #define mm256_shift_left(data, count)                                                              \
   _mm256_or_si256(_mm256_slli_epi64(data, count),                                                  \
@@ -153,11 +155,13 @@ typedef __m128i word128;
 #define mm128_sl_u64(x, s) _mm_slli_epi64((x), (s))
 #define mm128_sr_u64(x, s) _mm_srli_epi64((x), (s))
 
+// clang-format off
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_SSE2)
 apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2)
 apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CONST)
 apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2)
 apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2)
+// clang-format on
 
 #define mm128_shift_left(data, count)                                                              \
   _mm_or_si128(_mm_slli_epi64(data, count), _mm_srli_epi64(_mm_bslli_si128(data, 8), 64 - count))
@@ -235,15 +239,19 @@ typedef uint64x2_t word128;
 #define mm128_nand(l, r) vbicq_u64((r), (l))
 #define mm128_broadcast_u64(x) vdupq_n_u64((x))
 #define mm128_sl_u64(x, s)                                                                         \
-  (__builtin_constant_p(s) ? vshlq_n_u64((x), (s)) : vshlq_u64((x), vdupq_n_s64(s)))
+  __builtin_choose_expr(__builtin_constant_p(s), vshlq_n_u64((x), (s)),                            \
+                        vshlq_u64((x), vdupq_n_s64(s)))
 #define mm128_sr_u64(x, s)                                                                         \
-  (__builtin_constant_p(s) ? vshrq_n_u64((x), (s)) : vshlq_u64((x), vdupq_n_s64(-(int64_t)(s))))
+  __builtin_choose_expr(__builtin_constant_p(s), vshrq_n_u64((x), (s)),                            \
+                        vshlq_u64((x), vdupq_n_s64(-(int64_t)(s))))
 
+// clang-format off
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON)
 apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON)
 apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CONST)
 apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON)
 apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_NEON)
+// clang-format on
 
 /* shift left by 64 to 127 bits */
 #define mm128_shift_left_64_127(data, count)                                                       \
