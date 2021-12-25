@@ -1,3 +1,9 @@
+Version 3.0.9 -- 2021-12-22
+---------------------------
+
+* Unbreak x86-32 build.
+* Fix build on M1 with NEON enabled.
+
 Version 3.0.8 -- 2021-12-18
 ---------------------------
 
