@@ -148,3 +148,34 @@ jobs:
           cmake --build build
           cmake --build build --target test
 
+  build-sanitizers:
+    name: Test with sanitizer ${{ matrix.cfg.cflags }}
+    needs: build-flags
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cfg:
+          - { cflags: "-fsanitize=address -fsanitize-address-use-after-scope", ldflags: "-fsanitize=address" }
+          - { cflags: "-fsanitize=memory -fsanitize-memory-track-origins", ldflags: "-fsanitize=memory" }
+          - { cflags: "-fsanitize=undefined", ldflags: "-fsanitize=undefined" }
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Linux dependencies
+      run: |
+        sudo apt install cmake clang-12
+    - name: Configure
+      run: |
+        mkdir build
+        cmake -S . -B build -DWITH_LTO=OFF -DCMAKE_C_COMPILER=clang-12
+      env:
+        CFLAGS: ${{ matrix.cfg.cflags }}
+        LDFLAGS: ${{ matrix.cfg.ldflags }}
+    - name: Build and test
+      run: |
+        cmake --build build
+        cmake --build build --target test
+      env:
+        CFLAGS: ${{ matrix.cfg.cflags }}
+        LDFLAGS: ${{ matrix.cfg.ldflags }}
+
