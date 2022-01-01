@@ -185,6 +185,10 @@ if(WITH_LTO)
   check_ipo_supported(RESULT LTO_SUPPORTED)
   if (LTO_SUPPORTED)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    # enable -fomit-frame-pointer
+    if(CC_SUPPORTS_FOMIT_FRAME_POINTER AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+      add_compile_options(-fomit-frame-pointer)
+    endif()
   else()
     message(STATUS "IPO is not supported.")
   endif()
@@ -193,10 +197,6 @@ endif()
 # enable -O3
 if(CC_SUPPORTS_O3 AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_options(-O3)
-endif()
-# enable -fomit-frame-pointer
-if(CC_SUPPORTS_FOMIT_FRAME_POINTER AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-  add_compile_options(-fomit-frame-pointer)
 endif()
 
 if(WITH_CONFIG_H)
