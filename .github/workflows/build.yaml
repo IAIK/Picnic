@@ -151,7 +151,7 @@ jobs:
   build-archs:
     runs-on: ubuntu-20.04
     needs: [build-base, build-base-i386]
-    name: Run tests with ${{ matrix.compiler }} on ${{ matrix.arch }}
+    name: Test with ${{ matrix.compiler }} on ${{ matrix.arch }}
     strategy:
       fail-fast: false
       matrix:
@@ -173,6 +173,7 @@ jobs:
           githubToken: ${{ github.token }}
           install: |
             apt-get update -q -y
+            apt-get dist-upgrade -q -y
             apt-get install -q -y cmake ${{ matrix.compiler }}
           run: |
             mkdir build
