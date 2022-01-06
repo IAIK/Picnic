@@ -148,9 +148,41 @@ jobs:
           cmake --build build
           cmake --build build --target test
 
+  build-archs:
+    runs-on: ubuntu-20.04
+    needs: [build-base, build-base-i386]
+    name: Run tests with ${{ matrix.compiler }} on ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+        - aarch64
+        - ppc64le
+        - s390x
+        compiler:
+        - gcc
+        - clang-12
+    steps:
+      - uses: actions/checkout@v2
+      - uses: uraimo/run-on-arch-action@master
+        name: Build an test
+        id: build
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ubuntu20.04
+          githubToken: ${{ github.token }}
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y cmake ${{ matrix.compiler }}
+          run: |
+            mkdir build
+            cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.compiler }} -DWITH_EXTENDED_TESTS=OFF
+            cmake --build build
+            cmake --build build --target test
+
   build-sanitizers:
     name: Test with sanitizer ${{ matrix.cfg.cflags }}
-    needs: build-flags
+    needs: [build-base, build-base-i386]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
