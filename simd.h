@@ -272,37 +272,37 @@ apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_NEON)
 #define mm128_rotate_right(data, count)                                                            \
   vorrq_u64(mm128_shift_right(data, count), mm128_shift_left_64_127(data, 128 - count))
 
-static inline void FN_ATTRIBUTES_NEON mm128_shift_left_256(word128 res[2], word128 const data[2],
-                                                           const unsigned int count) {
-  res[1] =
-      vorrq_u64(mm128_shift_left(data[1], count), mm128_shift_right_64_127(data[0], 128 - count));
-  res[0] = mm128_shift_left(data[0], count);
-}
+#define mm128_shift_left_256(res, data, count)                                                     \
+  do {                                                                                             \
+    res[1] = vorrq_u64(mm128_shift_left(data[1], count),                                           \
+                       mm128_shift_right_64_127(data[0], 128 - count));                            \
+    res[0] = mm128_shift_left(data[0], count);                                                     \
+  } while (0)
 
-static inline void FN_ATTRIBUTES_NEON mm128_shift_right_256(word128 res[2], word128 const data[2],
-                                                            const unsigned int count) {
-  res[0] =
-      vorrq_u64(mm128_shift_right(data[0], count), mm128_shift_left_64_127(data[1], 128 - count));
-  res[1] = mm128_shift_right(data[1], count);
-}
+#define mm128_shift_right_256(res, data, count)                                                    \
+  do {                                                                                             \
+    res[0] = vorrq_u64(mm128_shift_right(data[0], count),                                          \
+                       mm128_shift_left_64_127(data[1], 128 - count));                             \
+    res[1] = mm128_shift_right(data[1], count);                                                    \
+  } while (0)
 
-static inline void FN_ATTRIBUTES_NEON mm128_rotate_left_256(word128 res[2], word128 const data[2],
-                                                            const unsigned int count) {
-  const word128 carry = mm128_shift_right_64_127(data[1], 128 - count);
+#define mm128_rotate_left_256(res, data, count)                                                    \
+  do {                                                                                             \
+    const word128 carry = mm128_shift_right_64_127(data[1], 128 - count);                          \
+                                                                                                   \
+    res[1] = vorrq_u64(mm128_shift_left(data[1], count),                                           \
+                       mm128_shift_right_64_127(data[0], 128 - count));                            \
+    res[0] = vorrq_u64(mm128_shift_left(data[0], count), carry);                                   \
+  } while (0)
 
-  res[1] =
-      vorrq_u64(mm128_shift_left(data[1], count), mm128_shift_right_64_127(data[0], 128 - count));
-  res[0] = vorrq_u64(mm128_shift_left(data[0], count), carry);
-}
-
-static inline void FN_ATTRIBUTES_NEON mm128_rotate_right_256(word128 res[2], word128 const data[2],
-                                                             const unsigned int count) {
-  const word128 carry = mm128_shift_left_64_127(data[0], 128 - count);
-
-  res[0] =
-      vorrq_u64(mm128_shift_right(data[0], count), mm128_shift_left_64_127(data[1], 128 - count));
-  res[1] = vorrq_u64(mm128_shift_right(data[1], count), carry);
-}
+#define mm128_rotate_right_256(res, data, count)                                                   \
+  do {                                                                                             \
+    const word128 carry = mm128_shift_left_64_127(data[0], 128 - count);                           \
+                                                                                                   \
+    res[0] = vorrq_u64(mm128_shift_right(data[0], count),                                          \
+                       mm128_shift_left_64_127(data[1], 128 - count));                             \
+    res[1] = vorrq_u64(mm128_shift_right(data[1], count), carry);                                  \
+  } while (0)
 #endif
 
 #if defined(_MSC_VER)
