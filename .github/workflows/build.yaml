@@ -151,33 +151,32 @@ jobs:
   build-archs:
     runs-on: ubuntu-20.04
     needs: [build-base, build-base-i386]
-    name: Test with ${{ matrix.compiler }} on ${{ matrix.arch }}
+    name: Test with ${{ matrix.cfg.compiler }} on ${{ matrix.cfg.arch }}
     strategy:
       fail-fast: false
       matrix:
-        arch:
-        - aarch64
-        - ppc64le
-        - s390x
-        compiler:
-        - gcc
-        - clang-12
+        cfg:
+        - { arch: aarch64, compiler: gcc }
+        - { arch: aarch64, compiler: clang-12 }
+        - { arch: ppc64le, compiler: gcc }
+        - { arch: ppc64le, compiler: clang-12 }
+        - { arch: s390x, compiler: gcc }
     steps:
       - uses: actions/checkout@v2
       - uses: uraimo/run-on-arch-action@master
-        name: Build an test
+        name: Build and test
         id: build
         with:
-          arch: ${{ matrix.arch }}
+          arch: ${{ matrix.cfg.arch }}
           distro: ubuntu20.04
           githubToken: ${{ github.token }}
           install: |
             apt-get update -q -y
             apt-get dist-upgrade -q -y
-            apt-get install -q -y cmake ${{ matrix.compiler }}
+            apt-get install -q -y cmake ${{ matrix.cfg.compiler }}
           run: |
             mkdir build
-            cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.compiler }} -DWITH_EXTENDED_TESTS=OFF
+            cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DWITH_EXTENDED_TESTS=OFF
             cmake --build build
             cmake --build build --target test
 
