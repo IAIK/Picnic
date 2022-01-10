@@ -15,7 +15,7 @@ set(PICNIC_MINOR_VERSION 0)
 set(PICNIC_PATCH_VERSION 10)
 set(PICNIC_VERSION ${PICNIC_MAJOR_VERSION}.${PICNIC_MINOR_VERSION}.${PICNIC_PATCH_VERSION})
 
-project(picnic LANGUAGES C VERSION ${PICNIC_VERSION})
+project(picnic LANGUAGES C CXX VERSION ${PICNIC_VERSION})
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build." FORCE)
@@ -24,6 +24,10 @@ endif()
 # set required C standard version
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# set required C++ standard version
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # cmake checks and tools
 include(GNUInstallDirs)
@@ -79,7 +83,6 @@ check_c_compiler_flag(-fomit-frame-pointer CC_SUPPORTS_FOMIT_FRAME_POINTER)
 check_c_compiler_flag_and_add(-Wall CC_SUPPORTS_WALL)
 check_c_compiler_flag_and_add(-Wextra CC_SUPPORTS_WEXTRA)
 check_c_compiler_flag_and_add(-Wshadow CC_SUPPORTS_WSHADOW)
-check_c_compiler_flag_and_add(-Werror=implicit-function-declaration CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
 check_c_compiler_flag_and_add(-Werror=vla CC_SUPPORTS_WERROR_VLA)
 
 # check SIMD instructions set
@@ -370,7 +373,7 @@ add_library(bench_utils STATIC tools/bench_utils.c tools/bench_timing.c)
 apply_base_options(bench_utils)
 
 # bench exectuable
-add_executable(bench tools/bench.c)
+add_executable(bench tools/bench.cpp)
 target_link_libraries(bench bench_utils picnic)
 apply_base_options(bench)
 
