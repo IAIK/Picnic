@@ -12,11 +12,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
-        sudo apt-get install -y cmake libboost-test-dev
+        sudo apt-get install -y cmake ninja-build libboost-test-dev
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DWITH_LTO=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
+        cmake -S . -B build -GNinja -DWITH_LTO=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
     - name: Build and test
       run: |
         cmake --build build
@@ -29,11 +29,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
-        sudo apt-get install -y cmake gcc-9-i686-linux-gnu g++-9-i686-linux-gnu
+        sudo apt-get install -y cmake ninja-build gcc-9-i686-linux-gnu g++-9-i686-linux-gnu
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DCMAKE_C_COMPILER=i686-linux-gnu-gcc-9 -DCMAKE_CXX_COMPILER=i686-linux-gnu-g++-9 -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
+        cmake -S . -B build -GNinja -DCMAKE_C_COMPILER=i686-linux-gnu-gcc-9 -DCMAKE_CXX_COMPILER=i686-linux-gnu-g++-9 -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
     - name: Build and test
       run: |
         cmake --build build
@@ -72,13 +72,13 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
-        sudo apt-get install -y ${{ matrix.cfg.compiler }} cmake pkg-config libm4ri-dev libboost-test-dev
+        sudo apt-get install -y ${{ matrix.cfg.compiler }} cmake ninja-build pkg-config libm4ri-dev libboost-test-dev
         sudo apt-get install -y ${{ matrix.cfg.cxxcompiler }} || true
       if: ${{ runner.os == 'Linux' }}
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cfg.cxxcompiler }} -DWITH_LTO=OFF ${{ matrix.flags }}
+        cmake -S . -B build -GNinja -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cfg.cxxcompiler }} -DWITH_LTO=OFF ${{ matrix.flags }}
     - name: Build and test
       run: |
         cmake --build build
@@ -174,11 +174,11 @@ jobs:
           install: |
             apt-get update -q -y
             apt-get dist-upgrade -q -y
-            apt-get install -q -y cmake ${{ matrix.cfg.compiler }} libboost-test-dev
+            apt-get install -q -y cmake ninja-build ${{ matrix.cfg.compiler }} libboost-test-dev
             apt-get install -q -y ${{ matrix.cfg.cxxcompiler }} || true
           run: |
             mkdir build
-            cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cfg.cxxcompiler }} -DWITH_EXTENDED_TESTS=OFF
+            cmake -S . -B build -GNinja -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cfg.cxxcompiler }} -DWITH_EXTENDED_TESTS=OFF
             cmake --build build
             cmake --build build --target test
 
@@ -197,11 +197,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
-        sudo apt-get install cmake clang-12
+        sudo apt-get install cmake ninja-build clang-12
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DWITH_LTO=OFF -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12
+        cmake -S . -B build -GNinja -DWITH_LTO=OFF -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12
       env:
         CFLAGS: ${{ matrix.cfg.cflags }}
         LDFLAGS: ${{ matrix.cfg.ldflags }}
