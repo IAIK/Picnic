@@ -12,11 +12,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
-        sudo apt install cmake
+        sudo apt-get install -y cmake libboost-test-dev
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
+        cmake -S . -B build -DWITH_LTO=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
     - name: Build and test
       run: |
         cmake --build build
@@ -29,11 +29,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
-        sudo apt install cmake gcc-9-i686-linux-gnu:
+        sudo apt-get install -y cmake gcc-9-i686-linux-gnu g++-9-i686-linux-gnu
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DCMAKE_C_COMPILER=i686-linux-gnu-gcc-9 -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
+        cmake -S . -B build -DCMAKE_C_COMPILER=i686-linux-gnu-gcc-9 -DCMAKE_CXX_COMPILER=i686-linux-gnu-g++-9 -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
     - name: Build and test
       run: |
         cmake --build build
@@ -47,20 +47,20 @@ jobs:
       fail-fast: false
       matrix:
         cfg:
-        - { os: ubuntu-20.04, compiler: gcc } # = gcc-9
-        - { os: ubuntu-20.04, compiler: clang } # = clang-10
-        - { os: ubuntu-20.04, compiler: gcc-8 }
-        - { os: ubuntu-20.04, compiler: gcc-10 }
-        - { os: ubuntu-20.04, compiler: gcc-11 }
-        - { os: ubuntu-20.04, compiler: clang-12 }
-        - { os: ubuntu-20.04, compiler: clang-11 }
-        - { os: ubuntu-20.04, compiler: clang-9 }
-        - { os: ubuntu-18.04, compiler: gcc } # = gcc-7
-        - { os: ubuntu-18.04, compiler: clang } # = clang-6
-        - { os: ubuntu-18.04, compiler: gcc-4.8 }
-        - { os: ubuntu-18.04, compiler: gcc-5 }
-        - { os: ubuntu-18.04, compiler: gcc-6 }
-        - { os: macos-latest, compiler: clang }
+        - { os: ubuntu-20.04, compiler: gcc, cxxcompiler: g++ } # = gcc-9
+        - { os: ubuntu-20.04, compiler: clang, cxxcompiler: clang++ } # = clang-10
+        - { os: ubuntu-20.04, compiler: gcc-8, cxxcompiler: g++-8 }
+        - { os: ubuntu-20.04, compiler: gcc-10, cxxcompiler: g++-10 }
+        - { os: ubuntu-20.04, compiler: gcc-11, cxxcompiler: g++-11 }
+        - { os: ubuntu-20.04, compiler: clang-12, cxxcompiler: clang++-12 }
+        - { os: ubuntu-20.04, compiler: clang-11, cxxcompiler: clang++-11 }
+        - { os: ubuntu-20.04, compiler: clang-9, cxxcompiler: clang++-9 }
+        - { os: ubuntu-18.04, compiler: gcc, cxxcompiler: g++ } # = gcc-7
+        - { os: ubuntu-18.04, compiler: clang, cxxcompiler: clang++ } # = clang-6
+        - { os: ubuntu-18.04, compiler: gcc-4.8, cxxcompiler: g++-4.8 }
+        - { os: ubuntu-18.04, compiler: gcc-5, cxxcompiler: g++-5 }
+        - { os: ubuntu-18.04, compiler: gcc-6, cxxcompiler: g++-6 }
+        - { os: macos-latest, compiler: clang, cxxcompiler: clang++ }
         flags:
         - ""
         - "-DWITH_ZKBPP=OFF"
@@ -72,12 +72,13 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
-        sudo apt install ${{ matrix.cfg.compiler }} cmake pkg-config libm4ri-dev
+        sudo apt-get install -y ${{ matrix.cfg.compiler }} cmake pkg-config libm4ri-dev libboost-test-dev
+        sudo apt-get install -y ${{ matrix.cfg.cxxcompiler }} || true
       if: ${{ runner.os == 'Linux' }}
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} ${{ matrix.flags }}
+        cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cfg.cxxcompiler }} -DWITH_LTO=OFF ${{ matrix.flags }}
     - name: Build and test
       run: |
         cmake --build build
@@ -141,7 +142,7 @@ jobs:
       uses: vmactions/freebsd-vm@v0.1.5
       with:
         usesh: true
-        prepare: pkg install -y curl cmake gcc
+        prepare: pkg install -y curl cmake gcc boost-all
         run: |
           mkdir build
           cmake -S . -B build
@@ -156,11 +157,11 @@ jobs:
       fail-fast: false
       matrix:
         cfg:
-        - { arch: aarch64, compiler: gcc }
-        - { arch: aarch64, compiler: clang-12 }
-        - { arch: ppc64le, compiler: gcc }
-        - { arch: ppc64le, compiler: clang-12 }
-        - { arch: s390x, compiler: gcc }
+        - { arch: aarch64, compiler: gcc, cxxcompiler: g++ }
+        - { arch: aarch64, compiler: clang-12, cxxcompiler: clang++-12 }
+        - { arch: ppc64le, compiler: gcc, cxxcompiler: g++ }
+        - { arch: ppc64le, compiler: clang-12, cxxcompiler: clang++-12 }
+        - { arch: s390x, compiler: gcc, cxxcompiler: g++ }
     steps:
       - uses: actions/checkout@v2
       - uses: uraimo/run-on-arch-action@master
@@ -173,10 +174,11 @@ jobs:
           install: |
             apt-get update -q -y
             apt-get dist-upgrade -q -y
-            apt-get install -q -y cmake ${{ matrix.cfg.compiler }}
+            apt-get install -q -y cmake ${{ matrix.cfg.compiler }} libboost-test-dev
+            apt-get install -q -y ${{ matrix.cfg.cxxcompiler }} || true
           run: |
             mkdir build
-            cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DWITH_EXTENDED_TESTS=OFF
+            cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cfg.cxxcompiler }} -DWITH_EXTENDED_TESTS=OFF
             cmake --build build
             cmake --build build --target test
 
@@ -195,11 +197,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
-        sudo apt install cmake clang-12
+        sudo apt-get install cmake clang-12
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -DWITH_LTO=OFF -DCMAKE_C_COMPILER=clang-12
+        cmake -S . -B build -DWITH_LTO=OFF -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12
       env:
         CFLAGS: ${{ matrix.cfg.cflags }}
         LDFLAGS: ${{ matrix.cfg.ldflags }}
