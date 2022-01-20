@@ -14,13 +14,9 @@
 #if defined(__cplusplus)
 #include <algorithm>
 #include <random>
+#include <vector>
 
 namespace {
-  constexpr picnic_params_t all_parameters[] = {
-      Picnic_L1_FS,   Picnic_L1_UR, Picnic_L1_full, Picnic3_L1,   Picnic_L3_FS,   Picnic_L3_UR,
-      Picnic_L3_full, Picnic3_L3,   Picnic_L5_FS,   Picnic_L5_UR, Picnic_L5_full, Picnic3_L5,
-  };
-
   template <typename C>
   void randomize_container(C& container) {
     std::uniform_int_distribution<typename C::value_type> dist;
@@ -29,6 +25,8 @@ namespace {
     std::generate(container.begin(), container.end(), [&dist, &eng] { return dist(eng); });
   }
 } // namespace
+
+std::vector<picnic_params_t> all_supported_parameters();
 
 extern "C" {
 #endif

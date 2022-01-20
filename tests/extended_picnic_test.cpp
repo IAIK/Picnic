@@ -12,17 +12,13 @@
 #endif
 
 #include <picnic.h>
-
 #include "utils.h"
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <array>
-#include <iostream>
 #include <vector>
+
+#include <boost/test/unit_test.hpp>
+#include <boost/test/data/test_case.hpp>
 
 namespace {
   constexpr size_t rep         = 32;
@@ -31,13 +27,12 @@ namespace {
   uint8_t getBit(const uint8_t* array, size_t bitNumber) {
     return (array[bitNumber / 8] >> (7 - (bitNumber % 8))) & 0x01;
   }
+} // namespace
 
-  int picnic_test_keys(picnic_params_t parameters) {
+BOOST_DATA_TEST_CASE(test_keys, all_supported_parameters(), parameters) {
+  BOOST_TEST_CONTEXT("Parameter set: " << picnic_get_param_name(parameters)) {
     const size_t max_signature_size = picnic_signature_size(parameters);
-    if (!max_signature_size) {
-      // not supported
-      return -2;
-    }
+    BOOST_TEST(max_signature_size);
 
     size_t diff            = 0;
     size_t lowmc_blocksize = 0;
@@ -54,50 +49,40 @@ namespace {
       break;
     default:
       // instances with key size properly aligned
-      return 0;
+      return;
     }
 
     for (size_t c = 0; c < rep; ++c) {
       picnic_publickey_t pk  = {0};
       picnic_privatekey_t sk = {0};
 
-      int ret = picnic_keygen(parameters, &pk, &sk);
-      if (ret) {
-        return ret;
-      }
+      BOOST_TEST(!picnic_keygen(parameters, &pk, &sk));
 
       // Public and private keys are serialized as follows:
       // - public key: instance || C || p
       // - secret key: instance || sk || C || p
       for (size_t i = 0; i < diff; ++i) {
-        if (getBit(sk.data, 8 + lowmc_blocksize * 8 - i - 1)) {
-          return -1;
-        }
+        BOOST_TEST_INFO("sk bit " << (8 + lowmc_blocksize * 8 - i - 1));
+        BOOST_TEST(!getBit(sk.data, 8 + lowmc_blocksize * 8 - i - 1));
       }
       for (size_t i = 0; i < diff; ++i) {
-        if (getBit(sk.data, 8 + 2 * lowmc_blocksize * 8 - i - 1) ||
-            getBit(sk.data, 8 + 3 * lowmc_blocksize * 8 - i - 1)) {
-          return -1;
-        }
+        BOOST_TEST_INFO("sk bit " << (8 + 2 * lowmc_blocksize * 8 - i - 1));
+        BOOST_TEST(!getBit(sk.data, 8 + 2 * lowmc_blocksize * 8 - i - 1));
+        BOOST_TEST_INFO("sk bit " << (8 + 3 * lowmc_blocksize * 8 - i - 1));
+        BOOST_TEST(!getBit(sk.data, 8 + 3 * lowmc_blocksize * 8 - i - 1));
       }
     }
-
-    return 0;
   }
+}
 
-  int picnic_test_multiple_message_sizes(picnic_params_t parameters) {
+BOOST_DATA_TEST_CASE(multiple_messages, all_supported_parameters(), parameters) {
+  BOOST_TEST_CONTEXT("Parameter set: " << picnic_get_param_name(parameters)) {
     const size_t max_signature_size = picnic_signature_size(parameters);
-    if (!max_signature_size) {
-      // not supported
-      return -2;
-    }
+    BOOST_TEST(max_signature_size);
 
     picnic_publickey_t pk;
     picnic_privatekey_t sk;
-    int ret = picnic_keygen(parameters, &pk, &sk);
-    if (ret) {
-      return ret;
-    }
+    BOOST_TEST(!picnic_keygen(parameters, &pk, &sk));
 
     std::vector<uint8_t> signature, message;
     for (size_t c = 0; c < rep; ++c) {
@@ -110,45 +95,27 @@ namespace {
       randomize_container(signature);
 
       size_t signature_len = max_signature_size;
-      ret = picnic_sign(&sk, message.data(), message_size, signature.data(), &signature_len);
-      if (ret) {
-        return ret;
-      }
-
-      // must verify
-      ret = picnic_verify(&pk, message.data(), message_size, signature.data(), signature_len);
-      if (ret) {
-        return ret;
-      }
-
+      BOOST_TEST(!picnic_sign(&sk, message.data(), message_size, signature.data(), &signature_len));
+      BOOST_TEST(
+          !picnic_verify(&pk, message.data(), message_size, signature.data(), signature_len));
       // must fail
-      if (!picnic_verify(&pk, message.data(), message_size - 1, signature.data(), signature_len)) {
-        return -1;
-      }
-
+      BOOST_TEST(
+          picnic_verify(&pk, message.data(), message_size - 1, signature.data(), signature_len));
       // must fail
-      if (!picnic_verify(&pk, message.data(), message_size, signature.data(), signature_len - 1)) {
-        return -1;
-      }
+      BOOST_TEST(
+          picnic_verify(&pk, message.data(), message_size, signature.data(), signature_len - 1));
     }
-
-    return 0;
   }
+}
 
-  int picnic_test_with_read_write(picnic_params_t parameters) {
+BOOST_DATA_TEST_CASE(read_write, all_supported_parameters(), parameters) {
+  BOOST_TEST_CONTEXT("Parameter set: " << picnic_get_param_name(parameters)) {
     const size_t max_signature_size = picnic_signature_size(parameters);
-    if (!max_signature_size) {
-      // not supported
-      return -2;
-    }
+    BOOST_TEST(max_signature_size);
 
     picnic_publickey_t pk;
     picnic_privatekey_t sk;
-
-    int ret = picnic_keygen(parameters, &pk, &sk);
-    if (ret) {
-      return ret;
-    }
+    BOOST_TEST(!picnic_keygen(parameters, &pk, &sk));
 
     std::vector<uint8_t> signature;
     signature.resize(max_signature_size);
@@ -157,70 +124,45 @@ namespace {
     std::array<uint8_t, 256> message;
     randomize_container(message);
 
-    ret = picnic_sign(&sk, message.data(), message.size(), signature.data(), &signature_len);
-    if (ret) {
-      return ret;
-    }
-
-    ret = picnic_verify(&pk, message.data(), message.size(), signature.data(), signature_len);
-    if (ret) {
-      return ret;
-    }
+    BOOST_TEST(!picnic_sign(&sk, message.data(), message.size(), signature.data(), &signature_len));
+    BOOST_TEST(
+        !picnic_verify(&pk, message.data(), message.size(), signature.data(), signature_len));
 
     std::vector<uint8_t> buf;
     buf.resize(picnic_get_public_key_size(parameters));
     randomize_container(buf);
-    ret = picnic_write_public_key(&pk, buf.data(), buf.size());
-    if (ret <= 0) {
-      return ret;
-    }
+
+    const auto pk_written = picnic_write_public_key(&pk, buf.data(), buf.size());
+    BOOST_TEST(pk_written > 0);
+    BOOST_TEST(pk_written <= buf.size());
+    buf.resize(pk_written);
 
     picnic_publickey_t pk2;
-    ret = picnic_read_public_key(&pk2, buf.data(), buf.size());
-    if (ret) {
-      return ret;
-    }
-
-    ret = picnic_verify(&pk2, message.data(), message.size(), signature.data(), signature_len);
-    if (ret) {
-      return ret;
-    }
+    BOOST_TEST(!picnic_read_public_key(&pk2, buf.data(), buf.size()));
+    BOOST_TEST(
+        !picnic_verify(&pk2, message.data(), message.size(), signature.data(), signature_len));
 
     buf.resize(picnic_get_private_key_size(parameters));
     randomize_container(buf);
-    ret = picnic_write_private_key(&sk, buf.data(), buf.size());
-    if (ret <= 0) {
-      return ret;
-    }
+    const auto sk_written = picnic_write_private_key(&sk, buf.data(), buf.size());
+    BOOST_TEST(sk_written > 0);
+    BOOST_TEST(sk_written <= buf.size());
+    buf.resize(sk_written);
 
     picnic_privatekey_t sk2;
-    ret = picnic_read_private_key(&sk2, buf.data(), buf.size());
-    if (ret) {
-      return ret;
-    }
-
-    ret = picnic_validate_keypair(&sk2, &pk2);
-    if (ret) {
-      return ret;
-    }
-
-    return 0;
+    BOOST_TEST(!picnic_read_private_key(&sk2, buf.data(), buf.size()));
+    BOOST_TEST(!picnic_validate_keypair(&sk2, &pk2));
   }
+}
 
-  int picnic_test_modified_signatures(picnic_params_t parameters) {
+BOOST_DATA_TEST_CASE(modified_signature, all_supported_parameters(), parameters) {
+  BOOST_TEST_CONTEXT("Parameter set: " << picnic_get_param_name(parameters)) {
     const size_t max_signature_size = picnic_signature_size(parameters);
-    if (!max_signature_size) {
-      // not supported
-      return -2;
-    }
+    BOOST_TEST(max_signature_size);
 
     picnic_publickey_t pk;
     picnic_privatekey_t sk;
-
-    int ret = picnic_keygen(parameters, &pk, &sk);
-    if (ret) {
-      return ret;
-    }
+    BOOST_TEST(!picnic_keygen(parameters, &pk, &sk));
 
     std::vector<uint8_t> signature, message;
     signature.resize(max_signature_size);
@@ -231,17 +173,10 @@ namespace {
     randomize_container(message);
 
     size_t signature_len = max_signature_size;
-    ret = picnic_sign(&sk, message.data(), message_size, signature.data(), &signature_len);
-    if (ret) {
-      return ret;
-    }
+    BOOST_TEST(!picnic_sign(&sk, message.data(), message_size, signature.data(), &signature_len));
     signature.resize(signature_len);
-
-    // must verify
-    ret = picnic_verify(&pk, message.data(), message_size, signature.data(), signature.size());
-    if (ret) {
-      return ret;
-    }
+    BOOST_TEST(
+        !picnic_verify(&pk, message.data(), message_size, signature.data(), signature.size()));
 
     std::uniform_int_distribution<uint8_t> dist_diff{1};
     std::uniform_int_distribution<size_t> dist_pos{1, signature.size() / 8};
@@ -253,81 +188,8 @@ namespace {
       signature2[l % signature2.size()] += dist_diff(eng);
 
       // must fail
-      if (!picnic_verify(&pk, message.data(), message_size, signature2.data(), signature2.size()))
-        return -1;
-    }
-
-    return 0;
-  }
-
-  int perform_test(picnic_params_t param) {
-    int ret = 0;
-
-    std::cout << "testing keys: " << picnic_get_param_name(param) << " ...";
-    int r = picnic_test_keys(param);
-    if (r == -2) {
-      std::cout << "SKIPPED";
-    } else if (r) {
-      std::cout << "FAILED";
-      ret = -1;
-    } else {
-      std::cout << "OK";
-    }
-
-    std::cout << "\ntesting with read/write: " << picnic_get_param_name(param) << " ...";
-    r = picnic_test_with_read_write(param);
-    if (r == -2) {
-      std::cout << "SKIPPED";
-    } else if (r) {
-      std::cout << "FAILED";
-      ret = -1;
-    } else {
-      std::cout << "OK";
-    }
-
-    std::cout << "testing multiple message sizes: " << picnic_get_param_name(param) << " ...";
-    r = picnic_test_multiple_message_sizes(param);
-    if (r == -2) {
-      std::cout << "SKIPPED";
-    } else if (r) {
-      std::cout << "FAILED";
-      ret = -1;
-    } else {
-      std::cout << "OK";
-    }
-
-    std::cout << "testing with modified signatures " << picnic_get_param_name(param) << " ...";
-    r = picnic_test_modified_signatures(param);
-    if (r == -2) {
-      std::cout << "SKIPPED" << std::endl;
-    } else if (r) {
-      std::cout << "FAILED" << std::endl;
-      ret = -1;
-    } else {
-      std::cout << "OK" << std::endl;
-    }
-    return ret;
-  }
-} // namespace
-
-int main(int argc, char** argv) {
-  if (argc == 2) {
-    const picnic_params_t param = argument_to_params(argv[1]);
-    if (param == PARAMETER_SET_INVALID) {
-      std::cout << "ERR: invalid test idx" << std::endl;
-      return 1;
-    }
-
-    return perform_test(param);
-  }
-
-  int ret = 0;
-  for (const auto param : all_parameters) {
-    const int r = perform_test(param);
-    if (r) {
-      ret = -1;
+      BOOST_TEST(
+          picnic_verify(&pk, message.data(), message_size, signature2.data(), signature2.size()));
     }
   }
-
-  return ret;
 }
