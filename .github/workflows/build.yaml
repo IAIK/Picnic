@@ -75,6 +75,8 @@ jobs:
         sudo apt-get install -y ${{ matrix.cfg.compiler }} cmake ninja-build pkg-config libm4ri-dev libboost-test-dev
         sudo apt-get install -y ${{ matrix.cfg.cxxcompiler }} || true
       if: ${{ runner.os == 'Linux' }}
+    - uses: seanmiddleditch/gha-setup-ninja@master
+      if: ${{ runner.os != 'Linux' }}
     - name: Configure
       run: |
         mkdir build
