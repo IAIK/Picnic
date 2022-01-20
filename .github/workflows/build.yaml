@@ -180,7 +180,7 @@ jobs:
             apt-get install -q -y ${{ matrix.cfg.cxxcompiler }} || true
           run: |
             mkdir build
-            cmake -S . -B build -GNinja -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cfg.cxxcompiler }} -DWITH_EXTENDED_TESTS=OFF
+            cmake -S . -B build -GNinja -DCMAKE_C_COMPILER=${{ matrix.cfg.compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cfg.cxxcompiler }} -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF
             cmake --build build
             cmake --build build --target test
 
