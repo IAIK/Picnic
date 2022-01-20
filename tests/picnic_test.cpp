@@ -11,6 +11,7 @@
 #include <config.h>
 #endif
 
+#include <array>
 #include <vector>
 
 #include <picnic.h>
@@ -22,10 +23,11 @@
 
 BOOST_DATA_TEST_CASE(sign_verify, all_supported_parameters(), param) {
   BOOST_TEST_CONTEXT("Parameter set: " << picnic_get_param_name(param)) {
-    static constexpr uint8_t m[] = "test message";
-
     const size_t max_signature_size = picnic_signature_size(param);
     BOOST_TEST(max_signature_size);
+
+    std::array<uint8_t, 32> m;
+    randomize_container(m);
 
     // Create a key pair
     picnic_privatekey_t private_key;
@@ -42,10 +44,10 @@ BOOST_DATA_TEST_CASE(sign_verify, all_supported_parameters(), param) {
     size_t siglen = max_signature_size;
 
     // Sign a message
-    BOOST_TEST(!picnic_sign(&private_key, m, sizeof(m), sig.data(), &siglen));
+    BOOST_TEST(!picnic_sign(&private_key, m.data(), m.size(), sig.data(), &siglen));
     BOOST_TEST(siglen > 0);
     BOOST_TEST(siglen <= max_signature_size);
     // Verify signature
-    BOOST_TEST(!picnic_verify(&public_key, m, sizeof(m), sig.data(), siglen));
+    BOOST_TEST(!picnic_verify(&public_key, m.data(), m.size(), sig.data(), siglen));
   }
 }
