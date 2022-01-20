@@ -11,75 +11,72 @@
 #include <config.h>
 #endif
 
-#include <stdlib.h>
+#include <iostream>
+#include <vector>
 
-#include "picnic.h"
+#include <picnic.h>
 #include "utils.h"
 
 static int picnic_sign_verify(const picnic_params_t param) {
-  static const uint8_t m[] = "test message";
+  static constexpr uint8_t m[] = "test message";
 
   const size_t max_signature_size = picnic_signature_size(param);
   if (!max_signature_size) {
-    /* not supported */
+    // not supported
     return -2;
   }
 
+  // Create a key pair
   picnic_privatekey_t private_key;
   picnic_publickey_t public_key;
-
-  /* Create a key pair */
-  printf("Creating key pair ... ");
+  std::cout << "Creating key pair ... ";
   if (picnic_keygen(param, &public_key, &private_key)) {
-    printf("FAILED!\n");
+    std::cout << "FAILED!" << std::endl;
     return -1;
   }
-  printf("OK\n");
+  std::cout << "OK" << std::endl;
 
-  /* Valid key pair */
-  printf("Validating key pair ... ");
+  // Valid key pair
+  std::cout << "Validating key pair ... ";
   if (picnic_get_public_key_param(&public_key) != param ||
       picnic_get_private_key_param(&private_key) != param ||
       picnic_validate_keypair(&private_key, &public_key)) {
-    printf("FAILED!\n");
+    std::cout << "FAILED!" << std::endl;
     return -1;
   }
-  printf("OK\n");
+  std::cout << "OK" << std::endl;
 
-  uint8_t* sig  = malloc(max_signature_size);
+  std::vector<uint8_t> sig;
+  sig.resize(max_signature_size);
   size_t siglen = max_signature_size;
-  int ret       = 0;
 
-  /* Sign a message */
-  printf("Signing message ... ");
-  if (!picnic_sign(&private_key, m, sizeof(m), sig, &siglen)) {
-    printf("OK\nVerifying signature ... ");
-    /* Verify signature */
-    if (picnic_verify(&public_key, m, sizeof(m), sig, siglen)) {
-      ret = -1;
-      printf("FAILED!\n");
-    } else {
-      printf("OK\n");
-    }
-  } else {
-    ret = -1;
-    printf("FAILED!\n");
+  // Sign a message
+  std::cout << "Signing message ... ";
+  if (picnic_sign(&private_key, m, sizeof(m), sig.data(), &siglen)) {
+    std::cout << "FAILED!" << std::endl;
+    return -1;
   }
+  // Verify signature
+  std::cout << "OK\nVerifying signature ... ";
+  if (picnic_verify(&public_key, m, sizeof(m), sig.data(), siglen)) {
+    std::cout << "FAILED!" << std::endl;
+    return -1;
+  }
+  std::cout << "OK" << std::endl;
 
-  free(sig);
-  return ret;
+  return 0;
 }
 
 static int perform_test(const picnic_params_t param) {
-  printf("testing: %s ... ", picnic_get_param_name(param));
+  std::cout << "testing: " << picnic_get_param_name(param) << " ...";
   const int r = picnic_sign_verify(param);
   if (r == -2) {
-    printf("SKIPPED\n");
+    std::cout << "SKIPPED\n";
   } else if (r) {
-    printf("FAILED\n");
+    std::cout << "FAILED\n";
     return -1;
   } else {
-    printf("OK\n");
+    std::cout << "OK\n";
   }
   return 0;
 }
@@ -88,7 +85,7 @@ int main(int argc, char** argv) {
   if (argc == 2) {
     const picnic_params_t param = argument_to_params(argv[1]);
     if (param == PARAMETER_SET_INVALID) {
-      printf("ERR: invalid test idx\n");
+      std::cout << "ERR: invalid test idx" << std::endl;
       return 1;
     }
 
@@ -96,7 +93,7 @@ int main(int argc, char** argv) {
   }
 
   int ret = 0;
-  for (unsigned int param = Picnic_L1_FS; param < PARAMETER_SET_MAX_INDEX; ++param) {
+  for (const auto param : all_parameters) {
     const int r = perform_test(param);
     if (r) {
       ret = -1;

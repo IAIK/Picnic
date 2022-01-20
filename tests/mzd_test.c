@@ -19,6 +19,7 @@
 #include <m4ri/m4ri.h>
 
 #include "utils.h"
+#include "mzd_utils.h"
 #include "m4ri_utils.h"
 
 static int test_mzd_local_equal(void) {

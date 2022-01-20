@@ -11,6 +11,7 @@
 #ifdef WITH_OPT
 #include "../simd.h"
 #endif
+#include "mzd_utils.h"
 #include "utils.h"
 
 #include <stdio.h>
@@ -18,7 +19,7 @@
 static int test_uint64_128(void) {
   int ret = 0;
 
-  mzd_local_t val = {{ 0x01, 0x02 }};
+  mzd_local_t val = {{0x01, 0x02}};
   mzd_local_t tmp;
 
   for (unsigned int i = 1; i <= 62; ++i) {
@@ -56,7 +57,7 @@ static int test_uint64_128(void) {
 static int test_uint64_256(void) {
   int ret = 0;
 
-  mzd_local_t val = {{ 0x01, 0x02, 0x03, 0x04 }};
+  mzd_local_t val = {{0x01, 0x02, 0x03, 0x04}};
   mzd_local_t tmp;
 
   for (unsigned int i = 1; i <= 61; ++i) {
@@ -107,7 +108,7 @@ ATTR_TARGET_S128
 static int test_s128_128(void) {
   int ret = 0;
 
-  mzd_local_t val = {{UINT64_C(0xffeeddccbbaa9988), UINT64_C(0x0011223344556677) }};
+  mzd_local_t val = {{UINT64_C(0xffeeddccbbaa9988), UINT64_C(0x0011223344556677)}};
   mzd_local_t cval, tmp;
 
   mzd_shift_left_uint64_128(&cval, &val, 1);
@@ -169,7 +170,8 @@ static int test_s128_128(void) {
   return ret;
 }
 
-static void mzd_shift_left_uint64_128_64_127(mzd_local_t* dst, const mzd_local_t* val, unsigned int count) {
+static void mzd_shift_left_uint64_128_64_127(mzd_local_t* dst, const mzd_local_t* val,
+                                             unsigned int count) {
   mzd_shift_left_uint64_128(dst, val, 32);
   count -= 32;
 
@@ -180,7 +182,8 @@ static void mzd_shift_left_uint64_128_64_127(mzd_local_t* dst, const mzd_local_t
   }
 }
 
-static void mzd_shift_right_uint64_128_64_127(mzd_local_t* dst, const mzd_local_t* val, unsigned int count) {
+static void mzd_shift_right_uint64_128_64_127(mzd_local_t* dst, const mzd_local_t* val,
+                                              unsigned int count) {
   mzd_shift_right_uint64_128(dst, val, 32);
   count -= 32;
 

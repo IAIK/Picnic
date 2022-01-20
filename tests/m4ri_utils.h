@@ -10,6 +10,7 @@
 #define PICNIC_TEST_M4RI_UTILS_H
 
 #include <m4ri/m4ri.h>
+#include <string.h>
 
 static inline mzd_local_t* mzd_convert_128(const mzd_t* v) {
   mzd_local_t* r = mzd_local_init(v->nrows, 128);
@@ -25,7 +26,7 @@ static inline mzd_local_t* mzd_convert(const mzd_t* v) {
     return mzd_convert_128(v);
   }
 
-  const unsigned int num_uints = (v->ncols + 63) / 64;
+  const unsigned int num_uints  = (v->ncols + 63) / 64;
   const unsigned int num_blocks = (num_uints + 3) / 4;
 
   mzd_local_t* r = mzd_local_init(v->nrows, v->ncols);
