@@ -182,12 +182,11 @@ if(WITH_MARCH_NATIVE)
   endif()
 endif()
 
-# enable LTO if supported
+# check if LTO supported
 if(WITH_LTO)
   include(CheckIPOSupported)
   check_ipo_supported(RESULT LTO_SUPPORTED)
   if (LTO_SUPPORTED)
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     # enable -fomit-frame-pointer
     if(CC_SUPPORTS_FOMIT_FRAME_POINTER AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
       add_compile_options(-fomit-frame-pointer)
@@ -195,6 +194,8 @@ if(WITH_LTO)
   else()
     message(STATUS "IPO is not supported.")
   endif()
+else()
+set(LTO_SUPPORTED FALSE)
 endif()
 
 # enable -O3
@@ -265,14 +266,20 @@ list(APPEND PICNIC_HEADERS picnic.h)
 
 # shared library
 add_library(picnic SHARED ${PICNIC_SOURCES} ${SHA3_SOURCES})
-set_target_properties(picnic PROPERTIES VERSION ${PICNIC_VERSION} SOVERSION ${PICNIC_MAJOR_VERSION})
+set_target_properties(picnic PROPERTIES
+                      VERSION ${PICNIC_VERSION}
+                      SOVERSION ${PICNIC_MAJOR_VERSION}
+                      INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 if(MSVC)
   set_target_properties(picnic PROPERTIES OUTPUT_NAME libpicnic)
 endif()
 
 # static library
 add_library(picnic_static STATIC ${PICNIC_SOURCES} ${SHA3_SOURCES})
-set_target_properties(picnic_static PROPERTIES OUTPUT_NAME picnic ARCHIVE_OUTPUT_DIRECTORY static)
+set_target_properties(picnic_static PROPERTIES
+                      OUTPUT_NAME picnic
+                      ARCHIVE_OUTPUT_DIRECTORY static
+                      INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_compile_definitions(picnic_static PUBLIC PICNIC_STATIC)
 # build static library with valgrind if enabled for tests
 if(VALGRIND_FOUND AND WITH_VALGRIND_CT_TESTS)
@@ -370,15 +377,18 @@ endif()
 
 # bench utils library
 add_library(bench_utils STATIC tools/bench_utils.c tools/bench_timing.c)
+set_target_properties(bench_utils PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 apply_base_options(bench_utils)
 
 # bench exectuable
 add_executable(bench tools/bench.cpp)
+set_target_properties(bench PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(bench bench_utils picnic)
 apply_base_options(bench)
 
 # bench lowmc exectuable
 add_executable(bench_lowmc tools/bench_lowmc.c)
+set_target_properties(bench_lowmc PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 target_link_libraries(bench_lowmc bench_utils picnic_static)
 apply_base_options(bench_lowmc)
 apply_opt_options(bench_lowmc)
