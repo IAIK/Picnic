@@ -152,6 +152,7 @@ typedef __m128i word128;
 /* !l & r */
 #define mm128_nand(l, r) _mm_andnot_si128((l), (r))
 #define mm128_broadcast_u64(x) _mm_set1_epi64x((x))
+/* bit shifts up to 63 bits */
 #define mm128_sl_u64(x, s) _mm_slli_epi64((x), (s))
 #define mm128_sr_u64(x, s) _mm_srli_epi64((x), (s))
 
@@ -238,6 +239,7 @@ typedef uint64x2_t word128;
 /* !l & r, requires l to be an immediate */
 #define mm128_nand(l, r) vbicq_u64((r), (l))
 #define mm128_broadcast_u64(x) vdupq_n_u64((x))
+/* bit shifts up to 63 bits */
 #define mm128_sl_u64(x, s)                                                                         \
   __builtin_choose_expr(__builtin_constant_p(s), vshlq_n_u64((x), (s)),                            \
                         vshlq_u64((x), vdupq_n_s64(s)))
