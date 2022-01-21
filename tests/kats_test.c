@@ -17,6 +17,7 @@
 #include "macros.h"
 #include "utils.h"
 
+#include <errno.h>
 #include <memory.h>
 #include <stdbool.h>
 #include <stddef.h>
