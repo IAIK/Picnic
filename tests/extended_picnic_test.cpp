@@ -178,8 +178,8 @@ BOOST_DATA_TEST_CASE(modified_signature, all_supported_parameters(), parameters)
     BOOST_TEST(
         !picnic_verify(&pk, message.data(), message_size, signature.data(), signature.size()));
 
-    std::uniform_int_distribution<uint8_t> dist_diff{1};
-    std::uniform_int_distribution<size_t> dist_pos{1, signature.size() / 8};
+    std::uniform_int_distribution<unsigned int> dist_diff{1, 255};
+    std::uniform_int_distribution<unsigned int> dist_pos{1, signature.size() / 8};
     std::random_device rnd;
     std::default_random_engine eng{rnd()};
 

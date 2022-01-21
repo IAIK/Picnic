@@ -53,7 +53,7 @@ namespace {
 
     std::array<uint8_t, 32> m;
     {
-      std::uniform_int_distribution<uint8_t> dist;
+      std::uniform_int_distribution<unsigned int> dist{0, 255};
       std::random_device rnd;
       std::default_random_engine eng(rnd());
       std::generate(m.begin(), m.end(), [&dist, &eng] { return dist(eng); });

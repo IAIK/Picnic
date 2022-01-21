@@ -15,11 +15,16 @@
 #include <algorithm>
 #include <random>
 #include <vector>
+#include <limits>
 
 namespace {
   template <typename C>
   void randomize_container(C& container) {
-    std::uniform_int_distribution<typename C::value_type> dist;
+    static_assert(std::numeric_limits<typename C::value_type>::max() <=
+                  std::numeric_limits<unsigned int>::max());
+
+    std::uniform_int_distribution<unsigned int> dist{
+        0, std::numeric_limits<typename C::value_type>::max()};
     std::random_device rnd;
     std::default_random_engine eng(rnd());
     std::generate(container.begin(), container.end(), [&dist, &eng] { return dist(eng); });
