@@ -2,12 +2,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 # Helper library
 add_library(test_utils STATIC utils.cpp)
+if(NOT WIN32 AND NOT CYGWIN)
+  target_link_libraries(test_utils picnic)
+else()
+  target_link_libraries(test_utils picnic_static)
+endif()
 
 # Picnic tests and extended tests
 if(Boost_FOUND)
   add_executable(picnic_test
-                picnic_test.cpp
-                $<$<BOOL:${WITH_EXTENDED_TESTS}>:extended_picnic_test.cpp>)
+                 picnic_test.cpp
+                 $<$<BOOL:${WITH_EXTENDED_TESTS}>:extended_picnic_test.cpp>)
   target_link_libraries(picnic_test test_utils Boost::unit_test_framework)
   if(NOT WIN32 AND NOT CYGWIN)
     target_link_libraries(picnic_test picnic)
