@@ -20,9 +20,6 @@
 namespace {
   template <typename C>
   void randomize_container(C& container) {
-    static_assert(std::numeric_limits<typename C::value_type>::max() <=
-                  std::numeric_limits<unsigned int>::max());
-
     std::uniform_int_distribution<unsigned int> dist{
         0, std::numeric_limits<typename C::value_type>::max()};
     std::random_device rnd;
