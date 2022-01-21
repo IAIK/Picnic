@@ -389,7 +389,6 @@ apply_base_options(bench)
 
 # bench lowmc exectuable
 add_executable(bench_lowmc tools/bench_lowmc.c)
-set_target_properties(bench_lowmc PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED} LINKER_LANGUAGE CXX)
 target_link_libraries(bench_lowmc bench_utils picnic_static)
 apply_base_options(bench_lowmc)
 apply_opt_options(bench_lowmc)
