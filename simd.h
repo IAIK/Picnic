@@ -178,56 +178,48 @@ apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2)
   _mm_or_si128(_mm_srli_epi64(data, count),                                                        \
                _mm_shuffle_epi32(_mm_slli_epi64(data, 64 - count), _MM_SHUFFLE(1, 0, 3, 2)))
 
-static inline void FN_ATTRIBUTES_SSE2 mm128_shift_right_256(__m128i res[2], __m128i const data[2],
-                                                            const unsigned int count) {
-  __m128i total_carry = _mm_bslli_si128(data[1], 8);
-  total_carry         = _mm_slli_epi64(total_carry, 64 - count);
-  for (unsigned int i = 0; i < 2; ++i) {
-    __m128i carry = _mm_bsrli_si128(data[i], 8);
-    carry         = _mm_slli_epi64(carry, 64 - count);
-    res[i]        = _mm_srli_epi64(data[i], count);
-    res[i]        = _mm_or_si128(res[i], carry);
-  }
-  res[0] = _mm_or_si128(res[0], total_carry);
-}
+#define mm128_shift_right_256(res, data, count)                                                    \
+  do {                                                                                             \
+    const __m128i total_carry = _mm_slli_epi64(_mm_bslli_si128(data[1], 8), 64 - count);           \
+    __m128i carry             = _mm_slli_epi64(_mm_bsrli_si128(data[0], 8), 64 - count);           \
+    res[0]                    = _mm_or_si128(_mm_srli_epi64(data[0], count), carry);               \
+    carry                     = _mm_slli_epi64(_mm_bsrli_si128(data[1], 8), 64 - count);           \
+    res[1]                    = _mm_or_si128(_mm_srli_epi64(data[1], count), carry);               \
+    res[0]                    = _mm_or_si128(res[0], total_carry);                                 \
+  } while (0)
 
-static inline void FN_ATTRIBUTES_SSE2 mm128_shift_left_256(__m128i res[2], __m128i const data[2],
-                                                           const unsigned int count) {
-  __m128i total_carry = _mm_bsrli_si128(data[0], 8);
-  total_carry         = _mm_srli_epi64(total_carry, 64 - count);
-
-  for (unsigned int i = 0; i < 2; ++i) {
-    __m128i carry = _mm_bslli_si128(data[i], 8);
-
-    carry  = _mm_srli_epi64(carry, 64 - count);
-    res[i] = _mm_slli_epi64(data[i], count);
-    res[i] = _mm_or_si128(res[i], carry);
-  }
-  res[1] = _mm_or_si128(res[1], total_carry);
-}
+#define mm128_shift_left_256(res, data, count)                                                     \
+  do {                                                                                             \
+    const __m128i total_carry = _mm_srli_epi64(_mm_bsrli_si128(data[0], 8), 64 - count);           \
+    __m128i carry             = _mm_srli_epi64(_mm_bslli_si128(data[0], 8), 64 - count);           \
+    res[0]                    = _mm_or_si128(_mm_slli_epi64(data[0], count), carry);               \
+    carry                     = _mm_srli_epi64(_mm_bslli_si128(data[1], 8), 64 - count);           \
+    res[1]                    = _mm_or_si128(_mm_slli_epi64(data[1], count), carry);               \
+    res[1]                    = _mm_or_si128(res[1], total_carry);                                 \
+  } while (0)
 
 /* shift left by 64 to 127 bits */
 #define mm128_shift_left_64_127(data, count) _mm_slli_epi64(_mm_bslli_si128(data, 8), count - 64)
 /* shift right by 64 to 127 bits */
 #define mm128_shift_right_64_127(data, count) _mm_srli_epi64(_mm_bsrli_si128(data, 8), count - 64)
 
-static inline void FN_ATTRIBUTES_SSE2 mm128_rotate_left_256(__m128i res[2], __m128i const data[2],
-                                                            const unsigned int count) {
-  const __m128i carry = mm128_shift_right_64_127(data[0], 128 - count);
+#define mm128_rotate_left_256(res, data, count)                                                    \
+  do {                                                                                             \
+    const __m128i carry = mm128_shift_right_64_127(data[0], 128 - count);                          \
+                                                                                                   \
+    res[0] = _mm_or_si128(mm128_shift_left(data[0], count),                                        \
+                          mm128_shift_right_64_127(data[1], 128 - count));                         \
+    res[1] = _mm_or_si128(mm128_shift_left(data[1], count), carry);                                \
+  } while (0)
 
-  res[0] = _mm_or_si128(mm128_shift_left(data[0], count),
-                        mm128_shift_right_64_127(data[1], 128 - count));
-  res[1] = _mm_or_si128(mm128_shift_left(data[1], count), carry);
-}
-
-static inline void FN_ATTRIBUTES_SSE2 mm128_rotate_right_256(__m128i res[2], __m128i const data[2],
-                                                             const unsigned int count) {
-  const __m128i carry = mm128_shift_left_64_127(data[0], 128 - count);
-
-  res[0] = _mm_or_si128(mm128_shift_right(data[0], count),
-                        mm128_shift_left_64_127(data[1], 128 - count));
-  res[1] = _mm_or_si128(mm128_shift_right(data[1], count), carry);
-}
+#define mm128_rotate_right_256(res, data, count)                                                   \
+  do {                                                                                             \
+    const __m128i carry = mm128_shift_left_64_127(data[0], 128 - count);                           \
+                                                                                                   \
+    res[0] = _mm_or_si128(mm128_shift_right(data[0], count),                                       \
+                          mm128_shift_left_64_127(data[1], 128 - count));                          \
+    res[1] = _mm_or_si128(mm128_shift_right(data[1], count), carry);                               \
+  } while (0)
 #endif
 
 #if defined(WITH_NEON)
