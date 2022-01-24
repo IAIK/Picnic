@@ -143,29 +143,20 @@ namespace {
 
     // Recreate the signature
     size_t signature_len = signature.size();
-    ret = picnic_sign(&private_key, tv.message.data(), tv.message.size(), signature.data(),
-                      &signature_len);
-    if (ret != 0) {
-      std::cout << "Unable to sign." << std::endl;
-      return false;
-    }
+    const bool sign_ok   = picnic_sign(&private_key, tv.message.data(), tv.message.size(),
+                                     signature.data(), &signature_len) == 0;
     signature.resize(signature_len);
 
     // Verify the provided signature
-    ret = picnic_verify(&public_key, tv.message.data(), tv.message.size(), tvsig.data(),
-                        tvsig.size());
-    if (ret != 0) {
-      std::cout << "Signature does not verify." << std::endl;
-      return false;
-    }
+    const bool verify_ok = picnic_verify(&public_key, tv.message.data(), tv.message.size(),
+                                         tvsig.data(), tvsig.size()) == 0;
 
     // Check if computed signature matches
-    if (signature.size() != tvsig.size()) {
-      std::cout << "Signature length does not match." << std::endl;
-      return false;
-    }
-    if (signature != tvsig) {
-      std::cout << "Signature does not match." << std::endl;
+    const bool sig_ok = signature == tvsig;
+    if (!sign_ok || !verify_ok || !sig_ok) {
+      std::cout << "Sign: " << sign_ok;
+      std::cout << "\nVerify: " << verify_ok;
+      std::cout << "\nSignature matches: " << sig_ok << std::endl;
       return false;
     }
 
@@ -236,8 +227,8 @@ int main(int argc, char** argv) {
 
     const int t = run_test(param);
     if (!t) {
-      std::cout << "ERR: Picnic KAT test " << picnic_get_param_name(param) << " FAILED (" << t
-                << ")" << std::endl;
+      std::cout << "ERR: Picnic KAT test " << picnic_get_param_name(param) << " FAILED"
+                << std::endl;
       return -1;
     }
     return 0;
@@ -247,8 +238,7 @@ int main(int argc, char** argv) {
   for (const auto s : all_supported_parameters()) {
     const int t = run_test(s);
     if (!t) {
-      std::cout << "ERR: Picnic KAT test: " << picnic_get_param_name(s) << " FAILED (" << t << ")"
-                << std::endl;
+      std::cout << "ERR: Picnic KAT test " << picnic_get_param_name(s) << " FAILED" << std::endl;
       ret = -1;
     }
   }
