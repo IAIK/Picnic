@@ -232,12 +232,8 @@ typedef uint64x2_t word128;
 #define mm128_nand(l, r) vbicq_u64((r), (l))
 #define mm128_broadcast_u64(x) vdupq_n_u64((x))
 /* bit shifts up to 63 bits */
-#define mm128_sl_u64(x, s)                                                                         \
-  __builtin_choose_expr(__builtin_constant_p(s), vshlq_n_u64((x), (s)),                            \
-                        vshlq_u64((x), vdupq_n_s64(s)))
-#define mm128_sr_u64(x, s)                                                                         \
-  __builtin_choose_expr(__builtin_constant_p(s), vshrq_n_u64((x), (s)),                            \
-                        vshlq_u64((x), vdupq_n_s64(-(int64_t)(s))))
+#define mm128_sl_u64(x, s) vshlq_n_u64((x), (s))
+#define mm128_sr_u64(x, s) vshrq_n_u64((x), (s))
 
 // clang-format off
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON)
