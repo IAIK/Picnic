@@ -136,6 +136,7 @@ if(MSVC)
   set(USE_STATIC_RUNTIME OFF CACHE BOOL "Use MSVC's static runtime for the static library.")
 endif()
 set(WITH_EXTENDED_TESTS ON CACHE BOOL "Run extended tests.")
+set(WITH_KATS_TESTS ON CACHE BOOL "Run known-answer tests.")
 set(WITH_VALGRIND_CT_TESTS OFF CACHE BOOL "Build crypto_api tests with constant-time checks. Enabling this option is discouraged. It is only available to test builds for SUPERCOP/TIMECOP.")
 
 # do not build with -rdynamic

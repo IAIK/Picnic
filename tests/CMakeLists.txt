@@ -57,7 +57,7 @@ foreach(target IN ITEMS ${test_targets})
   apply_base_options("${target}_test")
 endforeach(target)
 
-if(NOT WITH_EXTRA_RANDOMNESS)
+if(WITH_KATS_TESTS AND NOT WITH_EXTRA_RANDOMNESS)
   add_executable(kats_test kats_test.cpp)
   if (NOT WIN32 AND NOT CYGWIN)
     target_link_libraries(kats_test test_utils picnic)
