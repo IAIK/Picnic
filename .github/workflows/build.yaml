@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+env:
+  CTEST_OUTPUT_ON_FAILURE: 1
+  VERBOSE: 1
+
 jobs:
   build-base:
     name: Test on Ubuntu with gcc
