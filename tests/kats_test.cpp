@@ -64,6 +64,9 @@ namespace {
     bool expect_data = false;
 
     while (std::getline(in, line)) {
+      if (!line.empty() && line[line.size() - 1] == '\r') {
+        line.erase(line.size() - 1);
+      }
       if (line.empty() || line[0] == '#') {
         if (expect_data) {
           // std::cout << "Expected data." << std::endl;
