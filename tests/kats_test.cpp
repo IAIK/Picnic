@@ -26,6 +26,14 @@ struct test_vector {
   std::vector<uint8_t> sk;
   size_t message_length;
   size_t signature_length;
+
+  void clear() {
+    message.clear();
+    signature.clear();
+    pk.clear();
+    sk.clear();
+    message_length = signature_length = 0;
+  }
 };
 
 namespace {
@@ -51,6 +59,7 @@ namespace {
   }
 
   std::istream& operator>>(std::istream& in, test_vector& tv) {
+    tv.clear();
     std::string line;
     bool expect_data = false;
 
@@ -188,8 +197,6 @@ namespace {
 
       ++vectors_run;
       vectors_succeeded += run_picnic_test(tv) ? 1 : 0;
-
-      tv = test_vector{};
     };
 
     return vectors_run && vectors_succeeded == vectors_run;
