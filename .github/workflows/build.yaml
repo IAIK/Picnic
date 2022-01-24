@@ -207,7 +207,7 @@ jobs:
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -GNinja -DWITH_LTO=OFF -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12
+        cmake -S . -B build -GNinja -DWITH_LTO=OFF -DWITH_KATS_TESTS=OFF -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12
       env:
         CFLAGS: ${{ matrix.cfg.cflags }}
         LDFLAGS: ${{ matrix.cfg.ldflags }}
