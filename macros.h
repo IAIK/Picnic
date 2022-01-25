@@ -184,6 +184,20 @@
 #define ATTR_ARTIFICIAL
 #endif
 
+/* may_alias attribute */
+#if GNUC_CHECK(3, 3) || __has_attribute(__may_alias__)
+#define ATTR_MAY_ALIAS __attribute__((__may_alias__))
+#else
+#define ATTR_MAY_ALIAS
+#endif
+
+/* vector_size attribute */
+#if GNUC_CHECK(4, 8) || __has_attribute(__vector_size__)
+#define ATTR_VECTOR_SIZE(s) __attribute__((__vector_size__(s)))
+#else
+#define ATTR_VECTOR_SIZE(s)
+#endif
+
 #define FN_ATTRIBUTES_AVX2 ATTR_ARTIFICIAL ATTR_ALWAYS_INLINE ATTR_TARGET_AVX2
 #define FN_ATTRIBUTES_SSE2 ATTR_ARTIFICIAL ATTR_ALWAYS_INLINE ATTR_TARGET_SSE2
 #define FN_ATTRIBUTES_NEON ATTR_ARTIFICIAL ATTR_ALWAYS_INLINE
