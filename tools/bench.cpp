@@ -67,27 +67,31 @@ namespace {
       picnic_privatekey_t private_key;
       picnic_publickey_t public_key;
 
-      if (picnic_keygen(options.params, &public_key, &private_key)) {
+      int ret       = picnic_keygen(options.params, &public_key, &private_key);
+      timing.keygen = duration_cast<microseconds>(high_resolution_clock::now() - start_time);
+      if (ret) {
         std::cout << "picnic_keygen: failed." << std::endl;
         break;
       }
-      timing.keygen = duration_cast<microseconds>(high_resolution_clock::now() - start_time);
 
       start_time    = high_resolution_clock::now();
       size_t siglen = max_signature_size;
-      if (picnic_sign(&private_key, m.data(), m.size(), sig.data(), &siglen)) {
+      ret           = picnic_sign(&private_key, m.data(), m.size(), sig.data(), &siglen);
+      timing.sign   = duration_cast<microseconds>(high_resolution_clock::now() - start_time);
+      timing.size   = siglen;
+      if (ret) {
         std::cout << "picnic_sign: failed" << std::endl;
         break;
       }
-      timing.sign = duration_cast<microseconds>(high_resolution_clock::now() - start_time);
-      timing.size = siglen;
 
-      start_time = high_resolution_clock::now();
-      if (picnic_verify(&public_key, m.data(), m.size(), sig.data(), siglen)) {
+      start_time    = high_resolution_clock::now();
+      ret           = picnic_verify(&public_key, m.data(), m.size(), sig.data(), siglen);
+      timing.verify = duration_cast<microseconds>(high_resolution_clock::now() - start_time);
+      if (ret) {
         std::cout << "picnic_verify: failed" << std::endl;
         break;
       }
-      timing.verify = duration_cast<microseconds>(high_resolution_clock::now() - start_time);
+
       timings.emplace_back(timing);
     }
 
