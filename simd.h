@@ -107,6 +107,8 @@ typedef __m256i word256;
 #endif
 
 #define mm256_zero _mm256_setzero_si256()
+#define mm256_load(s) _mm256_load_si256((const word256*)s)
+#define mm256_store(d, s) _mm256_store_si256((word256*)d, s)
 #define mm256_xor(l, r) _mm256_xor_si256((l), (r))
 #define mm256_and(l, r) _mm256_and_si256((l), (r))
 /* !l & r */
@@ -147,6 +149,8 @@ apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CON
 typedef __m128i word128;
 
 #define mm128_zero _mm_setzero_si128()
+#define mm128_load(s) _mm_load_si128((const word128*)s)
+#define mm128_store(d, s) _mm_store_si128((word128*)d, s)
 #define mm128_xor(l, r) _mm_xor_si128((l), (r))
 #define mm128_and(l, r) _mm_and_si128((l), (r))
 /* !l & r */
@@ -226,6 +230,8 @@ apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2)
 typedef uint64x2_t word128;
 
 #define mm128_zero vmovq_n_u64(0)
+#define mm128_load(s) vld1q_u64(s)
+#define mm128_store(d, s) vst1q_u64(d, s)
 #define mm128_xor(l, r) veorq_u64((l), (r))
 #define mm128_and(l, r) vandq_u64((l), (r))
 /* !l & r, requires l to be an immediate */
