@@ -307,9 +307,9 @@ ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t ceil_log2(uint32_t x) {
 #endif
 
 /* crypto_declassify wrapper */
-#if defined(TIMECOP)
+#if defined(TIMECOP) || defined(SUPERCOP)
 #include "crypto_declassify.h"
-#define picnic_declassify(x, len) crypto_declassify(x, len)
+#define picnic_declassify(x, len) crypto_declassify((void*)x, len)
 #elif defined(WITH_VALGRIND)
 #include <valgrind/memcheck.h>
 #define picnic_declassify(x, len) VALGRIND_MAKE_MEM_DEFINED(x, len)
