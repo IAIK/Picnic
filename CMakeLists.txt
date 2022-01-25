@@ -378,7 +378,7 @@ if(WITH_ZKBPP)
 endif()
 
 # bench utils library
-add_library(bench_utils STATIC tools/bench_utils.c tools/bench_timing.c)
+add_library(bench_utils STATIC tools/bench_utils.c)
 set_target_properties(bench_utils PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
 apply_base_options(bench_utils)
 
@@ -389,7 +389,7 @@ target_link_libraries(bench bench_utils picnic)
 apply_base_options(bench)
 
 # bench lowmc exectuable
-add_executable(bench_lowmc tools/bench_lowmc.c)
+add_executable(bench_lowmc tools/bench_lowmc.c tools/bench_timing.c)
 target_link_libraries(bench_lowmc bench_utils picnic_static)
 apply_base_options(bench_lowmc)
 apply_opt_options(bench_lowmc)
