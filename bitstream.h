@@ -179,7 +179,6 @@ static inline word256 w256_from_bitstream(bitstream_t* bs, const size_t width, c
   }
   if (bits) {
     *d = bitstream_get_bits(bs, bits) << (sizeof(uint64_t) * 8 - bits);
-    --d;
   }
 
   return mm256_load(&buf[0]);
@@ -215,7 +214,6 @@ static inline void w128_from_bitstream(bitstream_t* bs, word128 v[2], const size
   }
   if (bits) {
     *d = bitstream_get_bits(bs, bits) << (sizeof(uint64_t) * 8 - bits);
-    --d;
   }
 
   v[0] = mm128_load(&buf[0]);
