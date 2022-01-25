@@ -48,7 +48,7 @@ endfunction()
 # check libraries
 find_package(m4ri 20140914)
 find_package(valgrind)
-find_package(Boost COMPONENTS unit_test_framework)
+find_package(Boost 1.65 COMPONENTS unit_test_framework)
 
 if(APPLE)
   find_path(SECRUTY_INCLUDE_DIR Security/Security.h)
