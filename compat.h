@@ -10,13 +10,17 @@
 #ifndef PICNIC_COMPAT_H
 #define PICNIC_COMPAT_H
 
-#include <stddef.h>
-
 #if defined(HAVE_CONFIG_H)
 #include <config.h>
-#elif !defined(OQS)
-/* in case cmake checks were not run, define HAVE_* for known good configurations */
+#endif
+
 #include "macros.h"
+
+#include <stddef.h>
+
+#if !defined(HAVE_CONFIG_H) && !defined(OQS)
+/* In case cmake checks were not run, define HAVE_* for known good configurations. We skip those if
+ * building for OQS, as the compat functions from there can be used instead. */
 #if defined(__OpenBSD__)
 #include <sys/param.h>
 #endif /* __OpenBSD__ */
@@ -40,7 +44,7 @@
 /* timingsafe_bcmp was introduced in OpenBSD 4.9, FreeBSD 12.0, and MacOS X 10.12 */
 #define HAVE_TIMINGSAFE_BCMP
 #endif /* HAVE_TIMINGSAFE_BCMP */
-#endif /* HAVE_CONFIG_H */
+#endif /* !HAVE_CONFIG_H && !OQS */
 
 #if defined(HAVE_ALIGNED_ALLOC)
 #include <stdlib.h>
@@ -85,4 +89,91 @@ void picnic_explicit_bzero(void* a, size_t len);
 #define picnic_timingsafe_bcmp(a, b, len) OQS_MEM_secure_bcmp((a), (b), (len))
 #define picnic_explicit_bzero(ptr, len) OQS_MEM_cleanse(ptr, len)
 #endif
+
+/* helper macros/functions for checked integer subtraction */
+#if GNUC_CHECK(5, 0) || __has_builtin(__builtin_add_overflow)
+#define sub_overflow_size_t(x, y, diff) __builtin_sub_overflow(x, y, diff)
+#else
+#include <stdbool.h>
+#include <stddef.h>
+
+ATTR_ARTIFICIAL
+static inline bool sub_overflow_size_t(const size_t x, const size_t y, size_t* diff) {
+  *diff = x - y;
+  return x < y;
+}
+#endif
+
+#include <stdint.h>
+
+/* helper functions for parity computations */
+#if GNUC_CHECK(4, 9) || __has_builtin(__builtin_parity)
+ATTR_CONST ATTR_ARTIFICIAL static inline uint64_t parity64_uint64(uint64_t in) {
+  return __builtin_parityll(in);
+}
+#else
+/* byte parity from: https://graphics.stanford.edu/~seander/bithacks.html#ParityWith64Bits */
+ATTR_CONST ATTR_ARTIFICIAL static inline uint64_t parity64_uint64(uint64_t in) {
+  in ^= in >> 1;
+  in ^= in >> 2;
+  in = (in & 0x1111111111111111) * 0x1111111111111111;
+  return (in >> 60) & 1;
+}
+#endif
+
+/* helper functions to compute number of leading zeroes */
+#if GNUC_CHECK(4, 7) || __has_builtin(__builtin_clz)
+ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t clz(uint32_t x) {
+  return x ? __builtin_clz(x) : 32;
+}
+#elif defined(_MSC_VER)
+#include <intrin.h>
+ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t clz(uint32_t x) {
+  unsigned long index = 0;
+  if (_BitScanReverse(&index, x)) {
+    return 31 - index;
+  }
+  return 32;
+}
+#else
+/* Number of leading zeroes of x.
+ * From the book
+ * H.S. Warren, *Hacker's Delight*, Pearson Education, 2003.
+ * http://www.hackersdelight.org/hdcodetxt/nlz.c.txt
+ */
+ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t clz(uint32_t x) {
+  if (!x) {
+    return 32;
+  }
+
+  uint32_t n = 1;
+  if (!(x >> 16)) {
+    n = n + 16;
+    x = x << 16;
+  }
+  if (!(x >> 24)) {
+    n = n + 8;
+    x = x << 8;
+  }
+  if (!(x >> 28)) {
+    n = n + 4;
+    x = x << 4;
+  }
+  if (!(x >> 30)) {
+    n = n + 2;
+    x = x << 2;
+  }
+  n = n - (x >> 31);
+
+  return n;
+}
+#endif
+
+ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t ceil_log2(uint32_t x) {
+  if (!x) {
+    return 0;
+  }
+  return 32 - clz(x - 1);
+}
+
 #endif
