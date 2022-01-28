@@ -33,6 +33,8 @@
 #define MAX_SEED_SIZE 16
 #endif
 
+PICNIC_BEGIN_C_DECL
+
 typedef struct picnic_instance_t {
   const lowmc_parameters_t lowmc;
   const uint16_t num_rounds;       // T
@@ -59,5 +61,7 @@ static const uint8_t HASH_PREFIX_2 = 2;
 static const uint8_t HASH_PREFIX_3 = 3;
 static const uint8_t HASH_PREFIX_4 = 4;
 static const uint8_t HASH_PREFIX_5 = 5;
+
+PICNIC_END_C_DECL
 
 #endif

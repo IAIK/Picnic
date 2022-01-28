@@ -389,7 +389,7 @@ target_link_libraries(bench bench_utils picnic)
 apply_base_options(bench)
 
 # bench lowmc exectuable
-add_executable(bench_lowmc tools/bench_lowmc.c tools/bench_timing.c)
+add_executable(bench_lowmc tools/bench_lowmc.cpp)
 target_link_libraries(bench_lowmc bench_utils picnic_static)
 apply_base_options(bench_lowmc)
 apply_opt_options(bench_lowmc)

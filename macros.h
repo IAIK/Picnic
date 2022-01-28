@@ -79,7 +79,7 @@
 #define PICNIC_END_C_DECL }
 #else
 #define PICNIC_BEGIN_C_DECL
-#define PICNIC_ENC_D_DECL
+#define PICNIC_END_C_DECL
 #endif
 
 /* assume */

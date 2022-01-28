@@ -19,6 +19,8 @@
 #include "macros.h"
 #include "compat.h"
 
+PICNIC_BEGIN_C_DECL
+
 typedef uint64_t word;
 #define WORD_C(v) UINT64_C(v)
 
@@ -244,5 +246,7 @@ void mzd_shuffle_pext_256_30(mzd_local_t* x, const word mask) ATTR_NONNULL;
 
 #define BLOCK(v, b) ((block_t*)ASSUME_ALIGNED(&(v)[(b)], 32))
 #define CONST_BLOCK(v, b) ((const block_t*)ASSUME_ALIGNED(&(v)[(b)], 32))
+
+PICNIC_END_C_DECL
 
 #endif
