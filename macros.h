@@ -74,6 +74,14 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
+#if defined(__cplusplus)
+#define PICNIC_BEGIN_C_DECL extern "C" {
+#define PICNIC_END_C_DECL }
+#else
+#define PICNIC_BEGIN_C_DECL
+#define PICNIC_ENC_D_DECL
+#endif
+
 /* assume */
 #if GNUC_CHECK(4, 5) || __has_builtin(__builtin_unreachable)
 #define ASSUME(p)                                                                                  \
