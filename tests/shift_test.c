@@ -12,7 +12,6 @@
 #include "../simd.h"
 #endif
 #include "mzd_utils.h"
-#include "utils.h"
 
 #include <stdio.h>
 

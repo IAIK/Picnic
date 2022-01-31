@@ -19,7 +19,6 @@
 #include <inttypes.h>
 #include <stdint.h>
 
-#include "utils.h"
 #include "mzd_utils.h"
 
 static int lowmc_enc(const lowmc_parameters_t* lowmc, const uint8_t* key, const uint8_t* plaintext,

@@ -36,15 +36,15 @@ namespace {
     }
   }
 
-  void bench_lowmc(const bench_options_t& options) {
-    const picnic_instance_t* pp = picnic_instance_get(options.params);
+  void bench_lowmc(picnic_params_t params, unsigned int iter) {
+    const picnic_instance_t* pp = picnic_instance_get(params);
     if (!pp) {
       std::cout << "Failed to create Picnic instance." << std::endl;
       return;
     }
 
     std::vector<microseconds> timings;
-    timings.reserve(options.iter);
+    timings.reserve(iter);
 
     const lowmc_parameters_t* lowmc         = &pp->lowmc;
     const lowmc_implementation_f lowmc_impl = lowmc_get_implementation(lowmc);
@@ -66,7 +66,7 @@ namespace {
     mzd_from_char_array(sk, rand_buffer.data(), input_size);
     mzd_from_char_array(pt, rand_buffer.data() + input_size, input_size);
 
-    for (unsigned int i = 0; i != options.iter; ++i) {
+    for (unsigned int i = 0; i != iter; ++i) {
       auto start_time = high_resolution_clock::now();
       lowmc_impl(sk, pt, ct);
       timings.emplace_back(duration_cast<microseconds>(high_resolution_clock::now() - start_time));
@@ -83,12 +83,13 @@ namespace {
 } // namespace
 
 int main(int argc, char** argv) {
-  bench_options_t opts = {PARAMETER_SET_INVALID, 0};
-  int ret              = parse_args(&opts, argc, argv) ? 0 : -1;
-
-  if (!ret) {
-    bench_lowmc(opts);
+  picnic_params_t params;
+  unsigned int iter;
+  std::tie(params, iter) = parse_args(argc, argv);
+  if (params == PARAMETER_SET_INVALID) {
+    return 1;
   }
 
-  return ret;
+  bench_lowmc(params, iter);
+  return 0;
 }

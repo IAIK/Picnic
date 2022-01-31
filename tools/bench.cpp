@@ -39,15 +39,15 @@ namespace {
     }
   }
 
-  void bench_sign_and_verify(const bench_options_t& options) {
-    const size_t max_signature_size = picnic_signature_size(options.params);
+  void bench_sign_and_verify(picnic_params_t params, unsigned int iter) {
+    const size_t max_signature_size = picnic_signature_size(params);
     if (!max_signature_size) {
       std::cout << "Failed to create Picnic instance." << std::endl;
       return;
     }
 
     std::vector<timing_and_size_t> timings;
-    timings.reserve(options.iter);
+    timings.reserve(iter);
     std::vector<uint8_t> sig;
     sig.resize(max_signature_size);
 
@@ -59,7 +59,7 @@ namespace {
       std::generate(m.begin(), m.end(), [&dist, &eng] { return dist(eng); });
     }
 
-    for (unsigned int i = 0; i != options.iter; ++i) {
+    for (unsigned int i = 0; i != iter; ++i) {
       timing_and_size_t timing;
       timing.max_size = max_signature_size;
 
@@ -67,7 +67,7 @@ namespace {
       picnic_privatekey_t private_key;
       picnic_publickey_t public_key;
 
-      int ret       = picnic_keygen(options.params, &public_key, &private_key);
+      int ret       = picnic_keygen(params, &public_key, &private_key);
       timing.keygen = duration_cast<microseconds>(high_resolution_clock::now() - start_time);
       if (ret) {
         std::cout << "picnic_keygen: failed." << std::endl;
@@ -100,12 +100,13 @@ namespace {
 } // namespace
 
 int main(int argc, char** argv) {
-  bench_options_t opts = {PARAMETER_SET_INVALID, 0};
-  int ret              = parse_args(&opts, argc, argv) ? 0 : -1;
-
-  if (!ret) {
-    bench_sign_and_verify(opts);
+  picnic_params_t params;
+  unsigned int iter;
+  std::tie(params, iter) = parse_args(argc, argv);
+  if (params == PARAMETER_SET_INVALID) {
+    return 1;
   }
 
-  return ret;
+  bench_sign_and_verify(params, iter);
+  return 0;
 }

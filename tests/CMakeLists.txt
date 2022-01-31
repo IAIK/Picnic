@@ -1,23 +1,14 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-# Helper library
-add_library(test_utils STATIC utils.cpp)
-if(NOT WIN32 AND NOT CYGWIN)
-  target_link_libraries(test_utils picnic)
-else()
-  target_link_libraries(test_utils picnic_static)
-endif()
-
 # Picnic tests and extended tests
-if(Boost_FOUND)
+if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
   add_executable(picnic_test
                  picnic_test.cpp
                  $<$<BOOL:${WITH_EXTENDED_TESTS}>:extended_picnic_test.cpp>)
-  target_link_libraries(picnic_test test_utils Boost::unit_test_framework)
   if(NOT WIN32 AND NOT CYGWIN)
-    target_link_libraries(picnic_test picnic)
+    target_link_libraries(picnic_test utils Boost::unit_test_framework)
   else()
-    target_link_libraries(picnic_test picnic_static)
+    target_link_libraries(picnic_test utils_static Boost::unit_test_framework)
   endif()
   add_test(NAME picnic COMMAND picnic_test)
 endif()
@@ -60,9 +51,9 @@ endforeach(target)
 if(WITH_KATS_TESTS AND NOT WITH_EXTRA_RANDOMNESS)
   add_executable(kats_test kats_test.cpp)
   if (NOT WIN32 AND NOT CYGWIN)
-    target_link_libraries(kats_test test_utils picnic)
+    target_link_libraries(kats_test utils)
   else()
-    target_link_libraries(kats_test test_utils picnic_static)
+    target_link_libraries(kats_test utils_static)
   endif()
   apply_base_options(kats_test)
   target_compile_definitions(kats_test PRIVATE "-DKATDIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"")

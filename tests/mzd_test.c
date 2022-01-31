@@ -18,7 +18,6 @@
 
 #include <m4ri/m4ri.h>
 
-#include "utils.h"
 #include "mzd_utils.h"
 #include "m4ri_utils.h"
 

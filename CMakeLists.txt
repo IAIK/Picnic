@@ -48,7 +48,7 @@ endfunction()
 # check libraries
 find_package(m4ri 20140914)
 find_package(valgrind)
-find_package(Boost 1.65 COMPONENTS unit_test_framework)
+find_package(Boost 1.65 OPTIONAL_COMPONENTS unit_test_framework program_options)
 
 if(APPLE)
   find_path(SECRUTY_INCLUDE_DIR Security/Security.h)
@@ -377,22 +377,28 @@ if(WITH_ZKBPP)
   apply_base_options(visualize_signature)
 endif()
 
-# bench utils library
-add_library(bench_utils STATIC tools/bench_utils.c)
-set_target_properties(bench_utils PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED})
-apply_base_options(bench_utils)
+add_library(utils STATIC tools/utils.cpp)
+target_link_libraries(utils PUBLIC picnic)
+target_include_directories(utils PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 
-# bench exectuable
-add_executable(bench tools/bench.cpp)
-set_target_properties(bench PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED} LINKER_LANGUAGE CXX)
-target_link_libraries(bench bench_utils picnic)
-apply_base_options(bench)
+add_library(utils_static STATIC tools/utils.cpp)
+target_link_libraries(utils_static PUBLIC picnic_static)
+target_include_directories(utils_static PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 
-# bench lowmc exectuable
-add_executable(bench_lowmc tools/bench_lowmc.cpp)
-target_link_libraries(bench_lowmc bench_utils picnic_static)
-apply_base_options(bench_lowmc)
-apply_opt_options(bench_lowmc)
+if(Boost_PROGRAM_OPTIONS_FOUND)
+  # bench exectuable
+  add_executable(bench tools/bench.cpp)
+  set_target_properties(bench PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED}})
+  target_link_libraries(bench utils Boost::program_options)
+  apply_base_options(bench)
+
+  # bench lowmc exectuable
+  add_executable(bench_lowmc tools/bench_lowmc.cpp)
+  set_target_properties(bench_lowmc PROPERTIES INTERPROCEDURAL_OPTIMIZATION ${LTO_SUPPORTED}})
+  target_link_libraries(bench_lowmc utils_static Boost::program_options)
+  apply_base_options(bench_lowmc)
+  apply_opt_options(bench_lowmc)
+endif()
 
 # example executable
 add_executable(example tools/example.c)
