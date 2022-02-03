@@ -108,6 +108,7 @@ typedef __m256i word256;
 
 #define mm256_zero _mm256_setzero_si256()
 #define mm256_load(s) _mm256_load_si256((const word256*)s)
+#define mm256_set_4(v0, v1, v2, v3) _mm256_set_epi64x(v3, v2, v1, v0)
 #define mm256_store(d, s) _mm256_store_si256((word256*)d, s)
 #define mm256_xor(l, r) _mm256_xor_si256((l), (r))
 #define mm256_and(l, r) _mm256_and_si256((l), (r))

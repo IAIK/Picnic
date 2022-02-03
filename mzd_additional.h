@@ -34,9 +34,6 @@ typedef union {
 #if defined(WITH_SSE2) || defined(WITH_NEON)
   word128 w128[2];
 #endif
-#if defined(WITH_AVX2)
-  word256 w256;
-#endif
 #endif
 } block_t ATTR_ALIGNED(32);
 

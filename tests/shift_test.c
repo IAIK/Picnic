@@ -295,56 +295,56 @@ static int test_s256_256(void) {
   mzd_local_t cval, tmp;
 
   mzd_shift_left_uint64_256(&cval, &val, 1);
-  tmp.w256 = mm256_shift_left(val.w256, 1);
+  mm256_store(tmp.w64, mm256_shift_left(mm256_load(val.w64), 1));
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm256 shift left fail: 1\n");
     ret = -1;
   }
 
   mzd_shift_left_uint64_256(&cval, &val, 2);
-  tmp.w256 = mm256_shift_left(val.w256, 2);
+  mm256_store(tmp.w64, mm256_shift_left(mm256_load(val.w64), 2));
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm256 shift left fail: 2\n");
     ret = -1;
   }
 
   mzd_shift_right_uint64_256(&cval, &val, 1);
-  tmp.w256 = mm256_shift_right(val.w256, 1);
+  mm256_store(tmp.w64, mm256_shift_right(mm256_load(val.w64), 1));
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm256 shift right fail: 1\n");
     ret = -1;
   }
 
   mzd_shift_right_uint64_256(&cval, &val, 2);
-  tmp.w256 = mm256_shift_right(val.w256, 2);
+  mm256_store(tmp.w64, mm256_shift_right(mm256_load(val.w64), 2));
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm256 shift right fail: 2\n");
     ret = -1;
   }
 
   mzd_rotate_left_uint64_256(&cval, &val, 1);
-  tmp.w256 = mm256_rotate_left(val.w256, 1);
+  mm256_store(tmp.w64, mm256_rotate_left(mm256_load(val.w64), 1));
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm256 rotate left fail: 1\n");
     ret = -1;
   }
 
   mzd_rotate_left_uint64_256(&cval, &val, 2);
-  tmp.w256 = mm256_rotate_left(val.w256, 2);
+  mm256_store(tmp.w64, mm256_rotate_left(mm256_load(val.w64), 2));
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm256 rotate left fail: 2\n");
     ret = -1;
   }
 
   mzd_rotate_right_uint64_256(&cval, &val, 1);
-  tmp.w256 = mm256_rotate_right(val.w256, 1);
+  mm256_store(tmp.w64, mm256_rotate_right(mm256_load(val.w64), 1));
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm256 rotate right fail: 1\n");
     ret = -1;
   }
 
   mzd_rotate_right_uint64_256(&cval, &val, 2);
-  tmp.w256 = mm256_rotate_right(val.w256, 2);
+  mm256_store(tmp.w64, mm256_rotate_right(mm256_load(val.w64), 2));
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm256 rotate right fail: 2\n");
     ret = -1;
