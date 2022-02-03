@@ -379,11 +379,11 @@ endif()
 
 add_library(utils STATIC tools/utils.cpp)
 target_link_libraries(utils PUBLIC picnic)
-target_include_directories(utils PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/tools")
+target_include_directories(utils PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 
 add_library(utils_static STATIC tools/utils.cpp)
 target_link_libraries(utils_static PUBLIC picnic_static)
-target_include_directories(utils_static PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/tools")
+target_include_directories(utils_static PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 
 if(Boost_PROGRAM_OPTIONS_FOUND)
   # bench exectuable
