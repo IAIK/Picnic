@@ -71,6 +71,98 @@ typedef struct {
   proof_round_t* round;
 } sorting_helper_t;
 
+#if !defined(NO_UINT64_FALLBACK)
+static void mzd_share_uint64_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                                 const mzd_local_t* v3) {
+  mzd_xor_uint64_128(r, v1, v2);
+  mzd_xor_uint64_128(r, r, v3);
+}
+
+static void mzd_share_uint64_192(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                                 const mzd_local_t* v3) {
+  mzd_xor_uint64_192(r, v1, v2);
+  mzd_xor_uint64_192(r, r, v3);
+}
+
+static void mzd_share_uint64_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                                 const mzd_local_t* v3) {
+  mzd_xor_uint64_256(r, v1, v2);
+  mzd_xor_uint64_256(r, r, v3);
+}
+#endif
+
+#if defined(WITH_OPT)
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+ATTR_TARGET_S128
+static void mzd_share_s128_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                               const mzd_local_t* v3) {
+  mm128_store(r->w64,
+              mm128_xor(mm128_xor(mm128_load(v1->w64), mm128_load(v2->w64)), mm128_load(v3->w64)));
+}
+
+ATTR_TARGET_S128
+static void mzd_share_s128_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                               const mzd_local_t* v3) {
+  mm128_store(&r->w64[0], mm128_xor(mm128_xor(mm128_load(&v1->w64[0]), mm128_load(&v2->w64[0])),
+                                    mm128_load(&v3->w64[0])));
+  mm128_store(&r->w64[2], mm128_xor(mm128_xor(mm128_load(&v1->w64[2]), mm128_load(&v2->w64[2])),
+                                    mm128_load(&v3->w64[2])));
+}
+#endif
+
+#if defined(WITH_AVX2)
+ATTR_TARGET_AVX2
+static void mzd_share_s256_128(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                               const mzd_local_t* v3) {
+  mm128_store(r->w64,
+              mm128_xor(mm128_xor(mm128_load(v1->w64), mm128_load(v2->w64)), mm128_load(v3->w64)));
+}
+
+ATTR_TARGET_AVX2
+static void mzd_share_s256_256(mzd_local_t* r, const mzd_local_t* v1, const mzd_local_t* v2,
+                               const mzd_local_t* v3) {
+  mm256_store(r->w64,
+              mm256_xor(mm256_xor(mm256_load(v1->w64), mm256_load(v2->w64)), mm256_load(v3->w64)));
+}
+#endif
+#endif
+
+static void mzd_share(const lowmc_parameters_t* lowmc, mzd_local_t* r, const mzd_local_t* v1,
+                      const mzd_local_t* v2, const mzd_local_t* v3) {
+#if defined(WITH_OPT)
+#if defined(WITH_AVX2)
+  if (CPU_SUPPORTS_AVX2) {
+    if (lowmc->n > 128) {
+      mzd_share_s256_256(r, v1, v2, v3);
+    } else {
+      mzd_share_s256_128(r, v1, v2, v3);
+    }
+    return;
+  }
+#endif
+#if defined(WITH_SSE2) || defined(WITH_NEON)
+  if (CPU_SUPPORTS_SSE2 || CPU_SUPPORTS_NEON) {
+    if (lowmc->n > 128) {
+      mzd_share_s128_256(r, v1, v2, v3);
+    } else {
+      mzd_share_s128_128(r, v1, v2, v3);
+    }
+    return;
+  }
+#endif
+#endif
+
+#if !defined(NO_UINT64_FALLBACK)
+  if (lowmc->n <= 128) {
+    mzd_share_uint64_128(r, v1, v2, v3);
+  } else if (lowmc->n <= 192) {
+    mzd_share_uint64_192(r, v1, v2, v3);
+  } else {
+    mzd_share_uint64_256(r, v1, v2, v3);
+  }
+#endif
+}
+
 ATTR_CONST static inline unsigned int collapsed_challenge_size(const unsigned int num_rounds) {
   return (2 * num_rounds + 7) / 8;
 }
@@ -1042,7 +1134,6 @@ int picnic_impl_sign(const picnic_instance_t* pp, const picnic_context_t* contex
   const unsigned int diff              = input_output_size * 8 - pp->lowmc.n;
 
   const zkbpp_lowmc_implementation_f lowmc_impl = get_zkbpp_lowmc_implementation(&pp->lowmc);
-  const zkbpp_share_implementation_f mzd_share  = get_zkbpp_share_implentation(&pp->lowmc);
 
   // Perform LowMC evaluation and record state before AND gates
   recorded_state_t* recorded_state =
@@ -1097,7 +1188,8 @@ int picnic_impl_sign(const picnic_instance_t* pp, const picnic_context_t* contex
         mzd_from_char_array(in_out_shares.s[j], round[round_offset].input_shares[j],
                             input_output_size);
       }
-      mzd_share(in_out_shares.s[2], in_out_shares.s[0], in_out_shares.s[1], context->m_key);
+      mzd_share(&pp->lowmc, in_out_shares.s[2], in_out_shares.s[0], in_out_shares.s[1],
+                context->m_key);
       mzd_to_char_array(round[round_offset].input_shares[SC_PROOF - 1],
                         in_out_shares.s[SC_PROOF - 1], input_output_size);
 
@@ -1143,7 +1235,8 @@ int picnic_impl_sign(const picnic_instance_t* pp, const picnic_context_t* contex
         clear_padding_bits(&round->input_shares[j][input_output_size - 1], diff);
         mzd_from_char_array(in_out_shares.s[j], round->input_shares[j], input_output_size);
       }
-      mzd_share(in_out_shares.s[2], in_out_shares.s[0], in_out_shares.s[1], context->m_key);
+      mzd_share(&pp->lowmc, in_out_shares.s[2], in_out_shares.s[0], in_out_shares.s[1],
+                context->m_key);
       mzd_to_char_array(round->input_shares[SC_PROOF - 1], in_out_shares.s[SC_PROOF - 1],
                         input_output_size);
 
@@ -1207,7 +1300,6 @@ int picnic_impl_verify(const picnic_instance_t* pp, const picnic_context_t* cont
 
   const zkbpp_lowmc_verify_implementation_f lowmc_verify_impl =
       get_zkbpp_lowmc_verify_implementation(&pp->lowmc);
-  const zkbpp_share_implementation_f mzd_share = get_zkbpp_share_implentation(&pp->lowmc);
 
   in_out_shares_t in_out_shares;
   view_t* views = picnic_aligned_alloc(32, sizeof(view_t) * pp->lowmc.r);
@@ -1294,7 +1386,8 @@ int picnic_impl_verify(const picnic_instance_t* pp, const picnic_context_t* cont
         lowmc_verify_impl(context->m_plaintext, views, &in_out_shares, rvec, a_i);
         compress_view(helper[round_offset].round->communicated_bits[0], pp, views, 0);
 
-        mzd_share(in_out_shares.s[2], in_out_shares.s[0], in_out_shares.s[1], context->m_key);
+        mzd_share(&pp->lowmc, in_out_shares.s[2], in_out_shares.s[0], in_out_shares.s[1],
+                  context->m_key);
         // recompute commitments
         for (unsigned int j = 0; j < SC_VERIFY; ++j) {
           mzd_to_char_array(helper[round_offset].round->output_shares[j], in_out_shares.s[j],
@@ -1361,7 +1454,8 @@ int picnic_impl_verify(const picnic_instance_t* pp, const picnic_context_t* cont
       lowmc_verify_impl(context->m_plaintext, views, &in_out_shares, rvec, a_i);
       compress_view(helper->round->communicated_bits[0], pp, views, 0);
 
-      mzd_share(in_out_shares.s[2], in_out_shares.s[0], in_out_shares.s[1], context->m_key);
+      mzd_share(&pp->lowmc, in_out_shares.s[2], in_out_shares.s[0], in_out_shares.s[1],
+                context->m_key);
       // recompute commitments
       for (unsigned int j = 0; j < SC_VERIFY; ++j) {
         mzd_to_char_array(helper->round->output_shares[j], in_out_shares.s[j], input_output_size);
