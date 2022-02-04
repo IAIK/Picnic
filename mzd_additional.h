@@ -24,10 +24,6 @@ PICNIC_BEGIN_C_DECL
 typedef uint64_t word;
 #define WORD_C(v) UINT64_C(v)
 
-#if defined(WITH_OPT)
-#include "simd.h"
-#endif
-
 typedef union {
   word w64[4];
 } block_t ATTR_ALIGNED(32);
