@@ -213,25 +213,35 @@ static void picnic3_mpc_sbox_uint64_lowmc_255_255_4(mzd_local_t* statein, random
 #define picnic3_mpc_sbox_bitsliced_mm128(LOWMC_N, XOR, AND, SHL, SHR, bitmask_a, bitmask_b,        \
                                          bitmask_c)                                                \
   do {                                                                                             \
-    word128 a[2] ATTR_ALIGNED(alignof(word128));                                                   \
-    word128 b[2] ATTR_ALIGNED(alignof(word128));                                                   \
-    word128 c[2] ATTR_ALIGNED(alignof(word128));                                                   \
+    word128 tmp[2], bitm_a[2], bitm_b[2], bitm_c[2];                                               \
+    tmp[0]    = mm128_load(&statein->w64[0]);                                                      \
+    tmp[1]    = mm128_load(&statein->w64[2]);                                                      \
+    bitm_a[0] = mm128_load(&bitmask_a->w64[0]);                                                    \
+    bitm_a[1] = mm128_load(&bitmask_a->w64[2]);                                                    \
+    bitm_b[0] = mm128_load(&bitmask_b->w64[0]);                                                    \
+    bitm_b[1] = mm128_load(&bitmask_b->w64[2]);                                                    \
+    bitm_c[0] = mm128_load(&bitmask_c->w64[0]);                                                    \
+    bitm_c[1] = mm128_load(&bitmask_c->w64[2]);                                                    \
+                                                                                                   \
+    word128 a[2];                                                                                  \
+    word128 b[2];                                                                                  \
+    word128 c[2];                                                                                  \
     /* a */                                                                                        \
-    AND(a, bitmask_a->w128, statein->w128);                                                        \
+    AND(a, bitm_a, tmp);                                                                           \
     /* b */                                                                                        \
-    AND(b, bitmask_b->w128, statein->w128);                                                        \
+    AND(b, bitm_b, tmp);                                                                           \
     /* c */                                                                                        \
-    AND(c, bitmask_c->w128, statein->w128);                                                        \
+    AND(c, bitm_c, tmp);                                                                           \
                                                                                                    \
     SHL(a, a, 2);                                                                                  \
     SHL(b, b, 1);                                                                                  \
                                                                                                    \
-    word128 t0[2] ATTR_ALIGNED(alignof(word128));                                                  \
-    word128 t1[2] ATTR_ALIGNED(alignof(word128));                                                  \
-    word128 t2[2] ATTR_ALIGNED(alignof(word128));                                                  \
-    word128 s_ab[2] ATTR_ALIGNED(alignof(word128));                                                \
-    word128 s_bc[2] ATTR_ALIGNED(alignof(word128));                                                \
-    word128 s_ca[2] ATTR_ALIGNED(alignof(word128));                                                \
+    word128 t0[2];                                                                                 \
+    word128 t1[2];                                                                                 \
+    word128 t2[2];                                                                                 \
+    word128 s_ab[2];                                                                               \
+    word128 s_bc[2];                                                                               \
+    word128 s_ca[2];                                                                               \
                                                                                                    \
     /* b & c */                                                                                    \
     AND(s_bc, b, c);                                                                               \
@@ -240,17 +250,16 @@ static void picnic3_mpc_sbox_uint64_lowmc_255_255_4(mzd_local_t* statein, random
     /* a & b */                                                                                    \
     AND(s_ab, a, b);                                                                               \
     for (int i = 0; i < 16; i++) {                                                                 \
-      word128 tmp[2] ATTR_ALIGNED(alignof(word128));                                               \
       bitstream_t party_msgs = {{msgs->msgs[i]}, msgs->pos};                                       \
       if (i == msgs->unopened) {                                                                   \
         /* we are in verify, just grab the broadcast s from the msgs array */                      \
         w128_from_bitstream(&party_msgs, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);   \
         /* a */                                                                                    \
-        AND(t0, bitmask_a->w128, tmp);                                                             \
+        AND(t0, bitm_a, tmp);                                                                      \
         /* b */                                                                                    \
-        AND(t1, bitmask_b->w128, tmp);                                                             \
+        AND(t1, bitm_b, tmp);                                                                      \
         /* c */                                                                                    \
-        AND(t2, bitmask_c->w128, tmp);                                                             \
+        AND(t2, bitm_c, tmp);                                                                      \
         SHL(t0, t0, 2);                                                                            \
         SHL(t1, t1, 1);                                                                            \
         XOR(s_ab, t2, s_ab);                                                                       \
@@ -261,30 +270,30 @@ static void picnic3_mpc_sbox_uint64_lowmc_255_255_4(mzd_local_t* statein, random
       }                                                                                            \
       bitstream_t party_tape = {{tapes->tape[i]}, tapes->pos};                                     \
       /* make a mzd_local from tape[i] for input_masks */                                          \
-      word128 mask_a[2] ATTR_ALIGNED(alignof(word128));                                            \
-      word128 mask_b[2] ATTR_ALIGNED(alignof(word128));                                            \
-      word128 mask_c[2] ATTR_ALIGNED(alignof(word128));                                            \
+      word128 mask_a[2];                                                                           \
+      word128 mask_b[2];                                                                           \
+      word128 mask_c[2];                                                                           \
       w128_from_bitstream(&party_tape, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);     \
       /* a */                                                                                      \
-      AND(mask_a, bitmask_a->w128, tmp);                                                           \
+      AND(mask_a, bitm_a, tmp);                                                                    \
       /* b */                                                                                      \
-      AND(mask_b, bitmask_b->w128, tmp);                                                           \
+      AND(mask_b, bitm_b, tmp);                                                                    \
       /* c */                                                                                      \
-      AND(mask_c, bitmask_c->w128, tmp);                                                           \
+      AND(mask_c, bitm_c, tmp);                                                                    \
       SHL(mask_a, mask_a, 2);                                                                      \
       SHL(mask_b, mask_b, 1);                                                                      \
                                                                                                    \
       /* make a mzd_local from tape[i] for and_helper */                                           \
-      word128 and_helper_ab[2] ATTR_ALIGNED(alignof(word128));                                     \
-      word128 and_helper_bc[2] ATTR_ALIGNED(alignof(word128));                                     \
-      word128 and_helper_ca[2] ATTR_ALIGNED(alignof(word128));                                     \
+      word128 and_helper_ab[2];                                                                    \
+      word128 and_helper_bc[2];                                                                    \
+      word128 and_helper_ca[2];                                                                    \
       w128_from_bitstream(&party_tape, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);     \
       /* a */                                                                                      \
-      AND(and_helper_ab, bitmask_c->w128, tmp);                                                    \
+      AND(and_helper_ab, bitm_c, tmp);                                                             \
       /* b */                                                                                      \
-      AND(and_helper_bc, bitmask_b->w128, tmp);                                                    \
+      AND(and_helper_bc, bitm_b, tmp);                                                             \
       /* c */                                                                                      \
-      AND(and_helper_ca, bitmask_a->w128, tmp);                                                    \
+      AND(and_helper_ca, bitm_a, tmp);                                                             \
       SHL(and_helper_ca, and_helper_ca, 2);                                                        \
       SHL(and_helper_bc, and_helper_bc, 1);                                                        \
                                                                                                    \
@@ -333,7 +342,9 @@ static void picnic3_mpc_sbox_uint64_lowmc_255_255_4(mzd_local_t* statein, random
     SHR(t1, t1, 1);                                                                                \
                                                                                                    \
     XOR(t2, t2, t1);                                                                               \
-    XOR(statein->w128, t2, t0);                                                                    \
+    XOR(tmp, t2, t0);                                                                              \
+    mm128_store(&statein->w64[0], tmp[0]);                                                         \
+    mm128_store(&statein->w64[2], tmp[1]);                                                         \
   } while (0)
 
 #if defined(WITH_LOWMC_129_129_4)

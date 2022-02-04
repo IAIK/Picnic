@@ -211,19 +211,20 @@ static void sbox_uint64_lowmc_255_255_4(mzd_local_t* in) {
 #if defined(WITH_OPT)
 #if defined(WITH_SSE2) || defined(WITH_NEON)
 ATTR_TARGET_S128
-static inline void sbox_s128_full(mzd_local_t* in, const word128* mask_a, const word128* mask_b,
-                                  const word128* mask_c) {
-  word128 x0m[2] ATTR_ALIGNED(alignof(word128)), x1m[2] ATTR_ALIGNED(alignof(word128)),
-      x2m[2] ATTR_ALIGNED(alignof(word128));
-  mm128_and_256(x0m, CONST_BLOCK(in, 0)->w128, mask_a);
-  mm128_and_256(x1m, CONST_BLOCK(in, 0)->w128, mask_b);
-  mm128_and_256(x2m, CONST_BLOCK(in, 0)->w128, mask_c);
+static inline void sbox_s128_full(mzd_local_t* in, const mzd_local_t* mask_a,
+                                  const mzd_local_t* mask_b, const mzd_local_t* mask_c) {
+  word128 inm[2] = {mm128_load(&in->w64[0]), mm128_load(&in->w64[2])};
+  word128 x0m[2] = {mm128_load(&mask_a->w64[0]), mm128_load(&mask_a->w64[2])};
+  word128 x1m[2] = {mm128_load(&mask_b->w64[0]), mm128_load(&mask_b->w64[2])};
+  word128 x2m[2] = {mm128_load(&mask_c->w64[0]), mm128_load(&mask_c->w64[2])};
+  mm128_and_256(x0m, inm, x0m);
+  mm128_and_256(x1m, inm, x1m);
+  mm128_and_256(x2m, inm, x2m);
 
   mm128_shift_left_256(x0m, x0m, 2);
   mm128_shift_left_256(x1m, x1m, 1);
 
-  word128 t0[2] ATTR_ALIGNED(alignof(word128)), t1[2] ATTR_ALIGNED(alignof(word128)),
-      t2[2] ATTR_ALIGNED(alignof(word128));
+  word128 t0[2], t1[2], t2[2];
   mm128_and_256(t0, x1m, x2m);
   mm128_and_256(t1, x0m, x2m);
   mm128_and_256(t2, x0m, x1m);
@@ -240,27 +241,29 @@ static inline void sbox_s128_full(mzd_local_t* in, const word128* mask_a, const 
   mm128_shift_right_256(t1, t1, 1);
 
   mm128_xor_256(t0, t0, t1);
-  mm128_xor_256(in->w128, t0, t2);
+  mm128_xor_256(inm, t0, t2);
+  mm128_store(&in->w64[0], inm[0]);
+  mm128_store(&in->w64[2], inm[1]);
 }
 
 #if defined(WITH_LOWMC_129_129_4)
 ATTR_TARGET_S128
 static inline void sbox_s128_lowmc_129_129_4(mzd_local_t* in) {
-  sbox_s128_full(in, mask_129_129_43_a->w128, mask_129_129_43_b->w128, mask_129_129_43_c->w128);
+  sbox_s128_full(in, mask_129_129_43_a, mask_129_129_43_b, mask_129_129_43_c);
 }
 #endif
 
 #if defined(WITH_LOWMC_192_192_4)
 ATTR_TARGET_S128
 static inline void sbox_s128_lowmc_192_192_4(mzd_local_t* in) {
-  sbox_s128_full(in, mask_192_192_64_a->w128, mask_192_192_64_b->w128, mask_192_192_64_c->w128);
+  sbox_s128_full(in, mask_192_192_64_a, mask_192_192_64_b, mask_192_192_64_c);
 }
 #endif
 
 #if defined(WITH_LOWMC_255_255_4)
 ATTR_TARGET_S128
 static inline void sbox_s128_lowmc_255_255_4(mzd_local_t* in) {
-  sbox_s128_full(in, mask_255_255_85_a->w128, mask_255_255_85_b->w128, mask_255_255_85_c->w128);
+  sbox_s128_full(in, mask_255_255_85_a, mask_255_255_85_b, mask_255_255_85_c);
 }
 #endif
 #endif
@@ -462,44 +465,52 @@ static void sbox_aux_uint64_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* s
 #define picnic3_aux_sbox_bitsliced_mm128(LOWMC_N, XOR, AND, SHL, SHR, bitmask_a, bitmask_b,        \
                                          bitmask_c)                                                \
   do {                                                                                             \
-    word128 a[2] ATTR_ALIGNED(alignof(word128));                                                   \
-    word128 b[2] ATTR_ALIGNED(alignof(word128));                                                   \
-    word128 c[2] ATTR_ALIGNED(alignof(word128));                                                   \
+    word128 bita[2] = {mm128_load(&bitmask_a->w64[0]), mm128_load(&bitmask_a->w64[2])};            \
+    word128 bitb[2] = {mm128_load(&bitmask_b->w64[0]), mm128_load(&bitmask_b->w64[2])};            \
+    word128 bitc[2] = {mm128_load(&bitmask_c->w64[0]), mm128_load(&bitmask_c->w64[2])};            \
+                                                                                                   \
+    word128 aux[2] = {mm128_load(&statein->w64[0]), mm128_load(&statein->w64[2])};                 \
+                                                                                                   \
+    word128 a[2];                                                                                  \
+    word128 b[2];                                                                                  \
+    word128 c[2];                                                                                  \
     /* a */                                                                                        \
-    AND(a, bitmask_a->w128, statein->w128);                                                        \
+    AND(a, bita, aux);                                                                             \
     /* b */                                                                                        \
-    AND(b, bitmask_b->w128, statein->w128);                                                        \
+    AND(b, bitb, aux);                                                                             \
     /* c */                                                                                        \
-    AND(c, bitmask_c->w128, statein->w128);                                                        \
+    AND(c, bitc, aux);                                                                             \
                                                                                                    \
     SHL(a, a, 2);                                                                                  \
     SHL(b, b, 1);                                                                                  \
-    word128 d[2] ATTR_ALIGNED(alignof(word128));                                                   \
-    word128 e[2] ATTR_ALIGNED(alignof(word128));                                                   \
-    word128 f[2] ATTR_ALIGNED(alignof(word128));                                                   \
+                                                                                                   \
+    aux[0] = mm128_load(&stateout->w64[0]);                                                        \
+    aux[1] = mm128_load(&stateout->w64[2]);                                                        \
+    word128 d[2];                                                                                  \
+    word128 e[2];                                                                                  \
+    word128 f[2];                                                                                  \
     /* a */                                                                                        \
-    AND(d, bitmask_a->w128, stateout->w128);                                                       \
+    AND(d, bita, aux);                                                                             \
     /* b */                                                                                        \
-    AND(e, bitmask_b->w128, stateout->w128);                                                       \
+    AND(e, bitb, aux);                                                                             \
     /* c */                                                                                        \
-    AND(f, bitmask_c->w128, stateout->w128);                                                       \
+    AND(f, bitc, aux);                                                                             \
                                                                                                    \
     SHL(d, d, 2);                                                                                  \
     SHL(e, e, 1);                                                                                  \
                                                                                                    \
-    word128 fresh_output_ab[2] ATTR_ALIGNED(alignof(word128));                                     \
-    word128 fresh_output_bc[2] ATTR_ALIGNED(alignof(word128));                                     \
-    word128 fresh_output_ca[2] ATTR_ALIGNED(alignof(word128));                                     \
+    word128 fresh_output_ab[2];                                                                    \
+    word128 fresh_output_bc[2];                                                                    \
+    word128 fresh_output_ca[2];                                                                    \
     XOR(fresh_output_ab, a, b);                                                                    \
     XOR(fresh_output_ca, e, fresh_output_ab);                                                      \
     XOR(fresh_output_bc, d, a);                                                                    \
     XOR(fresh_output_ab, fresh_output_ab, c);                                                      \
     XOR(fresh_output_ab, fresh_output_ab, f);                                                      \
                                                                                                    \
-    word128 t0[2] ATTR_ALIGNED(alignof(word128));                                                  \
-    word128 t1[2] ATTR_ALIGNED(alignof(word128));                                                  \
-    word128 t2[2] ATTR_ALIGNED(alignof(word128));                                                  \
-    word128 aux[2] ATTR_ALIGNED(alignof(word128));                                                 \
+    word128 t0[2];                                                                                 \
+    word128 t1[2];                                                                                 \
+    word128 t2[2];                                                                                 \
     SHR(t2, fresh_output_ca, 2);                                                                   \
     SHR(t1, fresh_output_bc, 1);                                                                   \
     XOR(t2, t2, t1);                                                                               \

@@ -79,11 +79,11 @@
     return op(lhs, opmask(rhs, mask));                                                             \
   }
 
-#define apply_mask_region(name, type, op, opmask, attributes)                                      \
-  static inline void attributes name(type* restrict dst, type const* restrict src,                 \
-                                     type const mask, unsigned int count) {                        \
-    for (unsigned int i = count; i; --i, ++dst, ++src) {                                           \
-      *dst = op(*dst, opmask(*src, mask));                                                         \
+#define apply_mask_region(name, type, load, op, opmask, attributes)                                \
+  static inline void attributes name(type* restrict dst, const uint64_t* restrict src,             \
+                                     const type mask, unsigned int count) {                        \
+    for (unsigned int i = count; i; --i, ++dst, src += sizeof(type) / sizeof(uint64_t)) {          \
+      *dst = op(*dst, opmask(load(src), mask));                                                    \
     }                                                                                              \
   }
 
@@ -116,8 +116,6 @@ typedef __m256i word256;
 #define mm256_nand(l, r) _mm256_andnot_si256((l), (r))
 
 // clang-format off
-apply_region(mm256_xor_region, word256, mm256_xor, FN_ATTRIBUTES_AVX2)
-apply_mask_region(mm256_xor_mask_region, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2)
 apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST)
 // clang-format on
 
@@ -163,7 +161,7 @@ typedef __m128i word128;
 
 // clang-format off
 apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_SSE2)
-apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2)
+apply_mask_region(mm128_xor_mask_region, word128, mm128_load, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2)
 apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CONST)
 apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2)
 apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2)

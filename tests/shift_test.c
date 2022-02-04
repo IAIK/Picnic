@@ -111,56 +111,56 @@ static int test_s128_128(void) {
   mzd_local_t cval, tmp;
 
   mzd_shift_left_uint64_128(&cval, &val, 1);
-  tmp.w128[0] = mm128_shift_left(val.w128[0], 1);
+  mm128_store(tmp.w64, mm128_shift_left(mm128_load(val.w64), 1));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 shift left fail: 1\n");
     ret = -1;
   }
 
   mzd_shift_left_uint64_128(&cval, &val, 2);
-  tmp.w128[0] = mm128_shift_left(val.w128[0], 2);
+  mm128_store(tmp.w64, mm128_shift_left(mm128_load(val.w64), 2));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 shift left fail: 2\n");
     ret = -1;
   }
 
   mzd_shift_right_uint64_128(&cval, &val, 1);
-  tmp.w128[0] = mm128_shift_right(val.w128[0], 1);
+  mm128_store(tmp.w64, mm128_shift_right(mm128_load(val.w64), 1));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 shift right fail: 1\n");
     ret = -1;
   }
 
   mzd_shift_right_uint64_128(&cval, &val, 2);
-  tmp.w128[0] = mm128_shift_right(val.w128[0], 2);
+  mm128_store(tmp.w64, mm128_shift_right(mm128_load(val.w64), 2));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 shift right fail: 2\n");
     ret = -1;
   }
 
   mzd_rotate_left_uint64_128(&cval, &val, 1);
-  tmp.w128[0] = mm128_rotate_left(val.w128[0], 1);
+  mm128_store(tmp.w64, mm128_rotate_left(mm128_load(val.w64), 1));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 rotate left fail: 1\n");
     ret = -1;
   }
 
   mzd_rotate_left_uint64_128(&cval, &val, 2);
-  tmp.w128[0] = mm128_rotate_left(val.w128[0], 2);
+  mm128_store(tmp.w64, mm128_rotate_left(mm128_load(val.w64), 2));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 rotate left fail: 2\n");
     ret = -1;
   }
 
   mzd_rotate_right_uint64_128(&cval, &val, 1);
-  tmp.w128[0] = mm128_rotate_right(val.w128[0], 1);
+  mm128_store(tmp.w64, mm128_rotate_right(mm128_load(val.w64), 1));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 rotate right fail: 1\n");
     ret = -1;
   }
 
   mzd_rotate_right_uint64_128(&cval, &val, 2);
-  tmp.w128[0] = mm128_rotate_right(val.w128[0], 2);
+  mm128_store(tmp.w64, mm128_rotate_right(mm128_load(val.w64), 2));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 rotate right fail: 2\n");
     ret = -1;
@@ -201,20 +201,84 @@ static int test_s128_128_64_127(void) {
   mzd_local_t cval, tmp;
 
   mzd_shift_left_uint64_128_64_127(&cval, &val, 66);
-  tmp.w128[0] = mm128_shift_left_64_127(val.w128[0], 66);
+  mm128_store(tmp.w64, mm128_shift_left_64_127(mm128_load(val.w64), 66));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 shift left fail: 66\n");
     ret = -1;
   }
 
   mzd_shift_right_uint64_128_64_127(&cval, &val, 66);
-  tmp.w128[0] = mm128_shift_right_64_127(val.w128[0], 66);
+  mm128_store(tmp.w64, mm128_shift_right_64_127(mm128_load(val.w64), 66));
   if (!mzd_local_equal(&cval, &tmp, 1, 128)) {
     printf("mm128 shift right fail: 66\n");
     ret = -1;
   }
 
   return ret;
+}
+
+ATTR_TARGET_S128
+static void mm128_shift_left_256_1(mzd_local_t* dst, const mzd_local_t* src) {
+  word128 tmp[2] = {mm128_load(&src->w64[0]), mm128_load(&src->w64[2])};
+  mm128_shift_left_256(tmp, tmp, 1);
+  mm128_store(&dst->w64[0], tmp[0]);
+  mm128_store(&dst->w64[2], tmp[1]);
+}
+
+ATTR_TARGET_S128
+static void mm128_shift_left_256_2(mzd_local_t* dst, const mzd_local_t* src) {
+  word128 tmp[2] = {mm128_load(&src->w64[0]), mm128_load(&src->w64[2])};
+  mm128_shift_left_256(tmp, tmp, 2);
+  mm128_store(&dst->w64[0], tmp[0]);
+  mm128_store(&dst->w64[2], tmp[1]);
+}
+
+ATTR_TARGET_S128
+static void mm128_shift_right_256_1(mzd_local_t* dst, const mzd_local_t* src) {
+  word128 tmp[2] = {mm128_load(&src->w64[0]), mm128_load(&src->w64[2])};
+  mm128_shift_right_256(tmp, tmp, 1);
+  mm128_store(&dst->w64[0], tmp[0]);
+  mm128_store(&dst->w64[2], tmp[1]);
+}
+
+ATTR_TARGET_S128
+static void mm128_shift_right_256_2(mzd_local_t* dst, const mzd_local_t* src) {
+  word128 tmp[2] = {mm128_load(&src->w64[0]), mm128_load(&src->w64[2])};
+  mm128_shift_right_256(tmp, tmp, 2);
+  mm128_store(&dst->w64[0], tmp[0]);
+  mm128_store(&dst->w64[2], tmp[1]);
+}
+
+ATTR_TARGET_S128
+static void mm128_rotate_left_256_1(mzd_local_t* dst, const mzd_local_t* src) {
+  word128 tmp[2] = {mm128_load(&src->w64[0]), mm128_load(&src->w64[2])};
+  mm128_rotate_left_256(tmp, tmp, 1);
+  mm128_store(&dst->w64[0], tmp[0]);
+  mm128_store(&dst->w64[2], tmp[1]);
+}
+
+ATTR_TARGET_S128
+static void mm128_rotate_left_256_2(mzd_local_t* dst, const mzd_local_t* src) {
+  word128 tmp[2] = {mm128_load(&src->w64[0]), mm128_load(&src->w64[2])};
+  mm128_rotate_left_256(tmp, tmp, 2);
+  mm128_store(&dst->w64[0], tmp[0]);
+  mm128_store(&dst->w64[2], tmp[1]);
+}
+
+ATTR_TARGET_S128
+static void mm128_rotate_right_256_1(mzd_local_t* dst, const mzd_local_t* src) {
+  word128 tmp[2] = {mm128_load(&src->w64[0]), mm128_load(&src->w64[2])};
+  mm128_rotate_right_256(tmp, tmp, 1);
+  mm128_store(&dst->w64[0], tmp[0]);
+  mm128_store(&dst->w64[2], tmp[1]);
+}
+
+ATTR_TARGET_S128
+static void mm128_rotate_right_256_2(mzd_local_t* dst, const mzd_local_t* src) {
+  word128 tmp[2] = {mm128_load(&src->w64[0]), mm128_load(&src->w64[2])};
+  mm128_rotate_right_256(tmp, tmp, 2);
+  mm128_store(&dst->w64[0], tmp[0]);
+  mm128_store(&dst->w64[2], tmp[1]);
 }
 
 ATTR_TARGET_S128
@@ -226,56 +290,56 @@ static int test_s128_256(void) {
   mzd_local_t cval, tmp;
 
   mzd_shift_left_uint64_256(&cval, &val, 1);
-  mm128_shift_left_256(tmp.w128, val.w128, 1);
+  mm128_shift_left_256_1(&tmp, &val);
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm128_256 shift left fail: 1\n");
     ret = -1;
   }
 
   mzd_shift_left_uint64_256(&cval, &val, 2);
-  mm128_shift_left_256(tmp.w128, val.w128, 2);
+  mm128_shift_left_256_2(&tmp, &val);
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm128_256 shift left fail: 2\n");
     ret = -1;
   }
 
   mzd_shift_right_uint64_256(&cval, &val, 1);
-  mm128_shift_right_256(tmp.w128, val.w128, 1);
+  mm128_shift_right_256_1(&tmp, &val);
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm128_256 shift right fail: 1\n");
     ret = -1;
   }
 
   mzd_shift_right_uint64_256(&cval, &val, 2);
-  mm128_shift_right_256(tmp.w128, val.w128, 2);
+  mm128_shift_right_256_2(&tmp, &val);
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm128_256 shift right fail: 2\n");
     ret = -1;
   }
 
   mzd_rotate_left_uint64_256(&cval, &val, 1);
-  mm128_rotate_left_256(tmp.w128, val.w128, 1);
+  mm128_rotate_left_256_1(&tmp, &val);
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm128_256 rotate left fail: 1\n");
     ret = -1;
   }
 
   mzd_rotate_left_uint64_256(&cval, &val, 2);
-  mm128_rotate_left_256(tmp.w128, val.w128, 2);
+  mm128_rotate_left_256_2(&tmp, &val);
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm128_256 rotate left fail: 2\n");
     ret = -1;
   }
 
   mzd_rotate_right_uint64_256(&cval, &val, 1);
-  mm128_rotate_right_256(tmp.w128, val.w128, 1);
+  mm128_rotate_right_256_1(&tmp, &val);
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm128_256 rotate right fail: 1\n");
     ret = -1;
   }
 
   mzd_rotate_right_uint64_256(&cval, &val, 2);
-  mm128_rotate_right_256(tmp.w128, val.w128, 2);
+  mm128_rotate_right_256_2(&tmp, &val);
   if (!mzd_local_equal(&cval, &tmp, 1, 256)) {
     printf("mm128_256 rotate right fail: 2\n");
     ret = -1;

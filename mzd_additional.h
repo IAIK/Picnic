@@ -30,11 +30,6 @@ typedef uint64_t word;
 
 typedef union {
   word w64[4];
-#if defined(WITH_OPT)
-#if defined(WITH_SSE2) || defined(WITH_NEON)
-  word128 w128[2];
-#endif
-#endif
 } block_t ATTR_ALIGNED(32);
 
 /**
