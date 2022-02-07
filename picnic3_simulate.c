@@ -469,29 +469,21 @@ static void picnic3_mpc_sbox_s128_lowmc_255_255_4(mzd_local_t* statein, randomTa
       and_helper_bc         = mm256_rotate_left(and_helper_bc, 1);                                 \
                                                                                                    \
       /* s_ab */                                                                                   \
-      t0   = mm256_and(a, mask_b);                                                                 \
-      t1   = mm256_and(b, mask_a);                                                                 \
-      t0   = mm256_xor(t0, t1);                                                                    \
+      t0   = mm256_xor(mm256_and(a, mask_b), mm256_and(b, mask_a));                                \
       tmp  = mm256_xor(t0, and_helper_ab);                                                         \
       s_ab = mm256_xor(tmp, s_ab);                                                                 \
       /* s_bc */                                                                                   \
-      t0   = mm256_and(b, mask_c);                                                                 \
-      t1   = mm256_and(c, mask_b);                                                                 \
-      t0   = mm256_xor(t0, t1);                                                                    \
+      t0   = mm256_xor(mm256_and(b, mask_c), mm256_and(c, mask_b));                                \
       t0   = mm256_xor(t0, and_helper_bc);                                                         \
       s_bc = mm256_xor(t0, s_bc);                                                                  \
                                                                                                    \
-      t0  = mm256_rotate_right(t0, 1);                                                             \
-      tmp = mm256_xor(tmp, t0);                                                                    \
+      tmp = mm256_xor(tmp, mm256_rotate_right(t0, 1));                                             \
       /* s_ca */                                                                                   \
-      t0   = mm256_and(c, mask_a);                                                                 \
-      t1   = mm256_and(a, mask_c);                                                                 \
-      t0   = mm256_xor(t0, t1);                                                                    \
+      t0   = mm256_xor(mm256_and(c, mask_a), mm256_and(a, mask_c));                                \
       t0   = mm256_xor(t0, and_helper_ca);                                                         \
       s_ca = mm256_xor(t0, s_ca);                                                                  \
                                                                                                    \
-      t0  = mm256_rotate_right(t0, 2);                                                             \
-      tmp = mm256_xor(tmp, t0);                                                                    \
+      tmp = mm256_xor(tmp, mm256_rotate_right(t0, 2));                                             \
       w256_to_bitstream(&party_msgs, tmp, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);       \
     }                                                                                              \
     tapes->pos += LOWMC_N;                                                                         \
@@ -506,14 +498,12 @@ static void picnic3_mpc_sbox_s128_lowmc_255_255_4(mzd_local_t* statein, randomTa
     t1 = mm256_xor(s_ca, a);                                                                       \
                                                                                                    \
     /* (a & b) ^ a ^ b ^c */                                                                       \
-    t2 = mm256_xor(s_ab, a);                                                                       \
-    t2 = mm256_xor(t2, c);                                                                         \
+    t2 = mm256_xor(mm256_xor(s_ab, a), c);                                                         \
                                                                                                    \
     t0 = mm256_rotate_right(t0, 2);                                                                \
     t1 = mm256_rotate_right(t1, 1);                                                                \
                                                                                                    \
-    t2 = mm256_xor(t2, t1);                                                                        \
-    mm256_store(statein->w64, mm256_xor(t2, t0));                                                  \
+    mm256_store(statein->w64, mm256_xor(mm256_xor(t2, t1), t0));                                   \
   } while (0)
 
 #if defined(WITH_LOWMC_129_129_4)
