@@ -272,60 +272,6 @@ void mzd_xor_uint64_1216(mzd_local_t* res, mzd_local_t const* first, mzd_local_t
 
 /* implementation of mzd_and_* and variants */
 
-#if defined(WITH_OPT)
-#if defined(WITH_SSE2) || defined(WITH_NEON)
-ATTR_TARGET_S128
-void mzd_and_s128_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  block_t* rblock       = BLOCK(res, 0);
-  const block_t* fblock = CONST_BLOCK(first, 0);
-  const block_t* sblock = CONST_BLOCK(second, 0);
-
-  mm128_store(rblock->w64, mm128_and(mm128_load(fblock->w64), mm128_load(sblock->w64)));
-}
-
-ATTR_TARGET_S128
-static inline void mzd_and_s128_blocks(block_t* rblock, const block_t* fblock,
-                                       const block_t* sblock, unsigned int count) {
-  for (; count; --count, ++rblock, ++fblock, ++sblock) {
-    mm128_store(&rblock->w64[0],
-                mm128_and(mm128_load(&fblock->w64[0]), mm128_load(&sblock->w64[0])));
-    mm128_store(&rblock->w64[2],
-                mm128_and(mm128_load(&fblock->w64[2]), mm128_load(&sblock->w64[2])));
-  }
-}
-
-ATTR_TARGET_S128
-void mzd_and_s128_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  mzd_and_s128_blocks(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 1);
-}
-#endif
-
-#if defined(WITH_AVX2)
-ATTR_TARGET_AVX2
-void mzd_and_s256_128(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  block_t* rblock       = BLOCK(res, 0);
-  const block_t* fblock = CONST_BLOCK(first, 0);
-  const block_t* sblock = CONST_BLOCK(second, 0);
-
-  mm128_store(rblock->w64, mm128_and(mm128_load(fblock->w64), mm128_load(sblock->w64)));
-}
-
-ATTR_TARGET_AVX2
-static inline void mzd_and_s256_blocks(block_t* rblock, const block_t* fblock,
-                                       const block_t* sblock, unsigned int count) {
-  for (unsigned int idx = 0; idx != count; ++idx) {
-    mm256_store(rblock[idx].w64,
-                mm256_and(mm256_load(fblock[idx].w64), mm256_load(sblock[idx].w64)));
-  }
-}
-
-ATTR_TARGET_AVX2
-void mzd_and_s256_256(mzd_local_t* res, mzd_local_t const* first, mzd_local_t const* second) {
-  mzd_and_s256_blocks(BLOCK(res, 0), CONST_BLOCK(first, 0), CONST_BLOCK(second, 0), 1);
-}
-#endif
-#endif
-
 static inline void mzd_and_uint64_block(block_t* rblock, const block_t* fblock,
                                         const block_t* sblock, const unsigned int len) {
   for (unsigned int i = 0; i < len; ++i) {

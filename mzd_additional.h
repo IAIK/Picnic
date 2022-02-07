@@ -99,14 +99,6 @@ void mzd_and_uint64_192(mzd_local_t* res, mzd_local_t const* first,
                         mzd_local_t const* second) ATTR_NONNULL;
 void mzd_and_uint64_256(mzd_local_t* res, mzd_local_t const* first,
                         mzd_local_t const* second) ATTR_NONNULL;
-void mzd_and_s128_128(mzd_local_t* res, mzd_local_t const* first,
-                      mzd_local_t const* second) ATTR_NONNULL;
-void mzd_and_s128_256(mzd_local_t* res, mzd_local_t const* first,
-                      mzd_local_t const* second) ATTR_NONNULL;
-void mzd_and_s256_128(mzd_local_t* res, mzd_local_t const* first,
-                      mzd_local_t const* second) ATTR_NONNULL;
-void mzd_and_s256_256(mzd_local_t* res, mzd_local_t const* first,
-                      mzd_local_t const* second) ATTR_NONNULL;
 
 /**
  * shifts and rotations
