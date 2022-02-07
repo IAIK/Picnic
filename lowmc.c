@@ -272,25 +272,33 @@ static inline void sbox_s128_lowmc_255_255_4(mzd_local_t* in) {
 ATTR_TARGET_AVX2
 static inline void sbox_s256_lowmc_full(mzd_local_t* in, const word256 mask_a, const word256 mask_b,
                                         const word256 mask_c) {
-  word256 min = mm256_load(in);
+  const word256 min = mm256_load(in);
+  // a
   word256 x0m = mm256_and(min, mask_a);
+  // b
   word256 x1m = mm256_and(min, mask_b);
+  // c
   word256 x2m = mm256_and(min, mask_c);
 
   x0m = mm256_rotate_left(x0m, 2);
   x1m = mm256_rotate_left(x1m, 1);
 
+  // b & c
   word256 t0 = mm256_and(x1m, x2m);
+  // a & c
   word256 t1 = mm256_and(x0m, x2m);
+  // a & b
   word256 t2 = mm256_and(x0m, x1m);
 
+  // (b & c) ^ a
   t0 = mm256_xor(t0, x0m);
 
+  // a ^ b
   x0m = mm256_xor(x0m, x1m);
-  t1  = mm256_xor(t1, x0m);
-
-  t2 = mm256_xor(t2, x0m);
-  t2 = mm256_xor(t2, x2m);
+  // a ^ b ^ (a & c)
+  t1 = mm256_xor(t1, x0m);
+  // a ^ b ^ c ^ (a & b)
+  t2 = mm256_xor(mm256_xor(t2, x0m), x2m);
 
   t0 = mm256_rotate_right(t0, 2);
   t1 = mm256_rotate_right(t1, 1);
@@ -628,8 +636,7 @@ static void sbox_aux_s128_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* sta
     word256 fresh_output_ab = mm256_xor(a, b);                                                     \
     word256 fresh_output_ca = mm256_xor(e, fresh_output_ab);                                       \
     word256 fresh_output_bc = mm256_xor(d, a);                                                     \
-    fresh_output_ab         = mm256_xor(fresh_output_ab, c);                                       \
-    fresh_output_ab         = mm256_xor(fresh_output_ab, f);                                       \
+    fresh_output_ab         = mm256_xor(fresh_output_ab, mm256_xor(c, f));                         \
                                                                                                    \
     word256 t2 = mm256_rotate_right(fresh_output_ca, 2);                                           \
     word256 t1 = mm256_rotate_right(fresh_output_bc, 1);                                           \
@@ -644,18 +651,15 @@ static void sbox_aux_s128_lowmc_255_255_4(mzd_local_t* statein, mzd_local_t* sta
     t2  = mm256_and(c, a);                                                                         \
     t2  = mm256_rotate_right(t2, 2);                                                               \
     t1  = mm256_rotate_right(t1, 1);                                                               \
-    t2  = mm256_xor(t2, t1);                                                                       \
-    t2  = mm256_xor(t2, t0);                                                                       \
-    aux = mm256_xor(aux, t2);                                                                      \
+    aux = mm256_xor(mm256_xor(aux, t2), mm256_xor(t0, t1));                                        \
                                                                                                    \
     bitstream_t parity_tape     = {{tapes->parity_tapes}, tapes->pos};                             \
     bitstream_t last_party_tape = {{tapes->tape[15]}, tapes->pos};                                 \
                                                                                                    \
     /* calculate aux_bits to fix and_helper */                                                     \
     t0  = w256_from_bitstream(&parity_tape, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);     \
-    aux = mm256_xor(aux, t0);                                                                      \
     t1  = w256_from_bitstream(&last_party_tape, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N); \
-    aux = mm256_xor(aux, t1);                                                                      \
+    aux = mm256_xor(aux, mm256_xor(t0, t1));                                                       \
                                                                                                    \
     last_party_tape.position = tapes->pos;                                                         \
     w256_to_bitstream(&last_party_tape, aux, (LOWMC_N + 63) / (sizeof(uint64_t) * 8), LOWMC_N);    \

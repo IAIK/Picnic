@@ -550,8 +550,8 @@ static void mpc_sbox_verify_uint64_lowmc_255_255_4(mzd_local_t* out, const mzd_l
       }                                                                                            \
     }                                                                                              \
     if (viewshift) {                                                                               \
-      res[SC_VERIFY - 1] =                                                                         \
-          mm256_and(mm256_rotate_left(mm256_load(VIEW(SC_VERIFY - 1)), viewshift), MASK);          \
+      const word256 tmp  = mm256_load(VIEW(SC_VERIFY - 1));                                        \
+      res[SC_VERIFY - 1] = mm256_and(mm256_rotate_left(tmp, viewshift), MASK);                     \
     } else {                                                                                       \
       res[SC_VERIFY - 1] = mm256_and(mm256_load(VIEW(SC_VERIFY - 1)), MASK);                       \
     }                                                                                              \
