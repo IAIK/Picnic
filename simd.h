@@ -54,6 +54,15 @@
 #define ATTR_TARGET_S256
 #endif
 
+#define FN_ATTRIBUTES_S256 ATTR_ARTIFICIAL ATTR_ALWAYS_INLINE ATTR_TARGET_S256
+#define FN_ATTRIBUTES_S128 ATTR_ARTIFICIAL ATTR_ALWAYS_INLINE ATTR_TARGET_S128
+
+#define FN_ATTRIBUTES_S256_PURE FN_ATTRIBUTES_S256 ATTR_PURE
+#define FN_ATTRIBUTES_S128_PURE FN_ATTRIBUTES_S128 ATTR_PURE
+
+#define FN_ATTRIBUTES_S256_CONST FN_ATTRIBUTES_S256 ATTR_CONST
+#define FN_ATTRIBUTES_S128_CONST FN_ATTRIBUTES_S128 ATTR_CONST
+
 #if defined(WITH_SSE2)
 /* backwards compatibility macros for GCC 4.8 and 4.9
  *
@@ -114,7 +123,7 @@ typedef __m256i word256;
 #define mm256_and(l, r) _mm256_and_si256((l), (r))
 
 // clang-format off
-apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST)
+apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_S256_CONST)
 // clang-format on
 
 #define mm256_shift_left(data, count)                                                              \
@@ -156,11 +165,11 @@ typedef __m128i word128;
 #define mm128_sr_u64(x, s) _mm_srli_epi64((x), (s))
 
 // clang-format off
-apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_SSE2)
-apply_mask_region(mm128_xor_mask_region, word128, mm128_load, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2)
-apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_SSE2_CONST)
-apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_SSE2)
-apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_SSE2)
+apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_S128)
+apply_mask_region(mm128_xor_mask_region, word128, mm128_load, mm128_xor, mm128_and, FN_ATTRIBUTES_S128)
+apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_S128_CONST)
+apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_S128)
+apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_S128)
 // clang-format on
 
 #define mm128_shift_left(data, count)                                                              \
@@ -235,11 +244,11 @@ typedef uint64x2_t word128;
 #define mm128_sr_u64(x, s) vshrq_n_u64((x), (s))
 
 // clang-format off
-apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_NEON)
-apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON)
-apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_NEON_CONST)
-apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_NEON)
-apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_NEON)
+apply_region(mm128_xor_region, word128, mm128_xor, FN_ATTRIBUTES_S128)
+apply_mask_region(mm128_xor_mask_region, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_S128)
+apply_mask(mm128_xor_mask, word128, mm128_xor, mm128_and, FN_ATTRIBUTES_S128_CONST)
+apply_array(mm128_xor_256, word128, mm128_xor, 2, FN_ATTRIBUTES_S128)
+apply_array(mm128_and_256, word128, mm128_and, 2, FN_ATTRIBUTES_S128)
 // clang-format on
 
 /* shift left by 64 to 127 bits */
