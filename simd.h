@@ -112,8 +112,6 @@ typedef __m256i word256;
 #define mm256_store(d, s) _mm256_store_si256((word256*)d, s)
 #define mm256_xor(l, r) _mm256_xor_si256((l), (r))
 #define mm256_and(l, r) _mm256_and_si256((l), (r))
-/* !l & r */
-#define mm256_nand(l, r) _mm256_andnot_si256((l), (r))
 
 // clang-format off
 apply_mask(mm256_xor_mask, word256, mm256_xor, mm256_and, FN_ATTRIBUTES_AVX2_CONST)
@@ -152,8 +150,6 @@ typedef __m128i word128;
 #define mm128_store(d, s) _mm_store_si128((word128*)d, s)
 #define mm128_xor(l, r) _mm_xor_si128((l), (r))
 #define mm128_and(l, r) _mm_and_si128((l), (r))
-/* !l & r */
-#define mm128_nand(l, r) _mm_andnot_si128((l), (r))
 #define mm128_broadcast_u64(x) _mm_set1_epi64x((x))
 /* bit shifts up to 63 bits */
 #define mm128_sl_u64(x, s) _mm_slli_epi64((x), (s))
@@ -233,8 +229,6 @@ typedef uint64x2_t word128;
 #define mm128_store(d, s) vst1q_u64(d, s)
 #define mm128_xor(l, r) veorq_u64((l), (r))
 #define mm128_and(l, r) vandq_u64((l), (r))
-/* !l & r, requires l to be an immediate */
-#define mm128_nand(l, r) vbicq_u64((r), (l))
 #define mm128_broadcast_u64(x) vdupq_n_u64((x))
 /* bit shifts up to 63 bits */
 #define mm128_sl_u64(x, s) vshlq_n_u64((x), (s))
