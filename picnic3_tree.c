@@ -66,6 +66,21 @@ static bool existsNotHaveNode(tree_t* tree, size_t i) {
           0x3) == 0x02;
 }
 
+static void initNodes(tree_t* tree) {
+  /* Set leaves */
+  for (size_t i = 0; i < tree->numLeaves; ++i) {
+    set_bit(tree->haveNodeExists, 2 * (tree->numNodes - tree->numLeaves + i));
+  }
+
+  /* Build tree */
+  for (int i = tree->numNodes - tree->numLeaves; i > 0; i--) {
+    if (exists(tree, 2 * i + 1) || exists(tree, 2 * i + 2)) {
+      set_bit(tree->haveNodeExists, 2 * i);
+    }
+  }
+  set_bit(tree->haveNodeExists, 0);
+}
+
 tree_t* createTree(size_t numLeaves, size_t dataSize) {
   tree_t* tree = malloc(sizeof(tree_t));
 
@@ -76,22 +91,12 @@ tree_t* createTree(size_t numLeaves, size_t dataSize) {
   tree->numLeaves = numLeaves;
   tree->dataSize  = dataSize;
   tree->nodes     = calloc(tree->numNodes, dataSize);
-
   /* Depending on the number of leaves, the tree may not be complete */
   tree->haveNodeExists =
       calloc((2 * tree->numNodes + (sizeof(bitset_word_t) * 8) - 1) / (sizeof(bitset_word_t) * 8),
              sizeof(bitset_word_t));
-  /* Set leaves */
-  for (size_t i = 0; i < tree->numLeaves; ++i) {
-    set_bit(tree->haveNodeExists, 2 * (tree->numNodes - tree->numLeaves + i));
-  }
-  for (int i = tree->numNodes - tree->numLeaves; i > 0; i--) {
-    if (exists(tree, 2 * i + 1) || exists(tree, 2 * i + 2)) {
-      set_bit(tree->haveNodeExists, 2 * i);
-    }
-  }
-  set_bit(tree->haveNodeExists, 0);
 
+  initNodes(tree);
   return tree;
 }
 
