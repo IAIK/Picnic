@@ -331,28 +331,21 @@ static size_t getSibling(tree_t* tree, unsigned int node) {
 static unsigned int* getRevealedNodes(tree_t* tree, uint16_t* hideList, size_t hideListSize,
                                       size_t* outputSize) {
   /* Compute paths up from hideList to root, store as sets of nodes */
-  unsigned int pathLen = tree->depth - 1;
+  const unsigned int pathLen = tree->depth - 1;
 
-  /* pathSets[i][0...hideListSize] stores the nodes in the path at depth i
-   * for each of the leaf nodes in hideListSize */
-  unsigned int** pathSets = malloc(pathLen * sizeof(unsigned int*));
-  unsigned int* slab      = malloc(hideListSize * pathLen * sizeof(unsigned int));
-
-  for (unsigned int i = 0; i < pathLen; i++) {
-    pathSets[i] = slab;
-    slab += hideListSize;
-  }
+  /* pathSets[i][0...hideListSize] ~= pathSets[i * hideListSize + ...] stores the nodes in the path
+   * at depth i for each of the leaf nodes in hideListSize */
+  unsigned int* pathSets = malloc(hideListSize * pathLen * sizeof(unsigned int));
 
   /* Compute the paths back to the root */
   for (size_t i = 0; i < hideListSize; i++) {
-    unsigned int pos = 0;
     unsigned int node =
         hideList[i] +
         (tree->numNodes - tree->numLeaves); /* input lists leaf indexes, translate to nodes */
-    pathSets[pos][i] = node;
-    pos++;
+    pathSets[/* 0 * hideListSize + */ i] = node;
+    unsigned int pos                     = 1;
     while ((node = getParent(node)) != 0) {
-      pathSets[pos][i] = node;
+      pathSets[pos * hideListSize + i] = node;
       pos++;
     }
   }
@@ -362,11 +355,12 @@ static unsigned int* getRevealedNodes(tree_t* tree, uint16_t* hideList, size_t h
   unsigned int revealedPos = 0;
   for (unsigned int d = 0; d < pathLen; d++) {
     for (size_t i = 0; i < hideListSize; i++) {
-      if (!hasSibling(tree, pathSets[d][i])) {
+      unsigned int node = pathSets[d * hideListSize + i];
+      if (!hasSibling(tree, node)) {
         continue;
       }
-      unsigned int sibling = getSibling(tree, pathSets[d][i]);
-      if (!contains(pathSets[d], hideListSize, sibling)) {
+      unsigned int sibling = getSibling(tree, node);
+      if (!contains(&pathSets[d * hideListSize], hideListSize, sibling)) {
         // Determine the seed to reveal
         while (!hasRightChild(tree, sibling) && !isLeafNode(tree, sibling)) {
           sibling = 2 * sibling + 1; // sibling = leftChild(sibling)
@@ -380,7 +374,6 @@ static unsigned int* getRevealedNodes(tree_t* tree, uint16_t* hideList, size_t h
     }
   }
 
-  free(pathSets[0]);
   free(pathSets);
 
   *outputSize = revealedPos;
