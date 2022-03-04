@@ -112,15 +112,15 @@ static void initNodes(tree_t* tree) {
   set_bit(tree->haveNodeExists, 0);
 }
 
-tree_t createTree(size_t numLeaves, size_t dataSize) {
+tree_t createTree(unsigned int numLeaves, unsigned int dataSize) {
   tree_t tree;
 
-  tree.depth = ceil_log2(numLeaves) + 1;
+  tree.depth    = ceil_log2(numLeaves) + 1;
+  tree.dataSize = dataSize;
   tree.numNodes =
       ((1 << (tree.depth)) - 1) -
       ((1 << (tree.depth - 1)) - numLeaves); /* Num nodes in complete - number of missing leaves */
   tree.numLeaves = numLeaves;
-  tree.dataSize  = dataSize;
   tree.nodes     = calloc(tree.numNodes, dataSize);
   /* Depending on the number of leaves, the tree may not be complete */
   tree.haveNodeExists =
@@ -281,7 +281,7 @@ static void expandSeeds(tree_t* tree, uint8_t* salt, size_t repIndex,
   }
 }
 
-tree_t generateSeeds(size_t nSeeds, uint8_t* rootSeed, uint8_t* salt, size_t repIndex,
+tree_t generateSeeds(unsigned int nSeeds, uint8_t* rootSeed, uint8_t* salt, size_t repIndex,
                      const picnic_instance_t* params) {
   tree_t tree = createTree(nSeeds, params->seed_size);
 
@@ -385,7 +385,7 @@ static size_t* getRevealedNodes(tree_t* tree, uint16_t* hideList, size_t hideLis
   return revealed;
 }
 
-size_t revealSeedsSize(size_t numNodes, uint16_t* hideList, size_t hideListSize,
+size_t revealSeedsSize(unsigned int numNodes, uint16_t* hideList, size_t hideListSize,
                        const picnic_instance_t* params) {
   tree_t tree = createTree(numNodes, params->seed_size);
 
