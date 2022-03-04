@@ -46,7 +46,7 @@ tree_t createTree(unsigned int numLeaves, unsigned int dataSize);
 void clearTree(tree_t* tree);
 uint8_t* getLeaves(tree_t* tree);
 /* Get one leaf, leafIndex must be in [0, tree->numLeaves -1] */
-uint8_t* getLeaf(tree_t* tree, size_t leafIndex);
+uint8_t* getLeaf(tree_t* tree, unsigned int leafIndex);
 
 /* Functions for trees used to derive seeds.
  *    Signer's usage:   generateSeeds -> revealSeeds -> freeTree
@@ -62,7 +62,7 @@ size_t revealSeeds(tree_t* tree, uint16_t* hideList, size_t hideListSize, uint8_
 size_t revealSeedsSize(unsigned int numNodes, uint16_t* hideList, size_t hideListSize,
                        const picnic_instance_t* params);
 int reconstructSeeds(tree_t* tree, uint16_t* hideList, size_t hideListSize, uint8_t* input,
-                     size_t inputLen, uint8_t* salt, size_t repIndex,
+                     size_t inputLen, uint8_t* salt, unsigned int repIndex,
                      const picnic_instance_t* params);
 
 /* Functions for Merkle hash trees used for commitments.
