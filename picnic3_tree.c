@@ -80,9 +80,27 @@ static void initNodes(tree_t* tree) {
   }
 #endif
 
-  /* Set leaves */
-  for (size_t i = 2 * (tree->numNodes - tree->numLeaves); i < 2 * tree->numNodes; i += 2) {
-    set_bit(tree->haveNodeExists, i);
+  const size_t num_nodes_twice = 2 * tree->numNodes;
+  size_t node                  = 2 * (tree->numNodes - tree->numLeaves);
+#if BITSET_WORD_MAX == UINT64_MAX || BITSET_WORD_MAX == UINT32_MAX
+  /* Set leaves up to bitset_word_t boundary */
+  for (; node < num_nodes_twice && node % (sizeof(bitset_word_t) * 8); node += 2) {
+    set_bit(tree->haveNodeExists, node);
+  }
+  /* Set leaves taking a full bitset_word_t */
+  const size_t num_nodes_twice_word_boundary =
+      (num_nodes_twice / (sizeof(bitset_word_t) * 8)) * sizeof(bitset_word_t) * 8;
+  for (; node < num_nodes_twice_word_boundary; node += sizeof(bitset_word_t) * 8) {
+#if BITSET_WORD_MAX == UINT64_MAX
+    tree->haveNodeExists[node / (sizeof(bitset_word_t) * 8)] = BITSET_WORD_C(0xaaaaaaaaaaaaaaaa);
+#elif BITSET_WORD_MAX == UINT32_MAX
+    tree->haveNodeExists[node / (sizeof(bitset_word_t) * 8)] = BITSET_WORD_C(0xaaaaaaaa);
+#endif
+  }
+#endif
+  /* Set remaining leaves */
+  for (; node < num_nodes_twice; node += 2) {
+    set_bit(tree->haveNodeExists, node);
   }
 
   /* Build tree */
