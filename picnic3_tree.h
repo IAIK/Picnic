@@ -42,8 +42,8 @@ typedef struct tree_t {
 /* The largest seed size is 256 bits, for the Picnic3-L5-FS parameter set. */
 #define MAX_SEED_SIZE_BYTES (32)
 
-tree_t* createTree(size_t numLeaves, size_t dataSize);
-void freeTree(tree_t* tree);
+tree_t createTree(size_t numLeaves, size_t dataSize);
+void clearTree(tree_t* tree);
 uint8_t* getLeaves(tree_t* tree);
 /* Get one leaf, leafIndex must be in [0, tree->numLeaves -1] */
 uint8_t* getLeaf(tree_t* tree, size_t leafIndex);
@@ -55,8 +55,8 @@ uint8_t* getLeaf(tree_t* tree, size_t leafIndex);
 
 /* Returns the number of bytes written to output.  A safe number of bytes for
  * callers to allocate is numLeaves*params->seedSizeBytes, or call revealSeedsSize. */
-tree_t* generateSeeds(size_t nSeeds, uint8_t* rootSeed, uint8_t* salt, size_t repIndex,
-                      const picnic_instance_t* params);
+tree_t generateSeeds(size_t nSeeds, uint8_t* rootSeed, uint8_t* salt, size_t repIndex,
+                     const picnic_instance_t* params);
 size_t revealSeeds(tree_t* tree, uint16_t* hideList, size_t hideListSize, uint8_t* output,
                    size_t outputLen, const picnic_instance_t* params);
 size_t revealSeedsSize(size_t numNodes, uint16_t* hideList, size_t hideListSize,
