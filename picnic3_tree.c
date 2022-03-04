@@ -67,6 +67,19 @@ static bool existsNotHaveNode(tree_t* tree, size_t i) {
 }
 
 static void initNodes(tree_t* tree) {
+#if BITSET_WORD_MAX == UINT64_MAX
+  if (tree->numLeaves == 16) {
+    tree->haveNodeExists[0] = BITSET_WORD_C(0xaaaaaaaaaaaaaaa8);
+    return;
+  }
+#elif BITSET_WORD_MAX == UINT32_MAX
+  if (tree->numLeaves == 16) {
+    tree->haveNodeExists[0] = BITSET_WORD_C(0xaaaaaaaa);
+    tree->haveNodeExists[1] = BITSET_WORD_C(0xaaaaaaa8);
+    return;
+  }
+#endif
+
   /* Set leaves */
   for (size_t i = 0; i < tree->numLeaves; ++i) {
     set_bit(tree->haveNodeExists, 2 * (tree->numNodes - tree->numLeaves + i));

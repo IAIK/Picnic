@@ -22,6 +22,7 @@
  */
 typedef uint_fast32_t bitset_word_t;
 #define BITSET_WORD_C(v) ((bitset_word_t)(v))
+#define BITSET_WORD_MAX UINT_FAST32_MAX
 
 /*
  * Represents a (nearly) complete binary tree, stored in memory as an array.
