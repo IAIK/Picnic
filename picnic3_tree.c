@@ -32,12 +32,14 @@ typedef uint_fast32_t bitset_word_t;
 #define BITSET_WORD_C(v) ((bitset_word_t)(v))
 
 static inline bitset_word_t get_bit(const bitset_word_t* array, size_t index) {
-  return array[index / (sizeof(bitset_word_t) * 8)] >> (index % (sizeof(bitset_word_t) * 8)) & 0x1;
+  return array[index / (sizeof(bitset_word_t) * 8)] >>
+             ((sizeof(bitset_word_t) * 8 - 1) - (index % (sizeof(bitset_word_t) * 8))) &
+         0x1;
 }
 
 static inline void set_bit(bitset_word_t* array, size_t index) {
-  array[index / (sizeof(bitset_word_t) * 8)] |= BITSET_WORD_C(1)
-                                                << (index % (sizeof(bitset_word_t) * 8));
+  array[index / (sizeof(bitset_word_t) * 8)] |=
+      BITSET_WORD_C(1) << ((sizeof(bitset_word_t) * 8 - 1) - (index % (sizeof(bitset_word_t) * 8)));
 }
 
 static int contains(size_t* list, size_t len, size_t value) {
@@ -66,8 +68,8 @@ static void markNode(tree_t* tree, size_t i) {
 
 static bool existsNotHaveNode(tree_t* tree, size_t i) {
   return (tree->haveNodeExists[2 * i / (sizeof(bitset_word_t) * 8)] >>
-              (2 * i % (sizeof(bitset_word_t) * 8)) &
-          0x3) == 0x01;
+              ((sizeof(bitset_word_t) * 8) - 2 - 2 * i % (sizeof(bitset_word_t) * 8)) &
+          0x3) == 0x02;
 }
 
 tree_t* createTree(size_t numLeaves, size_t dataSize) {
