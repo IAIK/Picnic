@@ -81,14 +81,14 @@ static void initNodes(tree_t* tree) {
 #endif
 
   /* Set leaves */
-  for (size_t i = 0; i < tree->numLeaves; ++i) {
-    set_bit(tree->haveNodeExists, 2 * (tree->numNodes - tree->numLeaves + i));
+  for (size_t i = 2 * (tree->numNodes - tree->numLeaves); i < 2 * tree->numNodes; i += 2) {
+    set_bit(tree->haveNodeExists, i);
   }
 
   /* Build tree */
-  for (int i = tree->numNodes - tree->numLeaves; i > 0; i--) {
-    if (exists(tree, 2 * i + 1) || exists(tree, 2 * i + 2)) {
-      set_bit(tree->haveNodeExists, 2 * i);
+  for (int i = 2 * (tree->numNodes - tree->numLeaves); i > 0; i -= 2) {
+    if (exists(tree, i + 1) || exists(tree, i + 2)) {
+      set_bit(tree->haveNodeExists, i);
     }
   }
   set_bit(tree->haveNodeExists, 0);
