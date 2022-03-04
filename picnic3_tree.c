@@ -25,12 +25,6 @@
 #include "picnic3_tree.h"
 #include "picnic3_types.h"
 
-/* The smallest tree has numNodes = 31, so we need at least 64 bit to represent nodes and the flags.
- * On 32 bit platforms, it might be more efficient to work with 32-bit words, though. At least on
- * 64 bit Linux, uint_fast32_t is 64 bits wide. */
-typedef uint_fast32_t bitset_word_t;
-#define BITSET_WORD_C(v) ((bitset_word_t)(v))
-
 static inline bitset_word_t get_bit(const bitset_word_t* array, size_t index) {
   return array[index / (sizeof(bitset_word_t) * 8)] >>
              ((sizeof(bitset_word_t) * 8 - 1) - (index % (sizeof(bitset_word_t) * 8))) &
