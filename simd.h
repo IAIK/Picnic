@@ -120,8 +120,9 @@ typedef __m256i word256;
 typedef __m128i word128;
 
 #define mm128_zero _mm_setzero_si128()
-#define mm128_load(s) _mm_load_si128((const word128*)s)
-#define mm128_store(d, s) _mm_store_si128((word128*)d, s)
+#define mm128_load(s) _mm_load_si128((const word128*)(s))
+#define mm128_loadu(s) _mm_loadu_si128((const void*)(s))
+#define mm128_store(d, s) _mm_store_si128((word128*)d, (s))
 #define mm128_xor(l, r) _mm_xor_si128((l), (r))
 #define mm128_and(l, r) _mm_and_si128((l), (r))
 #define mm128_broadcast_u64(x) _mm_set1_epi64x((x))

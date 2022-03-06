@@ -36,13 +36,29 @@ static inline void set_bit(bitset_word_t* array, unsigned int index) {
       BITSET_WORD_C(1) << ((sizeof(bitset_word_t) * 8 - 1) - (index % (sizeof(bitset_word_t) * 8)));
 }
 
-static int contains(unsigned int* list, size_t len, unsigned int value) {
-  for (size_t i = 0; i < len; i++) {
-    if (list[i] == value) {
-      return 1;
+#if defined(WITH_OPT) && defined(WITH_SSE2) && (defined(__x86_64__) || defined(_M_X64))
+#include "simd.h"
+#endif
+
+static bool contains(unsigned int* list, size_t len, unsigned int value) {
+  size_t i = 0;
+#if defined(WITH_OPT) && defined(WITH_SSE2) && (defined(__x86_64__) || defined(_M_X64))
+  const size_t len4    = (len / 4) * 4;
+  const word128 value4 = _mm_set1_epi32(value);
+
+  for (; i < len4; i += 4) {
+    const word128 tmp = _mm_cmpeq_epi32(value4, mm128_loadu(&list[i]));
+    if (_mm_movemask_epi8(tmp)) {
+      return true;
     }
   }
-  return 0;
+#endif
+  for (; i < len; i++) {
+    if (list[i] == value) {
+      return true;
+    }
+  }
+  return false;
 }
 
 static bitset_word_t exists(tree_t* tree, unsigned int i) {
