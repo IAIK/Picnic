@@ -59,22 +59,26 @@ static bool contains(unsigned int* list, size_t len, unsigned int value) {
   return false;
 }
 
-static bitset_word_t exists(tree_t* tree, unsigned int i) {
+/* Check if a node exists */
+static bitset_word_t exists(const tree_t* tree, unsigned int i) {
   if (i >= tree->numNodes) {
     return 0;
   }
   return get_bit(tree->haveNodeExists, 2 * i);
 }
 
-static bitset_word_t haveNode(tree_t* tree, unsigned int i) {
+/* Check if we have data for a node */
+static bool haveNode(const tree_t* tree, unsigned int i) {
   return get_bit(tree->haveNodeExists, 2 * i + 1);
 }
 
+/* Mark a node has having data */
 static void markNode(tree_t* tree, unsigned int i) {
   set_bit(tree->haveNodeExists, 2 * i + 1);
 }
 
-static bool existsNotHaveNode(tree_t* tree, unsigned int i) {
+/* Check if a node exists but does not have data */
+static bool existsNotHaveNode(const tree_t* tree, unsigned int i) {
   return (tree->haveNodeExists[2 * i / (sizeof(bitset_word_t) * 8)] >>
               (2 * i % (sizeof(bitset_word_t) * 8)) &
           0x3) == 0x01;
@@ -145,16 +149,16 @@ tree_t createTree(unsigned int numLeaves, unsigned int dataSize) {
 }
 
 void clearTree(tree_t* tree) {
-  free(tree->nodes);
   free(tree->haveNodeExists);
+  free(tree->nodes);
 }
 
-static int isLeftChild(unsigned int node) {
+static bool isLeftChild(unsigned int node) {
   assert(node != 0);
   return (node % 2 == 1);
 }
 
-static int hasRightChild(tree_t* tree, unsigned int node) {
+static bool hasRightChild(const tree_t* tree, unsigned int node) {
   return (2 * node + 2 < tree->numNodes && exists(tree, node));
 }
 
@@ -307,23 +311,15 @@ tree_t generateSeeds(unsigned int nSeeds, uint8_t* rootSeed, uint8_t* salt, size
   return tree;
 }
 
-static int isLeafNode(tree_t* tree, unsigned int node) {
-  return (2 * node + 1 >= tree->numNodes);
+static bool isLeafNode(const tree_t* tree, unsigned int node) {
+  return 2 * node + 1 >= tree->numNodes;
 }
 
-static int hasSibling(tree_t* tree, unsigned int node) {
-  if (!exists(tree, node)) {
-    return 0;
-  }
-
-  if (isLeftChild(node) && !exists(tree, node + 1)) {
-    return 0;
-  }
-
-  return 1;
+static bool hasSibling(const tree_t* tree, unsigned int node) {
+  return exists(tree, node) && (!isLeftChild(node) || exists(tree, node + 1));
 }
 
-static size_t getSibling(tree_t* tree, unsigned int node) {
+static unsigned int getSibling(const tree_t* tree, unsigned int node) {
   assert(node < tree->numNodes);
   assert(node != 0);
   assert(hasSibling(tree, node));
@@ -509,7 +505,7 @@ void buildMerkleTree(tree_t* tree, uint8_t** leafData, uint8_t* salt,
 }
 
 /* Note that we never output the root node */
-static unsigned int* getRevealedMerkleNodes(tree_t* tree, uint16_t* missingLeaves,
+static unsigned int* getRevealedMerkleNodes(const tree_t* tree, uint16_t* missingLeaves,
                                             size_t missingLeavesSize, size_t* outputSize) {
   const unsigned int firstLeaf = tree->numNodes - tree->numLeaves;
   bitset_word_t* missingNodes =
@@ -639,10 +635,8 @@ int verifyMerkleTree(tree_t* tree, /* uint16_t* missingLeaves, size_t missingLea
         return -1; /* A leaf was assigned from the prover for a node we've recomputed */
       }
 
-      if (leafData[i] != NULL) {
-        memcpy(&tree->nodes[(firstLeaf + i) * tree->dataSize], leafData[i], tree->dataSize);
-        markNode(tree, firstLeaf + i);
-      }
+      memcpy(&tree->nodes[(firstLeaf + i) * tree->dataSize], leafData[i], tree->dataSize);
+      markNode(tree, firstLeaf + i);
     }
   }
 
