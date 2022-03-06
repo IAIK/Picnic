@@ -133,9 +133,8 @@ tree_t createTree(unsigned int numLeaves, unsigned int dataSize) {
 
   tree.depth    = ceil_log2(numLeaves) + 1;
   tree.dataSize = dataSize;
-  tree.numNodes =
-      ((1 << (tree.depth)) - 1) -
-      ((1 << (tree.depth - 1)) - numLeaves); /* Num nodes in complete - number of missing leaves */
+  /* Num nodes in complete - number of missing leaves */
+  tree.numNodes  = ((1 << (tree.depth)) - 1) - ((1 << (tree.depth - 1)) - numLeaves);
   tree.numLeaves = numLeaves;
   tree.nodes     = calloc(tree.numNodes, dataSize);
   /* Depending on the number of leaves, the tree may not be complete */
@@ -165,11 +164,11 @@ static unsigned int getParent(unsigned int node) {
   assert(node != 0);
   return ((node + 1) >> 1) - 1;
 
-  //if (isLeftChild(node)) {
+  // if (isLeftChild(node)) {
   //  /* (node - 1) / 2, but since node % 2 == 1, that's the same as node / 2 */
   //  return node >> 1;
   //}
-  //return (node - 2) / 2;
+  // return (node - 2) / 2;
 }
 
 uint8_t* getLeaves(tree_t* tree) {
@@ -514,40 +513,41 @@ void buildMerkleTree(tree_t* tree, uint8_t** leafData, uint8_t* salt,
 /* Note that we never output the root node */
 static unsigned int* getRevealedMerkleNodes(tree_t* tree, uint16_t* missingLeaves,
                                             size_t missingLeavesSize, size_t* outputSize) {
-  unsigned int firstLeaf = tree->numNodes - tree->numLeaves;
-  uint8_t* missingNodes  = calloc(tree->numNodes, 1);
+  const unsigned int firstLeaf = tree->numNodes - tree->numLeaves;
+  bitset_word_t* missingNodes =
+      calloc((tree->numNodes + sizeof(bitset_word_t) * 8 - 1) / (sizeof(bitset_word_t) * 8),
+             sizeof(bitset_word_t));
 
   /* Mark leaves that are missing */
   for (size_t i = 0; i < missingLeavesSize; i++) {
-    missingNodes[firstLeaf + missingLeaves[i]] = 1;
+    set_bit(missingNodes, firstLeaf + missingLeaves[i]);
   }
 
   /* For the nonleaf nodes, if both leaves are missing, mark it as missing too */
-  unsigned int lastNonLeaf = getParent(tree->numNodes - 1);
-  for (unsigned int i = lastNonLeaf; i > 0; i--) {
+  for (unsigned int i = getParent(tree->numNodes - 1); i > 0; i--) {
     if (!exists(tree, i)) {
       continue;
     }
     if (exists(tree, 2 * i + 2)) {
-      if (missingNodes[2 * i + 1] && missingNodes[2 * i + 2]) {
-        missingNodes[i] = 1;
+      if (get_bit(missingNodes, 2 * i + 1) && get_bit(missingNodes, 2 * i + 2)) {
+        set_bit(missingNodes, i);
       }
     } else {
-      if (missingNodes[2 * i + 1]) {
-        missingNodes[i] = 1;
+      if (get_bit(missingNodes, 2 * i + 1)) {
+        set_bit(missingNodes, i);
       }
     }
   }
 
   /* For each missing leaf node, add the highest missing node on the path
    * back to the root to the set to be revealed */
-  unsigned int* revealed = malloc(tree->numLeaves * sizeof(size_t));
+  unsigned int* revealed = malloc(tree->numLeaves * sizeof(unsigned int));
   unsigned int pos       = 0;
   for (unsigned int i = 0; i < missingLeavesSize; i++) {
-    unsigned int node =
-        missingLeaves[i] + firstLeaf; /* input is leaf indexes, translate to nodes */
+    /* input is leaf indexes, translate to nodes */
+    unsigned int node = missingLeaves[i] + firstLeaf;
     do {
-      if (!missingNodes[getParent(node)]) {
+      if (!get_bit(missingNodes, getParent(node))) {
         if (!contains(revealed, pos, node)) {
           revealed[pos] = node;
           pos++;
@@ -595,7 +595,6 @@ uint8_t* openMerkleTree(tree_t* tree, uint16_t* missingLeaves, size_t missingLea
   }
 
   free(revealed);
-
   return outputBase;
 }
 
