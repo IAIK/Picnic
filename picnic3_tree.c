@@ -138,7 +138,7 @@ tree_t createTree(unsigned int numLeaves, unsigned int dataSize) {
   /* Num nodes in complete - number of missing leaves */
   tree.numNodes  = ((1 << (tree.depth)) - 1) - ((1 << (tree.depth - 1)) - numLeaves);
   tree.numLeaves = numLeaves;
-  tree.nodes     = calloc(tree.numNodes, dataSize);
+  tree.nodes     = dataSize ? calloc(tree.numNodes, dataSize) : NULL;
   /* Depending on the number of leaves, the tree may not be complete */
   tree.haveNodeExists =
       calloc((2 * tree.numNodes + (sizeof(bitset_word_t) * 8) - 1) / (sizeof(bitset_word_t) * 8),
@@ -391,7 +391,7 @@ static unsigned int* getRevealedNodes(tree_t* tree, uint16_t* hideList, size_t h
 
 size_t revealSeedsSize(unsigned int numNodes, uint16_t* hideList, size_t hideListSize,
                        const picnic_instance_t* params) {
-  tree_t tree = createTree(numNodes, params->seed_size);
+  tree_t tree = createTree(numNodes, 0);
 
   size_t numNodesRevealed = 0;
   unsigned int* revealed  = getRevealedNodes(&tree, hideList, hideListSize, &numNodesRevealed);
