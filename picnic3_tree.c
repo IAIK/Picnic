@@ -25,15 +25,13 @@
 #include "picnic3_tree.h"
 #include "picnic3_types.h"
 
-static inline bitset_word_t get_bit(const bitset_word_t* array, unsigned int index) {
-  return array[index / (sizeof(bitset_word_t) * 8)] >>
-             ((sizeof(bitset_word_t) * 8 - 1) - (index % (sizeof(bitset_word_t) * 8))) &
-         0x1;
+static inline bitset_word_t get_bit(const bitset_word_t* array, size_t index) {
+  return array[index / (sizeof(bitset_word_t) * 8)] >> (index % (sizeof(bitset_word_t) * 8)) & 0x1;
 }
 
-static inline void set_bit(bitset_word_t* array, unsigned int index) {
-  array[index / (sizeof(bitset_word_t) * 8)] |=
-      BITSET_WORD_C(1) << ((sizeof(bitset_word_t) * 8 - 1) - (index % (sizeof(bitset_word_t) * 8)));
+static inline void set_bit(bitset_word_t* array, size_t index) {
+  array[index / (sizeof(bitset_word_t) * 8)] |= BITSET_WORD_C(1)
+                                                << (index % (sizeof(bitset_word_t) * 8));
 }
 
 #if defined(WITH_OPT) && defined(WITH_SSE2) && (defined(__x86_64__) || defined(_M_X64))
@@ -78,20 +76,20 @@ static void markNode(tree_t* tree, unsigned int i) {
 
 static bool existsNotHaveNode(tree_t* tree, unsigned int i) {
   return (tree->haveNodeExists[2 * i / (sizeof(bitset_word_t) * 8)] >>
-              ((sizeof(bitset_word_t) * 8) - 2 - 2 * i % (sizeof(bitset_word_t) * 8)) &
-          0x3) == 0x02;
+              (2 * i % (sizeof(bitset_word_t) * 8)) &
+          0x3) == 0x01;
 }
 
 static void initNodes(tree_t* tree) {
 #if BITSET_WORD_MAX == UINT64_MAX
   if (tree->numLeaves == 16) {
-    tree->haveNodeExists[0] = BITSET_WORD_C(0xaaaaaaaaaaaaaaa8);
+    tree->haveNodeExists[0] = BITSET_WORD_C(0x1555555555555555);
     return;
   }
 #elif BITSET_WORD_MAX == UINT32_MAX
   if (tree->numLeaves == 16) {
-    tree->haveNodeExists[0] = BITSET_WORD_C(0xaaaaaaaa);
-    tree->haveNodeExists[1] = BITSET_WORD_C(0xaaaaaaa8);
+    tree->haveNodeExists[0] = BITSET_WORD_C(0x55555555);
+    tree->haveNodeExists[1] = BITSET_WORD_C(0x15555555);
     return;
   }
 #endif
@@ -108,9 +106,9 @@ static void initNodes(tree_t* tree) {
       (num_nodes_twice / (sizeof(bitset_word_t) * 8)) * sizeof(bitset_word_t) * 8;
   for (; node < num_nodes_twice_word_boundary; node += sizeof(bitset_word_t) * 8) {
 #if BITSET_WORD_MAX == UINT64_MAX
-    tree->haveNodeExists[node / (sizeof(bitset_word_t) * 8)] = BITSET_WORD_C(0xaaaaaaaaaaaaaaaa);
+    tree->haveNodeExists[node / (sizeof(bitset_word_t) * 8)] = BITSET_WORD_C(0x5555555555555555);
 #elif BITSET_WORD_MAX == UINT32_MAX
-    tree->haveNodeExists[node / (sizeof(bitset_word_t) * 8)] = BITSET_WORD_C(0xaaaaaaaa);
+    tree->haveNodeExists[node / (sizeof(bitset_word_t) * 8)] = BITSET_WORD_C(0x55555555);
 #endif
   }
 #endif
