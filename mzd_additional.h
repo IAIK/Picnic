@@ -194,6 +194,9 @@ void mzd_mul_v_parity_uint64_192_30(mzd_local_t* c, mzd_local_t const* v,
 void mzd_mul_v_parity_uint64_256_30(mzd_local_t* c, mzd_local_t const* v,
                                     mzd_local_t const* A) ATTR_NONNULL;
 
+void mzd_mul_v_parity_s256_256_30(mzd_local_t* c, mzd_local_t const* v,
+                                  mzd_local_t const* A) ATTR_NONNULL;
+
 /**
  * Compute c + v * A optimized for c and v being vectors.
  */

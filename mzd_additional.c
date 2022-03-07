@@ -1434,5 +1434,66 @@ ATTR_TARGET_AVX2
 void mzd_shuffle_pext_256_30(mzd_local_t* x, const word mask) {
   mzd_shuffle_pext_30_idx(x, mask, 3);
 }
+
+/**
+ * Compute the parity of three 256-bit words and store them in the lowest bit (v1), the second
+ * lowest bit (v2), and the third lowest bit (v3) of each quad word
+ *
+ * Based on Wojciech Mula, Nathan Kurz and Daniel Lemire: Faster Population Counts Using AVX2
+ * Instructions
+ */
+ATTR_TARGET_AVX2
+static inline word256 mm256_parity_3(word256 v1, word256 v2, word256 v3) {
+  const word256 lookup   = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1, 1,
+                                          2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+  const word256 low_mask = _mm256_set1_epi8(0x0f);
+  const word256 all1     = _mm256_set1_epi64x(0x1);
+
+  const word256 lo1     = mm256_and(v1, low_mask);
+  const word256 hi1     = mm256_and(_mm256_srli_epi32(v1, 4), low_mask);
+  const word256 popcnt1 = _mm256_shuffle_epi8(lookup, lo1);
+  const word256 popcnt2 = _mm256_shuffle_epi8(lookup, hi1);
+  word256 total1        = _mm256_add_epi8(popcnt1, popcnt2);
+
+  const word256 lo2     = mm256_and(v2, low_mask);
+  const word256 hi2     = mm256_and(_mm256_srli_epi32(v2, 4), low_mask);
+  const word256 popcnt3 = _mm256_shuffle_epi8(lookup, lo2);
+  const word256 popcnt4 = _mm256_shuffle_epi8(lookup, hi2);
+  word256 total2        = _mm256_add_epi8(popcnt3, popcnt4);
+
+  const word256 lo3     = mm256_and(v3, low_mask);
+  const word256 hi3     = mm256_and(_mm256_srli_epi32(v3, 4), low_mask);
+  const word256 popcnt5 = _mm256_shuffle_epi8(lookup, lo3);
+  const word256 popcnt6 = _mm256_shuffle_epi8(lookup, hi3);
+  word256 total3        = _mm256_add_epi8(popcnt5, popcnt6);
+
+  total1 = mm256_and(_mm256_sad_epu8(total1, mm256_zero), all1);
+  total2 = mm256_and(_mm256_sad_epu8(total2, mm256_zero), all1);
+  total3 = mm256_and(_mm256_sad_epu8(total3, mm256_zero), all1);
+
+  return mm256_xor(mm256_xor(total1, _mm256_slli_epi64(total2, 1)), _mm256_slli_epi64(total3, 2));
+}
+
+ATTR_TARGET_AVX2
+void mzd_mul_v_parity_s256_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
+  const word256 vblock = mm256_load(v->w64);
+  word256 res          = mm256_zero;
+  unsigned int i       = 30;
+  // process 3 rows at a time
+  for (; i; i -= 3) {
+    const word256 Ablock1 = mm256_and(vblock, mm256_load(CONST_BLOCK(At, 30 - i)->w64));
+    const word256 Ablock2 = mm256_and(vblock, mm256_load(CONST_BLOCK(At, 30 - i + 1)->w64));
+    const word256 Ablock3 = mm256_and(vblock, mm256_load(CONST_BLOCK(At, 30 - i + 2)->w64));
+
+    res = mm256_xor(
+        res, _mm256_sll_epi64(mm256_parity_3(Ablock1, Ablock2, Ablock3), _mm_set1_epi64x(64 - i)));
+  }
+
+  for (unsigned int j = 0; j < 3; j++) {
+    c->w64[j] = 0;
+  }
+  c->w64[3] = _mm256_extract_epi64(res, 0) ^ _mm256_extract_epi64(res, 1) ^
+              _mm256_extract_epi64(res, 2) ^ _mm256_extract_epi64(res, 3);
+}
 #endif
 #endif
