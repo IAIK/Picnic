@@ -1475,9 +1475,8 @@ ATTR_TARGET_AVX2
 void mzd_mul_v_parity_s256_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_local_t const* At) {
   const word256 vblock = mm256_load(v->w64);
   word256 res          = mm256_zero;
-  unsigned int i       = 30;
   // process 3 rows at a time
-  for (; i; i -= 3) {
+  for (unsigned int i = 30; i; i -= 3) {
     const word256 Ablock1 = mm256_and(vblock, mm256_load(CONST_BLOCK(At, 30 - i)->w64));
     const word256 Ablock2 = mm256_and(vblock, mm256_load(CONST_BLOCK(At, 30 - i + 1)->w64));
     const word256 Ablock3 = mm256_and(vblock, mm256_load(CONST_BLOCK(At, 30 - i + 2)->w64));
