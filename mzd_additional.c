@@ -1453,23 +1453,20 @@ static inline word256 mm256_parity_3(word256 v1, word256 v2, word256 v3) {
   const word256 hi1     = mm256_and(_mm256_srli_epi32(v1, 4), low_mask);
   const word256 popcnt1 = _mm256_shuffle_epi8(lookup, lo1);
   const word256 popcnt2 = _mm256_shuffle_epi8(lookup, hi1);
-  word256 total1        = _mm256_add_epi8(popcnt1, popcnt2);
 
   const word256 lo2     = mm256_and(v2, low_mask);
   const word256 hi2     = mm256_and(_mm256_srli_epi32(v2, 4), low_mask);
   const word256 popcnt3 = _mm256_shuffle_epi8(lookup, lo2);
   const word256 popcnt4 = _mm256_shuffle_epi8(lookup, hi2);
-  word256 total2        = _mm256_add_epi8(popcnt3, popcnt4);
 
   const word256 lo3     = mm256_and(v3, low_mask);
   const word256 hi3     = mm256_and(_mm256_srli_epi32(v3, 4), low_mask);
   const word256 popcnt5 = _mm256_shuffle_epi8(lookup, lo3);
   const word256 popcnt6 = _mm256_shuffle_epi8(lookup, hi3);
-  word256 total3        = _mm256_add_epi8(popcnt5, popcnt6);
 
-  total1 = mm256_and(_mm256_sad_epu8(total1, mm256_zero), all1);
-  total2 = mm256_and(_mm256_sad_epu8(total2, mm256_zero), all1);
-  total3 = mm256_and(_mm256_sad_epu8(total3, mm256_zero), all1);
+  const word256 total1 = mm256_and(_mm256_sad_epu8(popcnt1, popcnt2), all1);
+  const word256 total2 = mm256_and(_mm256_sad_epu8(popcnt3, popcnt4), all1);
+  const word256 total3 = mm256_and(_mm256_sad_epu8(popcnt5, popcnt6), all1);
 
   return mm256_xor(mm256_xor(total1, _mm256_slli_epi64(total2, 1)), _mm256_slli_epi64(total3, 2));
 }
