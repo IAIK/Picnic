@@ -1488,8 +1488,17 @@ void mzd_mul_v_parity_s256_256_30(mzd_local_t* c, mzd_local_t const* v, mzd_loca
   for (unsigned int j = 0; j < 3; j++) {
     c->w64[j] = 0;
   }
+
+  // combine the parities of each quad word
+#if defined(__x86_64__) || defined(_M_X64)
   c->w64[3] = _mm256_extract_epi64(res, 0) ^ _mm256_extract_epi64(res, 1) ^
               _mm256_extract_epi64(res, 2) ^ _mm256_extract_epi64(res, 3);
+#else
+  // workaround for missing _mm256_extract_epi64 on x86-32
+  uint64_t tmp[4] ATTR_ALIGNED(sizeof(word256));
+  mm256_store(tmp, res);
+  c->w64[3] = tmp[0] ^ tmp[1] ^ tmp[2] ^ tmp[3];
+#endif
 }
 #endif
 #endif
