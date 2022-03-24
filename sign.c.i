@@ -13,7 +13,9 @@
 #include "picnic.h"
 
 #include <string.h>
+#if !defined(SUPERCOP)
 #include <assert.h>
+#endif
 
 int crypto_sign_keypair(unsigned char* pk, unsigned char* sk) {
   picnic_publickey_t ppk;
@@ -26,10 +28,12 @@ int crypto_sign_keypair(unsigned char* pk, unsigned char* sk) {
 
   ret = picnic_write_public_key(&ppk, pk, PICNIC_PUBLIC_KEY_SIZE(PICNIC_INSTANCE));
   if (ret < 0) {
+    picnic_clear_private_key(&psk);
     return ret;
   }
 
   ret = picnic_write_private_key(&psk, sk, PICNIC_PRIVATE_KEY_SIZE(PICNIC_INSTANCE));
+  picnic_clear_private_key(&psk);
   if (ret < 0) {
     return ret;
   }
@@ -55,10 +59,12 @@ int crypto_sign(unsigned char* sm, unsigned long long* smlen, const unsigned cha
   picnic_privatekey_t psk;
   int ret = picnic_read_private_key(&psk, sk, PICNIC_PRIVATE_KEY_SIZE(PICNIC_INSTANCE));
   if (ret < 0) {
+    picnic_clear_private_key(&psk);
     return ret;
   }
 
   ret = picnic_sign(&psk, m, mlen, sm + sizeof(len) + mlen, &signature_len);
+  picnic_clear_private_key(&psk);
   if (ret) {
     return ret;
   }
