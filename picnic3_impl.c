@@ -32,7 +32,7 @@
 /* Helper functions */
 
 ATTR_CONST
-static uint32_t numBytes(uint32_t numBits) {
+static inline uint32_t numBytes(uint32_t numBits) {
   return (numBits + 7) >> 3;
 }
 
