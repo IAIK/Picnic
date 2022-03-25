@@ -14,6 +14,8 @@
 #include "picnic_instances.h"
 #include "picnic.h"
 
+#include <stdio.h>
+
 typedef struct {
   mzd_local_t m_plaintext[(MAX_LOWMC_BLOCK_SIZE_BITS + 255) / 256];
   /* private key for signing, public key for verification */
