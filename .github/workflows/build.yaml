@@ -16,6 +16,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install -y cmake ninja-build libboost-test-dev
     - name: Configure
       run: |
@@ -33,6 +34,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install -y cmake ninja-build gcc-9-i686-linux-gnu g++-9-i686-linux-gnu
     - name: Configure
       run: |
@@ -76,6 +78,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install -y ${{ matrix.cfg.compiler }} cmake ninja-build pkg-config libm4ri-dev libboost-test-dev
         sudo apt-get install -y ${{ matrix.cfg.cxxcompiler }} || true
       if: ${{ runner.os == 'Linux' }}
@@ -203,6 +206,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Linux dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install cmake ninja-build clang-12
     - name: Configure
       run: |
