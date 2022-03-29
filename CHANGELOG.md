@@ -1,5 +1,12 @@
 # Changelog for the optimized Picnic implementation
 
+## Version 3.0.12 -- 2022-03-29
+
+* Improve matrix multiplication for L5 instances on AVX2. This improves the performance of Picnic-L5-{FS,UR} by up to 5 %.
+* Reduce memory usage and initialization cost for trees.
+* Make the use of `mzd_local_t` as SIMD registers explicit. This change avoids potential issues when not following the rules for accessing members of unions.
+* Clear temporary copies of private keys.
+
 ## Version 3.0.11 -- 2022-01-25
 
 * Fix NEON code on M1.
@@ -8,7 +15,7 @@
 
 ## Version 3.0.10 -- 2022-01-08
 
-* Fix build with llvm on ARM with NEON enabled
+* Fix build with llvm on ARM with NEON enabled.
 
 ## Version 3.0.9 -- 2021-12-22
 
