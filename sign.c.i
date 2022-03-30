@@ -13,9 +13,6 @@
 #include "picnic.h"
 
 #include <string.h>
-#if !defined(SUPERCOP)
-#include <assert.h>
-#endif
 
 // This file provides the implementation of the SUPERCOP / NIST competition API for a specific
 // Picnic instance. For this implementation, we read/write the keys directly from the user provider
@@ -60,10 +57,6 @@ int crypto_sign(unsigned char* sm, unsigned long long* smlen, const unsigned cha
 
   size_t signature_len = PICNIC_SIGNATURE_SIZE(PICNIC_INSTANCE);
   uint32_t len         = 0;
-
-#if !defined(SUPERCOP)
-  assert(signature_len + sizeof(len) == CRYPTO_BYTES);
-#endif
 
   picnic_privatekey_t psk;
   int ret = picnic_read_private_key(&psk, sk, PICNIC_PRIVATE_KEY_SIZE(PICNIC_INSTANCE));
