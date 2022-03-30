@@ -244,6 +244,13 @@ if(NOT WITH_SHA3_IMPL STREQUAL "s390-cpacf")
   else()
     message(FATAL_ERROR "Unknown SHA3 implementation")
   endif()
+
+  # 32 bit ARM is in general unhappy with unaligned access, hence disable it in this case
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm")
+    if (WITH_SHA3_IMPL STREQUAL "opt64" OR WITH_SHA3_IMPL STREQAUL "plain32")
+      set(DISABLE_MISALIGNED_ACCESS TRUE)
+    endif()
+  endif()
 endif()
 
 # Picnic implementation
@@ -303,7 +310,8 @@ function(apply_base_options lib)
                              $<$<BOOL:${WITH_ZKBPP}>:WITH_ZKBPP>
                              $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_ZKBPP}>>:WITH_UNRUH>
                              $<$<BOOL:${WITH_KKW}>:WITH_KKW>
-                             $<$<BOOL:${WITH_CONFIG_H}>:HAVE_CONFIG_H>)
+                             $<$<BOOL:${WITH_CONFIG_H}>:HAVE_CONFIG_H>
+                             $<$<BOOL:${DISABLE_MISALIGNED_ACCESS}>:NO_MISALIGNED_ACCESSES>)
   target_include_directories(${lib} PRIVATE
                              "${CMAKE_BINARY_DIR}"
                              "${CMAKE_SOURCE_DIR}"
