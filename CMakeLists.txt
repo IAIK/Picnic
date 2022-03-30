@@ -391,13 +391,6 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/picnic.pc.in
                ${CMAKE_CURRENT_BINARY_DIR}/picnic.pc @ONLY)
 
-# visualize_signature executable
-if(WITH_ZKBPP)
-  add_executable(visualize_signature tools/visualize_signature.c)
-  target_link_libraries(visualize_signature picnic_static)
-  apply_base_options(visualize_signature)
-endif()
-
 add_library(utils STATIC tools/utils.cpp)
 target_link_libraries(utils PUBLIC picnic)
 target_include_directories(utils PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/tools")
