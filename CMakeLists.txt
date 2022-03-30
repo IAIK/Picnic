@@ -100,6 +100,12 @@ else()
   set(DEFAULT_WITH_MARCH_NATIVE ON)
 endif()
 
+if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+  set(DEFAULT_SHA3_IMPL "plain32")
+else()
+  set(DEFAULT_SHA3_IMPL "opt64")
+endif()
+
 set(WITH_ZKBPP ON CACHE BOOL "Enable Picnic instances based on ZKB++.")
 set(WITH_KKW ON CACHE BOOL "Enable Picnic instances based on KKW.")
 set(WITH_UNRUH ON CACHE BOOL "Enable Picnic instances based on ZKB++ and Unruh.")
@@ -128,8 +134,8 @@ set(WITH_SSE2 ON CACHE BOOL "Use SSE2 if available.")
 set(WITH_NEON ON CACHE BOOL "Use NEON if available.")
 set(WITH_MARCH_NATIVE ${DEFAULT_WITH_MARCH_NATIVE} CACHE BOOL "Build with -march=native -mtune=native (if supported).")
 set(WITH_LTO ON CACHE BOOL "Enable link-time optimization (if supported).")
-set(WITH_SHA3_IMPL "opt64" CACHE STRING "Select SHA3 implementation.")
-set_property(CACHE WITH_SHA3_IMPL PROPERTY STRINGS "opt64" "avx2" "armv8a-neon" "s390-cpacf")
+set(WITH_SHA3_IMPL ${DEFAULT_SHA3_IMPL} CACHE STRING "Select SHA3 implementation.")
+set_property(CACHE WITH_SHA3_IMPL PROPERTY STRINGS "opt64" "plain32" "avx2" "armv8a-neon" "s390-cpacf")
 set(WITH_EXTRA_RANDOMNESS OFF CACHE BOOL "Feed extra random bytes to KDF (fault attack counter measure).")
 set(WITH_CONFIG_H ON CACHE BOOL "Generate config.h. Disabling this option is discouraged. It is only available to test builds produced for SUPERCOP.")
 if(MSVC)
@@ -226,6 +232,10 @@ if(NOT WITH_SHA3_IMPL STREQUAL "s390-cpacf")
     list(APPEND SHA3_SOURCES
          sha3/opt64/KeccakP-1600-opt64.c
          sha3/opt64/KeccakP-1600-times4-on1.c)
+  elseif(WITH_SHA3_IMPL STREQUAL "plain32")
+    list(APPEND SHA3_SOURCES
+         sha3/plain32/KeccakP-1600-inplace32BI.c
+         sha3/plain32/KeccakP-1600-times4-on1.c)
   elseif(WITH_SHA3_IMPL STREQUAL "armv8a-neon")
     list(APPEND SHA3_SOURCES
          sha3/armv8a-neon/KeccakP-1600-armv8a-neon.s
