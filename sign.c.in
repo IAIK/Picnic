@@ -7,7 +7,11 @@
  *  SPDX-License-Identifier: MIT
  */
 
-#ifdef PICNIC_INSTANCE
+#ifdef SUPERCOP
+#include "crypto_sign.h"
+#else
+#include "api.h"
+#endif
 
 #include "endian_compat.h"
 #include "picnic.h"
@@ -120,7 +124,5 @@ int crypto_sign_open(unsigned char* m, unsigned long long* mlen, const unsigned 
 
   return 0;
 }
-
-#endif
 
 // vim: ft=c

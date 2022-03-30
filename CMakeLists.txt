@@ -57,6 +57,9 @@ if(APPLE)
   set(HAVE_SECURITY_FRAMEWORK TRUE)
 endif()
 
+# check programs
+find_program(SED sed)
+
 # check headers
 check_include_files(sys/auxv.h HAVE_SYS_AUXV_H)
 check_include_files(asm/hwcap.h HAVE_ASM_HWCAP_H)
@@ -216,6 +219,29 @@ endif()
 
 if(WITH_CONFIG_H)
   configure_file(config.h.in config.h)
+endif()
+
+# generate sign.c for NIST / SUPERCOP
+if(SED)
+  list(APPEND ALL_PARAMETERS Picnic_L1_FS Picnic_L1_UR Picnic_L1_full Picnic3_L1)
+  list(APPEND ALL_PARAMETERS Picnic_L3_FS Picnic_L3_UR Picnic_L3_full Picnic3_L3)
+  list(APPEND ALL_PARAMETERS Picnic_L5_FS Picnic_L5_UR Picnic_L5_full Picnic3_L5)
+  list(APPEND ALL_DIRECTORIES picnic_L1_FS picnic_L1_UR picnic_L1_full picnic3_L1)
+  list(APPEND ALL_DIRECTORIES picnic_L3_FS picnic_L3_UR picnic_L3_full picnic3_L3)
+  list(APPEND ALL_DIRECTORIES picnic_L5_FS picnic_L5_UR picnic_L5_full picnic3_L5)
+
+  foreach(idx RANGE 11)
+    list(GET ALL_PARAMETERS ${idx} param)
+    list(GET ALL_DIRECTORIES ${idx} dir)
+    add_custom_command(
+      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/sign.c"
+      COMMAND ${SED}
+        -n
+        "s/PICNIC_INSTANCE/${param}/g;w ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/sign.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/sign.c.in"
+      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/sign.c.in"
+      VERBATIM)
+  endforeach()
 endif()
 
 # SHAKE implementation
