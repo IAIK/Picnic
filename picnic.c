@@ -248,7 +248,9 @@ int PICNIC_CALLING_CONVENTION picnic_sign(const picnic_privatekey_t* sk, const u
 #if defined(WITH_UNRUH)
     context.unruh = picnic_instance_is_unruh(param);
 #endif
-    return picnic_impl_sign(instance, &context, signature, signature_len);
+    int ret = picnic_impl_sign(instance, &context, signature, signature_len);
+    picnic_explicit_bzero(context.m_key, sizeof(context.m_key));
+    return ret;
 #else
     return -1;
 #endif
