@@ -275,10 +275,8 @@ if(NOT WITH_SHA3_IMPL STREQUAL "s390-cpacf")
   endif()
 
   # 32 bit ARM is in general unhappy with unaligned access, hence disable it in this case
-  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm")
-    if (WITH_SHA3_IMPL STREQUAL "opt64" OR WITH_SHA3_IMPL STREQAUL "plain32")
-      set(DISABLE_MISALIGNED_ACCESS TRUE)
-    endif()
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm" AND (WITH_SHA3_IMPL STREQUAL "opt64" OR WITH_SHA3_IMPL STREQUAL "plain32"))
+    set(DISABLE_MISALIGNED_ACCESS TRUE)
   endif()
 endif()
 
