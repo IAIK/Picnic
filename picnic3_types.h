@@ -23,7 +23,6 @@ typedef struct randomTape_t {
   uint32_t pos;
   uint32_t aux_pos;
   size_t nTapes;
-  uint16_t* buffer;
 } randomTape_t;
 
 typedef struct commitments_t {
