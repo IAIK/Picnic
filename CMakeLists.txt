@@ -212,6 +212,18 @@ else()
 set(LTO_SUPPORTED FALSE)
 endif()
 
+message(STATUS "Picnic configuration:")
+message(STATUS "ZKB++ enabled: ${WITH_ZKBPP}")
+message(STATUS "KKW enabled: ${WITH_KKW}")
+message(STATUS "SHA3 implementation: ${WITH_SHA3_IMPL}")
+message(STATUS "LTO enabled: ${LTO_SUPPORTED}")
+message(STATUS "SIMD enabled: ${WITH_SIMD_OPT}")
+if(WITH_SIMD_OPT)
+  message(STATUS "SSE2 supported: ${CC_SUPPORTS_SSE2} enabled: ${WITH_SSE2}")
+  message(STATUS "AVX2 supported: ${CC_SUPPORTS_AVX2} enabled: ${WITH_AVX2}")
+  message(STATUS "NEON supported: ${CC_SUPPORTS_NEON} enabled: ${WITH_NEON}")
+endif()
+
 # enable -O3
 if(CC_SUPPORTS_O3 AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_options(-O3)

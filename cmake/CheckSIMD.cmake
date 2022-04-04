@@ -36,7 +36,7 @@ function(CHECK_SIMD INS VARIABLE)
       OUTPUT_VARIABLE OUTPUT)
 
     if(${VARIABLE})
-      set(${VARIABLE} 1 CACHE INTERNAL "Have instruction set ${INS}")
+      set(${VARIABLE} TRUE CACHE INTERNAL "Have instruction set ${INS}")
       if(NOT CMAKE_REQUIRED_QUIET)
         message(STATUS "Looking for instruction set ${INS} - found")
       endif()
@@ -47,7 +47,7 @@ function(CHECK_SIMD INS VARIABLE)
       if(NOT CMAKE_REQUIRED_QUIET)
         message(STATUS "Looking for instruction set ${INS} - not found")
       endif()
-      set(${VARIABLE} "" CACHE INTERNAL "Have instruction set ${INS}")
+      set(${VARIABLE} FALSE CACHE INTERNAL "Have instruction set ${INS}")
       file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
         "Determining if the instruction set ${INS} exists failed with the following output:\n"
         "${OUTPUT}\n\n")
