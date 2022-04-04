@@ -17,9 +17,12 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(NDEBUG)
+#include <stdio.h>
+#include <inttypes.h>
+#endif
 
 #include "io.h"
 #include "kdf_shake.h"
@@ -389,7 +392,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   }
 
   /* Populate seeds with values from the signature */
-  for (size_t t = 0; t < params->num_rounds; t++) {
+  for (uint16_t t = 0; t < params->num_rounds; t++) {
     tree_t seed;
     if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
       /* Expand iSeed[t] to seeds for each parties, using a seed tree */
@@ -405,7 +408,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
                              sig->proofs[t].seedInfoLen, sig->salt, t, params);
       if (ret != 0) {
 #if !defined(NDEBUG)
-        printf("Failed to reconstruct seeds for round " SIZET_FMT "\n", t);
+        printf("Failed to reconstruct seeds for round %" PRIu16 "\n", t);
 #endif
         clearTree(&seed);
         ret = -1;
@@ -459,18 +462,18 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   }
 
   /* Commit to the views */
-  for (size_t t = 0; t < params->num_rounds; t++) {
+  for (uint16_t t = 0; t < params->num_rounds; t++) {
     if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
       Cv.hashes[t] = NULL;
     }
   }
 
-  for (size_t i = 0; i < params->num_opened_rounds; i++) {
+  for (uint8_t i = 0; i < params->num_opened_rounds; i++) {
     /* 2. When t is in C, we have everything we need to re-compute the view, as an honest signer
      * would.
      * We simulate the MPC with one fewer party; the unopened party's values are all set to zero.
      */
-    size_t t       = sig->challengeC[i];
+    uint16_t t     = sig->challengeC[i];
     int unopened   = sig->challengeP[i];
     uint8_t* input = sig->proofs[t].input;
     setAuxBits(&tapes[t], sig->proofs[t].aux, params);
@@ -483,7 +486,7 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
 
     if (ret != 0) {
 #if !defined(NDEBUG)
-      printf("MPC simulation failed for round " SIZET_FMT ", signature invalid\n", i);
+      printf("MPC simulation failed for round %" PRIu8 ", signature invalid\n", i);
 #endif
       ret = -1;
       goto Exit;
@@ -610,7 +613,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
            params);
   }
 
-  for (size_t t = 0; t < params->num_rounds; t++) {
+  for (uint16_t t = 0; t < params->num_rounds; t++) {
     /* Simulate the online phase of the MPC */
     uint8_t* maskedKey = inputs[t];
 
@@ -624,7 +627,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
     int rv = simulateOnline(m_maskedKey, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
     if (rv != 0) {
 #if !defined(NDEBUG)
-      printf("MPC simulation failed in round " SIZET_FMT ", aborting signature\n", t);
+      printf("MPC simulation failed in round %" PRIu16 ", aborting signature\n", t);
 #endif
       ret = -1;
     }
@@ -847,7 +850,7 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
       sig->iSeedInfoLen; /* Encode only iSeedInfo, the length will be recomputed by deserialize */
   bytesRequired += sig->cvInfoLen;
 
-  for (size_t t = 0; t < params->num_rounds; t++) { /* proofs */
+  for (uint16_t t = 0; t < params->num_rounds; t++) { /* proofs */
     if (contains(sig->challengeC, params->num_opened_rounds, t)) {
       uint16_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
       bytesRequired += sig->proofs[t].seedInfoLen;
@@ -876,7 +879,7 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
   sigBytes += sig->cvInfoLen;
 
   /* Write the proofs */
-  for (size_t t = 0; t < params->num_rounds; t++) {
+  for (uint16_t t = 0; t < params->num_rounds; t++) {
     if (contains(sig->challengeC, params->num_opened_rounds, t)) {
       memcpy(sigBytes, sig->proofs[t].seedInfo, sig->proofs[t].seedInfoLen);
       sigBytes += sig->proofs[t].seedInfoLen;
