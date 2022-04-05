@@ -22,7 +22,6 @@
 
 void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->nTapes         = params->num_MPC_parties;
-  tape->tape           = malloc(tape->nTapes * sizeof(uint8_t*));
   tape->aux_bits       = calloc(1, params->view_size);
   size_t tapeSizeBytes = 2 * params->view_size;
   tape->parity_tapes   = calloc(1, tapeSizeBytes);
@@ -38,7 +37,6 @@ void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
 void freeRandomTape(randomTape_t* tape) {
   if (tape != NULL) {
     free(tape->tape[0]);
-    free(tape->tape);
     free(tape->parity_tapes);
     free(tape->aux_bits);
   }
@@ -131,14 +129,11 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
   msgs_t* msgs = malloc(params->num_rounds * sizeof(msgs_t));
 
   uint8_t* slab =
-      calloc(1, params->num_rounds * (params->num_MPC_parties * ((params->view_size + 7) / 8 * 8) +
-                                      params->num_MPC_parties * sizeof(uint8_t*)));
+      calloc(1, params->num_rounds * params->num_MPC_parties * ((params->view_size + 7) / 8 * 8));
 
   for (uint32_t i = 0; i < params->num_rounds; i++) {
     msgs[i].pos      = 0;
     msgs[i].unopened = -1;
-    msgs[i].msgs     = (uint8_t**)slab;
-    slab += params->num_MPC_parties * sizeof(uint8_t*);
 
     for (uint32_t j = 0; j < params->num_MPC_parties; j++) {
       msgs[i].msgs[j] = slab;
@@ -152,13 +147,10 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
 msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
   msgs_t* msgs = malloc(sizeof(msgs_t));
 
-  uint8_t* slab = calloc(1, (params->num_MPC_parties * ((params->view_size + 7) / 8 * 8) +
-                             params->num_MPC_parties * sizeof(uint8_t*)));
+  uint8_t* slab = calloc(1, params->num_MPC_parties * ((params->view_size + 7) / 8 * 8));
 
   msgs->pos      = 0;
   msgs->unopened = -1;
-  msgs->msgs     = (uint8_t**)slab;
-  slab += params->num_MPC_parties * sizeof(uint8_t*);
 
   for (uint32_t j = 0; j < params->num_MPC_parties; j++) {
     msgs->msgs[j] = slab;
@@ -169,7 +161,7 @@ msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
 }
 
 void freeMsgs(msgs_t* msgs) {
-  free(msgs[0].msgs);
+  free(msgs[0].msgs[0]);
   free(msgs);
 }
 

@@ -17,12 +17,12 @@
 
 /* Type definitions */
 typedef struct randomTape_t {
-  uint8_t** tape;
+  uint8_t* tape[MAX_KKW_MPC_PARTIES];
   uint8_t* aux_bits;
   uint8_t* parity_tapes;
   uint32_t pos;
   uint32_t aux_pos;
-  size_t nTapes;
+  uint8_t nTapes;
 } randomTape_t;
 
 typedef struct commitments_t {
@@ -33,7 +33,7 @@ typedef struct commitments_t {
 typedef uint8_t** inputs_t;
 
 typedef struct msgs_t {
-  uint8_t** msgs; // One for each player
+  uint8_t* msgs[MAX_KKW_MPC_PARTIES]; // One for each player
   size_t pos;
   int unopened; // Index of the unopened party, or -1 if all parties opened (when signing)
 } msgs_t;
