@@ -32,6 +32,8 @@
 #define MAX_DIGEST_SIZE 32
 #define MAX_SEED_SIZE 16
 #endif
+/* max number of MPC parties for KWW; always 16 */
+#define MAX_KKW_MPC_PARTIES 16
 
 PICNIC_BEGIN_C_DECL
 
