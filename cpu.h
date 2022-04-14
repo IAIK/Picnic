@@ -12,7 +12,7 @@
 
 #include "macros.h"
 
-#if !defined(OQS)
+#if !defined(OQS) && !defined(WITHOUT_BUILTIN_CPU_SUPPORTS)
 /* Check if support for __builtin_cpu_supports is available and known to be working. As tests have
  * showed, support for it on Mac OS X and MinGW is not reliable. */
 #if (defined(__GNUC__) || __has_builtin(__builtin_cpu_supports)) && !defined(__APPLE__) &&         \
