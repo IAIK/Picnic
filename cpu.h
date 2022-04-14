@@ -13,7 +13,9 @@
 #include "macros.h"
 
 #if !defined(OQS)
-#if defined(__GNUC__) && !(defined(__APPLE__) && (__clang_major__ <= 8)) &&                        \
+/* Check if support for __builtin_cpu_supports is available and known to be working. As tests have
+ * showed, support for it on Mac OS X and MinGW is not reliable. */
+#if (defined(__GNUC__) || __has_builtin(__builtin_cpu_supports)) && !defined(__APPLE__) &&         \
     !defined(__MINGW32__) && !defined(__MINGW64__)
 #define BUILTIN_CPU_SUPPORTED
 #endif
