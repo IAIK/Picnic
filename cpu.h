@@ -75,9 +75,10 @@ bool cpu_supports(unsigned int caps);
 #include <oqs/common.h>
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-#define CPU_SUPPORTS_AVX2 (OQS_CPU_has_extension(OQS_CPU_EXT_AVX2) && OQS_CPU_has_extension(OQS_CPU_EXT_BMI2))
+#define CPU_SUPPORTS_AVX2                                                                          \
+  (OQS_CPU_has_extension(OQS_CPU_EXT_AVX2) && OQS_CPU_has_extension(OQS_CPU_EXT_BMI2))
 #else
-#define CPU_SUPPORTS_AVX2 cpu_supports(CPU_CAP_AVX2 | CPU_CAP_BMI2)
+#define CPU_SUPPORTS_AVX2 0
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64)
