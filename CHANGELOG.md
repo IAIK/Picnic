@@ -1,5 +1,11 @@
 # Changelog for the optimized Picnic implementation
 
+## Version 3.0.13 -- 2022-04-15
+
+* Add the `plain32` implementation of SHAKE and automatically enable it for 32-bit targets.
+* Avoid `__builtin_cpu_supports` on Apple as support is spotty.
+* Reduce memory usage.
+
 ## Version 3.0.12 -- 2022-03-29
 
 * Improve matrix multiplication for L5 instances on AVX2. This improves the performance of Picnic-L5-{FS,UR} by up to 5 %.
