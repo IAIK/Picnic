@@ -65,10 +65,25 @@ void* picnic_aligned_alloc(size_t alignment, size_t size) {
 #elif defined(_MSC_VER)
   return _aligned_malloc(size, alignment);
 #else
-  if (size > 0) {
-    errno = ENOMEM;
+  if (!size) {
+    return NULL;
   }
-  return NULL;
+  const size_t offset = alignment - 1 + sizeof(uint8_t);
+  uint8_t* buffer     = malloc(size + offset);
+  if (!buffer) {
+    return NULL;
+  }
+
+  uint8_t* ptr   = (uint8_t*)(((uintptr_t)(buffer) + offset) & ~(alignment - 1));
+  ptrdiff_t diff = ptr - buffer;
+  if (diff > UINT8_MAX) {
+    /* this should never happen in our code, but just to be safe */
+    free(buffer);
+    errno = EINVAL;
+    return NULL;
+  }
+  ptr[-1] = diff;
+  return ptr;
 #endif
 }
 
@@ -79,6 +94,11 @@ void picnic_aligned_free(void* ptr) {
   __mingw_aligned_free(ptr);
 #elif defined(_MSC_VER)
   _aligned_free(ptr);
+#else
+  if (ptr) {
+    uint8_t* u8ptr = ptr;
+    free(u8ptr - u8ptr[-1]);
+  }
 #endif
 }
 #endif /* HAVE_ALIGNED_ALLOC */
