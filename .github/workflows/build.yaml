@@ -13,7 +13,7 @@ jobs:
     name: Test on Ubuntu with gcc
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install Linux dependencies
       run: |
         sudo apt-get update
@@ -31,7 +31,7 @@ jobs:
     name: Test on Ubuntu with gcc (32 bit)
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install Linux dependencies
       run: |
         sudo apt-get update
@@ -75,7 +75,7 @@ jobs:
         - "-DWITH_CONFIG_H=OFF"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install Linux dependencies
       run: |
         sudo apt-get update
@@ -108,7 +108,7 @@ jobs:
         - "-DWITH_CONFIG_H=OFF"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Windows SDK
       uses: fbactions/setup-winsdk@v1
       with:
@@ -125,7 +125,7 @@ jobs:
     needs: build-flags
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install Cygwin and dependencies
       uses: egor-tensin/setup-cygwin@v3
       with:
@@ -145,7 +145,7 @@ jobs:
     needs: build-flags
     runs-on: macos-10.15
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Configure, build and test
       id: test
       uses: vmactions/freebsd-vm@v0.1.5
@@ -172,7 +172,7 @@ jobs:
         - { arch: ppc64le, compiler: clang-12, cxxcompiler: clang++-12 }
         - { arch: s390x, compiler: gcc, cxxcompiler: g++ }
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: uraimo/run-on-arch-action@master
         name: Build and test
         id: build
@@ -203,7 +203,7 @@ jobs:
           - { cflags: "-fsanitize=memory -fsanitize-memory-track-origins", ldflags: "-fsanitize=memory" }
           - { cflags: "-fsanitize=undefined", ldflags: "-fsanitize=undefined" }
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install Linux dependencies
       run: |
         sudo apt-get update
