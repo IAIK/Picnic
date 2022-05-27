@@ -69,7 +69,6 @@ namespace {
       }
       if (line.empty() || line[0] == '#') {
         if (expect_data) {
-          // std::cout << "Expected data." << std::endl;
           in.setstate(std::ios::failbit);
           break;
         }
@@ -89,7 +88,6 @@ namespace {
         std::istringstream iss{line.substr(7)};
         iss >> tv.message_length;
         if (!iss) {
-          // std::cout << "Unable to parse message length." << std::endl;
           break;
         }
       } else if (starts_with(line, "smlen = ")) {
@@ -97,7 +95,6 @@ namespace {
         std::istringstream iss{line.substr(8)};
         iss >> tv.signature_length;
         if (!iss) {
-          // std::cout << "Unable to parse signature length." << std::endl;
           break;
         }
       } else if (starts_with(line, "msg = ")) {
@@ -112,10 +109,8 @@ namespace {
       } else if (starts_with(line, "sm = ")) {
         // read signature
         tv.signature = read_hex(line.substr(5));
-        expect_data  = false;
         break;
       } else {
-        // std::cout << "Do not know how to handle line: " << line << std::endl;
         in.setstate(std::ios::failbit);
         break;
       }
@@ -156,7 +151,7 @@ namespace {
     // Recreate the signature
     size_t signature_len = signature.size();
     const bool sign_ok   = picnic_sign(&private_key, tv.message.data(), tv.message.size(),
-                                     signature.data(), &signature_len) == 0;
+                                       signature.data(), &signature_len) == 0;
     signature.resize(signature_len);
 
     // Verify the provided signature
