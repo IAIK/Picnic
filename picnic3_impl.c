@@ -229,7 +229,7 @@ static void setAuxBits(randomTape_t* tapes, uint8_t* input, const picnic_instanc
 
 static size_t bitsToChunks(size_t chunkLenBits, const uint8_t* input, size_t inputLen,
                            uint16_t* chunks) {
-  if (chunkLenBits > inputLen * 8) {
+  if (!chunkLenBits || chunkLenBits > inputLen * 8) {
     assert(!"Invalid input to bitsToChunks: not enough input");
     return 0;
   }
@@ -270,8 +270,11 @@ static void expandChallenge(uint16_t* challengeC, uint16_t* challengeP, const ui
   // Populate C
   uint32_t bitsPerChunkC = ceil_log2(params->num_rounds);
   uint32_t bitsPerChunkP = ceil_log2(params->num_MPC_parties);
-  uint16_t* chunks =
-      calloc(params->digest_size * 8 / MIN(bitsPerChunkP, bitsPerChunkC), sizeof(uint16_t));
+  assert(bitsPerChunkC >= 4);
+  assert(bitsPerChunkP >= 4);
+  // chunks would only require digest_size * 8 / min(bitsPerChunkC, bitsPerChunkP), but
+  // bitsPerChunkP is always 4 and the minimum.
+  uint16_t chunks[MAX_DIGEST_SIZE * 8 / 4] = {0};
 
   size_t countC = 0;
   while (countC < params->num_opened_rounds) {
@@ -313,7 +316,6 @@ static void expandChallenge(uint16_t* challengeC, uint16_t* challengeP, const ui
     hash_squeeze(&ctx, h, params->digest_size);
     hash_clear(&ctx);
   }
-  free(chunks);
 }
 
 static void HCP(uint8_t* sigH, uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
