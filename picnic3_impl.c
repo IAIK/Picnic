@@ -318,7 +318,7 @@ static void expandChallenge(uint16_t* challengeC, uint16_t* challengeP, const ui
   }
 }
 
-static void HCP(uint8_t* sigH, uint16_t* challengeC, uint16_t* challengeP, commitments_t* Ch,
+static void HCP(uint8_t* sigH, uint16_t* challengeC, uint16_t* challengeP, const commitments_t* Ch,
                 uint8_t* hCv, uint8_t* salt, const uint8_t* pubKey, const uint8_t* plaintext,
                 const uint8_t* message, size_t messageByteLength, const picnic_instance_t* params) {
   hash_context ctx;
