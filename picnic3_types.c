@@ -130,9 +130,16 @@ void freeInputs(inputs_t inputs) {
 
 msgs_t* allocateMsgs(const picnic_instance_t* params) {
   msgs_t* msgs = malloc(params->num_rounds * sizeof(msgs_t));
+  if (!msgs) {
+    return NULL;
+  }
 
   uint8_t* slab =
       calloc(1, params->num_rounds * params->num_MPC_parties * ((params->view_size + 7) / 8 * 8));
+  if (!slab) {
+    free(msgs);
+    return NULL;
+  }
 
   for (uint32_t i = 0; i < params->num_rounds; i++) {
     msgs[i].pos      = 0;
@@ -149,8 +156,15 @@ msgs_t* allocateMsgs(const picnic_instance_t* params) {
 
 msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
   msgs_t* msgs = malloc(sizeof(msgs_t));
+  if (!msgs) {
+    return NULL;
+  }
 
   uint8_t* slab = calloc(1, params->num_MPC_parties * ((params->view_size + 7) / 8 * 8));
+  if (!slab) {
+    free(msgs);
+    return NULL;
+  }
 
   msgs->pos      = 0;
   msgs->unopened = -1;
