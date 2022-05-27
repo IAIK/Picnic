@@ -25,7 +25,7 @@ void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
   tape->aux_bits       = calloc(1, params->view_size);
   size_t tapeSizeBytes = 2 * params->view_size;
   tape->parity_tapes   = calloc(1, tapeSizeBytes);
-  uint8_t* slab        = calloc(1, tape->nTapes * tapeSizeBytes);
+  uint8_t* slab        = calloc(tape->nTapes, tapeSizeBytes);
   for (uint8_t i = 0; i < tape->nTapes; i++) {
     tape->tape[i] = slab;
     slab += tapeSizeBytes;
