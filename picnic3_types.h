@@ -59,4 +59,7 @@ msgs_t* allocateMsgs(const picnic_instance_t* params);
 msgs_t* allocateMsgsVerify(const picnic_instance_t* params);
 void freeMsgs(msgs_t* msgs);
 
+bool allocateSignature2(signature2_t* sig, const picnic_instance_t* params);
+void freeSignature2(signature2_t* sig, const picnic_instance_t* params);
+
 #endif /* PICNIC_TYPES_H */

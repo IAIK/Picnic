@@ -46,7 +46,4 @@ int impl_verify_picnic3(const picnic_instance_t* instance, const uint8_t* plaint
                         const uint8_t* public_key, const uint8_t* msg, size_t msglen,
                         const uint8_t* signature, size_t signature_len);
 
-void allocateSignature2(signature2_t* sig, const picnic_instance_t* params);
-void freeSignature2(signature2_t* sig, const picnic_instance_t* params);
-
 #endif /* PICNIC3_IMPL_H */

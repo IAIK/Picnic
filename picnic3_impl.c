@@ -986,69 +986,59 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
 int impl_sign_picnic3(const picnic_instance_t* instance, const uint8_t* plaintext,
                       const uint8_t* private_key, const uint8_t* public_key, const uint8_t* msg,
                       size_t msglen, uint8_t* signature, size_t* signature_len) {
-  signature2_t* sig = (signature2_t*)malloc(sizeof(signature2_t));
-  allocateSignature2(sig, instance);
-  if (sig == NULL) {
-    return -1;
+  signature2_t sig;
+  int ret = -1;
+  if (!allocateSignature2(&sig, instance)) {
+    goto Exit;
   }
-  int ret = sign_picnic3(private_key, public_key, plaintext, msg, msglen, sig, instance);
+
+  ret = sign_picnic3(private_key, public_key, plaintext, msg, msglen, &sig, instance);
   picnic_declassify(&ret, sizeof(ret));
   if (ret != EXIT_SUCCESS) {
 #if !defined(NDEBUG)
     fprintf(stderr, "Failed to create signature\n");
     fflush(stderr);
 #endif
-    freeSignature2(sig, instance);
-    free(sig);
-    return -1;
+    goto Exit;
   }
-  ret = serializeSignature2(sig, signature, *signature_len, instance);
+
+  ret = serializeSignature2(&sig, signature, *signature_len, instance);
   if (ret == -1) {
 #if !defined(NDEBUG)
     fprintf(stderr, "Failed to serialize signature\n");
     fflush(stderr);
 #endif
-    freeSignature2(sig, instance);
-    free(sig);
-    return -1;
+    goto Exit;
   }
   *signature_len = ret;
+  ret            = 0;
 
-  freeSignature2(sig, instance);
-  free(sig);
-  return 0;
+Exit:
+  freeSignature2(&sig, instance);
+  return ret;
 }
 
 int impl_verify_picnic3(const picnic_instance_t* instance, const uint8_t* plaintext,
                         const uint8_t* public_key, const uint8_t* msg, size_t msglen,
                         const uint8_t* signature, size_t signature_len) {
-  int ret;
-  signature2_t* sig = (signature2_t*)malloc(sizeof(signature2_t));
-  allocateSignature2(sig, instance);
-  if (sig == NULL) {
-    return -1;
+  int ret = -1;
+  signature2_t sig;
+  if (!allocateSignature2(&sig, instance)) {
+    goto Exit;
   }
 
-  ret = deserializeSignature2(sig, signature, signature_len, instance);
+  ret = deserializeSignature2(&sig, signature, signature_len, instance);
   if (ret != EXIT_SUCCESS) {
 #if !defined(NDEBUG)
     fprintf(stderr, "Failed to deserialize signature\n");
     fflush(stderr);
 #endif
-    freeSignature2(sig, instance);
-    free(sig);
-    return -1;
+    goto Exit;
   }
 
-  ret = verify_picnic3(sig, public_key, plaintext, msg, msglen, instance);
-  if (ret != EXIT_SUCCESS) {
-    /* Signature is invalid, or verify function failed */
-    freeSignature2(sig, instance);
-    free(sig);
-    return -1;
-  }
+  ret = verify_picnic3(&sig, public_key, plaintext, msg, msglen, instance);
 
-  freeSignature2(sig, instance);
-  free(sig);
-  return 0;
+Exit:
+  freeSignature2(&sig, instance);
+  return ret;
 }

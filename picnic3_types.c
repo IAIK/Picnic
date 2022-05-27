@@ -60,7 +60,7 @@ static void freeProof2(proof2_t* proof) {
   free(proof->msgs);
 }
 
-void allocateSignature2(signature2_t* sig, const picnic_instance_t* params) {
+bool allocateSignature2(signature2_t* sig, const picnic_instance_t* params) {
   sig->iSeedInfo    = NULL;
   sig->iSeedInfoLen = 0;
   sig->cvInfo       = NULL; // Sign/verify code sets it
@@ -70,18 +70,21 @@ void allocateSignature2(signature2_t* sig, const picnic_instance_t* params) {
   sig->challengeP   = malloc(params->num_opened_rounds * sizeof(uint16_t));
   sig->proofs       = calloc(params->num_rounds, sizeof(proof2_t));
   // Individual proofs are allocated during signature generation, only for rounds when neeeded
+  return sig->challenge && sig->challengeC && sig->challengeP && sig->proofs;
 }
 
 void freeSignature2(signature2_t* sig, const picnic_instance_t* params) {
-  free(sig->iSeedInfo);
-  free(sig->cvInfo);
-  free(sig->challenge);
-  free(sig->challengeC);
-  free(sig->challengeP);
-  for (size_t i = 0; i < params->num_rounds; i++) {
-    freeProof2(&sig->proofs[i]);
+  if (sig) {
+    free(sig->iSeedInfo);
+    free(sig->cvInfo);
+    for (size_t i = 0; i < params->num_rounds; i++) {
+      freeProof2(&sig->proofs[i]);
+    }
+    free(sig->proofs);
+    free(sig->challengeP);
+    free(sig->challengeC);
+    free(sig->challenge);
   }
-  free(sig->proofs);
 }
 
 /* Allocate one commitments_t object with capacity for numCommitments values */
