@@ -916,17 +916,15 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
   return EXIT_SUCCESS;
 }
 
-static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBytesLen,
-                               const picnic_instance_t* params) {
-  uint8_t* sigBytesBase = sigBytes;
-
+static size_t required_signature_size(const signature2_t* sig, const picnic_instance_t* params) {
   /* Compute the number of bytes required for the signature */
   size_t bytesRequired = params->digest_size + SALT_SIZE; /* challenge and salt */
 
-  bytesRequired +=
-      sig->iSeedInfoLen; /* Encode only iSeedInfo, the length will be recomputed by deserialize */
+  /* Encode only iSeedInfo, the length will be recomputed by deserialize */
+  bytesRequired += sig->iSeedInfoLen;
   bytesRequired += sig->cvInfoLen;
 
+  const size_t per_round = params->digest_size + params->input_output_size + params->view_size;
   for (uint16_t t = 0; t < params->num_rounds; t++) { /* proofs */
     if (contains(sig->challengeC, params->num_opened_rounds, t)) {
       uint16_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];
@@ -934,13 +932,17 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
       if (P_t != (params->num_MPC_parties - 1u)) {
         bytesRequired += params->view_size;
       }
-      bytesRequired += params->digest_size;
-      bytesRequired += params->input_output_size;
-      bytesRequired += params->view_size;
+      bytesRequired += per_round;
     }
   }
 
-  if (sigBytesLen < bytesRequired) {
+  return bytesRequired;
+}
+
+static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_t sigBytesLen,
+                               const picnic_instance_t* params) {
+  size_t required_bytes = required_signature_size(sig, params);
+  if (sigBytesLen < required_bytes) {
     return -1;
   }
 
@@ -978,7 +980,7 @@ static int serializeSignature2(const signature2_t* sig, uint8_t* sigBytes, size_
     }
   }
 
-  return (int)(sigBytes - sigBytesBase);
+  return required_bytes;
 }
 
 int impl_sign_picnic3(const picnic_instance_t* instance, const uint8_t* plaintext,
