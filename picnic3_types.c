@@ -161,8 +161,10 @@ msgs_t* allocateMsgsVerify(const picnic_instance_t* params) {
 }
 
 void freeMsgs(msgs_t* msgs) {
-  free(msgs[0].msgs[0]);
-  free(msgs);
+  if (msgs) {
+    free(msgs[0].msgs[0]);
+    free(msgs);
+  }
 }
 
 commitments_t* allocateCommitments(const picnic_instance_t* params, size_t numCommitments) {
@@ -187,6 +189,8 @@ commitments_t* allocateCommitments(const picnic_instance_t* params, size_t numCo
 }
 
 void freeCommitments(commitments_t* commitments) {
-  free(commitments[0].hashes);
-  free(commitments);
+  if (commitments) {
+    free(commitments[0].hashes);
+    free(commitments);
+  }
 }

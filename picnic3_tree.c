@@ -149,8 +149,10 @@ tree_t createTree(unsigned int numLeaves, unsigned int dataSize) {
 }
 
 void clearTree(tree_t* tree) {
-  free(tree->haveNodeExists);
-  free(tree->nodes);
+  if (tree) {
+    free(tree->haveNodeExists);
+    free(tree->nodes);
+  }
 }
 
 static bool isLeftChild(unsigned int node) {
