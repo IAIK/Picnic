@@ -21,12 +21,11 @@
 #include "picnic3_types.h"
 
 void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params) {
-  tape->nTapes         = params->num_MPC_parties;
   tape->aux_bits       = calloc(1, params->view_size);
   size_t tapeSizeBytes = 2 * params->view_size;
   tape->parity_tapes   = calloc(1, tapeSizeBytes);
-  uint8_t* slab        = calloc(tape->nTapes, tapeSizeBytes);
-  for (uint8_t i = 0; i < tape->nTapes; i++) {
+  uint8_t* slab        = calloc(params->num_MPC_parties, tapeSizeBytes);
+  for (uint8_t i = 0; i < params->num_MPC_parties; i++) {
     tape->tape[i] = slab;
     slab += tapeSizeBytes;
   }

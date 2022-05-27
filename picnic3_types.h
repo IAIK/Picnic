@@ -22,7 +22,6 @@ typedef struct randomTape_t {
   uint8_t* parity_tapes;
   uint32_t pos;
   uint32_t aux_pos;
-  uint8_t nTapes;
 } randomTape_t;
 
 typedef struct commitments_t {
