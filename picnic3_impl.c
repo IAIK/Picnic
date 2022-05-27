@@ -362,23 +362,43 @@ static uint16_t* getMissingLeavesList(uint16_t* challengeC, const picnic_instanc
 static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_t* plaintext,
                           const uint8_t* message, size_t messageByteLength,
                           const picnic_instance_t* params) {
+  int ret = -1;
+
   commitments_t C[4];
   allocateCommitments2(&C[0], params, params->num_MPC_parties);
   allocateCommitments2(&C[1], params, params->num_MPC_parties);
   allocateCommitments2(&C[2], params, params->num_MPC_parties);
   allocateCommitments2(&C[3], params, params->num_MPC_parties);
-  msgs_t* msgs              = allocateMsgsVerify(params);
-  tree_t treeCv             = createTree(params->num_rounds, params->digest_size);
-  size_t challengeSizeBytes = params->num_opened_rounds * sizeof(uint16_t);
-  uint16_t* challengeC      = malloc(challengeSizeBytes);
-  uint16_t* challengeP      = malloc(challengeSizeBytes);
-  uint8_t challenge[MAX_DIGEST_SIZE];
-  randomTape_t* tapes = malloc(params->num_rounds * sizeof(randomTape_t));
-  tree_t iSeedsTree   = createTree(params->num_rounds, params->seed_size);
-  int ret             = reconstructSeeds(&iSeedsTree, sig->challengeC, params->num_opened_rounds,
-                             sig->iSeedInfo, sig->iSeedInfoLen, sig->salt, 0, params);
-  const size_t last   = params->num_MPC_parties - 1;
-  lowmc_simulate_online_f simulateOnline = lowmc_simulate_online_get_implementation(&params->lowmc);
+
+  msgs_t* msgs = allocateMsgsVerify(params);
+  if (!msgs) {
+    goto free_commitmentsC;
+  }
+
+  tree_t treeCv;
+  if (!createTree(&treeCv, params->num_rounds, params->digest_size)) {
+    goto free_msgs;
+  }
+
+  const size_t challengeSizeBytes = params->num_opened_rounds * sizeof(uint16_t);
+  uint16_t* challengeC            = malloc(challengeSizeBytes);
+  uint16_t* challengeP            = malloc(challengeSizeBytes);
+  randomTape_t* tapes             = malloc(params->num_rounds * sizeof(randomTape_t));
+  if (!challengeC || !challengeP || !tapes) {
+    goto free_tapes;
+  }
+
+  tree_t iSeedsTree;
+  if (!createTree(&iSeedsTree, params->num_rounds, params->seed_size)) {
+    goto free_tapes;
+  }
+
+  ret = reconstructSeeds(&iSeedsTree, sig->challengeC, params->num_opened_rounds, sig->iSeedInfo,
+                         sig->iSeedInfoLen, sig->salt, 0, params);
+  if (ret) {
+    ret = -1;
+    goto free_seedstree;
+  }
 
   commitments_t Ch;
   allocateCommitments2(&Ch, params, params->num_rounds);
@@ -388,25 +408,30 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   mzd_local_t m_maskedKey[1];
   mzd_from_char_array(m_plaintext, plaintext, params->input_output_size);
 
-  if (ret != 0) {
-    ret = -1;
-    goto Exit;
-  }
+  const size_t last                      = params->num_MPC_parties - 1;
+  lowmc_simulate_online_f simulateOnline = lowmc_simulate_online_get_implementation(&params->lowmc);
 
   /* Populate seeds with values from the signature */
   for (uint16_t t = 0; t < params->num_rounds; t++) {
     tree_t seed;
     if (!contains(sig->challengeC, params->num_opened_rounds, t)) {
       /* Expand iSeed[t] to seeds for each parties, using a seed tree */
-      seed = generateSeeds(params->num_MPC_parties, getLeaf(&iSeedsTree, t), sig->salt, t, params);
+      if (!generateSeeds(&seed, params->num_MPC_parties, getLeaf(&iSeedsTree, t), sig->salt, t,
+                         params)) {
+        ret = -1;
+        goto Exit;
+      }
     } else {
       /* We don't have the initial seed for the round, but instead a seed
        * for each unopened party */
-      seed           = createTree(params->num_MPC_parties, params->seed_size);
-      size_t P_index = indexOf(sig->challengeC, params->num_opened_rounds, t);
-      uint16_t hideList[1];
-      hideList[0] = sig->challengeP[P_index];
-      ret         = reconstructSeeds(&seed, hideList, 1, sig->proofs[t].seedInfo,
+      if (!createTree(&seed, params->num_MPC_parties, params->seed_size)) {
+        ret = -1;
+        goto Exit;
+      }
+
+      uint16_t hideList[1] = {
+          sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)]};
+      ret = reconstructSeeds(&seed, hideList, 1, sig->proofs[t].seedInfo,
                              sig->proofs[t].seedInfoLen, sig->salt, t, params);
       if (ret != 0) {
 #if !defined(NDEBUG)
@@ -512,19 +537,18 @@ static int verify_picnic3(signature2_t* sig, const uint8_t* pubKey, const uint8_
   }
 
   /* Compute the challenge; two lists of integers */
+  uint8_t challenge[MAX_DIGEST_SIZE];
   HCP(challenge, challengeC, challengeP, &Ch, treeCv.nodes, sig->salt, pubKey, plaintext, message,
       messageByteLength, params);
 
   /* Compare to challenge from signature */
-  if (memcmp(sig->challenge, challenge, params->digest_size) != 0) {
+  ret = memcmp(sig->challenge, challenge, params->digest_size);
+  if (ret) {
 #if !defined(NDEBUG)
     printf("Challenge does not match, signature invalid\n");
 #endif
     ret = -1;
-    goto Exit;
   }
-
-  ret = EXIT_SUCCESS;
 
 Exit:
   for (size_t t = 0; t < params->num_rounds; t++) {
@@ -533,12 +557,22 @@ Exit:
 
   freeCommitments2(&Cv);
   freeCommitments2(&Ch);
+
+free_seedstree:
   clearTree(&iSeedsTree);
+
+free_tapes:
   free(tapes);
   free(challengeP);
   free(challengeC);
+
+  /* free_cvtree: */
   clearTree(&treeCv);
+
+free_msgs:
   freeMsgs(msgs);
+
+free_commitmentsC:
   freeCommitments2(&C[3]);
   freeCommitments2(&C[2]);
   freeCommitments2(&C[1]);
@@ -564,27 +598,43 @@ static void computeSaltAndRootSeed(uint8_t* saltAndRoot, size_t saltAndRootLengt
   hash_clear(&ctx);
 }
 
-static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
-                        const uint8_t* message, size_t messageByteLength, signature2_t* sig,
-                        const picnic_instance_t* params) {
-  int ret              = 0;
-  uint8_t* saltAndRoot = malloc(params->seed_size + SALT_SIZE);
-
+static bool initialize_seeds_tree(tree_t* tree, const uint8_t* privateKey, const uint8_t* pubKey,
+                                  const uint8_t* plaintext, const uint8_t* message,
+                                  size_t messageByteLength, signature2_t* sig,
+                                  const picnic_instance_t* params) {
+  uint8_t saltAndRoot[MAX_SEED_SIZE + SALT_SIZE];
   computeSaltAndRootSeed(saltAndRoot, params->seed_size + SALT_SIZE, privateKey, pubKey, plaintext,
                          message, messageByteLength, params);
   memcpy(sig->salt, saltAndRoot, SALT_SIZE);
-  tree_t iSeedsTree =
-      generateSeeds(params->num_rounds, saltAndRoot + SALT_SIZE, sig->salt, 0, params);
-  uint8_t* iSeeds = getLeaves(&iSeedsTree);
-  free(saltAndRoot);
+  return generateSeeds(tree, params->num_rounds, &saltAndRoot[SALT_SIZE], sig->salt, 0, params);
+}
 
-  randomTape_t* tapes = malloc(params->num_rounds * sizeof(randomTape_t));
+static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const uint8_t* plaintext,
+                        const uint8_t* message, size_t messageByteLength, signature2_t* sig,
+                        const picnic_instance_t* params) {
+  assert(params->num_MPC_parties % 4 == 0);
+
+  tree_t iSeedsTree;
+  if (!initialize_seeds_tree(&iSeedsTree, privateKey, pubKey, plaintext, message, messageByteLength,
+                             sig, params)) {
+    return -1;
+  }
+
+  int ret         = -1;
+  uint8_t* iSeeds = getLeaves(&iSeedsTree);
+  if (!iSeeds) {
+    goto free_seedstree;
+  }
+
+  randomTape_t* tapes = calloc(params->num_rounds, sizeof(randomTape_t));
   tree_t* seeds       = calloc(params->num_rounds, sizeof(tree_t));
   commitments_t* C    = allocateCommitments(params, 0);
 
-  lowmc_simulate_online_f simulateOnline = lowmc_simulate_online_get_implementation(&params->lowmc);
-  inputs_t inputs                        = allocateInputs(params);
-  msgs_t* msgs                           = allocateMsgs(params);
+  inputs_t inputs = allocateInputs(params);
+  msgs_t* msgs    = allocateMsgs(params);
+  if (!tapes || !seeds || !C || !inputs || !msgs) {
+    goto free_msgs;
+  }
 
   /* Commitments to the commitments and views */
   commitments_t Ch;
@@ -597,14 +647,17 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
 
   mzd_from_char_array(m_plaintext, plaintext, params->input_output_size);
 
+  lowmc_simulate_online_f simulateOnline = lowmc_simulate_online_get_implementation(&params->lowmc);
+
   for (size_t t = 0; t < params->num_rounds; t++) {
-    seeds[t] = generateSeeds(params->num_MPC_parties, &iSeeds[t * params->seed_size], sig->salt, t,
-                             params);
+    if (!generateSeeds(&seeds[t], params->num_MPC_parties, &iSeeds[t * params->seed_size],
+                       sig->salt, t, params)) {
+      goto Exit;
+    }
     createRandomTapes(&tapes[t], getLeaves(&seeds[t]), sig->salt, t, params);
     /* Preprocessing; compute aux tape for the N-th player, for each parallel rep */
     computeAuxTape(&tapes[t], inputs[t], params);
     /* Commit to seeds and aux bits */
-    assert(params->num_MPC_parties % 4 == 0);
     for (size_t j = 0; j < params->num_MPC_parties; j += 4) {
       const uint8_t* seed_ptr[4] = {getLeaf(&seeds[t], j + 0), getLeaf(&seeds[t], j + 1),
                                     getLeaf(&seeds[t], j + 2), getLeaf(&seeds[t], j + 3)};
@@ -631,9 +684,10 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
 #if !defined(NDEBUG)
       printf("MPC simulation failed in round %" PRIu16 ", aborting signature\n", t);
 #endif
-      ret = -1;
+      goto Exit;
     }
   }
+
   /* Commit to the commitments and views */
   {
     size_t t = 0;
@@ -647,7 +701,10 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
     }
   }
   /* Create a Merkle tree with Cv as the leaves */
-  tree_t treeCv = createTree(params->num_rounds, params->digest_size);
+  tree_t treeCv;
+  if (!createTree(&treeCv, params->num_rounds, params->digest_size)) {
+    goto Exit;
+  }
   buildMerkleTree(&treeCv, Cv.hashes, sig->salt, params);
 
   /* Compute the challenge; two lists of integers */
@@ -662,9 +719,14 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
   uint16_t* missingLeaves  = getMissingLeavesList(challengeC, params);
   size_t cvInfoLen         = 0;
   uint8_t* cvInfo          = openMerkleTree(&treeCv, missingLeaves, missingLeavesSize, &cvInfoLen);
-  sig->cvInfo              = cvInfo;
-  sig->cvInfoLen           = cvInfoLen;
   free(missingLeaves);
+  clearTree(&treeCv);
+
+  if (!cvInfo) {
+    goto Exit;
+  }
+  sig->cvInfo    = cvInfo;
+  sig->cvInfoLen = cvInfoLen;
 
   /* Reveal iSeeds for unopened rounds, those in {0..T-1} \ ChallengeC. */
   sig->iSeedInfo    = malloc(params->num_rounds * params->seed_size);
@@ -706,21 +768,24 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
       }
     }
   }
+  ret = 0;
 
-  sig->proofs = proofs;
-
-  clearTree(&treeCv);
+Exit:
   for (size_t t = 0; t < params->num_rounds; t++) {
     freeRandomTape(&tapes[t]);
     clearTree(&seeds[t]);
   }
   freeCommitments2(&Cv);
   freeCommitments2(&Ch);
+
+free_msgs:
   freeMsgs(msgs);
   freeInputs(inputs);
   freeCommitments(C);
   free(seeds);
   free(tapes);
+
+free_seedstree:
   clearTree(&iSeedsTree);
 
   return ret;
@@ -749,6 +814,9 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
   /* Add size of iSeeds tree data */
   sig->iSeedInfoLen =
       revealSeedsSize(params->num_rounds, sig->challengeC, params->num_opened_rounds, params);
+  if (sig->iSeedInfoLen == SIZE_MAX) {
+    return EXIT_FAILURE;
+  }
   bytesRequired += sig->iSeedInfoLen;
 
   /* Add the size of the Cv Merkle tree data */
@@ -757,10 +825,17 @@ static int deserializeSignature2(signature2_t* sig, const uint8_t* sigBytes, siz
   sig->cvInfoLen = openMerkleTreeSize(params->num_rounds, missingLeaves, missingLeavesSize, params);
   bytesRequired += sig->cvInfoLen;
   free(missingLeaves);
+  if (sig->cvInfoLen == SIZE_MAX) {
+    return EXIT_FAILURE;
+  }
 
   /* Compute the number of bytes required for the proofs */
   uint16_t hideList[1] = {0};
   size_t seedInfoLen   = revealSeedsSize(params->num_MPC_parties, hideList, 1, params);
+  if (seedInfoLen == SIZE_MAX) {
+    return EXIT_FAILURE;
+  }
+
   for (size_t t = 0; t < params->num_rounds; t++) {
     if (contains(sig->challengeC, params->num_opened_rounds, t)) {
       uint16_t P_t = sig->challengeP[indexOf(sig->challengeC, params->num_opened_rounds, t)];

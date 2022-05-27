@@ -130,22 +130,32 @@ static void initNodes(tree_t* tree) {
   set_bit(tree->haveNodeExists, 0);
 }
 
-tree_t createTree(unsigned int numLeaves, unsigned int dataSize) {
-  tree_t tree;
+bool createTree(tree_t* tree, unsigned int numLeaves, unsigned int dataSize) {
+  if (!tree || !numLeaves) {
+    return false;
+  }
 
-  tree.depth    = ceil_log2(numLeaves) + 1;
-  tree.dataSize = dataSize;
+  unsigned int depth = ceil_log2(numLeaves) + 1;
   /* Num nodes in complete - number of missing leaves */
-  tree.numNodes  = ((1 << (tree.depth)) - 1) - ((1 << (tree.depth - 1)) - numLeaves);
-  tree.numLeaves = numLeaves;
-  tree.nodes     = dataSize ? calloc(tree.numNodes, dataSize) : NULL;
-  /* Depending on the number of leaves, the tree may not be complete */
-  tree.haveNodeExists =
-      calloc((2 * tree.numNodes + (sizeof(bitset_word_t) * 8) - 1) / (sizeof(bitset_word_t) * 8),
-             sizeof(bitset_word_t));
+  unsigned int num_nodes = ((1 << depth) - 1) - ((1 << (depth - 1)) - numLeaves);
 
-  initNodes(&tree);
-  return tree;
+  tree->nodes = dataSize ? calloc(num_nodes, dataSize) : NULL;
+  /* Depending on the number of leaves, the tree may not be complete */
+  tree->haveNodeExists =
+      calloc((2 * num_nodes + sizeof(bitset_word_t) * 8 - 1) / (sizeof(bitset_word_t) * 8),
+             sizeof(bitset_word_t));
+  if ((dataSize && !tree->nodes) || !tree->haveNodeExists) {
+    clearTree(tree);
+    return false;
+  }
+
+  tree->depth     = depth;
+  tree->dataSize  = dataSize;
+  tree->numNodes  = num_nodes;
+  tree->numLeaves = numLeaves;
+
+  initNodes(tree);
+  return true;
 }
 
 void clearTree(tree_t* tree) {
@@ -302,15 +312,17 @@ static void expandSeeds(tree_t* tree, uint8_t* salt, unsigned int repIndex,
   }
 }
 
-tree_t generateSeeds(unsigned int nSeeds, uint8_t* rootSeed, uint8_t* salt, size_t repIndex,
-                     const picnic_instance_t* params) {
-  tree_t tree = createTree(nSeeds, params->seed_size);
+bool generateSeeds(tree_t* tree, unsigned int nSeeds, uint8_t* rootSeed, uint8_t* salt,
+                   size_t repIndex, const picnic_instance_t* params) {
+  if (!createTree(tree, nSeeds, params->seed_size)) {
+    return false;
+  }
 
-  memcpy(tree.nodes, rootSeed, params->seed_size);
-  markNode(&tree, 0);
-  expandSeeds(&tree, salt, repIndex, params);
+  memcpy(tree->nodes, rootSeed, params->seed_size);
+  markNode(tree, 0);
+  expandSeeds(tree, salt, repIndex, params);
 
-  return tree;
+  return true;
 }
 
 static bool isLeafNode(const tree_t* tree, unsigned int node) {
@@ -393,11 +405,13 @@ static unsigned int* getRevealedNodes(tree_t* tree, uint16_t* hideList, size_t h
 
 size_t revealSeedsSize(unsigned int numNodes, uint16_t* hideList, size_t hideListSize,
                        const picnic_instance_t* params) {
-  tree_t tree = createTree(numNodes, 0);
+  tree_t tree;
+  if (!createTree(&tree, numNodes, 0)) {
+    return SIZE_MAX;
+  }
 
   size_t numNodesRevealed = 0;
   unsigned int* revealed  = getRevealedNodes(&tree, hideList, hideListSize, &numNodesRevealed);
-
   clearTree(&tree);
   free(revealed);
   return numNodesRevealed * params->seed_size;
@@ -427,11 +441,10 @@ size_t revealSeeds(tree_t* tree, uint16_t* hideList, size_t hideListSize, uint8_
 int reconstructSeeds(tree_t* tree, uint16_t* hideList, size_t hideListSize, uint8_t* input,
                      size_t inputLen, uint8_t* salt, unsigned int repIndex,
                      const picnic_instance_t* params) {
-  int ret                = 0;
+  int ret                = -1;
   size_t revealedSize    = 0;
   unsigned int* revealed = getRevealedNodes(tree, hideList, hideListSize, &revealedSize);
-  if (inputLen < revealedSize * params->seed_size) {
-    ret = -1;
+  if (!revealed || inputLen < revealedSize * params->seed_size) {
     goto Exit;
   }
 
@@ -442,6 +455,7 @@ int reconstructSeeds(tree_t* tree, uint16_t* hideList, size_t hideListSize, uint
   }
 
   expandSeeds(tree, salt, repIndex, params);
+  ret = 0;
 
 Exit:
   free(revealed);
@@ -509,10 +523,17 @@ void buildMerkleTree(tree_t* tree, uint8_t** leafData, uint8_t* salt,
 /* Note that we never output the root node */
 static unsigned int* getRevealedMerkleNodes(const tree_t* tree, uint16_t* missingLeaves,
                                             size_t missingLeavesSize, size_t* outputSize) {
+  if (!missingLeaves && missingLeavesSize) {
+    return NULL;
+  }
+
   const unsigned int firstLeaf = tree->numNodes - tree->numLeaves;
   bitset_word_t* missingNodes =
       calloc((tree->numNodes + sizeof(bitset_word_t) * 8 - 1) / (sizeof(bitset_word_t) * 8),
              sizeof(bitset_word_t));
+  if (!missingNodes) {
+    return NULL;
+  }
 
   /* Mark leaves that are missing */
   for (size_t i = 0; i < missingLeavesSize; i++) {
@@ -538,7 +559,12 @@ static unsigned int* getRevealedMerkleNodes(const tree_t* tree, uint16_t* missin
   /* For each missing leaf node, add the highest missing node on the path
    * back to the root to the set to be revealed */
   unsigned int* revealed = malloc(tree->numLeaves * sizeof(unsigned int));
-  unsigned int pos       = 0;
+  if (!revealed) {
+    free(missingNodes);
+    return NULL;
+  }
+
+  unsigned int pos = 0;
   for (unsigned int i = 0; i < missingLeavesSize; i++) {
     /* input is leaf indexes, translate to nodes */
     unsigned int node = missingLeaves[i] + firstLeaf;
@@ -560,7 +586,10 @@ static unsigned int* getRevealedMerkleNodes(const tree_t* tree, uint16_t* missin
 
 size_t openMerkleTreeSize(size_t numNodes, uint16_t* missingLeaves, size_t missingLeavesSize,
                           const picnic_instance_t* params) {
-  tree_t tree = createTree(numNodes, params->digest_size);
+  tree_t tree;
+  if (!createTree(&tree, numNodes, params->digest_size)) {
+    return SIZE_MAX;
+  }
 
   size_t revealedSize = 0;
   unsigned int* revealed =
@@ -579,12 +608,19 @@ uint8_t* openMerkleTree(tree_t* tree, uint16_t* missingLeaves, size_t missingLea
   size_t revealedSize = 0;
   unsigned int* revealed =
       getRevealedMerkleNodes(tree, missingLeaves, missingLeavesSize, &revealedSize);
+  if (!revealed) {
+    return NULL;
+  }
 
   /* Serialize output */
-  *outputSizeBytes    = revealedSize * tree->dataSize;
-  uint8_t* output     = malloc(*outputSizeBytes);
-  uint8_t* outputBase = output;
+  *outputSizeBytes = revealedSize * tree->dataSize;
+  uint8_t* output  = malloc(*outputSizeBytes);
+  if (!output) {
+    free(revealed);
+    return NULL;
+  }
 
+  uint8_t* outputBase = output;
   for (size_t i = 0; i < revealedSize; i++) {
     memcpy(output, &tree->nodes[revealed[i] * tree->dataSize], tree->dataSize);
     output += tree->dataSize;
@@ -597,17 +633,18 @@ uint8_t* openMerkleTree(tree_t* tree, uint16_t* missingLeaves, size_t missingLea
 /* addMerkleNodes: deserialize and add the data for nodes provided by the committer */
 int addMerkleNodes(tree_t* tree, uint16_t* missingLeaves, size_t missingLeavesSize, uint8_t* input,
                    size_t inputSize) {
-  int ret = 0;
-
   assert(missingLeavesSize < tree->numLeaves);
 
+  int ret             = -1;
   size_t revealedSize = 0;
   unsigned int* revealed =
       getRevealedMerkleNodes(tree, missingLeaves, missingLeavesSize, &revealedSize);
+  if (!revealed) {
+    goto Exit;
+  }
   assert(!contains(revealed, revealedSize, 0));
 
   if (inputSize != revealedSize * tree->dataSize) {
-    ret = -1;
     goto Exit;
   }
 
@@ -617,6 +654,7 @@ int addMerkleNodes(tree_t* tree, uint16_t* missingLeaves, size_t missingLeavesSi
     input += tree->dataSize;
     markNode(tree, revealed[i]);
   }
+  ret = 0;
 
 Exit:
   free(revealed);
