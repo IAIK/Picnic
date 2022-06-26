@@ -1139,6 +1139,15 @@ int picnic_impl_sign(const picnic_instance_t* pp, const picnic_context_t* contex
   recorded_state_t* recorded_state =
       picnic_aligned_alloc(32, sizeof(recorded_state_t) * (pp->lowmc.r + 1));
   lowmc_record_state(&pp->lowmc, context->m_key, context->m_plaintext, recorded_state);
+  // Validate public key
+  {
+    uint8_t public_key[MAX_LOWMC_BLOCK_SIZE];
+    mzd_to_char_array(public_key, recorded_state[pp->lowmc.r].state, pp->input_output_size);
+    if (picnic_timingsafe_bcmp(context->public_key, &public_key, pp->input_output_size)) {
+      picnic_aligned_free(recorded_state);
+      return -2;
+    }
+  }
 
   sig_proof_t* prf = proof_new(pp, context);
   view_t* views    = picnic_aligned_alloc(32, sizeof(view_t) * pp->lowmc.r);
@@ -1161,7 +1170,7 @@ int picnic_impl_sign(const picnic_instance_t* pp, const picnic_context_t* contex
       for (unsigned int j = 0; j < SC_PROOF; ++j) {
         const bool include_input_size   = (j != SC_PROOF - 1);
         const uint8_t* seeds[4]         = {round[0].seeds[j], round[1].seeds[j], round[2].seeds[j],
-                                   round[3].seeds[j]};
+                                           round[3].seeds[j]};
         const uint16_t round_numbers[4] = {i, i + 1, i + 2, i + 3};
         kdf_init_x4_from_seed(&kdfs[j], seeds, prf->salt, round_numbers, j, include_input_size, pp);
       }
@@ -1337,7 +1346,7 @@ int picnic_impl_verify(const picnic_instance_t* pp, const picnic_context_t* cont
           const bool include_input_size    = (j == 0 && b_i) || (j == 1 && c_i);
           const unsigned int player_number = (j == 0) ? a_i : b_i;
           const uint8_t* seeds[4]          = {prf0->seeds[j], prf1->seeds[j], prf2->seeds[j],
-                                     prf3->seeds[j]};
+                                              prf3->seeds[j]};
           kdf_init_x4_from_seed(&kdfs[j], seeds, prf->salt, round_numbers, player_number,
                                 include_input_size, pp);
         }

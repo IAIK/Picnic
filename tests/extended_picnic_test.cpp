@@ -193,3 +193,29 @@ BOOST_DATA_TEST_CASE(modified_signature, all_supported_parameters(), parameters)
     }
   }
 }
+
+BOOST_DATA_TEST_CASE(modified_public_key, all_supported_parameters(), parameters) {
+  BOOST_TEST_CONTEXT("Parameter set: " << picnic_get_param_name(parameters)) {
+    const size_t max_signature_size = picnic_signature_size(parameters);
+    BOOST_TEST(max_signature_size);
+
+    picnic_publickey_t pk;
+    picnic_privatekey_t sk;
+    BOOST_TEST(!picnic_keygen(parameters, &pk, &sk));
+
+    std::vector<uint8_t> signature, message;
+    signature.resize(max_signature_size);
+
+    const size_t message_size = message_inc;
+    message.resize(message_size);
+    // fill message with some data
+    randomize_container(message);
+
+    for (size_t offset = 1; offset != 15; ++offset) {
+      sk.data[picnic_get_private_key_size(parameters) - offset] ^= 0xff;
+    }
+
+    size_t signature_len = max_signature_size;
+    BOOST_TEST(picnic_sign(&sk, message.data(), message_size, signature.data(), &signature_len));
+  }
+}
