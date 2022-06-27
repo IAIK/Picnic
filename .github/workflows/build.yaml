@@ -210,7 +210,7 @@ jobs:
     - name: Install Linux dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install cmake ninja-build clang clang++
+        sudo apt-get install cmake ninja-build clang
     - name: Configure
       run: |
         mkdir build
