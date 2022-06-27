@@ -53,11 +53,14 @@ jobs:
       fail-fast: false
       matrix:
         cfg:
+        - { os: ubuntu-22.04, compiler: gcc, cxxcompiler: g++ } # = gcc-11
+        - { os: ubuntu-22.04, compiler: clang, cxxcompiler: clang++ } # = clang-14
+        - { os: ubuntu-22.04, compiler: gcc-12, cxxcompiler: g++-12 }
+        - { os: ubuntu-22.04, compiler: clang-13, cxxcompiler: clang++-13 }
         - { os: ubuntu-20.04, compiler: gcc, cxxcompiler: g++ } # = gcc-9
         - { os: ubuntu-20.04, compiler: clang, cxxcompiler: clang++ } # = clang-10
         - { os: ubuntu-20.04, compiler: gcc-8, cxxcompiler: g++-8 }
         - { os: ubuntu-20.04, compiler: gcc-10, cxxcompiler: g++-10 }
-        - { os: ubuntu-20.04, compiler: gcc-11, cxxcompiler: g++-11 }
         - { os: ubuntu-20.04, compiler: clang-12, cxxcompiler: clang++-12 }
         - { os: ubuntu-20.04, compiler: clang-11, cxxcompiler: clang++-11 }
         - { os: ubuntu-20.04, compiler: clang-9, cxxcompiler: clang++-9 }
