@@ -11,7 +11,7 @@ env:
 jobs:
   build-base:
     name: Test on Ubuntu with gcc
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Install Linux dependencies
@@ -29,7 +29,7 @@ jobs:
 
   build-base-i386:
     name: Test on Ubuntu with gcc (32 bit)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Install Linux dependencies
