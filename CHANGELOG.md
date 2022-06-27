@@ -1,5 +1,10 @@
 # Changelog for the optimized Picnic implementation
 
+## Version 3.0.14 -- 2022-06-27
+
+* Ensure that public keys stored in private keys are valid.
+* Small improvements in memory handling.
+
 ## Version 3.0.13 -- 2022-04-15
 
 * Add the `plain32` implementation of SHAKE and automatically enable it for 32-bit targets.
