@@ -194,7 +194,7 @@ jobs:
   build-sanitizers:
     name: Test with sanitizer ${{ matrix.cfg.cflags }}
     needs: [build-base, build-base-i386]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -207,11 +207,11 @@ jobs:
     - name: Install Linux dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install cmake ninja-build clang-12
+        sudo apt-get install cmake ninja-build clang clang++
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -GNinja -DWITH_LTO=OFF -DWITH_KATS_TESTS=OFF -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12
+        cmake -S . -B build -GNinja -DWITH_LTO=OFF -DWITH_KATS_TESTS=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
       env:
         CFLAGS: ${{ matrix.cfg.cflags }}
         LDFLAGS: ${{ matrix.cfg.ldflags }}
