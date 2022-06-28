@@ -35,11 +35,11 @@ jobs:
     - name: Install Linux dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake ninja-build gcc-9-i686-linux-gnu g++-9-i686-linux-gnu
+        sudo apt-get install -y cmake ninja-build gcc-i686-linux-gnu g++-i686-linux-gnu
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -GNinja -DCMAKE_C_COMPILER=i686-linux-gnu-gcc-9 -DCMAKE_CXX_COMPILER=i686-linux-gnu-g++-9 -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
+        cmake -S . -B build -GNinja -DCMAKE_C_COMPILER=i686-linux-gnu-gcc -DCMAKE_CXX_COMPILER=i686-linux-gnu-g++ -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DWITH_UNRUH=OFF -DWITH_MARCH_NATIVE=OFF
     - name: Build and test
       run: |
         cmake --build build
