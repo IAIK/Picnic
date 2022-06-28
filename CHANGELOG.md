@@ -1,5 +1,10 @@
 # Changelog for the optimized Picnic implementation
 
+## Version 3.0.15 -- 2022-06-28
+
+* Fix debug build.
+* Ensure the memory in Merkle tree helper function is initialized.
+
 ## Version 3.0.14 -- 2022-06-27
 
 * Ensure that public keys stored in private keys are valid.
