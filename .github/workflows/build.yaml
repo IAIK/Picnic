@@ -226,3 +226,21 @@ jobs:
         CFLAGS: ${{ matrix.cfg.cflags }}
         LDFLAGS: ${{ matrix.cfg.ldflags }}
 
+  build-scan-build:
+    name: Test on Ubuntu with scan-build
+    needs: [build-base, build-base-i386]
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Linux dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build clang-tools
+    - name: Configure
+      run: |
+        mkdir build
+        scan-build cmake -S . -B build -GNinja -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF
+    - name: Build and test
+      run: |
+        cmake --build build
+        cmake --build build --target test
