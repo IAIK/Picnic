@@ -47,9 +47,9 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
   if (ret) {
     printf("%s: output does not match pubKey\n", __func__);
     printf("pubKey: ");
-    print_hex(stdout, pubKey, params->output_size);
+    print_hex(stdout, pubKey, params->input_output_size);
     printf("\noutput: ");
-    print_hex(stdout, output, params->output_size);
+    print_hex(stdout, output, params->input_output_size);
     printf("\n");
   }
 #endif
