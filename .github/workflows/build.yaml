@@ -47,7 +47,7 @@ jobs:
 
   build-flags:
     name: Test on ${{ matrix.cfg.os }} with ${{ matrix.cfg.compiler }} (${{ matrix.flags }})
-    needs: [build-base, build-base-i386]
+    needs: [build-sanitizers, build-scan-build]
     runs-on: ${{ matrix.cfg.os }}
     strategy:
       fail-fast: false
@@ -98,7 +98,7 @@ jobs:
 
   build-flags-windows:
     name: Test on Windows with MSVC (${{ matrix.flags }})
-    needs: [build-base, build-base-i386]
+    needs: [build-sanitizers, build-scan-build]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -163,7 +163,7 @@ jobs:
 
   build-archs:
     runs-on: ubuntu-20.04
-    needs: [build-base, build-base-i386]
+    needs: [build-sanitizers, build-scan-build]
     name: Test with ${{ matrix.cfg.compiler }} on ${{ matrix.cfg.arch }}
     strategy:
       fail-fast: false
