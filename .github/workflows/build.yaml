@@ -242,5 +242,5 @@ jobs:
         scan-build cmake -S . -B build -GNinja -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF
     - name: Build and test
       run: |
-        scan-build cmake --build build
-        scan-build cmake --build build --target test
+        scan-build --exclude "sha3/" --status-bugs cmake --build build
+        scan-build --exclude "sha3/" --status-bugs cmake --build build --target test
