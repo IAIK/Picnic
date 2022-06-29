@@ -236,11 +236,15 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake ninja-build clang-tools
-    - name: Configure
+    - name: Configure, build and test
       run: |
-        mkdir build
+        mkdir -p build
         scan-build cmake -S . -B build -GNinja -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF
-    - name: Build and test
-      run: |
         scan-build --exclude "sha3/" --status-bugs cmake --build build
         scan-build --exclude "sha3/" --status-bugs cmake --build build --target test
+    - name: Configure, build and test (debug build)
+      run: |
+        mkdir -p build-debug
+        scan-build cmake -S . -B build-debug -GNinja -DWITH_LTO=OFF -DWITH_EXTENDED_TESTS=OFF -DCMAKE_BUILD_TYPE=Debug
+        scan-build --exclude "sha3/" --status-bugs cmake --build build-debug
+        scan-build --exclude "sha3/" --status-bugs cmake --build build-debug --target test
