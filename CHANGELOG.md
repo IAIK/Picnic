@@ -1,5 +1,10 @@
 # Changelog for the optimized Picnic implementation
 
+## Version 3.0.16 -- 2022-08-01
+
+* Fix alignment of buffers accessed with SIMD instructions when building with MSVC.
+* Ensure that builds fail if alignment cannot be specified.
+
 ## Version 3.0.15 -- 2022-06-28
 
 * Fix debug build.
