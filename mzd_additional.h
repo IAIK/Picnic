@@ -24,7 +24,7 @@ PICNIC_BEGIN_C_DECL
 typedef uint64_t word;
 #define WORD_C(v) UINT64_C(v)
 
-typedef ATTR_ALIGNED(32) union { word w64[4]; } block_t;
+typedef ATTR_ALIGNED(32) struct { word w64[4]; } block_t;
 
 /**
  * Representation of matrices and vectors
