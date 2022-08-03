@@ -59,8 +59,6 @@ typedef struct signature2_t {
   proof2_t* proofs; // One proof for each online execution the verifier checks
 } signature2_t;
 
-#define UNUSED_PARAMETER(x) (void)(x)
-
 void allocateRandomTape(randomTape_t* tape, const picnic_instance_t* params);
 void freeRandomTape(randomTape_t* tape);
 
