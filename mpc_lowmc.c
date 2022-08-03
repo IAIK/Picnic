@@ -1007,7 +1007,7 @@ static void mpc_sbox_verify_s256_lowmc_255_255_4(mzd_local_t* out, const mzd_loc
 #endif
 
 zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_parameters_t* lowmc) {
-  const uint32_t lowmc_id = LOWMC_GET_ID(lowmc);
+  const uint32_t lowmc_id = lowmc_get_id(lowmc);
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   /* AVX2 enabled instances */
@@ -1122,7 +1122,7 @@ zkbpp_lowmc_implementation_f get_zkbpp_lowmc_implementation(const lowmc_paramete
 
 zkbpp_lowmc_verify_implementation_f
 get_zkbpp_lowmc_verify_implementation(const lowmc_parameters_t* lowmc) {
-  const uint32_t lowmc_id = LOWMC_GET_ID(lowmc);
+  const uint32_t lowmc_id = lowmc_get_id(lowmc);
 #if defined(WITH_OPT)
 #if defined(WITH_AVX2)
   /* AVX2 enabled instances */
