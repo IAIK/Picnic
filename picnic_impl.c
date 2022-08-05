@@ -1141,7 +1141,7 @@ int picnic_impl_sign(const picnic_instance_t* pp, const picnic_context_t* contex
   lowmc_record_state(&pp->lowmc, context->m_key, context->m_plaintext, recorded_state);
   // Validate public key
   {
-    uint8_t public_key[MAX_LOWMC_BLOCK_SIZE];
+    uint8_t public_key[MAX_LOWMC_BLOCK_SIZE] = {0};
     mzd_to_char_array(public_key, recorded_state[pp->lowmc.r].state, pp->input_output_size);
     if (picnic_timingsafe_bcmp(context->public_key, &public_key, pp->input_output_size)) {
       picnic_aligned_free(recorded_state);

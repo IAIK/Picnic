@@ -37,7 +37,7 @@ static int SIM_ONLINE(mzd_local_t* maskedKey, randomTape_t* tapes, msgs_t* msgs,
   }
 
   /* check that the output is correct */
-  uint8_t output[MAX_LOWMC_BLOCK_SIZE];
+  uint8_t output[MAX_LOWMC_BLOCK_SIZE] = {0};
   mzd_to_char_array(output, state, params->input_output_size);
 
   /* timingsafe_bcmp is not strictly necessary here. The comparison does not leak any information on
