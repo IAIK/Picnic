@@ -634,4 +634,5 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_par
 #endif
 
   UNREACHABLE;
+  return NULL;
 }
