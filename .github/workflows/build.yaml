@@ -207,7 +207,7 @@ jobs:
     - name: Configure
       run: |
         mkdir build
-        cmake -S . -B build -GNinja -DWITH_VALGRIND_CT_TESTS=ON -DWITH_SIMD_OPT=OFF
+        cmake -S . -B build -GNinja -DWITH_VALGRIND_CT_TESTS=ON -DWITH_MARCH_NATIVE=OFF
     - name: Build and test
       run: |
         cmake --build build
