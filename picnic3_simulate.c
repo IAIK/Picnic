@@ -617,7 +617,7 @@ lowmc_simulate_online_f lowmc_simulate_online_get_implementation(const lowmc_par
 #endif
 
 #if !defined(NO_UINT64_FALLBACK)
-  switch (lowmc) {
+  switch (lowmc_id) {
 #if defined(WITH_LOWMC_129_129_4)
   case LOWMC_ID(129, 43):
     return lowmc_simulate_online_uint64_129_43;
