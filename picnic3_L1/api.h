@@ -1,3 +1,12 @@
+/*
+ *  This file is part of the optimized implementation of the Picnic signature scheme.
+ *  See the accompanying documentation for complete details.
+ *
+ *  The code is provided under the MIT license, see LICENSE for
+ *  more details.
+ *  SPDX-License-Identifier: MIT
+ */
+
 #ifndef PICNIC3_L1_FS_API_H
 #define PICNIC3_L1_FS_API_H
 
