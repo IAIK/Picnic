@@ -679,6 +679,7 @@ static int sign_picnic3(const uint8_t* privateKey, const uint8_t* pubKey, const 
     mzd_from_char_array(m_maskedKey, maskedKey, params->input_output_size);
 
     int rv = simulateOnline(m_maskedKey, &tapes[t], &msgs[t], m_plaintext, pubKey, params);
+    picnic_declassify(&rv, sizeof(rv));
     if (rv != 0) {
 #if !defined(NDEBUG)
       printf("MPC simulation failed in round %" PRIu16 ", aborting signature\n", t);
