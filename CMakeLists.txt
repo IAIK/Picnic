@@ -246,12 +246,12 @@ if(SED)
     list(GET ALL_PARAMETERS ${idx} param)
     list(GET ALL_DIRECTORIES ${idx} dir)
     add_custom_command(
-      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/sign.c"
+      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/crypto_sign.c"
       COMMAND ${SED}
-        -n
-        "s/PICNIC_INSTANCE/${param}/g;w ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/sign.c"
-        "${CMAKE_CURRENT_SOURCE_DIR}/sign.c.in"
-      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/sign.c.in"
+      -n
+      "s/PICNIC_INSTANCE/${param}/g;w ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/crypto_sign.c"
+      "${CMAKE_CURRENT_SOURCE_DIR}/crypto_sign.c.in"
+      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/crypto_sign.c.in"
       VERBATIM)
   endforeach()
 endif()
@@ -497,7 +497,7 @@ if(WITH_KKW)
 endif()
 
 foreach(target IN ITEMS ${api_targets})
-  add_library("${target}" STATIC "${target}/sign.c")
+  add_library("${target}" STATIC "${target}/crypto_sign.c")
   target_include_directories("${target}" PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   target_include_directories("${target}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/${target}")
   if (VALGRIND_FOUND AND WITH_VALGRIND_CT_TESTS)
