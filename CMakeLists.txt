@@ -278,6 +278,61 @@ if(SED)
       DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/crypto_sign.c.in"
       VERBATIM)
   endforeach()
+
+  function(add_picnic_param_target dir param lowmc)
+    string(TOLOWER ${param} paraml)
+    string(TOLOWER ${lowmc} lowmcl)
+    add_custom_command(
+      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.c"
+      COMMAND ${SED}
+      -n
+      "s/@PARAM@/${param}/g;s/@PARAM_L@/${paraml}/g;s/@LOWMC@/${lowmc}/g;s/@LOWMC_L@/${lowmcl}/g;w ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.c"
+      "${CMAKE_CURRENT_SOURCE_DIR}/picnic_param.c.in"
+      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/picnic_param.c.in" "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.h"
+      VERBATIM)
+    add_custom_command(
+      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.h"
+      COMMAND ${SED}
+      -n
+      "s/@PARAM@/${param}/g;s/@PARAM_L@/${paraml}/g;w ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.h"
+      "${CMAKE_CURRENT_SOURCE_DIR}/picnic_param.h.in"
+      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/picnic_param.h.in"
+      VERBATIM)
+  endfunction()
+
+  function(add_picnic3_param_target dir param lowmc)
+    string(TOLOWER ${param} paraml)
+    string(TOLOWER ${lowmc} lowmcl)
+    add_custom_command(
+      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.c"
+      COMMAND ${SED}
+      -n
+      "s/@PARAM@/${param}/g;s/@PARAM_L@/${paraml}/g;s/@LOWMC@/${lowmc}/g;s/@LOWMC_L@/${lowmcl}/g;w ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.c"
+      "${CMAKE_CURRENT_SOURCE_DIR}/picnic3_param.c.in"
+      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/picnic3_param.c.in" "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.h"
+      VERBATIM)
+    add_custom_command(
+      OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.h"
+      COMMAND ${SED}
+      -n
+      "s/@PARAM@/${param}/g;s/@PARAM_L@/${paraml}/g;w ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${paraml}.h"
+      "${CMAKE_CURRENT_SOURCE_DIR}/picnic_param.h.in"
+      DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/picnic_param.h.in"
+      VERBATIM)
+  endfunction()
+
+  add_picnic_param_target(picnic_L1_FS Picnic_L1_FS LOWMC_128_128_20)
+  add_picnic_param_target(picnic_L1_UR Picnic_L1_UR LOWMC_128_128_20)
+  add_picnic_param_target(picnic_L1_full Picnic_L1_full LOWMC_129_129_4)
+  add_picnic_param_target(picnic_L3_FS Picnic_L3_FS LOWMC_192_192_30)
+  add_picnic_param_target(picnic_L3_UR Picnic_L3_UR LOWMC_192_192_30)
+  add_picnic_param_target(picnic_L3_full Picnic_L3_full LOWMC_192_192_4)
+  add_picnic_param_target(picnic_L5_FS Picnic_L5_FS LOWMC_256_256_38)
+  add_picnic_param_target(picnic_L5_UR Picnic_L5_UR LOWMC_256_256_38)
+  add_picnic_param_target(picnic_L5_full Picnic_L5_full LOWMC_255_255_4)
+  add_picnic3_param_target(picnic3_L1 Picnic3_L1 LOWMC_129_129_4)
+  add_picnic3_param_target(picnic3_L3 Picnic3_L3 LOWMC_192_192_4)
+  add_picnic3_param_target(picnic3_L5 Picnic3_L5 LOWMC_255_255_4)
 endif()
 
 # SHAKE implementation
@@ -329,27 +384,50 @@ list(APPEND PICNIC_SOURCES
   picnic.c
   picnic_instances.c
   randomness.c)
+list(APPEND PICNIC_HEADERS picnic.h)
 
 # ZKB++ specific source files
 if(WITH_ZKBPP)
   list(APPEND PICNIC_SOURCES
-    $<$<BOOL:${WITH_LOWMC_128_128_20}>:lowmc_128_128_20.c>
-    $<$<BOOL:${WITH_LOWMC_192_192_30}>:lowmc_192_192_30.c>
-    $<$<BOOL:${WITH_LOWMC_256_256_38}>:lowmc_256_256_38.c>
+    $<$<BOOL:${WITH_LOWMC_128_128_20}>:lowmc_128_128_20.c picnic_L1_FS/picnic_l1_fs.c>
+    $<$<BOOL:${WITH_LOWMC_192_192_30}>:lowmc_192_192_30.c picnic_L3_FS/picnic_l3_fs.c>
+    $<$<BOOL:${WITH_LOWMC_256_256_38}>:lowmc_256_256_38.c picnic_L5_FS/picnic_l5_fs.c>
+    $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_LOWMC_128_128_20}>>:picnic_L1_UR/picnic_l1_ur.c>
+    $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_LOWMC_192_192_30}>>:picnic_L3_UR/picnic_l3_ur.c>
+    $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_LOWMC_256_256_38}>>:picnic_L5_UR/picnic_l5_ur.c>
+    $<$<BOOL:${WITH_LOWMC_129_129_4}>:picnic_L1_full/picnic_l1_full.c>
+    $<$<BOOL:${WITH_LOWMC_192_192_4}>:picnic_L3_full/picnic_l3_full.c>
+    $<$<BOOL:${WITH_LOWMC_255_255_4}>:picnic_L5_full/picnic_l5_full.c>
     mpc_lowmc.c
     picnic_impl.c)
+  list(APPEND PICNIC_HEADERS
+    $<$<BOOL:${WITH_LOWMC_128_128_20}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L1_FS/picnic_l1_fs.h>
+    $<$<BOOL:${WITH_LOWMC_192_192_30}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L3_FS/picnic_l3_fs.h>
+    $<$<BOOL:${WITH_LOWMC_256_256_38}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L5_FS/picnic_l5_fs.h>
+    $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_LOWMC_128_128_20}>>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L1_UR/picnic_l1_ur.h>
+    $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_LOWMC_192_192_30}>>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L3_UR/picnic_l3_ur.h>
+    $<$<AND:$<BOOL:${WITH_UNRUH}>,$<BOOL:${WITH_LOWMC_256_256_38}>>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L5_UR/picnic_l5_ur.h>
+    $<$<BOOL:${WITH_LOWMC_129_129_4}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L1_full/picnic_l1_full.h>
+    $<$<BOOL:${WITH_LOWMC_192_192_4}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L3_full/picnic_l3_full.h>
+    $<$<BOOL:${WITH_LOWMC_255_255_4}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic_L5_full/picnic_l5_full.h>)
 endif()
 
 # KKW specific source files
 if(WITH_KKW)
   list(APPEND PICNIC_SOURCES
+    $<$<BOOL:${WITH_LOWMC_129_129_4}>:picnic3_L1/picnic3_l1.c>
+    $<$<BOOL:${WITH_LOWMC_192_192_4}>:picnic3_L3/picnic3_l3.c>
+    $<$<BOOL:${WITH_LOWMC_255_255_4}>:picnic3_L5/picnic3_l5.c>
     picnic3_impl.c
     picnic3_simulate.c
     picnic3_tree.c
     picnic3_types.c)
-endif()
 
-list(APPEND PICNIC_HEADERS picnic.h)
+  list(APPEND PICNIC_HEADERS
+    $<$<BOOL:${WITH_LOWMC_129_129_4}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic3_L1/picnic3_l1.h>
+    $<$<BOOL:${WITH_LOWMC_192_192_4}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic3_L3/picnic3_l3.h>
+    $<$<BOOL:${WITH_LOWMC_255_255_4}>:${CMAKE_CURRENT_SOURCE_DIR}/picnic3_L5/picnic3_l5.h>)
+endif()
 
 # shared library
 add_library(picnic SHARED ${PICNIC_SOURCES} ${SHA3_SOURCES})
