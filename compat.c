@@ -34,11 +34,19 @@
 
 #if !defined(HAVE_ALIGNED_ALLOC)
 #include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #if !defined(HAVE_POSIX_MEMALIGN) || defined(__MING32__) || defined(__MING64__) || defined(_MSC_VER)
 #include <malloc.h>
 #endif
 
+#if defined(HAVE_POSIX_MEMALIGN)
+static_assert(sizeof(void*) & (sizeof(void*) - 1) == 0, "sizeof void* is not a power of 2");
+#endif
+
+/* The fallback implementation tries to be as generic as possible. While all callers in this code
+ * base satisfy all requirements, we still check them. Thereby, the fallback implementation may be
+ * of use for others as well. */
 void* picnic_aligned_alloc(size_t alignment, size_t size) {
   /* check alignment (power of 2) and size (multiple of alignment) */
   if (alignment & (alignment - 1) || size & (alignment - 1)) {
@@ -47,9 +55,12 @@ void* picnic_aligned_alloc(size_t alignment, size_t size) {
   }
 
 #if defined(HAVE_POSIX_MEMALIGN)
-  /* check alignment (needs to be >= sizeof(void*)) */
+  /* check alignment (needs to be multiple of sizeof(void*)); posix_memalign has this additional
+   * requirement */
   if (alignment < sizeof(void*)) {
     alignment = sizeof(void*);
+    /* fix up size; needs to be a multiple of alignment, i.e., sizeof(void*) */
+    size = (size + sizeof(void*) - 1) & ~(sizeof(void*) - 1);
   }
 
   void* ptr     = NULL;

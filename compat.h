@@ -190,4 +190,13 @@ ATTR_CONST ATTR_ARTIFICIAL static inline uint32_t ceil_log2(uint32_t x) {
   return 32 - clz(x - 1);
 }
 
+#if !defined(__cplusplus)
+#include <assert.h>
+
+/* static_assert fallback */
+#if !defined(_MSC_VER) && !defined(static_assert)
+#define static_assert _Static_assert
+#endif
+#endif
+
 #endif

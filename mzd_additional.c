@@ -20,10 +20,6 @@
 
 #include "mzd_additional.h"
 
-#if !defined(_MSC_VER) && !defined(static_assert)
-#define static_assert _Static_assert
-#endif
-
 static_assert(((sizeof(mzd_local_t) + 0x1f) & ~0x1f) == 32, "sizeof mzd_local_t not supported");
 
 #if defined(WITH_OPT)
@@ -1445,7 +1441,7 @@ void mzd_shuffle_pext_256_30(mzd_local_t* x, const word mask) {
 ATTR_TARGET_AVX2
 static inline word256 mm256_parity_3(word256 v1, word256 v2, word256 v3) {
   const word256 lookup   = _mm256_setr_epi8(0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 0, 1, 1,
-                                          2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
+                                            2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4);
   const word256 low_mask = _mm256_set1_epi8(0x0f);
   const word256 all1     = _mm256_set1_epi64x(0x1);
 
