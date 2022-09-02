@@ -1,5 +1,9 @@
 # Changelog for the optimized Picnic implementation
 
+## Version 3.0.18 -- 2022-09-02
+
+* Add instance specific functions to the public API
+
 ## Version 3.0.17 -- 2022-08-05
 
 * Small improvements and fixes.
