@@ -199,19 +199,23 @@
 #define ATTR_VECTOR_SIZE(s)
 #endif
 
-/* attribute_malloc attribute */
-#if GNUC_CHECK(2, 96) || __has_attribute(malloc)
+/* malloc attribute */
+#if GNUC_CHECK(11, 0)
 #define ATTR_MALLOC(arg) __attribute__((malloc, malloc(arg)))
+#elif GNUC_CHECK(2, 96) || __has_attribute(malloc)
+#define ATTR_MALLOC(arg) __attribute__((malloc))
 #else
 #define ATTR_MALLOC(arg)
 #endif
 
+/* alloc align attribute */
 #if GNUC_CHECK(4, 9) || __has_attribute(alloc_align)
 #define ATTR_ALLOC_ALIGN(arg) __attribute__((alloc_align(arg)))
 #else
 #define ATTR_ALLOC_ALIGN(arg)
 #endif
 
+/* alloc size attribute */
 #if GNUC_CHECK(4, 3) || __has_attribute(alloc_size)
 #define ATTR_ALLOC_SIZE(arg) __attribute__((alloc_size(arg)))
 #else
