@@ -209,7 +209,7 @@
 #if GNUC_CHECK(4, 9) || __has_attribute(alloc_align)
 #define ATTR_ALLOC_ALIGN(arg) __attribute__((alloc_align(arg))
 #else
-#define ATTR_ALLOC_AIGN(arg)
+#define ATTR_ALLOC_ALIGN(arg)
 #endif
 
 #if GNUC_CHECK(4, 3) || __has_attribute(alloc_size)
