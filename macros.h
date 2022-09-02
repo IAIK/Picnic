@@ -192,13 +192,6 @@
 #define ATTR_ARTIFICIAL
 #endif
 
-/* may_alias attribute */
-#if GNUC_CHECK(3, 3) || __has_attribute(__may_alias__)
-#define ATTR_MAY_ALIAS __attribute__((__may_alias__))
-#else
-#define ATTR_MAY_ALIAS
-#endif
-
 /* vector_size attribute */
 #if GNUC_CHECK(4, 8) || __has_attribute(__vector_size__)
 #define ATTR_VECTOR_SIZE(s) __attribute__((__vector_size__(s)))
