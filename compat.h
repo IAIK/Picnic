@@ -56,15 +56,15 @@
 PICNIC_BEGIN_C_DECL
 
 /**
- * Compatibility implementation of aligned_alloc from ISO C 2011.
- */
-void* picnic_aligned_alloc(size_t alignment, size_t size) ATTR_MALLOC(picnic_aligned_free)
-    ATTR_ALLOC_ALIGN(1) ATTR_ALLOC_SIZE(2);
-/**
  * Some aligned_alloc compatbility implementations require custom free
  * functions, so we provide one too.
  */
 void picnic_aligned_free(void* ptr);
+/**
+ * Compatibility implementation of aligned_alloc from ISO C 2011.
+ */
+void* picnic_aligned_alloc(size_t alignment, size_t size) ATTR_MALLOC(picnic_aligned_free)
+    ATTR_ALLOC_ALIGN(1) ATTR_ALLOC_SIZE(2);
 
 PICNIC_END_C_DECL
 #endif /* HAVE_ALIGNED_ALLOC */
