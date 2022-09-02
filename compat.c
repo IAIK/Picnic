@@ -41,7 +41,7 @@
 #endif
 
 #if defined(HAVE_POSIX_MEMALIGN)
-static_assert(sizeof(void*) & (sizeof(void*) - 1) == 0, "sizeof void* is not a power of 2");
+static_assert((sizeof(void*) & (sizeof(void*) - 1)) == 0, "sizeof void* is not a power of 2");
 #endif
 
 /* The fallback implementation tries to be as generic as possible. While all callers in this code
